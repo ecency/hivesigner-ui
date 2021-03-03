@@ -12,6 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@hiveio/dhive": "^0.14.12",
     "@nuxt/typescript-runtime": "^2.0.1",
     "@nuxtjs/axios": "^5.12.5",
     "core-js": "^3.8.3",
