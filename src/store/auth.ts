@@ -15,6 +15,10 @@ export default class Auth extends VuexModule {
     return this.account.username
   }
 
+  public get password(): string {
+    return this.keys.owner || this.keys.active || this.keys.posting || this.keys.memo
+  }
+
   @VuexMutation
   public setUser({ result, keys }: any): void {
     this.keys = keys
@@ -69,7 +73,21 @@ export default class Auth extends VuexModule {
     const privateKey =
       authority && this.keys[authority]
         ? privateKeyFrom(this.keys[authority])
-        : privateKeyFrom(this.keys.owner || this.keys.active || this.keys.posting || this.keys.memo)
+        : privateKeyFrom(this.password)
     return cryptoUtils.signTransaction(tx, [privateKey], Buffer.from(chainId, 'hex'))
+  }
+
+  @VuexAction
+  public async signMessage({ message, authority }: any): Promise<any> {
+    const timestamp = parseInt((new Date().getTime() / 1000) + '', 10)
+    const messageObj: any = { signed_message: message, authors: [this.username], timestamp }
+    const hash = cryptoUtils.sha256(JSON.stringify(messageObj))
+    const privateKey =
+      authority && this.keys[authority]
+        ? privateKeyFrom(this.keys[authority])
+        : privateKeyFrom(this.password)
+    const signature = privateKey.sign(hash).toString()
+    messageObj.signatures = [signature]
+    return messageObj
   }
 }
