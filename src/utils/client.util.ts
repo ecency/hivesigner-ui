@@ -2,6 +2,8 @@ import { CLIENT_OPTIONS, DEFAULT_SERVER, EXPIRE_TIME } from '~/consts'
 import { Client } from '@hiveio/dhive'
 import * as hiveuri from 'hive-uri'
 
+// TODO: Move it from utils
+
 let rawClient = new Client(DEFAULT_SERVER, CLIENT_OPTIONS)
 
 const handler = {
