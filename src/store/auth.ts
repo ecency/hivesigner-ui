@@ -95,4 +95,10 @@ export default class Auth extends VuexModule {
   public async broadcast(tx: any): Promise<void> {
     client.broadcast.send(tx)
   }
+
+  @VuexAction
+  public async updateAccount(data: any): Promise<void> {
+    const privateKey = privateKeyFrom(this.keys.owner || this.keys.active)
+    return client.broadcast.updateAccount(data, privateKey)
+  }
 }
