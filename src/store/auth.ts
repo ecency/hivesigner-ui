@@ -1,5 +1,6 @@
 import { Module, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
-import { client, credentialsValid } from '~/utils'
+import { client, credentialsValid, privateKeyFrom } from '~/utils'
+import { cryptoUtils, SignedTransaction } from '@hiveio/dhive'
 
 @Module({
   stateFactory: true,
@@ -60,5 +61,15 @@ export default class Auth extends VuexModule {
   public async loadAccount(): Promise<void> {
     const [account] = await client.database.getAccounts([this.username])
     this.setAccount(account)
+  }
+
+  @VuexAction
+  public async sign({ tx, authority }: any): Promise<SignedTransaction> {
+    const { chainId } = this.context.rootState.settings
+    const privateKey =
+      authority && this.keys[authority]
+        ? privateKeyFrom(this.keys[authority])
+        : privateKeyFrom(this.keys.owner || this.keys.active || this.keys.posting || this.keys.memo)
+    return cryptoUtils.signTransaction(tx, [privateKey], Buffer.from(chainId, 'hex'))
   }
 }
