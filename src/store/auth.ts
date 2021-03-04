@@ -1,4 +1,5 @@
 import { Module, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
+import { client, credentialsValid } from '~/utils'
 
 @Module({
   stateFactory: true,
@@ -40,11 +41,18 @@ export default class Auth extends VuexModule {
     }
 
     const result = await client.database.getAccounts([username])
-    commit('login', {result: result[0], keys})
 
-    idleDetector.start(rootState.settings.timeout * 60 * 1000, () => {
-      idleDetector.stop()
-      dispatch('logout')
+    this.setUser({ result: result[0], keys })
+
+    this.$idleDetector.start(this.context.rootState.settings.timeout * 60 * 1000, () => {
+      this.$idleDetector.stop()
+      this.logout();
     })
+  }
+
+  @VuexAction
+  public async logout(): Promise<void> {
+    this.clearUser();
+    // router.push('/');
   }
 }

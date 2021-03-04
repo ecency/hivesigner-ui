@@ -1,7 +1,8 @@
 import { debounce } from 'lodash'
 import { IdleDetector } from '~/models'
 
-export default function createIdleDetector(): IdleDetector {
+// TODO: Rewrite to class
+export default function createIdleDetector(options: any): IdleDetector {
   let triggerIdle: any | null = null
 
   return {
