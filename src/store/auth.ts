@@ -58,7 +58,7 @@ export default class Auth extends VuexModule {
   @VuexAction
   public async logout(): Promise<void> {
     this.clearUser()
-    // router.push('/');
+    this.$nuxt.$router.push('/')
   }
 
   @VuexAction
