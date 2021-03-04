@@ -90,4 +90,9 @@ export default class Auth extends VuexModule {
     messageObj.signatures = [signature]
     return messageObj
   }
+
+  @VuexAction
+  public async broadcast(tx: any): Promise<void> {
+    client.broadcast.send(tx)
+  }
 }
