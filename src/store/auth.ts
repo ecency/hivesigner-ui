@@ -15,7 +15,7 @@ export default class Auth extends VuexModule {
   }
 
   @VuexMutation
-  public setUser({result, keys}: any): void {
+  public setUser({ result, keys }: any): void {
     this.keys = keys
     this.account = result
   }
@@ -32,7 +32,7 @@ export default class Auth extends VuexModule {
   }
 
   @VuexAction
-  public async login({username, keys}: any): Promise<any> {
+  public async login({ username, keys }: any): Promise<any> {
     const key = keys.owner || keys.active || keys.posting || keys.memo
     const valid = await credentialsValid(username, key)
 
@@ -46,13 +46,19 @@ export default class Auth extends VuexModule {
 
     this.$idleDetector.start(this.context.rootState.settings.timeout * 60 * 1000, () => {
       this.$idleDetector.stop()
-      this.logout();
+      this.logout()
     })
   }
 
   @VuexAction
   public async logout(): Promise<void> {
-    this.clearUser();
+    this.clearUser()
     // router.push('/');
+  }
+
+  @VuexAction
+  public async loadAccount(): Promise<void> {
+    const [account] = await client.database.getAccounts([this.username])
+    this.setAccount(account)
   }
 }
