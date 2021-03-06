@@ -40,7 +40,7 @@ export function legacyToHiveUri(uri: string): DecodeResult | null {
     }, {})
     const params = { callback: queryParams.redirect_uri }
     // TODO: wrong type of encode ops
-    const b64Uri = encodeOps([[opName, opParams]], params)
+    const b64Uri = encodeOps([[opName, opParams]] as any, params as any)
     parsed = decode(b64Uri)
   } catch (err) {
     console.log('Failed to parse legacy uri', err)

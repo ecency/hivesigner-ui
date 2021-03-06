@@ -1,5 +1,5 @@
 <template>
-  <div @click="changeTitle">{{ title }}</div>
+  <div></div>
 </template>
 
 <script lang="ts">
@@ -8,13 +8,6 @@ import { AuthModule } from '~/store'
 
 @Component
 export default class Index extends Vue {
-  get title() {
-    return AuthModule.title
-  }
-
-  changeTitle() {
-    AuthModule.setTitle()
-  }
 }
 </script>
 
