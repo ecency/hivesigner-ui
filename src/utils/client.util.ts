@@ -17,6 +17,7 @@ const handler = {
   },
 }
 
+// TODO: Fix typings
 export const client = new Proxy({}, handler)
 
 export async function resolveTransaction(parsed: any, signer: string) {
