@@ -19,5 +19,8 @@ const initializer = (store: Store<any>) => {
 export const plugins = [initializer]
 
 export {
-  AuthModule
+  AuthModule,
+  SettingsModule,
+  UiModule,
+  PersistentFormsModule
 }
