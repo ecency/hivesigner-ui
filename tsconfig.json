@@ -36,5 +36,8 @@
     "node_modules",
     ".nuxt",
     "dist"
+  ],
+  "files": [
+    "package.json"
   ]
 }

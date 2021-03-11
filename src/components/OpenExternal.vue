@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import pkg from '../../package.json';
+import { PACKAGE } from '~/consts'
 
 @Component
 export default class OpenExternal extends Vue {
@@ -27,7 +27,7 @@ export default class OpenExternal extends Vue {
   private withChrome!: boolean
 
   private get homepage(): string {
-    return pkg.homepage
+    return PACKAGE.homepage
   }
 
   private openURIScheme() {

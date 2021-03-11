@@ -1,5 +1,5 @@
-import translations from '~/assets/data/translations.json'
-import numberFormats from '~/assets/data/number-formats.json'
+const translations = require('./src/assets/data/translations.json')
+const numberFormats = require('./src/assets/data/number-formats.json')
 
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
@@ -34,7 +34,7 @@ export default {
     '~/plugins/idle-detector.ts',
     '~/plugins/hivesigner.ts',
     '~/plugins/vue-ui.ts',
-    '~/plugins/filter.ts'
+    '~/plugins/filters.ts'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
