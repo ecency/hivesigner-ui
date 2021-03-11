@@ -1,11 +1,11 @@
 <template>
   <VueModal v-if="open" @close="$emit('close')" :title="username" class="small">
     <div class="default-body">
-      <VueLoadingIndicator v-if="isLoading" class="big" />
+      <VueLoadingIndicator v-if="isLoading" class="big"/>
       <template v-else>
         <div class="mb-4 text-center" v-if="!failed">
           <div class="mb-4">
-            <Avatar :username="username" :size="80" class="mb-2" />
+            <Avatar :username="username" :size="80" class="mb-2"/>
             <h4 v-if="profile.name" class="m-0">{{ profile.name }}</h4>
             <div v-if="profile.website">{{ profile.website | parseUrl }}</div>
           </div>
@@ -26,7 +26,7 @@
               <p><b>Creator</b></p>
               <p>
                 <a :href="'https://hive.blog/@' + profile.creator" target="_blank">
-                  <Avatar :username="profile.creator" :size="22" />
+                  <Avatar :username="profile.creator" :size="22"/>
                   {{ profile.creator }}
                   <span class="iconfont icon-link-external"></span>
                 </a>
@@ -53,10 +53,16 @@ import Avatar from '~/components/Avatar.vue'
   components: { Avatar }
 })
 export default class Profile extends Vue {
-  @Prop()
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
   private open!: boolean
 
-  @Prop()
+  @Prop({
+    type: String,
+    default: '',
+  })
   private username!: string
 
   private isLoading = false

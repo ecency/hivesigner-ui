@@ -18,10 +18,16 @@ import { Component, Vue, Prop } from 'nuxt-property-decorator'
 
 @Component
 export default class Search extends Vue {
-  @Prop()
+  @Prop({
+    type: String,
+    default: '',
+  })
   private value!: string
 
-  @Prop()
+  @Prop({
+    type: String,
+    default: '',
+  })
   private placeholder!: string
 
   private handleInput(e: Event): void {

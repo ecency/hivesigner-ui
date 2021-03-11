@@ -14,7 +14,10 @@ import { Component, Vue, Prop } from 'nuxt-property-decorator'
 
 @Component
 export default class Header extends Vue {
-  @Prop()
+  @Prop({
+    type: String,
+    default: '',
+  })
   private title!: string
 }
 </script>
