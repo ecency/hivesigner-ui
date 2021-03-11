@@ -31,7 +31,8 @@ export default {
     '~/plugins/vue-i18n.ts',
     '~/plugins/idle-detector.ts',
     '~/plugins/hivesigner.ts',
-    '~/plugins/vue-ui.ts'
+    '~/plugins/vue-ui.ts',
+    '~/plugins/filter.ts'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
