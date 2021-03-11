@@ -2,6 +2,7 @@
   "name": "hivesigner-ui",
   "version": "1.0.0",
   "private": true,
+  "homepage": "TODO: Add homepage",
   "scripts": {
     "dev": "nuxt-ts",
     "build": "nuxt-ts build",
