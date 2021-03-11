@@ -26,7 +26,9 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    '~/plugins/idle-detector.ts'
+    '~/plugins/idle-detector.ts',
+    '~/plugins/hivesigner.ts',
+    '~/plugins/vue-ui.ts'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
