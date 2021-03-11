@@ -23,6 +23,7 @@
     "lodash": "^4.17.21",
     "nuxt": "^2.14.12",
     "nuxt-property-decorator": "^2.9.1",
+    "primer": "^11.0.0",
     "query-string": "^6.14.1",
     "url-parse": "^1.4.7"
   },

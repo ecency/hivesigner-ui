@@ -21,6 +21,8 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
+    'primer/index.scss',
+    '@vue/ui/dist/vue-ui.css',
     '@/assets/scss/styles.scss'
   ],
 
