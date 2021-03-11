@@ -38,19 +38,8 @@
 import { Vue, Prop, Component } from 'nuxt-property-decorator'
 import { AuthModule } from '~/store'
 import { OPERATIONS } from '~/consts'
-import OperationValueAccount from '~/components/Operation/OperationValueAccount.vue'
-import OperationValueAmount from '~/components/Operation/OperationValueAmount.vue'
-import OperationValueBool from '~/components/Operation/OperationValueBool.vue'
-import OperationValueJson from '~/components/Operation/OperationValueJson.vue'
 
-@Component({
-  components: {
-    OperationValueAccount,
-    OperationValueAmount,
-    OperationValueBool,
-    OperationValueJson,
-  }
-})
+@Component
 export default class OperationValue extends Vue {
   @Prop()
   private value!: any

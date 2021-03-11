@@ -49,9 +49,7 @@ import { Vue, Component, Prop, Watch } from 'nuxt-property-decorator'
 import { client, isValidUrl } from '~/utils'
 import Avatar from '~/components/Avatar.vue'
 
-@Component({
-  components: { Avatar }
-})
+@Component
 export default class Profile extends Vue {
   @Prop({
     type: Boolean,

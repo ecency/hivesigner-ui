@@ -15,12 +15,8 @@
 <script lang="ts">
 import { Component, Vue, Prop } from 'nuxt-property-decorator'
 import { OPERATIONS } from '~/consts'
-import OperationHeader from '~/components/Operation/OperationHeader.vue'
-import OperationValue from '~/components/Operation/OperationValue.vue'
 
-@Component({
-  components: { OperationValue, OperationHeader }
-})
+@Component
 export default class Operation extends Vue {
   @Prop()
   private operation!: any

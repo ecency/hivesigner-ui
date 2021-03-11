@@ -11,11 +11,8 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import Avatar from '~/components/Avatar.vue'
 
-@Component({
-  Avatar,
-})
+@Component
 export default class App extends Vue {
   @Prop({
     type: String,
