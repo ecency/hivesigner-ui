@@ -1,3 +1,6 @@
+import translations from '~/assets/data/translations.json'
+import numberFormats from '~/assets/data/number-formats.json'
+
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
@@ -28,7 +31,6 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    '~/plugins/vue-i18n.ts',
     '~/plugins/idle-detector.ts',
     '~/plugins/hivesigner.ts',
     '~/plugins/vue-ui.ts',
@@ -48,7 +50,8 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
-    '@nuxtjs/style-resources'
+    '@nuxtjs/style-resources',
+    'nuxt-i18n'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -56,5 +59,16 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+  },
+
+  // Vue i18n
+  i18n: {
+    locales: ['en', 'fr'],
+    defaultLocale: 'en',
+    vueI18n: {
+      fallbackLocale: 'en',
+      messages: translations,
+      numberFormats
+    }
   }
 }
