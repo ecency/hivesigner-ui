@@ -64,7 +64,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { client } from '~/utils'
+import { client, jsonParse } from '~/utils'
 import { ORACLE_PERMLINK, ORACLE_USERNAME } from '~/consts'
 
 
@@ -107,7 +107,7 @@ export default class Apps extends Vue {
 
   private async loadTopApps(): Promise<void> {
     const response = await client.database.call('get_content', [ORACLE_USERNAME, ORACLE_PERMLINK])
-    const metadata = JSON.parse(response.json_metadata)
+    const metadata = jsonParse(response.json_metadata)
     if (metadata.data) this.topApps = metadata.data
   }
 
