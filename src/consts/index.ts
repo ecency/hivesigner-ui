@@ -5,5 +5,6 @@ export * from './settings-key.const'
 export * from './operations.const'
 export * from './vests-regex.const'
 export * from './package.const'
+export * from './oracle.const'
 
 export * from './client'
