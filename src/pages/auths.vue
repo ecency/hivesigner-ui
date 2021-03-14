@@ -45,7 +45,9 @@ import { Component, Vue } from 'nuxt-property-decorator'
 import { AuthModule } from '~/store'
 import { privateKeyFrom } from '~/utils'
 
-@Component
+@Component({
+  middleware: ['auth'],
+})
 export default class Auths extends Vue {
   private get account(): any {
     return AuthModule.account

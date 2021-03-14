@@ -1,3 +1,7 @@
+import { redirectToLoginRequest } from './src/middleware/redirect-to-login-request'
+import { Route } from 'vue-router'
+import { ADDITIONAL_ROUTES } from './src/additional-routes'
+
 const translations = require('./src/assets/data/translations.json')
 const numberFormats = require('./src/assets/data/number-formats.json')
 
@@ -58,8 +62,7 @@ export default {
   axios: {},
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {
-  },
+  build: {},
 
   // Vue i18n
   i18n: {
@@ -69,6 +72,13 @@ export default {
       fallbackLocale: 'en',
       messages: translations,
       numberFormats
+    }
+  },
+
+  // router
+  router: {
+    extendRoutes(routes: any[]) {
+      ADDITIONAL_ROUTES.forEach(route => routes.push(route))
     }
   }
 }

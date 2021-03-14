@@ -113,7 +113,7 @@
 </template>
 
 <script lang="ts">
-import { Vue } from 'nuxt-property-decorator'
+import { Component, Vue } from 'nuxt-property-decorator'
 import triplesec from 'triplesec'
 import {
   ERROR_INVALID_CREDENTIALS,
@@ -131,6 +131,9 @@ import {
 } from '~/utils'
 import { AuthModule, PersistentFormsModule } from '~/store'
 
+@Component({
+  middleware: ['beforeLogin'],
+})
 export default class Login extends Vue {
   private keychain = {}
   private dirty = {
