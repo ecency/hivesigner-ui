@@ -25,9 +25,11 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { PACKAGE } from '~/consts'
+import { PACKAGE } from '../../consts'
 
-@Component
+@Component({
+  middleware: ['isWeb']
+})
 export default class Home extends Vue {
   private pkg = PACKAGE
 }

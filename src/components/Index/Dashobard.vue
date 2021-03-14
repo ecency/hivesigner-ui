@@ -22,9 +22,11 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { AuthModule } from '~/store'
+import { AuthModule } from '../../store'
 
-@Component
+@Component({
+  middleware: ['auth'],
+})
 export default class Dashobard extends Vue {
   private get username(): string {
     return AuthModule.username
