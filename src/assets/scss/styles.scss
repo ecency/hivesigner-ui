@@ -10,7 +10,7 @@ html {
   height: 100%;
 }
 
-body {
+body, #__nuxt {
   display: flex;
   color: $text-color;
   background-color: $bg-color;
@@ -23,7 +23,8 @@ body {
 }
 
 body,
-#app {
+#__nuxt,
+#__layout {
   min-height: 100%;
   width: 100%;
   overflow-x: hidden;
@@ -67,7 +68,7 @@ pre {
   font-size: 15px;
 }
 
-#app {
+#__layout {
   font-family: 'Circular-Pro-Book', Helvetica, Arial, sans-serif;
   color: $text-color;
   text-align: left !important;

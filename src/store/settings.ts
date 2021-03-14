@@ -1,7 +1,7 @@
 import { Module, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
 import { client } from '~/utils'
 import { SETTINGS_KEY } from '~/consts'
-import { AuthModule } from '~/store/index'
+import { AuthModule } from '~/store'
 
 @Module({
   stateFactory: true,
@@ -79,8 +79,9 @@ export default class Settings extends VuexModule {
     }
   }
 
-  @VuexAction
+  @VuexAction( { rawError: true })
   public async saveSettings(settings: any): Promise<void> {
+    console.log(settings)
     try {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     } catch (err) {

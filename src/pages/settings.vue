@@ -80,22 +80,10 @@ export default class Settings extends Vue {
     address: false,
   }
   private saved = false
-
-  private get language(): string {
-    return SettingsModule.language
-  }
-
-  private get timeout(): string {
-    return SettingsModule.timeout
-  }
-
-  private get theme(): string {
-    return SettingsModule.theme
-  }
-
-  private address(): string {
-    return SettingsModule.address
-  }
+  private timeout = SettingsModule.timeout
+  private language = SettingsModule.language
+  private theme = SettingsModule.theme
+  private address = SettingsModule.address
 
   private get successVisible(): boolean {
     if (!this.saved) {
