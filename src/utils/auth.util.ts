@@ -102,6 +102,6 @@ export async function getKeys(username: string, password: string): Promise<Recor
   return keys
 }
 
-export function getAuthority(str: any, fallback: string): string {
+export function getAuthority(str: any, fallback?: string): string {
   return ['owner', 'active', 'posting'].includes(str) ? str : fallback
 }
