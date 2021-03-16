@@ -3,7 +3,7 @@ import Auth from '~/store/auth'
 import { getModule } from 'nuxt-property-decorator'
 import Settings from '~/store/settings'
 import Ui from '~/store/ui'
-import PersistentForms from '~/store/persistent-forms'
+import PersistentForms from './persistentForms'
 
 let AuthModule: Auth
 let SettingsModule: Settings

@@ -49,8 +49,8 @@ export default class Auth extends VuexModule {
 
     this.setUser({ result: result[0], keys })
 
-    this.$idleDetector.start(this.context.rootState.settings.timeout * 60 * 1000, () => {
-      this.$idleDetector.stop()
+    this.store.app.$idleDetector.start(this.context.rootState.settings.timeout * 60 * 1000, () => {
+      this.store.app.$idleDetector.stop()
       this.logout()
     })
   }
@@ -58,7 +58,7 @@ export default class Auth extends VuexModule {
   @VuexAction
   public async logout(): Promise<void> {
     this.clearUser()
-    this.$nuxt.$router.push('/')
+    this.store.app.$router.push('/')
   }
 
   @VuexAction

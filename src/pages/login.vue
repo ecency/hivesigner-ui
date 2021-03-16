@@ -122,17 +122,19 @@ import {
 } from '~/consts'
 import {
   b64uEnc,
-  buildSearchParams, client,
+  buildSearchParams,
+  client,
   getAuthority,
   getKeychain,
-  isChromeExtension, isValidUrl,
+  isChromeExtension,
+  isValidUrl,
   isWeb, jsonParse,
   signComplete
 } from '~/utils'
 import { AuthModule, PersistentFormsModule } from '~/store'
 
 @Component({
-  middleware: ['beforeLogin'],
+  middleware: ['before-login'],
 })
 export default class Login extends Vue {
   private keychain = {}
@@ -143,7 +145,6 @@ export default class Login extends Vue {
   private decrypted = true
   private error = ''
   private isLoading = false
-  private redirect = this.$route.query.redirect
   private redirected = ''
   private showLoading = false
   private loading = false
@@ -160,6 +161,10 @@ export default class Login extends Vue {
   private scope = ['login', 'posting'].includes(this.$route.query.scope as string) ?
     this.$route.query.scope as string : 'login'
   private clientId = this.$route.params.clientId || this.$route.query.client_id as string
+
+  private get redirect(): string {
+    return this.$route.query.redirect as string
+  }
 
   private get tooltipLoginEncryptionKey(): string {
     return TOOLTIP_LOGIN_ENCRYPTION_KEY

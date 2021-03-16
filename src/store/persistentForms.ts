@@ -7,7 +7,7 @@ import { Module, VuexModule, VuexMutation, Vue } from 'nuxt-property-decorator'
 @Module({
   stateFactory: true,
   namespaced: true,
-  name: 'persistentForms'
+  name: 'persistentForms',
 })
 export default class PersistentForms extends VuexModule {
   public login: any = {

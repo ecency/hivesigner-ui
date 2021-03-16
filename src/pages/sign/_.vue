@@ -61,8 +61,8 @@ import {
   isWeb,
   legacyToHiveUri,
   processTransaction, resolveTransaction, signComplete
-} from '~/utils'
-import { AuthModule, SettingsModule } from '~/store'
+} from '../../utils'
+import { AuthModule, SettingsModule } from '../../store'
 import { SignedTransaction } from '@hiveio/dhive'
 
 @Component
@@ -143,7 +143,7 @@ export default class Sign extends Vue {
     let confirmation = null
     try {
       tx = await resolveTransaction(this.parsed, this.$store.state.auth.username)
-      signedTx = await this.sign({ tx, authority: this.authority });
+      signedTx = await this._({ tx, authority: this.authority });
       [sig] = signedTx.signatures
     } catch (err) {
       console.error('Failed to resolve and sign transaction', err)

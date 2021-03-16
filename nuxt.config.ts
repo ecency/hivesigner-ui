@@ -1,5 +1,3 @@
-import { redirectToLoginRequest } from './src/middleware/redirect-to-login-request'
-import { Route } from 'vue-router'
 import { ADDITIONAL_ROUTES } from './src/additional-routes'
 
 const translations = require('./src/assets/data/translations.json')
@@ -55,7 +53,7 @@ export default {
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     '@nuxtjs/style-resources',
-    'nuxt-i18n'
+    // 'nuxt-i18n'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -65,15 +63,15 @@ export default {
   build: {},
 
   // Vue i18n
-  i18n: {
-    locales: ['en', 'fr'],
-    defaultLocale: 'en',
-    vueI18n: {
-      fallbackLocale: 'en',
-      messages: translations,
-      numberFormats
-    }
-  },
+  // i18n: {
+  //   locales: ['en', 'fr'],
+  //   defaultLocale: 'en',
+  //   vueI18n: {
+  //     fallbackLocale: 'en',
+  //     messages: translations,
+  //     numberFormats
+  //   }
+  // },
 
   // router
   router: {

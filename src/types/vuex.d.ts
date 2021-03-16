@@ -1,10 +1,7 @@
-import { VuexModule } from 'nuxt-property-decorator'
-import { NuxtApp } from '@nuxt/types/app'
+import { Store } from 'vuex'
 
 declare module 'nuxt-property-decorator' {
-
   interface VuexModule {
-    $idleDetector: any
-    $nuxt: NuxtApp
+    store: Store<any>
   }
 }

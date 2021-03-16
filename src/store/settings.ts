@@ -6,7 +6,7 @@ import { AuthModule } from '~/store'
 @Module({
   stateFactory: true,
   namespaced: true,
-  name: 'settings'
+  name: 'settings',
 })
 export default class Settings extends VuexModule {
   public properties: any = {}
@@ -60,7 +60,7 @@ export default class Settings extends VuexModule {
   public async loadSettings(): Promise<void> {
     const settingsContent = localStorage.getItem(SETTINGS_KEY)
     if (!settingsContent) {
-      return this.getConfig()
+      return await this.getConfig()
     }
 
     try {
@@ -68,8 +68,8 @@ export default class Settings extends VuexModule {
       client.updateClient(settings.address)
       await this.getConfig()
 
-      this.$idleDetector.start(settings.timeout * 60 * 1000, () => {
-        this.$idleDetector.stop()
+      this.store.app.$idleDetector.start(settings.timeout * 60 * 1000, () => {
+        this.store.app.$idleDetector.stop()
         AuthModule.logout()
       })
 
@@ -81,7 +81,6 @@ export default class Settings extends VuexModule {
 
   @VuexAction( { rawError: true })
   public async saveSettings(settings: any): Promise<void> {
-    console.log(settings)
     try {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     } catch (err) {

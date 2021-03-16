@@ -173,14 +173,18 @@ import {
   addToKeychain,
   b64uEnc,
   buildSearchParams,
-  client, credentialsValid,
-  getAuthority, getKeys,
+  client,
+  credentialsValid,
+  getAuthority,
+  getKeys,
   hasAccounts,
-  isChromeExtension, isValidUrl,
-  isWeb, signComplete
+  isChromeExtension,
+  isValidUrl,
+  isWeb,
+  signComplete
 } from '~/utils'
 import { AuthModule, PersistentFormsModule } from '~/store'
-import { ERROR_INVALID_CREDENTIALS } from '../consts'
+import { ERROR_INVALID_CREDENTIALS, TOOLTIP_IMPORT_ENCRYPTION_KEY } from '~/consts'
 
 const passphraseSchema = new PasswordValidator()
 passphraseSchema.is().min(8).is().max(50).has().uppercase().has().lowercase()
@@ -198,7 +202,7 @@ export default class Import extends Vue {
   private isLoading = false
   private redirect = this.$route.query.redirect
   private redirected = ''
-  private TOOLTIP_IMPORT_ENCRYPTION_KEY
+  private TOOLTIP_IMPORT_ENCRYPTION_KEY = TOOLTIP_IMPORT_ENCRYPTION_KEY
   private showLoading = false
   private loading = false
   private failed = false
@@ -206,7 +210,6 @@ export default class Import extends Vue {
   private errorMessage = ''
   private isWeb = isWeb()
   private requestId = this.$route.query.requestId as string
-  private authority = getAuthority(this.$route.query.authority)
   private isChrome = isChromeExtension()
   private clientId = this.$route.params.clientId || this.$route.query.client_id as string
   private app = null
@@ -218,6 +221,10 @@ export default class Import extends Vue {
   private scope = ['login', 'posting'].includes(this.$route.query.scope as string) ?
     this.$route.query.scope : 'login'
   private uri = `hive =//login-request/${this.$route.params.clientId}${buildSearchParams(this.$route)}`
+
+  private get authority(): string {
+    return getAuthority(this.$route.query.authority)
+  }
 
   private get step(): number {
     return PersistentFormsModule.import.step
@@ -492,9 +499,8 @@ export default class Import extends Vue {
   }
 
   private async submitNext(): Promise<void> {
-    const { username, password } = this
     this.isLoading = true
-    const invalidCredentials = !(await credentialsValid(username, password))
+    const invalidCredentials = !(await credentialsValid(this.username, this.password))
     this.isLoading = false
     if (invalidCredentials) {
       this.error = ERROR_INVALID_CREDENTIALS
@@ -504,18 +510,17 @@ export default class Import extends Vue {
     if (this.storeAccount) {
       this.step += 1
     } else {
-      const keys = await getKeys(username, password)
+      const keys = await getKeys(this.username, this.password)
       const k = Buffer.from(JSON.stringify(keys))
-      addToKeychain(username as string, `${k.toString('hex')}decrypted`)
-      this.startLogin()
+      addToKeychain(this.username as string, `${k.toString('hex')}decrypted`)
+      await this.startLogin()
     }
 
   }
 
   private async submitForm(): Promise<void> {
-    const { username, password, key } = this
     this.isLoading = true
-    const keys = await getKeys(username, password)
+    const keys = await getKeys(this.username, this.password)
     // @ts-ignore
     triplesec.encrypt(
       {
@@ -528,7 +533,7 @@ export default class Import extends Vue {
           console.log('err', encryptError)
           return
         }
-        addToKeychain(username, buff.toString('hex'))
+        addToKeychain(this.username, buff.toString('hex'))
         this.startLogin()
       },
     )
