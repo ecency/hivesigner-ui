@@ -20,7 +20,8 @@ export default {
       { hid: 'description', name: 'description', content: '' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.png' }
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.png' },
+      { rel: 'preload', type: 'image/png', sizes: '32x32', href: '/favicon.png', as: 'image' },
     ]
   },
 
@@ -28,7 +29,8 @@ export default {
   css: [
     'primer/index.scss',
     '@vue/ui/dist/vue-ui.css',
-    '@/assets/scss/styles.scss'
+    '@/assets/scss/styles.scss',
+    '@/assets/css/iconfont.css',
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
