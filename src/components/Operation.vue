@@ -22,7 +22,7 @@ export default class Operation extends Vue {
   private operation!: any
 
   private get schema(): any {
-    return OPERATIONS[`${this.operation[0]}.schema`] || {}
+    return OPERATIONS[this.operation[0]].schema || {}
   }
 }
 </script>

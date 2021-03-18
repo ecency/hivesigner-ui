@@ -56,13 +56,17 @@ import * as hiveuri from 'hive-uri'
 import { Component, Vue } from 'nuxt-property-decorator'
 import {
   buildSearchParams,
-  getAuthority, getLowestAuthorityRequired,
-  getVestsToSP, isChromeExtension,
+  getAuthority,
+  getLowestAuthorityRequired,
+  getVestsToSP,
+  isChromeExtension,
   isWeb,
   legacyToHiveUri,
-  processTransaction, resolveTransaction, signComplete
-} from '../../utils'
-import { AuthModule, SettingsModule } from '../../store'
+  processTransaction,
+  resolveTransaction,
+  signComplete,
+} from '~/utils'
+import { AuthModule, SettingsModule } from '~/store'
 import { SignedTransaction } from '@hiveio/dhive'
 
 @Component
@@ -76,12 +80,12 @@ export default class Sign extends Vue {
   private hasRequiredKey = null
   private authority = getAuthority(this.$route.query.authority)
 
-  private get isWeb(): boolean {
-    return isWeb()
-  }
-
   private get uri(): string {
     return `hive://sign/${this.$route.params.pathMatch}${buildSearchParams(this.$route)}`
+  }
+
+  private get isWeb(): boolean {
+    return isWeb()
   }
 
   private get requestId(): string {
@@ -142,8 +146,8 @@ export default class Sign extends Vue {
     let signedTx = null
     let confirmation = null
     try {
-      tx = await resolveTransaction(this.parsed, this.$store.state.auth.username)
-      signedTx = await this._({ tx, authority: this.authority });
+      tx = await resolveTransaction(this.parsed, this.username)
+      signedTx = await this.sign({ tx, authority: this.authority });
       [sig] = signedTx.signatures
     } catch (err) {
       console.error('Failed to resolve and sign transaction', err)

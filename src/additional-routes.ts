@@ -43,5 +43,11 @@ export const ADDITIONAL_ROUTES = [
         username: to.params.username,
       },
     }),
+  },
+  {
+    path: '/sign/*',
+    redirect: () => ({
+      name: 'sign'
+    })
   }
 ]

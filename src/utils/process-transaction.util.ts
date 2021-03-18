@@ -3,6 +3,7 @@ import { OPERATIONS } from '~/consts'
 
 export function processTransaction(transaction: any, config: any): any {
   const processed = { ...transaction }
+
   processed.tx.operations = transaction.tx.operations.map(([name, payload]: any) => {
     const processedPayload = Object.keys(OPERATIONS[name].schema).reduce(
       (acc, key) => ({
