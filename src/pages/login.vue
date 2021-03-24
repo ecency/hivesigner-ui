@@ -3,30 +3,13 @@
     <router-link
       to="/"
       class="d-inline-block my-2 no-decoration"
-      v-if="
-        redirected == '/auths' ||
-          redirected == '/profile' ||
-          redirected == '/login' ||
-          redirected.includes('/authorize') ||
-          redirected.includes('accounts') ||
-          redirected.includes('/revoke') ||
-          redirected.includes('/sign')
-      "
+      v-if="isRedirected"
     >
       <span class="logo iconfont icon-hivesigner"/>
       <h4 class="m-0">hivesigner</h4>
     </router-link>
     <div
-      v-if="
-        !failed &&
-          redirected != '/auths' &&
-          redirected != '/profile' &&
-          redirected != '/login' &&
-          !redirected.includes('/authorize') &&
-          !redirected.includes('accounts') &&
-          !redirected.includes('/revoke') &&
-          !redirected.includes('/sign')
-      "
+      v-if="!failed && !isRedirected"
       class="p-4 after-header"
     >
       <div class="container-sm mx-auto">
@@ -128,7 +111,7 @@ import {
   getKeychain,
   isChromeExtension,
   isValidUrl,
-  isWeb, jsonParse,
+  jsonParse,
   signComplete
 } from '~/utils'
 import { AuthModule, PersistentFormsModule } from '~/store'
@@ -150,8 +133,6 @@ export default class Login extends Vue {
   private loading = false
   private failed = false
   private signature = null
-  private errorMessage = ''
-  private isWeb = isWeb()
   private app = null
   private appProfile: Record<string, any> = {}
   private callback = this.$route.query.redirect_uri as string
@@ -161,6 +142,16 @@ export default class Login extends Vue {
   private scope = ['login', 'posting'].includes(this.$route.query.scope as string) ?
     this.$route.query.scope as string : 'login'
   private clientId = this.$route.params.clientId || this.$route.query.client_id as string
+
+  private get isRedirected(): boolean {
+    return this.redirected === '/auths' ||
+      this.redirected === '/profile' ||
+      this.redirected === '/import' ||
+      this.redirected.includes('/authorize') ||
+      this.redirected.includes('accounts') ||
+      this.redirected.includes('/sign') ||
+      this.redirected.includes('/revoke')
+  }
 
   private get redirect(): string {
     return this.$route.query.redirect as string
@@ -172,10 +163,6 @@ export default class Login extends Vue {
 
   private get requestId(): string {
     return this.$route.query.requestId as string
-  }
-
-  private get isChrome(): boolean {
-    return isChromeExtension()
   }
 
   private get authority(): string {

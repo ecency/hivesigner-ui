@@ -67,7 +67,6 @@ import { Component, Vue } from 'nuxt-property-decorator'
 import { client, jsonParse } from '~/utils'
 import { ORACLE_PERMLINK, ORACLE_USERNAME } from '~/consts'
 
-
 @Component
 export default class Apps extends Vue {
   private isLoading = false
@@ -92,14 +91,13 @@ export default class Apps extends Vue {
   }
 
   private async loadApps(): Promise<void> {
-    const username = ORACLE_USERNAME
     const step = 100
-    let follows = await client.call('follow_api', 'get_following', [username, '', 'blog', step])
+    let follows = await client.call('follow_api', 'get_following', [ORACLE_USERNAME, '', 'blog', step])
     this.apps = follows.map(follow => follow.following)
     while (follows.length === step) {
       const startFrom = this.apps[this.apps.length - 1]
       // eslint-disable-next-line
-      follows = await client.call('follow_api', 'get_following', [username, startFrom, 'blog', step])
+      follows = await client.call('follow_api', 'get_following', [ORACLE_USERNAME, startFrom, 'blog', step])
       follows = follows.map(follow => follow.following)
       this.apps.push(...follows.slice(1))
     }

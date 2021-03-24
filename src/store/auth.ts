@@ -8,7 +8,7 @@ import { cryptoUtils, SignedTransaction } from '@hiveio/dhive'
   name: 'auth'
 })
 export default class Auth extends VuexModule {
-  public keys: any = {}
+  public keys: Record<string, string> = {}
   public account: any = {}
 
   public get username(): string {

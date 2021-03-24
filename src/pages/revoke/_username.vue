@@ -84,7 +84,6 @@ export default class RevokeUsername extends Vue {
   private failed = false
   private error = false
   private transactionId = ''
-  private isWeb = isWeb
 
   private get username(): string {
     return this.$route.params.username
@@ -96,10 +95,6 @@ export default class RevokeUsername extends Vue {
 
   private get callback(): any {
     return this.$route.query.redirect_uri
-  }
-
-  private get uri(): string {
-    return `hive://revoke/${this.$route.params.username}${buildSearchParams(this.$route)}`
   }
 
   private get account(): any {

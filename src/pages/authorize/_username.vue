@@ -87,11 +87,9 @@ export default class AuthorizeUsername extends Vue {
   private failed = false
   private error = false
   private transactionId = ''
-  private isWeb = isWeb()
   private username = this.$route.params.username
   private authority = getAuthority(this.$route.query.authority, 'posting')
   private callback = this.$route.query.redirect_uri
-  private uri = `hive://authorize/${this.$route.params.username}${buildSearchParams(this.$route)}`
 
   private get account(): string {
     return AuthModule.account

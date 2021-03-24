@@ -3,32 +3,12 @@
     <router-link
       to="/"
       class="d-inline-block my-2 no-decoration"
-      v-if="
-        redirected == '/auths' ||
-          redirected == '/profile' ||
-          redirected == '/import' ||
-          redirected.includes('/authorize') ||
-          redirected.includes('accounts') ||
-          redirected.includes('/sign') ||
-          redirected.includes('/revoke')
-      "
+      v-if="isRedirected"
     >
       <span class="logo iconfont icon-hivesigner"/>
       <h4 class="m-0">hivesigner</h4>
     </router-link>
-    <div
-      v-if="
-        !failed &&
-          redirected != '/auths' &&
-          redirected != '/profile' &&
-          redirected != '/import' &&
-          !redirected.includes('/authorize') &&
-          !redirected.includes('accounts') &&
-          !redirected.includes('/sign') &&
-          !redirected.includes('/revoke')
-      "
-      class="p-4 after-header"
-    >
+    <div v-if="!failed && !isRedirected" class="p-4 after-header">
       <div class="container-sm mx-auto">
         <div v-if="!failed && !signature">
           <div class="mb-4 text-center" v-if="app && appProfile">
@@ -39,9 +19,7 @@
             </div>
           </div>
           <p>
-            <span v-if="app"
-            >The app <b>{{ app }}</b></span
-            >
+            <span v-if="app">The app <b>{{ app }}</b></span>
             <span v-else>This site </span>
             is requesting access to view your current account username.
           </p>
@@ -103,9 +81,7 @@
             :disabled="isLoading"
             class="btn btn-large input-block text-center mb-2"
             @click="signUp()"
-          >
-            Signup
-          </button>
+          >Signup</button>
         </div>
         <div v-if="step === 2">
           <label for="key">
@@ -154,9 +130,7 @@
             :disabled="submitDisabled || isLoading"
             type="submit"
             class="btn btn-large btn-blue input-block mb-2"
-          >
-            Import account
-          </button>
+          >Import account</button>
         </div>
       </form>
     </div>
@@ -180,7 +154,6 @@ import {
   hasAccounts,
   isChromeExtension,
   isValidUrl,
-  isWeb,
   signComplete
 } from '~/utils'
 import { AuthModule, PersistentFormsModule } from '~/store'
@@ -207,10 +180,7 @@ export default class Import extends Vue {
   private loading = false
   private failed = false
   private signature = null
-  private errorMessage = ''
-  private isWeb = isWeb()
   private requestId = this.$route.query.requestId as string
-  private isChrome = isChromeExtension()
   private clientId = this.$route.params.clientId || this.$route.query.client_id as string
   private app = null
   private appProfile: Record<string, any> = {}
@@ -272,6 +242,16 @@ export default class Import extends Vue {
 
   private get hasAccounts(): boolean {
     return hasAccounts()
+  }
+
+  private get isRedirected(): boolean {
+    return this.redirected === '/auths' ||
+      this.redirected === '/profile' ||
+      this.redirected === '/import' ||
+      this.redirected.includes('/authorize') ||
+      this.redirected.includes('accounts') ||
+      this.redirected.includes('/sign') ||
+      this.redirected.includes('/revoke')
   }
 
   private get errors(): Record<string, any> {
