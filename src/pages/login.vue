@@ -115,6 +115,8 @@ import {
   signComplete
 } from '~/utils'
 import { AuthModule, PersistentFormsModule } from '~/store'
+import { Authority } from '~/enums'
+import { Account } from '@hiveio/dhive'
 
 @Component({
   middleware: ['before-login'],
@@ -165,8 +167,8 @@ export default class Login extends Vue {
     return this.$route.query.requestId as string
   }
 
-  private get authority(): string {
-    return getAuthority(this.$route.query.authority)
+  private get authority(): Authority {
+    return getAuthority(this.$route.query.authority as Authority)
   }
 
   private get uri(): string {
@@ -209,7 +211,7 @@ export default class Login extends Vue {
     return AuthModule.username
   }
 
-  private get account(): any {
+  private get account(): Account | null {
     return AuthModule.account
   }
 

@@ -3,54 +3,16 @@
     <Header title="Authorize (active)"/>
     <div class="p-4 after-header">
       <div class="container-sm mx-auto">
-        <form
+        <authorize-form
           v-if="!hasAuthority && !failed && !transactionId"
-          @submit.prevent="handleSubmit"
-          class="mb-4"
-        >
-          <div class="mb-4">
-            <div class="mb-4 text-center" v-if="username">
-              <Avatar :username="username" :size="80"/>
-              <h4 class="mb-0 mt-2">{{ username }}</h4>
-            </div>
-            <p>
-              The <b>{{ username }}</b> requires your <b>{{ authority }}</b> authority in order for
-              you to be able to interact with it. By clicking "Continue" you are allowing
-              {{ authority }} access. This can be withdrawn by you at any time by clicking
-              <a :href="'https://hivesigner.com/revoke/' + username" target="_blank">HERE</a>.
-            </p>
-            <div class="flash flash-error mt-4" v-if="authority === 'active'">
-              Giving active authority enables the authorized account to do fund transfers from your
-              account, this should be used with utmost care.
-            </div>
-            <div class="flash flash-warn mt-4" v-if="account.name && hasRequiredKey === false">
-              This transaction requires your <b>active</b> key.
-            </div>
-          </div>
-          <div class="mt-2">
-            <router-link
-              :to="{
-                name: 'login',
-                query: { redirect: this.$route.fullPath, authority: 'active' },
-              }"
-              class="btn btn-large btn-blue mr-2 mb-2"
-              v-if="!account.name || hasRequiredKey === false"
-            >
-              Continue
-            </router-link>
-            <button
-              type="submit"
-              class="btn btn-large btn-success mb-2 mr-2"
-              :disabled="loading"
-              v-else
-            >
-              Authorize
-            </button>
-            <button class="btn btn-large mb-2" @click.prevent="handleReject">
-              Cancel
-            </button>
-          </div>
-        </form>
+          :username="username"
+          :account="account"
+          :authority="authority"
+          :loading="loading"
+          :submit="handleSubmit"
+          @loading="onLoadingChange"
+          @reject="handleReject"
+        />
         <already-authorized
           v-if="hasAuthority && !failed && !transactionId"
           :username="username"
@@ -66,9 +28,10 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { getAuthority, isWeb } from '~/utils'
+import { getAuthority } from '~/utils'
 import { AuthModule } from '~/store'
-import { Account } from '~/models'
+import { Authority } from '~/enums'
+import { Account } from '@hiveio/dhive'
 
 @Component
 export default class AuthorizeUsername extends Vue {
@@ -77,14 +40,10 @@ export default class AuthorizeUsername extends Vue {
   private error = false
   private transactionId = ''
   private username = this.$route.params.username
-  private authority = getAuthority(this.$route.query.authority, 'posting')
+  private authority = getAuthority(this.$route.query.authority as Authority, Authority.Posting)
 
-  private get account(): Account | undefined {
+  private get account(): Account | null {
     return AuthModule.account
-  }
-
-  private get accountName(): string | undefined {
-    return this.account?.name
   }
 
   private get callback(): string {
@@ -92,15 +51,11 @@ export default class AuthorizeUsername extends Vue {
   }
 
   private get hasAuthority(): boolean {
-    if (this.accountName) {
+    if (this.account?.name) {
       const auths = this.account[this.authority].account_auths.map(auth => auth[0])
       return auths.indexOf(this.username) !== -1
     }
     return false
-  }
-
-  private get hasRequiredKey(): boolean {
-    return !!(AuthModule.username && AuthModule.keys.active)
   }
 
   private updateAccount(data: any): Promise<any> {
@@ -111,38 +66,26 @@ export default class AuthorizeUsername extends Vue {
     return AuthModule.loadAccount()
   }
 
-  private async handleSubmit(): Promise<void> {
-    const { username, authority, callback, account } = this
-    this.loading = true
-    const data = {
-      account: account.name,
-      memo_key: account.memo_key,
-      json_metadata: account.json_metadata,
-    }
-    data[authority] = JSON.parse(JSON.stringify(account[authority]))
-    data[authority].account_auths.push([username, account[authority].weight_threshold])
-    data[authority].account_auths.sort((a, b) => (a[0] > b[0] ? 1 : -1))
-
+  private async handleSubmit(data: Record<string, string>): Promise<void> {
     try {
       const confirmation = await this.updateAccount(data)
-      this.loadAccount().then(() => {
-        if (isWeb && callback) {
-          if (callback[0] === '/') {
-            // this.$router.push(callback);
-            this.$router.push({
-              name: 'login',
-              query: { redirect: callback },
-            })
-          } else {
-            // @ts-ignore
-            window.location = callback
-          }
+      await this.loadAccount()
+
+      if (this.callback) {
+        if (this.callback[0] === '/') {
+          this.$router.push({
+            name: 'login',
+            query: { redirect: this.callback },
+          })
         } else {
-          this.transactionId = confirmation.id
-          this.failed = false
-          this.loading = false
+          // @ts-ignore
+          window.location = callback
         }
-      })
+      } else {
+        this.transactionId = confirmation.id
+        this.failed = false
+        this.loading = false
+      }
     } catch (err) {
       this.error = err
       console.error('Failed to broadcast transaction', err)
@@ -156,6 +99,10 @@ export default class AuthorizeUsername extends Vue {
     this.loading = false
     this.transactionId = ''
     this.$router.push('/')
+  }
+
+  private onLoadingChange(value: boolean): void {
+    this.loading = value
   }
 }
 </script>

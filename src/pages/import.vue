@@ -158,6 +158,8 @@ import {
 } from '~/utils'
 import { AuthModule, PersistentFormsModule } from '~/store'
 import { ERROR_INVALID_CREDENTIALS, TOOLTIP_IMPORT_ENCRYPTION_KEY } from '~/consts'
+import { Authority } from '~/enums'
+import { Account } from '@hiveio/dhive'
 
 const passphraseSchema = new PasswordValidator()
 passphraseSchema.is().min(8).is().max(50).has().uppercase().has().lowercase()
@@ -192,8 +194,8 @@ export default class Import extends Vue {
     this.$route.query.scope : 'login'
   private uri = `hive =//login-request/${this.$route.params.clientId}${buildSearchParams(this.$route)}`
 
-  private get authority(): string {
-    return getAuthority(this.$route.query.authority)
+  private get authority(): Authority {
+    return getAuthority(this.$route.query.authority as Authority)
   }
 
   private get step(): number {
@@ -277,7 +279,7 @@ export default class Import extends Vue {
     return current
   }
 
-  private get account(): any {
+  private get account(): Account | null {
     return AuthModule.account
   }
 
@@ -491,6 +493,7 @@ export default class Import extends Vue {
       this.step += 1
     } else {
       const keys = await getKeys(this.username, this.password)
+      console.log(keys)
       const k = Buffer.from(JSON.stringify(keys))
       addToKeychain(this.username as string, `${k.toString('hex')}decrypted`)
       await this.startLogin()

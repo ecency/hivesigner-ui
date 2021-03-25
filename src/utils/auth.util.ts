@@ -1,6 +1,7 @@
 import { PrivateKey } from '@hiveio/dhive'
 import * as bs58 from 'bs58'
 import { client } from './client.util'
+import { Authority } from '~/enums'
 
 // TODO: Move it from utils
 
@@ -102,6 +103,6 @@ export async function getKeys(username: string, password: string): Promise<Recor
   return keys
 }
 
-export function getAuthority(str: any, fallback?: string): string {
-  return ['owner', 'active', 'posting'].includes(str) ? str : fallback
+export function getAuthority(str: Authority, fallback?: Authority): Authority | undefined {
+  return Object.values(Authority).includes(str) ? str : fallback
 }

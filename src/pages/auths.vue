@@ -29,7 +29,7 @@
         </td>
         <td>{{ auth.auth[1] }}</td>
       </tr>
-      <tr class="border-bottom" v-if="publicKeys['memo'] == account.memo_key">
+      <tr class="border-bottom" v-if="publicKeys['memo'] === account.memo_key">
         <td>memo</td>
         <td>{{ account.memo_key }}</td>
         <td></td>
@@ -44,18 +44,22 @@ import _ from 'lodash'
 import { Component, Vue } from 'nuxt-property-decorator'
 import { AuthModule } from '~/store'
 import { privateKeyFrom } from '~/utils'
+import { Authority } from '~/enums'
+import { Account } from '@hiveio/dhive'
 
 @Component({
   middleware: ['auth'],
 })
 export default class Auths extends Vue {
-  private get account(): any {
+  private get account(): Account | null {
     return AuthModule.account
   }
 
   private get auths(): string[] {
-    const auths = [];
-    ['owner', 'active', 'posting'].forEach(authority => {
+    const auths = []
+    console.log(AuthModule.account)
+
+    Object.values(Authority).forEach(authority => {
       this.account[authority].key_auths.forEach(auth => {
         auths.push({ type: 'key', authority, auth })
       })
