@@ -10,7 +10,7 @@ import { Account } from '~/models'
 })
 export default class Auth extends VuexModule {
   public keys: Record<string, string> = {}
-  public account: Account | null = null
+  public account: Account | undefined
 
   public get username(): string | undefined {
     return this.account?.name
@@ -29,7 +29,7 @@ export default class Auth extends VuexModule {
   @VuexMutation
   public clearUser(): void {
     this.keys = {}
-    this.account = null
+    this.account = undefined
   }
 
   @VuexMutation

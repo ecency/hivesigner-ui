@@ -51,24 +51,12 @@
             </button>
           </div>
         </form>
-        <div v-if="hasAuthority && !failed && !transactionId">
-          <p class="mb-4">
-            You already authorize the account <b>{{ username }}</b> to do
-            <b>{{ authority }}</b> operations on your behalf.
-          </p>
-          <template v-if="callback">
-            <router-link
-              v-if="callback[0] === '/'"
-              :to="callback"
-              class="btn btn-large btn-blue mb-2 mt-2"
-            >
-              Continue
-            </router-link>
-            <a v-else :href="callback" class="btn btn-large btn-blue mb-2 mt-2">
-              Continue to {{ callback | parseUrl }}
-            </a>
-          </template>
-        </div>
+        <already-authorized
+          v-if="hasAuthority && !failed && !transactionId"
+          :username="username"
+          :authority="authority"
+          :callback="callback"
+        />
         <Error v-if="!loading && failed" :error="error"/>
         <Confirmation v-if="!loading && !!transactionId" :id="transactionId"/>
       </div>
@@ -80,6 +68,7 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import { getAuthority, isWeb } from '~/utils'
 import { AuthModule } from '~/store'
+import { Account } from '~/models'
 
 @Component
 export default class AuthorizeUsername extends Vue {
@@ -90,8 +79,12 @@ export default class AuthorizeUsername extends Vue {
   private username = this.$route.params.username
   private authority = getAuthority(this.$route.query.authority, 'posting')
 
-  private get account(): string {
+  private get account(): Account | undefined {
     return AuthModule.account
+  }
+
+  private get accountName(): string | undefined {
+    return this.account?.name
   }
 
   private get callback(): string {
@@ -99,7 +92,7 @@ export default class AuthorizeUsername extends Vue {
   }
 
   private get hasAuthority(): boolean {
-    if (this.account.name) {
+    if (this.accountName) {
       const auths = this.account[this.authority].account_auths.map(auth => auth[0])
       return auths.indexOf(this.username) !== -1
     }

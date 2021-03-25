@@ -326,7 +326,6 @@ export default class Login extends Vue {
       } else {
         if (
           this.scope === 'posting' &&
-          !isChromeExtension() &&
           this.clientId &&
           this.username_pre &&
           !this.hasAuthority
