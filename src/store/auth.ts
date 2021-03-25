@@ -1,6 +1,7 @@
 import { Module, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
-import { client, credentialsValid, privateKeyFrom } from '~/utils'
 import { cryptoUtils, SignedTransaction } from '@hiveio/dhive'
+import { client, credentialsValid, privateKeyFrom } from '~/utils'
+import { Account } from '~/models'
 
 @Module({
   stateFactory: true,
@@ -9,10 +10,10 @@ import { cryptoUtils, SignedTransaction } from '@hiveio/dhive'
 })
 export default class Auth extends VuexModule {
   public keys: Record<string, string> = {}
-  public account: any = {}
+  public account: Account | null = null
 
-  public get username(): string {
-    return this.account.name
+  public get username(): string | undefined {
+    return this.account?.name
   }
 
   public get password(): string {
@@ -20,7 +21,7 @@ export default class Auth extends VuexModule {
   }
 
   @VuexMutation
-  public setUser({ result, keys }: any): void {
+  public setUser({ result, keys }: { result: Account, keys: Record<string, string> }): void {
     this.keys = keys
     this.account = result
   }
@@ -28,11 +29,11 @@ export default class Auth extends VuexModule {
   @VuexMutation
   public clearUser(): void {
     this.keys = {}
-    this.account = {}
+    this.account = null
   }
 
   @VuexMutation
-  public setAccount(account: any): void {
+  public setAccount(account: Account): void {
     this.account = account
   }
 
