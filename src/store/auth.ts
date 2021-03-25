@@ -12,7 +12,7 @@ export default class Auth extends VuexModule {
   public account: any = {}
 
   public get username(): string {
-    return this.account.username
+    return this.account.name
   }
 
   public get password(): string {

@@ -85,7 +85,7 @@ export default class Profile extends Vue {
           delete this.profile.website
         }
       } catch (e) {
-        console.log('Failed to parse app account', e)
+        console.error('Failed to parse app account', e)
       }
     }
 

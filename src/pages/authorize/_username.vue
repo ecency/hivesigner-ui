@@ -78,8 +78,8 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { getAuthority, isWeb, buildSearchParams } from '~/utils'
-import { AuthModule } from '../../store'
+import { getAuthority, isWeb } from '~/utils'
+import { AuthModule } from '~/store'
 
 @Component
 export default class AuthorizeUsername extends Vue {
@@ -89,10 +89,13 @@ export default class AuthorizeUsername extends Vue {
   private transactionId = ''
   private username = this.$route.params.username
   private authority = getAuthority(this.$route.query.authority, 'posting')
-  private callback = this.$route.query.redirect_uri
 
   private get account(): string {
     return AuthModule.account
+  }
+
+  private get callback(): string {
+    return this.$route.query.redirect_uri as string
   }
 
   private get hasAuthority(): boolean {
