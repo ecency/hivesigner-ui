@@ -42,6 +42,12 @@
         @signature="value => this.signature = value"
         @submit="loginMe"
       />
+      <router-link
+        :to="{ name: 'import', query: $route.query }"
+        class="btn btn-large input-block text-center mb-2"
+      >
+        Import account
+      </router-link>
     </div>
     <VueLoadingIndicator v-if="loading" class="overlay fixed big"/>
     <Footer/>

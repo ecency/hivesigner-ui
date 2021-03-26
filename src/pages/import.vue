@@ -72,7 +72,7 @@
           </button>
           <router-link
             v-if="hasAccounts"
-            :to="{ name: 'login', query: { redirect, authority } }"
+            :to="{ name: 'login', query: $route.query }"
             class="btn btn-large input-block text-center mb-2"
           >
             Select account
@@ -81,7 +81,8 @@
             :disabled="isLoading"
             class="btn btn-large input-block text-center mb-2"
             @click="signUp()"
-          >Signup</button>
+          >Signup
+          </button>
         </div>
         <div v-if="step === 2">
           <label for="key">
@@ -130,7 +131,8 @@
             :disabled="submitDisabled || isLoading"
             type="submit"
             class="btn btn-large btn-blue input-block mb-2"
-          >Import account</button>
+          >Import account
+          </button>
         </div>
       </form>
     </div>
@@ -145,7 +147,6 @@ import PasswordValidator from 'password-validator'
 import { Component, Vue } from 'nuxt-property-decorator'
 import {
   addToKeychain,
-  b64uEnc,
   buildSearchParams,
   client,
   credentialsValid,
@@ -187,12 +188,21 @@ export default class Import extends Vue {
   private app = null
   private appProfile: Record<string, any> = {}
   private callback = this.$route.query.redirect_uri as string
-  private responseType = ['code', 'token'].includes(this.$route.query.response_type as string) ?
-    this.$route.query.response_type as string : 'token'
-  private state = this.$route.query.state as string
-  private scope = ['login', 'posting'].includes(this.$route.query.scope as string) ?
-    this.$route.query.scope : 'login'
   private uri = `hive =//login-request/${this.$route.params.clientId}${buildSearchParams(this.$route)}`
+
+  private get state(): string {
+    return this.$route.query.state as string
+  }
+
+  private get responseType(): string {
+    const responseType = this.$route.query.response_type as string
+    return ['code', 'token'].includes(responseType) ? responseType : 'token'
+  }
+
+  private get scope(): string {
+    const scope = this.$route.query.scope as string
+    return ['login', 'posting'].includes(scope) ? scope : 'login'
+  }
 
   private get authority(): Authority {
     return getAuthority(this.$route.query.authority as Authority)
@@ -238,7 +248,7 @@ export default class Import extends Vue {
     return PersistentFormsModule.saveImportKeyConfirmation(value)
   }
 
-  private get username_pre(): string {
+  private get currentAccountUsername(): string {
     return AuthModule.username
   }
 
@@ -308,23 +318,11 @@ export default class Import extends Vue {
     ) {
       this.redirected = '/import'
     }
-    const url = this.getJsonFromUrl().redirect
-    if (url) {
-      const params = `?${url.split('?')[0]}`
-      const query = this.getJsonFromUrl(`?${url.split('?').pop()}`)
-      this.callback = query.redirect_uri
-      this.responseType = ['code', 'token'].includes(query.response_type)
-        ? query.response_type
-        : 'token'
-      this.state = query.state
-      this.scope = ['login', 'posting'].includes(query.scope) ? query.scope : 'login'
-      this.clientId = (!params.includes('/sign') && params.split('/').pop()) || query.client_id
-    }
     if (
       this.scope === 'posting' &&
       !isChromeExtension() &&
       this.clientId &&
-      this.username_pre &&
+      this.currentAccountUsername &&
       !this.hasAuthority
     ) {
       this.$router.push({
@@ -339,22 +337,6 @@ export default class Import extends Vue {
 
   private login(data: any): Promise<any> {
     return AuthModule.login(data)
-  }
-
-  private signMessage(data: any): Promise<any> {
-    return AuthModule.signMessage(data)
-  }
-
-  private getJsonFromUrl(url?: string): Record<string, any> {
-    let theUrl = url
-    if (!theUrl) theUrl = window.location.search
-    const query = theUrl.substr(1)
-    const result = {}
-    query.split('&').forEach(part => {
-      const item = part.split('=')
-      result[item[0]] = decodeURIComponent(item[1])
-    })
-    return result
   }
 
   private signUp(): void {
@@ -415,8 +397,9 @@ export default class Import extends Vue {
     this.showLoading = true
 
     try {
-      const response = await this.login({ username, keys })
+      await this.login({ username: this.username, keys })
       const redirect = this.$route.query.redirect as string
+
       if (this.redirected !== '' && !this.redirected.includes('/login-request')) {
         this.$router.push(redirect || '/')
         this.error = ''
@@ -425,43 +408,34 @@ export default class Import extends Vue {
       } else {
         if (
           this.scope === 'posting' &&
-          !isChromeExtension() &&
           this.clientId &&
-          this.username_pre &&
+          this.currentAccountUsername &&
           !this.hasAuthority
         ) {
-          const uri = `hive://login-request/${this.clientId}?${redirect.replace(/\/login-request\/[a-z]+\?/, '')}`
           this.$router.push({
-            name: 'authorize',
+            name: 'authorize-username',
             params: { username: this.clientId },
-            query: { redirect_uri: uri.replace('hive:/', '') },
+            query: {
+              ...this.$route.query,
+              redirect_uri: this.callback,
+              app: this.app,
+              signature: this.signature,
+            },
           })
           return
         }
+
         try {
-          const loginObj: Record<string, any> = {}
-          loginObj.type = isChromeExtension() ? 'login' : this.scope
-          if (this.responseType === 'code') loginObj.type = 'code'
-          if (this.app) loginObj.app = this.app
-          const signedMessageObj = await this.signMessage({
-            message: loginObj,
+          await AuthModule.signAndRedirectToCallback({
+            username: this.username,
             authority: this.authority,
-          });
-          [this.signature] = signedMessageObj.signatures
-          const token = b64uEnc(JSON.stringify(signedMessageObj))
-          if (this.requestId) {
-            signComplete(this.requestId, null, token)
-          }
-          if (!isChromeExtension()) {
-            let { callback } = this
-            callback +=
-              this.responseType === 'code' ? `?code=${token}` : `?access_token=${token}`
-            callback += `&username=${this.username}`
-            if (this.responseType !== 'code') callback += '&expires_in=604800'
-            if (this.state) callback += `&state=${encodeURIComponent(this.state)}`
-            // @ts-ignore
-            window.location = callback
-          }
+            signature: this.signature,
+            state: this.state,
+            responseType: this.responseType,
+            app: this.app,
+            scope: this.scope,
+            callback: this.callback,
+          })
         } catch (err) {
           console.error('Failed to login', err)
           this.signature = ''
@@ -493,7 +467,6 @@ export default class Import extends Vue {
       this.step += 1
     } else {
       const keys = await getKeys(this.username, this.password)
-      console.log(keys)
       const k = Buffer.from(JSON.stringify(keys))
       addToKeychain(this.username as string, `${k.toString('hex')}decrypted`)
       await this.startLogin()

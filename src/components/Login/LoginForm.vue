@@ -49,12 +49,6 @@
     >
       Login
     </button>
-    <router-link
-      :to="{ name: 'import', query: { redirect, authority } }"
-      class="btn btn-large input-block text-center mb-2"
-    >
-      Import account
-    </router-link>
   </form>
 </template>
 
