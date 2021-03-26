@@ -86,13 +86,6 @@ export default class Login extends Vue {
   private signature = null
   private app = null
   private appProfile: Record<string, any> = {}
-  private callback = this.$route.query.redirect_uri as string
-  private responseType = ['code', 'token'].includes(this.$route.query.response_type as string) ?
-    this.$route.query.response_type : 'token'
-  private state = this.$route.query.state as string
-  private scope = ['login', 'posting'].includes(this.$route.query.scope as string) ?
-    this.$route.query.scope as string : 'login'
-  private clientId = this.$route.params.clientId || this.$route.query.client_id as string
 
   private get isRedirected(): boolean {
     return this.redirected === '/auths' ||
@@ -102,6 +95,28 @@ export default class Login extends Vue {
       this.redirected.includes('accounts') ||
       this.redirected.includes('/sign') ||
       this.redirected.includes('/revoke')
+  }
+
+  private get callback(): string {
+    return this.$route.query.redirect_uri as string
+  }
+
+  private get clientId(): string {
+    return this.$route.params.clientId || this.$route.query.client_id as string
+  }
+
+  private get scope(): string {
+    const scope = this.$route.query.scope as string
+    return ['login', 'posting'].includes(scope) ? scope : 'login'
+  }
+
+  private get state(): string {
+    return this.$route.query.state as string
+  }
+
+  private get responseType(): string {
+    const responseType = this.$route.query.response_type as string
+    return ['code', 'token'].includes(responseType) ? responseType : 'token'
   }
 
   private get requestId(): string {
@@ -146,31 +161,20 @@ export default class Login extends Vue {
     if (this.$route.fullPath === '/login' || this.$route.fullPath === '/login?authority=posting') {
       this.redirected = '/login'
     }
-    const url = this.getJsonFromUrl().redirect
-    if (url) {
-      const params = `?${url.split('?')[0]}`
-      const query = this.getJsonFromUrl(`?${url.split('?').pop()}`)
-      this.callback = query.redirect_uri
-      this.responseType = ['code', 'token'].includes(query.response_type)
-        ? query.response_type
-        : 'token'
-      this.state = query.state
-      this.scope = ['login', 'posting'].includes(query.scope) ? query.scope : 'login'
-      this.clientId = (!params.includes('/sign') && params.split('/').pop()) || query.client_id
-      if (
-        this.scope === 'posting' &&
-        this.clientId &&
-        this.username_pre &&
-        !this.hasAuthority
-      ) {
-        this.$router.push({
-          name: 'authorize',
-          params: { username: this.clientId },
-          query: { redirect_uri: this.uri.replace('hive:/', '') },
-        })
-      } else if (this.clientId) {
-        this.loadAppProfile()
-      }
+
+    if (
+      this.scope === 'posting' &&
+      this.clientId &&
+      this.username_pre &&
+      !this.hasAuthority
+    ) {
+      this.$router.push({
+        name: 'authorize',
+        params: { username: this.clientId },
+        query: { redirect_uri: this.uri.replace('hive:/', '') },
+      })
+    } else if (this.clientId) {
+      this.loadAppProfile()
     }
   }
 
@@ -180,18 +184,6 @@ export default class Login extends Vue {
 
   private signMessage(data: any): Promise<any> {
     return AuthModule.signMessage(data)
-  }
-
-  private getJsonFromUrl(url?: string): Record<string, any> {
-    let theUrl = url
-    if (!theUrl) theUrl = window.location.search
-    const query = theUrl.substr(1)
-    const result = {}
-    query.split('&').forEach(part => {
-      const item = part.split('=')
-      result[item[0]] = decodeURIComponent(item[1])
-    })
-    return result
   }
 
   private loadKeychain(): void {
