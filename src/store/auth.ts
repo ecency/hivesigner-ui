@@ -1,6 +1,6 @@
 import { Module, VuexAction, VuexModule, VuexMutation, Vue } from 'nuxt-property-decorator'
 import { Account, cryptoUtils, SignedTransaction } from '@hiveio/dhive'
-import { client, credentialsValid, privateKeyFrom } from '~/utils'
+import { b64uEnc, client, credentialsValid, privateKeyFrom, signComplete } from '~/utils'
 
 @Module({
   stateFactory: true,
@@ -100,5 +100,35 @@ export default class Auth extends VuexModule {
   public async updateAccount(data: any): Promise<any> {
     const privateKey = privateKeyFrom(this.keys.owner || this.keys.active)
     return client.broadcast.updateAccount(data, privateKey)
+  }
+
+  @VuexAction
+  public async signAndRedirectToCallback(payload: any): Promise<void> {
+    const loginObj: Record<string, any> = {
+      type: payload.responseType === 'code' ? 'code' : payload.scope,
+      ...(payload.app ? { app: payload.app } : {})
+    }
+    const signedMessageObj = await this.signMessage({
+      message: loginObj,
+      authority: payload.authority,
+    });
+    [payload.signature] = signedMessageObj.signatures
+    const token = b64uEnc(JSON.stringify(signedMessageObj))
+
+    if (payload.requestId) {
+      signComplete(payload.requestId, null, token)
+    }
+
+    const additionalCallbackQuery = new URLSearchParams({
+      ...(payload.responseType === 'code' ? { code: token } : {}),
+      ...(payload.responseType !== 'code' ? {
+        access_token: token,
+        expires_in: '604800',
+      } : {}),
+      username: payload.username,
+      state: encodeURIComponent(payload.state)
+    })
+    // @ts-ignore
+    window.location = payload.callback + `?${additionalCallbackQuery.toString()}`
   }
 }

@@ -9,7 +9,7 @@
           :account="account"
           :authority="authority"
           :loading="loading"
-          :submit="handleSubmit"
+          @submit="handleSubmit"
           @loading="onLoadingChange"
           @reject="handleReject"
         />
@@ -50,6 +50,16 @@ export default class AuthorizeUsername extends Vue {
     return this.$route.query.redirect_uri as string
   }
 
+  private get scope(): string {
+    const scope = this.$route.query.scope as string
+    return ['login', 'posting'].includes(scope) ? scope : 'login'
+  }
+
+  private get responseType(): string {
+    const responseType = this.$route.query.response_type as string
+    return ['code', 'token'].includes(responseType) ? responseType : 'token'
+  }
+
   private get hasAuthority(): boolean {
     if (this.account?.name) {
       const auths = this.account[this.authority].account_auths.map(auth => auth[0])
@@ -78,8 +88,16 @@ export default class AuthorizeUsername extends Vue {
             query: { redirect: this.callback },
           })
         } else {
-          // @ts-ignore
-          window.location = callback
+          await AuthModule.signAndRedirectToCallback({
+            username: this.username,
+            authority: this.$route.query.authority as string,
+            signature: this.$route.query.signature as string,
+            state: this.$route.query.state as string,
+            responseType: this.responseType,
+            app: this.$route.query.app as string,
+            scope: this.scope,
+            callback: this.callback,
+          })
         }
       } else {
         this.transactionId = confirmation.id

@@ -54,12 +54,10 @@ import {
   ERROR_INVALID_CREDENTIALS,
 } from '~/consts'
 import {
-  b64uEnc,
   buildSearchParams,
   client,
   getAuthority,
   getKeychain,
-  isChromeExtension,
   isValidUrl,
   jsonParse,
   signComplete
@@ -139,7 +137,7 @@ export default class Login extends Vue {
     PersistentFormsModule.saveLoginUsername(value)
   }
 
-  private get username_pre(): string {
+  private get currentAccountUsername(): string {
     return AuthModule.username
   }
 
@@ -165,7 +163,7 @@ export default class Login extends Vue {
     if (
       this.scope === 'posting' &&
       this.clientId &&
-      this.username_pre &&
+      this.currentAccountUsername &&
       !this.hasAuthority
     ) {
       this.$router.push({
@@ -180,10 +178,6 @@ export default class Login extends Vue {
 
   private login(data: any): Promise<void> {
     return AuthModule.login(data)
-  }
-
-  private signMessage(data: any): Promise<any> {
-    return AuthModule.signMessage(data)
   }
 
   private loadKeychain(): void {
@@ -205,8 +199,9 @@ export default class Login extends Vue {
     this.loading = true
     this.showLoading = true
     try {
-      const response = await this.login({ username: this.username, keys })
+      await this.login({ username: this.username, keys })
       const redirect = this.$route.query.redirect as string
+
       if (this.redirected !== '' && !this.redirected.includes('/login-request')) {
         this.$router.push(redirect || '/')
         this.error = ''
@@ -216,41 +211,33 @@ export default class Login extends Vue {
         if (
           this.scope === 'posting' &&
           this.clientId &&
-          this.username_pre &&
+          this.currentAccountUsername &&
           !this.hasAuthority
         ) {
-          const uri = `hive://login-request/${this.clientId}?${redirect.replace(/\/login-request\/[a-z]+\?/, '')}`
           this.$router.push({
-            name: 'authorize',
+            name: 'authorize-username',
             params: { username: this.clientId },
-            query: { redirect_uri: uri.replace('hive:/', '') },
+            query: {
+              ...this.$route.query,
+              redirect_uri: this.callback,
+              app: this.app,
+              signature: this.signature,
+            },
           })
           return
         }
+
         try {
-          const loginObj: Record<string, any> = {}
-          loginObj.type = isChromeExtension() ? 'login' : this.scope
-          if (this.responseType === 'code') loginObj.type = 'code'
-          if (this.app) loginObj.app = this.app
-          const signedMessageObj = await this.signMessage({
-            message: loginObj,
+          await AuthModule.signAndRedirectToCallback({
+            username: this.username,
             authority: this.authority,
-          });
-          [this.signature] = signedMessageObj.signatures
-          const token = b64uEnc(JSON.stringify(signedMessageObj))
-          if (this.requestId) {
-            signComplete(this.requestId, null, token)
-          }
-          if (!isChromeExtension()) {
-            let { callback } = this
-            callback +=
-              this.responseType === 'code' ? `?code=${token}` : `?access_token=${token}`
-            callback += `&username=${this.username}`
-            if (this.responseType !== 'code') callback += '&expires_in=604800'
-            if (this.state) callback += `&state=${encodeURIComponent(this.state)}`
-            // @ts-ignore
-            window.location = callback
-          }
+            signature: this.signature,
+            state: this.state,
+            responseType: this.responseType,
+            app: this.app,
+            scope: this.scope,
+            callback: this.callback,
+          })
         } catch (err) {
           console.error('Failed to login', err)
           this.signature = ''
@@ -277,10 +264,7 @@ export default class Login extends Vue {
       this.app = app
       try {
         this.appProfile = JSON.parse(accounts[0].json_metadata).profile
-        if (
-          !isChromeExtension() &&
-          (!this.appProfile.redirect_uris.includes(this.callback) || !isValidUrl(this.callback))
-        ) {
+        if (!this.appProfile.redirect_uris.includes(this.callback) || !isValidUrl(this.callback)) {
           this.failed = true
         }
       } catch (e) {
