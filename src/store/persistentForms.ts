@@ -12,14 +12,14 @@ import { Module, VuexModule, VuexMutation, Vue } from 'nuxt-property-decorator'
 export default class PersistentForms extends VuexModule {
   public login: any = {
     username: '',
-    key: ''
+    key: '',
   }
   public import: any = {
     step: 1,
     username: '',
     password: '',
     key: '',
-    keyConfirmation: ''
+    keyConfirmation: '',
   }
 
   @VuexMutation
@@ -34,7 +34,7 @@ export default class PersistentForms extends VuexModule {
 
   @VuexMutation
   public saveImportStep(step: number): void {
-    Vue.set(this.login, 'step', step)
+    Vue.set(this.import, 'step', step)
   }
 
   @VuexMutation

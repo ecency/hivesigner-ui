@@ -57,13 +57,12 @@ export default class Auths extends Vue {
 
   private get auths(): string[] {
     const auths = []
-    console.log(AuthModule.account)
 
     Object.values(Authority).forEach(authority => {
-      this.account[authority].key_auths.forEach(auth => {
+      this.account[authority]?.key_auths.forEach(auth => {
         auths.push({ type: 'key', authority, auth })
       })
-      this.account[authority].account_auths.forEach(auth => {
+      this.account[authority]?.account_auths.forEach(auth => {
         auths.push({ type: 'account', authority, auth })
       })
     })

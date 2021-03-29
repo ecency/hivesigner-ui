@@ -58,7 +58,7 @@ export default class Auth extends VuexModule {
   @VuexAction
   public async logout(): Promise<void> {
     this.clearUser()
-    this.store.app.$router.push('/')
+    this.store.app.router.push('/')
   }
 
   @VuexAction

@@ -32,7 +32,7 @@
     <input
       id="password"
       v-if="!decrypted"
-      v-model.trim="key"
+      v-model.trim="loginKey"
       type="password"
       autocorrect="off"
       autocapitalize="none"
@@ -111,11 +111,11 @@ export default class LoginForm extends Vue {
     PersistentFormsModule.saveLoginUsername(value)
   }
 
-  private get key(): string {
+  private get loginKey(): string {
     return PersistentFormsModule.login.key
   }
 
-  private set key(value: string) {
+  private set loginKey(value: string) {
     return PersistentFormsModule.saveLoginKey(value)
   }
 
@@ -137,7 +137,7 @@ export default class LoginForm extends Vue {
       key: false,
     }
     this.username = ''
-    this.key = ''
+    this.loginKey = ''
   }
 
   private mounted(): void {
@@ -155,7 +155,7 @@ export default class LoginForm extends Vue {
       // @ts-ignore
       triplesec.decrypt({
           data: new triplesec.Buffer(encryptedKeys, 'hex'),
-          key: new triplesec.Buffer(this.key),
+          key: new triplesec.Buffer(this.loginKey),
         }, (decryptError, buff) => {
           if (decryptError) {
             this.$emit('loading', false)
