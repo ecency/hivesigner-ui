@@ -28,68 +28,23 @@
     </div>
     <div class="width-full p-4 mb-2">
       <form @submit.prevent="submitForm" method="post" class="text-left">
-        <div v-if="step === 1">
-          <label for="username">Username</label>
-          <div v-if="dirty.username && !!errors.username" class="error mb-2">
-            {{ errors.username }}
-          </div>
-          <input
-            key="username"
-            v-model.trim="username"
-            id="username"
-            type="text"
-            class="form-control input-lg input-block mb-2"
-            autocorrect="off"
-            autocapitalize="none"
-            autocomplete="username"
-            @blur="handleBlur('username')"
-          />
-          <label for="password"> Master password or {{ authority || 'private' }} key </label>
-          <div v-if="dirty.password && !!errors.password" class="error mb-2">
-            {{ errors.password }}
-          </div>
-          <input
-            key="password"
-            v-model.trim="password"
-            id="password"
-            type="password"
-            autocorrect="off"
-            autocapitalize="none"
-            autocomplete="current-password"
-            class="form-control input-lg input-block mb-2"
-            @blur="handleBlur('password')"
-          />
-          <label class="mb-2" :class="{ 'mb-4': !error }">
-            <input key="storeAccount" v-model="storeAccount" type="checkbox"/> Encrypt your keys
-          </label>
-          <div v-if="!!error" class="error mb-4">{{ error }}</div>
-          <button
-            :disabled="nextDisabled || isLoading"
-            class="btn btn-large btn-blue input-block mb-2"
-            @click.prevent="submitNext"
-          >
-            {{ nextText }}
-          </button>
-          <router-link
-            v-if="hasAccounts"
-            :to="{ name: 'login', query: $route.query }"
-            class="btn btn-large input-block text-center mb-2"
-          >
-            Select account
-          </router-link>
-          <button
-            :disabled="isLoading"
-            class="btn btn-large input-block text-center mb-2"
-            @click="signUp()"
-          >Signup
-          </button>
-        </div>
+        <import-user-form
+          ref="import-user"
+          v-if="step === 1"
+          :loading="loading"
+          :error="error"
+          :authority="authority"
+          :errors="errors"
+          @submit="startLogin"
+          @loading="(value) => loading = value"
+          @error="(value) => error = value"
+          @next-step="() => this.step += 1"
+        />
         <import-set-password
           ref="set-password"
           v-if="step === 2"
           :loading="loading"
           :errors="errors"
-          @blurred="handleBlur"
         />
       </form>
     </div>
@@ -106,10 +61,8 @@ import {
   addToKeychain,
   buildSearchParams,
   client,
-  credentialsValid,
   getAuthority,
   getKeys,
-  hasAccounts,
   isChromeExtension,
   isValidUrl,
   signComplete
@@ -119,6 +72,7 @@ import { ERROR_INVALID_CREDENTIALS } from '~/consts'
 import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
 import ImportSetPassword from '~/components/Import/ImportSetPassword.vue'
+import ImportUserForm from '~/components/Import/ImportUserForm.vue'
 
 const passphraseSchema = new PasswordValidator()
 passphraseSchema.is().min(8).is().max(50).has().uppercase().has().lowercase()
@@ -128,12 +82,10 @@ export default class Import extends Vue {
   @Ref('set-password')
   private setPasswordRef!: ImportSetPassword
 
-  private dirty = {
-    username: false,
-    password: false,
-  }
+  @Ref('import-user')
+  private importUserRef!: ImportUserForm
+
   private error = ''
-  private storeAccount = true
   private isLoading = false
   private redirected = ''
   private showLoading = false
@@ -208,11 +160,6 @@ export default class Import extends Vue {
   private get currentAccountUsername(): string {
     return AuthModule.username
   }
-
-  private get hasAccounts(): boolean {
-    return hasAccounts()
-  }
-
   private get isRedirected(): boolean {
     return this.redirected === '/auths' ||
       this.redirected === '/profile' ||
@@ -255,14 +202,6 @@ export default class Import extends Vue {
     return auths.indexOf(this.clientId) !== -1
   }
 
-  private get nextText(): string {
-    return this.storeAccount ? 'Continue' : 'Import account'
-  }
-
-  private get nextDisabled(): boolean {
-    return !!this.errors.username || !!this.errors.password
-  }
-
   private mounted(): void {
     this.redirected = this.$route.query.redirect as string || ''
     if (
@@ -273,7 +212,6 @@ export default class Import extends Vue {
     }
     if (
       this.scope === 'posting' &&
-      !isChromeExtension() &&
       this.clientId &&
       this.currentAccountUsername &&
       !this.hasAuthority
@@ -290,10 +228,6 @@ export default class Import extends Vue {
 
   private login(data: any): Promise<any> {
     return AuthModule.login(data)
-  }
-
-  private signUp(): void {
-    window.open('https://signup.hive.io', '_blank')
   }
 
   private async loadAppProfile(): Promise<void> {
@@ -320,20 +254,13 @@ export default class Import extends Vue {
   }
 
   private resetForm(): void {
-    this.dirty = {
-      username: false,
-      password: false,
-    }
+    this.importUserRef.reset()
     this.setPasswordRef.reset()
     this.step = 1
     this.username = ''
     this.password = ''
     this.importKey = ''
     this.keyConfirmation = ''
-  }
-
-  private handleBlur(name: string): void {
-    this.dirty[name] = true
   }
 
   private async startLogin(): Promise<void> {
@@ -404,26 +331,6 @@ export default class Import extends Vue {
       this.isLoading = false
       this.error = ERROR_INVALID_CREDENTIALS
     }
-  }
-
-  private async submitNext(): Promise<void> {
-    this.isLoading = true
-    const invalidCredentials = !(await credentialsValid(this.username, this.password))
-    this.isLoading = false
-    if (invalidCredentials) {
-      this.error = ERROR_INVALID_CREDENTIALS
-      return
-    }
-    this.error = ''
-    if (this.storeAccount) {
-      this.step += 1
-    } else {
-      const keys = await getKeys(this.username, this.password)
-      const k = Buffer.from(JSON.stringify(keys))
-      addToKeychain(this.username as string, `${k.toString('hex')}decrypted`)
-      await this.startLogin()
-    }
-
   }
 
   private async submitForm(): Promise<void> {

@@ -106,7 +106,7 @@ export default class ImportSetPassword extends Vue {
   }
 
   private handleBlur(fieldName: string): void {
-    this.$emit('blurred', fieldName)
+    this.dirty[fieldName] = true
   }
 }
 </script>
