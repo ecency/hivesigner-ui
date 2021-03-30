@@ -97,7 +97,7 @@ export default class RevokeUsername extends Vue {
     return this.$route.query.redirect_uri
   }
 
-  private get account(): any {
+  private get account(): Account {
     return AuthModule.account
   }
 

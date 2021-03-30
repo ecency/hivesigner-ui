@@ -1,6 +1,6 @@
 import { isChromeExtension } from '~/utils/is-chrome-extension.util'
 
-export function signComplete(requestId: string, err: Error | string, result: any): void {
+export function signComplete(requestId: string, err: Error | string | null, result: any): void {
   if (!isChromeExtension()) {
     return
   }

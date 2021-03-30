@@ -1,6 +1,6 @@
-import { Module, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
-import { client, credentialsValid, privateKeyFrom } from '~/utils'
-import { cryptoUtils, SignedTransaction } from '@hiveio/dhive'
+import { Module, VuexAction, VuexModule, VuexMutation, Vue } from 'nuxt-property-decorator'
+import { Account, cryptoUtils, SignedTransaction } from '@hiveio/dhive'
+import { b64uEnc, client, credentialsValid, privateKeyFrom, signComplete } from '~/utils'
 
 @Module({
   stateFactory: true,
@@ -9,10 +9,10 @@ import { cryptoUtils, SignedTransaction } from '@hiveio/dhive'
 })
 export default class Auth extends VuexModule {
   public keys: Record<string, string> = {}
-  public account: any = {}
+  public account: Account | null = null
 
   public get username(): string {
-    return this.account.username
+    return this.account?.name || ''
   }
 
   public get password(): string {
@@ -20,7 +20,7 @@ export default class Auth extends VuexModule {
   }
 
   @VuexMutation
-  public setUser({ result, keys }: any): void {
+  public setUser({ result, keys }: { result: Account, keys: Record<string, string> }): void {
     this.keys = keys
     this.account = result
   }
@@ -28,11 +28,11 @@ export default class Auth extends VuexModule {
   @VuexMutation
   public clearUser(): void {
     this.keys = {}
-    this.account = {}
+    this.account = null
   }
 
   @VuexMutation
-  public setAccount(account: any): void {
+  public setAccount(account: Account): void {
     this.account = account
   }
 
@@ -58,7 +58,7 @@ export default class Auth extends VuexModule {
   @VuexAction
   public async logout(): Promise<void> {
     this.clearUser()
-    this.store.app.$router.push('/')
+    this.store.app.router.push('/')
   }
 
   @VuexAction
@@ -100,5 +100,35 @@ export default class Auth extends VuexModule {
   public async updateAccount(data: any): Promise<any> {
     const privateKey = privateKeyFrom(this.keys.owner || this.keys.active)
     return client.broadcast.updateAccount(data, privateKey)
+  }
+
+  @VuexAction
+  public async signAndRedirectToCallback(payload: any): Promise<void> {
+    const loginObj: Record<string, any> = {
+      type: payload.responseType === 'code' ? 'code' : payload.scope,
+      ...(payload.app ? { app: payload.app } : {})
+    }
+    const signedMessageObj = await this.signMessage({
+      message: loginObj,
+      authority: payload.authority,
+    });
+    [payload.signature] = signedMessageObj.signatures
+    const token = b64uEnc(JSON.stringify(signedMessageObj))
+
+    if (payload.requestId) {
+      signComplete(payload.requestId, null, token)
+    }
+
+    const additionalCallbackQuery = new URLSearchParams({
+      ...(payload.responseType === 'code' ? { code: token } : {}),
+      ...(payload.responseType !== 'code' ? {
+        access_token: token,
+        expires_in: '604800',
+      } : {}),
+      username: payload.username,
+      state: encodeURIComponent(payload.state)
+    })
+    // @ts-ignore
+    window.location = payload.callback + `?${additionalCallbackQuery.toString()}`
   }
 }
