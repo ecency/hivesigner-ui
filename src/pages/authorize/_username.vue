@@ -13,8 +13,9 @@
           @loading="onLoadingChange"
           @reject="handleReject"
         />
-        <already-authorized
+        <already
           v-if="hasAuthority && !failed && !transactionId"
+          action="authorized"
           :username="username"
           :authority="authority"
           :callback="callback"
