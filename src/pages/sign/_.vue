@@ -16,14 +16,14 @@
             <span class="link-color">{{ parsed.params.callback | parseUrl }}</span
             >.
           </div>
-          <div class="flash flash-warn mb-4" v-if="username && hasRequiredKey === false">
+          <div class="flash flash-warn mb-4" v-if="username && !hasRequiredKey">
             This transaction requires your <b>{{ authority }}</b> key.
           </div>
           <div class="mb-4">
             <router-link
               :to="{ name: 'login', query: { redirect: this.$route.fullPath, authority } }"
               class="btn btn-large btn-blue mr-2 mb-2"
-              v-if="!username || hasRequiredKey === false"
+              v-if="!username || !hasRequiredKey"
             >
               Continue
             </router-link>
@@ -59,8 +59,6 @@ import {
   getAuthority,
   getLowestAuthorityRequired,
   getVestsToSP,
-  isChromeExtension,
-  isWeb,
   legacyToHiveUri,
   processTransaction,
   resolveTransaction,
@@ -68,6 +66,7 @@ import {
 } from '~/utils'
 import { AuthModule, SettingsModule } from '~/store'
 import { SignedTransaction } from '@hiveio/dhive'
+import { Authority } from '~/enums'
 
 @Component
 export default class Sign extends Vue {
@@ -78,14 +77,10 @@ export default class Sign extends Vue {
   private failed = false
   private error = false
   private hasRequiredKey = null
-  private authority = getAuthority(this.$route.query.authority)
+  private authority = getAuthority(this.$route.query.authority as Authority)
 
   private get uri(): string {
     return `hive://sign/${this.$route.params.pathMatch}${buildSearchParams(this.$route)}`
-  }
-
-  private get isWeb(): boolean {
-    return isWeb()
   }
 
   private get requestId(): string {
@@ -94,7 +89,9 @@ export default class Sign extends Vue {
 
   private get title(): string {
     let title = 'Confirm transaction'
-    if (this.authority) title += ` (${this.authority})`
+    if (this.authority) {
+      title += ` (${this.authority})`
+    }
     return title
   }
 
@@ -118,14 +115,6 @@ export default class Sign extends Vue {
     }
   }
 
-  private sign(payload: any): Promise<SignedTransaction> {
-    return AuthModule.sign(payload)
-  }
-
-  private broadcast(tx: any): Promise<void> {
-    return AuthModule.broadcast(tx)
-  }
-
   private parseUri(uri): void {
     let parsed
     try {
@@ -147,7 +136,7 @@ export default class Sign extends Vue {
     let confirmation = null
     try {
       tx = await resolveTransaction(this.parsed, this.username)
-      signedTx = await this.sign({ tx, authority: this.authority });
+      signedTx = await AuthModule.sign({ tx, authority: this.authority });
       [sig] = signedTx.signatures
     } catch (err) {
       console.error('Failed to resolve and sign transaction', err)
@@ -160,7 +149,7 @@ export default class Sign extends Vue {
     }
     if (!this.parsed.params.no_broadcast) {
       try {
-        confirmation = await this.broadcast(signedTx)
+        confirmation = await AuthModule.broadcast(signedTx)
         this.transactionId = confirmation.id
         this.failed = false
         if (this.requestId) {
@@ -177,11 +166,7 @@ export default class Sign extends Vue {
       }
     }
     // Use redirect uri
-    if (
-      confirmation &&
-      (this.$route.query.redirect_uri || this.parsed.params.callback) &&
-      isWeb()
-    ) {
+    if (confirmation && (this.$route.query.redirect_uri || this.parsed.params.callback)) {
       const cburl =
         this.parsed.params.callback || `${this.$route.query.redirect_uri}?id=${confirmation.id}`
       // @ts-ignore
@@ -200,12 +185,10 @@ export default class Sign extends Vue {
     if (this.requestId) {
       signComplete(this.requestId, 'Request rejected', null)
     }
-    if (!isChromeExtension()) {
-      this.failed = false
-      this.loading = false
-      this.transactionId = ''
-      this.$router.push('/')
-    }
+    this.failed = false
+    this.loading = false
+    this.transactionId = ''
+    this.$router.push('/')
   }
 }
 </script>
