@@ -7,13 +7,7 @@
           You’ve found the HiveSigner developer documentation! This page dedicated to showing you
           all the ways that you can use HiveSigner to make cool stuff.
         </p>
-        <a
-          @click="selectSection('new-app')"
-          class="Box p-3 d-block border rounded-1 overflow-hidden mb-3"
-        >
-          <h4 class="m-0">1. Add new app</h4>
-        </a>
-        <div v-if="selectedSection === 'new-app'" class="mb-4">
+        <developer-item title="1. Add new app" v-model="currentItem">
           <div class="mb-3">
             <p>
               To create a new app on HiveSigner you need a Hive account for it. If you don't have
@@ -31,46 +25,29 @@
             <router-link to="/authorize/hivesigner">Click here</router-link>
             to do this and sign with your app account.
           </p>
-        </div>
-        <a
-          @click="selectSection('edit-app')"
-          class="Box p-3 d-block border rounded-1 overflow-hidden mb-3"
-        >
-          <h4 class="m-0">2. Edit app settings</h4>
-        </a>
-        <div v-if="selectedSection === 'edit-app'" class="mb-4">
+        </developer-item>
+        <developer-item title="2. Edit app settings" v-model="currentItem">
           <p>You can edit your app settings by updating your app account profile.</p>
           <router-link to="/profile" class="btn btn-large">
             Edit app settings
           </router-link>
-        </div>
-        <a
-          @click="selectSection('sdk')"
-          class="Box p-3 d-block border rounded-1 overflow-hidden mb-3"
-        >
-          <h4 class="m-0">3. Hivesigner JS SDK</h4>
-        </a>
-        <div v-if="selectedSection === 'sdk'" class="mb-4">
+        </developer-item>
+        <developer-item title="3. Hivesigner JS SDK" v-model="currentItem">
           <p>
             Get started integrating HiveSigner on your website with HiveSigner.js, the official
             JavaScript SDK. Learn how to setup and use
             <a href="https://github.com/ledgerconnect/hivesigner.js#sdk-methods" target="_blank">
-              SDK methods</a
-            >.
+              SDK methods
+            </a>.
           </p>
           <p>
-            <a href="https://github.com/ledgerconnect/hivesigner.js#getting-started" target="_blank"
-            ><span class="iconfont icon-mark-github"/> hivesigner.js</a
-            >
+            <a href="https://github.com/ledgerconnect/hivesigner.js#getting-started"
+               target="_blank">
+              <span class="iconfont icon-mark-github"/> hivesigner.js
+            </a>
           </p>
-        </div>
-        <a
-          @click="selectSection('oauth2')"
-          class="Box p-3 d-block border rounded-1 overflow-hidden mb-3"
-        >
-          <h4 class="m-0">4. How OAuth2 works</h4>
-        </a>
-        <div v-if="selectedSection === 'oauth2'" class="mb-4">
+        </developer-item>
+        <developer-item title="4. How OAuth2 works" v-model="currentItem">
           <p>
             OAuth 2 is the industry-standard protocol for authorization. After you have checked
             above steps, You can read more about
@@ -78,17 +55,11 @@
               href="https://github.com/ledgerconnect/hivesigner/wiki/How-OAuth2-Work%3F"
               target="_blank"
             >
-              authorization flow in our Wiki page</a
-            >
+              authorization flow in our Wiki page
+            </a>
           </p>
-        </div>
-        <a
-          @click="selectSection('demo')"
-          class="Box p-3 d-block border rounded-1 overflow-hidden mb-3"
-        >
-          <h4 class="m-0">5. Demo app</h4>
-        </a>
-        <div v-if="selectedSection === 'demo'" class="mb-4">
+        </developer-item>
+        <developer-item title="5. Demo app" v-model="currentItem">
           <p class="mt-2">Checkout HiveSigner demo with Vue.js</p>
           <p><a href="https://demo.hivesigner.com" target="_blank" class="mr-2">Try demo</a></p>
           <p>
@@ -99,35 +70,20 @@
               <span class="iconfont icon-mark-github"/> See on GitHub
             </a>
           </p>
-        </div>
-        <a
-          @click="selectSection('usecases')"
-          class="Box p-3 d-block border rounded-1 overflow-hidden mb-3"
-        >
-          <h4 class="m-0">6. Other use cases</h4>
-        </a>
-        <div v-if="selectedSection === 'usecases'" class="mb-4">
-          <p class="mt-2">
-            Hivesigner auth tokens can be used in other ways to secure your apps. Imagehoster
-            instances use it for verifying image uploads by user. You can use same method to secure
-            your backends or you can also authenticate with Hivesigner for off-chain applications.
-          </p>
+        </developer-item>
+        <developer-item title="6. Other use cases" v-model="currentItem">
+          <p class="mt-2">Checkout HiveSigner demo with Vue.js</p>
+          <p><a href="https://demo.hivesigner.com" target="_blank" class="mr-2">Try demo</a></p>
           <p>
             <a
-              href="https://github.com/ledgerconnect/hivesigner/wiki/What-other-ways-to-use-Hivesigner-auth%3F"
+              href="https://github.com/ledgerconnect/hivesigner.js/blob/master/docs/index.html"
               target="_blank"
-              class="mr-2"
-            >Read more about it on our Wiki page</a
             >
+              <span class="iconfont icon-mark-github"/> See on GitHub
+            </a>
           </p>
-        </div>
-        <a
-          @click="selectSection('help')"
-          class="Box p-3 d-block border rounded-1 overflow-hidden mb-3"
-        >
-          <h4 class="m-0">7. Contact us</h4>
-        </a>
-        <div v-if="selectedSection === 'help'" class="mb-4">
+        </developer-item>
+        <developer-item title="7. Contact us" v-model="currentItem">
           <p>
             If you believe you're experiencing a bug with our API or want to report incorrect
             documentation, open an issue on our issue tracker. For a more real-time avenue of
@@ -150,7 +106,7 @@
               <span class="iconfont icon-discord"/> Join us on Discord
             </a>
           </p>
-        </div>
+        </developer-item>
       </div>
     </div>
   </div>
@@ -159,17 +115,15 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
 import { PACKAGE } from '../consts'
-
-@Component
+import DeveloperItem from '../components/Developers/DeveloperItem.vue'
+@Component({
+  components: { DeveloperItem }
+})
 export default class Developers extends Vue {
-  private selectedSection: string | boolean = false
+  private currentItem: string | null = null
 
   private get pkg() {
     return PACKAGE
-  }
-
-  private selectSection(section: string): void {
-    this.selectedSection = this.selectedSection === section ? false : section
   }
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div>
     <p class="mb-4">
-      You already authorize the account <b>{{ username }}</b> to do
+      You already {{ action }} the account <b>{{ username }}</b> to do
       <b>{{ authority }}</b> operations on your behalf.
     </p>
     <template v-if="callback">
@@ -23,7 +23,7 @@
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 
 @Component
-export default class AlreadyAuthorized extends Vue {
+export default class Already extends Vue {
   @Prop({
     type: String,
     default: '',
@@ -41,5 +41,11 @@ export default class AlreadyAuthorized extends Vue {
     default: '',
   })
   private callback!: string
+
+  @Prop({
+    type: String,
+    default: '',
+  })
+  private action!: string
 }
 </script>
