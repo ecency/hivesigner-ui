@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <a @click="toggle" class="Box p-3 d-block border rounded-1 overflow-hidden mb-3">
+  <div class="developer-item">
+    <a class="Box p-3 d-block border rounded-1 overflow-hidden mb-3" @click="toggle">
       <h4 class="m-0">{{ title }}</h4>
     </a>
     <div v-if="open" class="mb-4">
