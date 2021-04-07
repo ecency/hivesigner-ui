@@ -11,5 +11,10 @@ module.exports = {
   plugins: [
   ],
   // add your custom rules here
-  rules: {}
+  rules: {
+    'space-before-function-paren': 'off',
+    'comma-dangle': 'off',
+    'require-await': 'off',
+    'multiline-ternary': 'off'
+  }
 }

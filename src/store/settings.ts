@@ -1,7 +1,8 @@
-import { Module, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
+import { Module, VuexAction, VuexMutation } from 'nuxt-property-decorator'
 import { client } from '~/utils'
 import { SETTINGS_KEY } from '~/consts'
 import { AuthModule } from '~/store'
+import { VuexModule } from '~/models'
 
 @Module({
   stateFactory: true,
