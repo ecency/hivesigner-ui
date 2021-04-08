@@ -1,15 +1,15 @@
 <template>
   <div class="search px-4">
-    <span class="iconfont icon-search"/>
+    <span class="iconfont icon-search" />
     <input
       :value="value"
       :placeholder="placeholder"
-      @input="handleInput"
-      type="text"
-      autocorrect="off"
-      autocapitalize="none"
       class="px-4 py-3 border-0 input-lg"
-    />
+      type="text"
+      autocapitalize="none"
+      autocorrect="off"
+      @input="handleInput"
+    >
   </div>
 </template>
 

@@ -3,7 +3,7 @@ import VueRouter from 'vue-router'
 import Vuex from 'vuex'
 import Home from '@/components/Index/Home'
 
-describe('DeveloperItemComponent', function () {
+describe('HomeComponent', function () {
   let localVue
   let router
   let wrapper
