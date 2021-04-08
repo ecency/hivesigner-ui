@@ -44,15 +44,16 @@
     <router-link
       v-if="hasAccounts"
       :to="{ name: 'login', query: $route.query }"
-      class="btn btn-large input-block text-center mb-2"
+      class="select-account btn btn-large input-block text-center mb-2"
     >
       Select account
     </router-link>
     <button
+      class="sign-up btn btn-large input-block text-center mb-2"
       :disabled="loading"
-      class="btn btn-large input-block text-center mb-2"
       @click="signUp()"
-    >Signup
+    >
+      Signup
     </button>
   </div>
 </template>
@@ -94,6 +95,7 @@ export default class ImportUserForm extends Vue {
     username: false,
     password: false,
   }
+
   private storeAccount = true
 
   private get hasAccounts(): boolean {
