@@ -10,6 +10,7 @@
           :loading="loading"
           :transaction-id="transactionId"
           :error="error"
+          :callback="callback"
           @loading="(value) => loading = value"
           @transaction-id="(value) => transactionId = value"
           @error="(value) => error = value"

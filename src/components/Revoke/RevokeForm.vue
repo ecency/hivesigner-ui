@@ -34,7 +34,7 @@
       >
         Revoke
       </button>
-      <button class="btn btn-large mb-2" @click.prevent="handleReject">
+      <button class="revoke-cancel btn btn-large mb-2" @click.prevent="handleReject">
         Cancel
       </button>
     </div>
@@ -42,11 +42,9 @@
 </template>
 
 <script lang="ts">
-
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import { AuthModule } from '~/store'
 import { Account } from '@hiveio/dhive'
-import { isWeb } from '~/utils'
+import { AuthModule } from '~/store'
 
 @Component
 export default class RevokeForm extends Vue {
@@ -80,6 +78,12 @@ export default class RevokeForm extends Vue {
   })
   private loading!: boolean
 
+  @Prop({
+    type: String,
+    default: '',
+  })
+  private callback!: string
+
   private get account(): Account {
     return AuthModule.account
   }
@@ -106,13 +110,15 @@ export default class RevokeForm extends Vue {
     }
     data[authority] = JSON.parse(JSON.stringify(account[authority]))
     data[authority].account_auths.forEach((accountAuth, i) => {
-      if (accountAuth[0] === username) data[authority].account_auths.splice(i, 1)
+      if (accountAuth[0] === username) {
+        data[authority].account_auths.splice(i, 1)
+      }
     })
     try {
       const confirmation = await this.updateAccount(data)
       await this.loadAccount()
 
-      if (isWeb && callback) {
+      if (callback) {
         if (callback[0] === '/') {
           this.$router.push(callback)
         } else {
