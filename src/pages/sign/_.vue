@@ -4,7 +4,7 @@
     <div v-if="parsed && uriIsValid" class="p-4 after-header">
       <div class="container-sm mx-auto">
         <Error v-if="!loading && failed" :error="error"/>
-        <Confirmation v-if="!loading && !!transactionId" :id="transactionId"/>
+        <Confirmation v-if="!loading && !!transactionId" :id="transactionId" />
         <div v-if="!failed && !transactionId">
           <Operation
             v-for="(operation, key) in parsed.tx.operations"
@@ -65,7 +65,6 @@ import {
   signComplete,
 } from '~/utils'
 import { AuthModule, SettingsModule } from '~/store'
-import { SignedTransaction } from '@hiveio/dhive'
 import { Authority } from '~/enums'
 
 @Component
