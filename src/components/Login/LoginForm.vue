@@ -23,8 +23,8 @@
         class="tooltipped tooltipped-n tooltipped-multiline"
         :aria-label="tooltipLoginEncryptionKey"
       >
-            <span class="iconfont icon-info"/>
-          </span>
+        <span class="iconfont icon-info"></span>
+      </span>
     </label>
     <div v-if="dirty.key && !!errors.key" class="error mb-2">
       {{ errors.key }}
@@ -57,38 +57,37 @@ import triplesec from 'triplesec'
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { ERROR_INVALID_ENCRYPTION_KEY, TOOLTIP_LOGIN_ENCRYPTION_KEY } from '~/consts'
 import { PersistentFormsModule } from '~/store'
-import { signComplete } from '~/utils'
 import { Authority } from '~/enums'
 
 @Component
 export default class LoginForm extends Vue {
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private loading!: boolean
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private error!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private authority!: Authority
 
   @Prop({
-    default: () => ({}),
+    default: () => ({})
   })
   private keychain!: Record<string, any>
 
   private decrypted = true
   private dirty = {
     username: false,
-    key: false,
+    key: false
   }
 
   private get errors(): Record<string, any> {
@@ -127,14 +126,10 @@ export default class LoginForm extends Vue {
     return !!this.errors.username || (!!this.errors.key && !!this.dirty.key)
   }
 
-  private get redirect(): string {
-    return this.$route.query.redirect as string
-  }
-
-  public resetForm(): void {
+  public reset(): void {
     this.dirty = {
       username: false,
-      key: false,
+      key: false
     }
     this.username = ''
     this.loginKey = ''
@@ -154,23 +149,23 @@ export default class LoginForm extends Vue {
     } else {
       // @ts-ignore
       triplesec.decrypt({
-          data: new triplesec.Buffer(encryptedKeys, 'hex'),
-          key: new triplesec.Buffer(this.loginKey),
-        }, (decryptError, buff) => {
-          if (decryptError) {
-            this.$emit('loading', false)
-            this.$emit('error', ERROR_INVALID_ENCRYPTION_KEY)
-            console.log('err', decryptError)
-            return
-          }
-          this.$emit('submit', buff)
-        })
+        data: new triplesec.Buffer(encryptedKeys, 'hex'),
+        key: new triplesec.Buffer(this.loginKey)
+      }, (decryptError, buff) => {
+        if (decryptError) {
+          this.$emit('loading', false)
+          this.$emit('error', ERROR_INVALID_ENCRYPTION_KEY)
+          console.error('err', decryptError)
+          return
+        }
+        this.$emit('submit', buff)
+      })
     }
   }
 
   private handleBlur(name: string): void {
     this.dirty[name] = true
-    if (name === 'username' && this.keychain[this.username].includes('decrypted')) {
+    if (name === 'username' && this.keychain[this.username]?.includes('decrypted')) {
       this.decrypted = true
       this.dirty.key = true
     } else {
@@ -178,20 +173,5 @@ export default class LoginForm extends Vue {
       this.dirty.key = true
     }
   }
-
-  private handleReject(): void {
-    const requestId = this.$route.query.requestId as string
-    if (requestId) {
-      signComplete(requestId, 'Request canceled', null)
-    }
-    this.$emit('failed', false)
-    this.$emit('loading', false)
-    this.$emit('signature', '')
-    this.$router.push('/')
-  }
 }
 </script>
-
-<style scoped>
-
-</style>

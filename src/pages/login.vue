@@ -212,7 +212,7 @@ export default class Login extends Vue {
         this.$router.push(redirect || '/')
         this.error = ''
         this.isLoading = false
-        this.loginFormRef.resetForm()
+        this.loginFormRef.reset()
       } else {
         if (
           this.scope === 'posting' &&
