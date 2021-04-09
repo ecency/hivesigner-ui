@@ -58,12 +58,18 @@ describe('ImportUserFormComponent', function () {
     expect(wrapper.vm.handleBlur).toHaveBeenCalledWith('username')
   })
 
+  it('should call submitNext on button click', async function () {
+    wrapper.vm.submitNext = jest.fn()
+    await wrapper.find('button.btn-blue').trigger('click')
+    expect(wrapper.vm.submitNext).toBeCalled()
+  })
+
   it('should submit and change state', async function () {
     utils.credentialsValid.mockReturnValue(Promise.resolve(true))
     utils.getKeys.mockReturnValue(Promise.resolve(true))
     utils.addToKeychain.mockReturnValue(Promise.resolve(true))
 
-    await wrapper.find('button.btn-blue').trigger('click')
+    await wrapper.vm.submitNext()
 
     expect(wrapper.emitted().loading[0]).toEqual([true])
     expect(wrapper.emitted().loading[1]).toEqual([false])
@@ -77,7 +83,7 @@ describe('ImportUserFormComponent', function () {
     utils.addToKeychain.mockReturnValue(true)
 
     wrapper.vm.storeAccount = false
-    await wrapper.find('button.btn-blue').trigger('click')
+    await wrapper.vm.submitNext()
 
     expect(wrapper.emitted().loading[0]).toEqual([true])
     expect(wrapper.emitted().loading[1]).toEqual([false])
@@ -93,5 +99,13 @@ describe('ImportUserFormComponent', function () {
     await wrapper.find('.sign-up').trigger('click')
 
     expect(wrapper.vm.signUp).toHaveBeenCalled()
+  })
+
+  it('should reset form', function () {
+    wrapper.vm.reset()
+    expect(wrapper.vm.dirty).toEqual({
+      username: false,
+      password: false,
+    })
   })
 })
