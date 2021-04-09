@@ -13,6 +13,8 @@ export default class OperationHeader extends Vue {
   @Prop()
   private operation!: any
 
-  private model: any = OPERATIONS[this.operation] || {}
+  private get model(): any {
+    return OPERATIONS[this.operation] || {}
+  }
 }
 </script>
