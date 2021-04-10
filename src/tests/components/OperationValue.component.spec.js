@@ -133,10 +133,10 @@ describe('OperationValueComponent', function () {
     }
     await wrapper.setProps({
       path: 'test',
-      value: '_another_',
+      value: 12,
     })
     expect(wrapper.find('operationvalueamount-stub').element.getAttribute('value'))
-      .toBe('_another_')
+      .toBe('12')
   })
 
   it('should render OperationValueJson if schema is account', async function () {
