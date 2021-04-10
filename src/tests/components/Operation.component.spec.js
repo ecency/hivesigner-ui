@@ -2,6 +2,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils'
 import Vuex from 'vuex'
 import VueRouter from 'vue-router'
 import Operation from '@/components/Operation'
+import OperationHeader from '@/components/Operation/OperationHeader'
 
 jest.mock('@/consts')
 import * as consts from '@/consts'
@@ -32,6 +33,9 @@ describe('OperationComponent', function () {
       localVue,
       router,
       store,
+      components: {
+        OperationHeader,
+      },
     })
   })
 

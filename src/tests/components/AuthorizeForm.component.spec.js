@@ -1,7 +1,8 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils'
 import VueRouter from 'vue-router'
 import Vuex from 'vuex'
-import AuthorizeForm from '~/components/Authorize/AuthorizeForm'
+import AuthorizeForm from '@/components/Authorize/AuthorizeForm'
+import Avatar from '@/components/Avatar'
 
 describe('AuthorizeComponent', function () {
   let localVue
@@ -22,13 +23,16 @@ describe('AuthorizeComponent', function () {
       },
       getters: {
         username: jest.fn()
-      }
+      },
     })
 
     wrapper = shallowMount(AuthorizeForm, {
       localVue,
       router,
       store,
+      components: {
+        Avatar,
+      },
     })
   })
 

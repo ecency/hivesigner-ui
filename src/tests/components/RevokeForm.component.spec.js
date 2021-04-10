@@ -2,6 +2,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils'
 import Vuex from 'vuex'
 import VueRouter from 'vue-router'
 import RevokeForm from '@/components/Revoke/RevokeForm'
+import Avatar from '@/components/Avatar'
 
 describe('RevokeFormComponent', function () {
   let localVue
@@ -42,6 +43,9 @@ describe('RevokeFormComponent', function () {
           },
         }),
         hasRequiredKey: jest.fn(),
+      },
+      components: {
+        Avatar,
       },
     })
   })

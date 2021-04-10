@@ -2,6 +2,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils'
 import Vuex from 'vuex'
 import VueRouter from 'vue-router'
 import App from '@/components/App'
+import Avatar from '@/components/Avatar'
 
 describe('AppComponent', function () {
   let localVue
@@ -29,6 +30,9 @@ describe('AppComponent', function () {
       localVue,
       router,
       store,
+      components: {
+        Avatar,
+      },
     })
   })
 

@@ -25,6 +25,9 @@ describe('OperationValueAccountComponent', function () {
       components: {
         Avatar,
       },
+      computed: {
+        username: jest.fn().mockReturnValue(''),
+      },
     })
   })
 

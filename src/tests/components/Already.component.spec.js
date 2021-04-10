@@ -22,13 +22,16 @@ describe('AlreadyComponent', function () {
       },
       getters: {
         username: jest.fn()
-      }
+      },
     })
 
     wrapper = shallowMount(Already, {
       localVue,
       router,
       store,
+      filters: {
+        parseUrl: (value) => value,
+      },
     })
   })
 

@@ -14,7 +14,7 @@ export default class OperationValueAmount extends Vue {
     type: Number,
     default: 0,
   })
-  private value!: Number
+  private value!: number
 
   private get vestToSP(): number {
     return getVestsToSP(SettingsModule.properties)
