@@ -40,8 +40,14 @@ export default class AuthorizeUsername extends Vue {
   private failed = false
   private error = false
   private transactionId = ''
-  private username = this.$route.params.username
-  private authority = getAuthority(this.$route.query.authority as Authority, Authority.Posting)
+
+  private get username(): string {
+    return this.$route.params.username
+  }
+
+  private get authority(): Authority {
+    return getAuthority(this.$route.query.authority as Authority, Authority.Posting)
+  }
 
   private get account(): Account | null {
     return AuthModule.account
@@ -84,7 +90,7 @@ export default class AuthorizeUsername extends Vue {
 
       if (this.callback) {
         if (this.callback[0] === '/') {
-          this.$router.push({
+          await this.$router.push({
             name: 'login',
             query: { redirect: this.callback },
           })
