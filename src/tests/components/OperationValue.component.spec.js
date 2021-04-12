@@ -16,7 +16,7 @@ describe('OperationValueComponent', function () {
   let wrapper
   let store
 
-  beforeEach(() => {
+  beforeEach(async () => {
     localVue = createLocalVue()
     localVue.use(VueRouter)
     localVue.use(Vuex)
@@ -42,9 +42,17 @@ describe('OperationValueComponent', function () {
       },
     })
 
+    await wrapper.setProps({
+      schemaKey: 'key',
+    })
+
     consts.OPERATIONS = {
       test: {
-        name: 'test',
+        schema: {
+          key: {
+            name: 'test',
+          },
+        },
       },
     }
   })
@@ -112,8 +120,12 @@ describe('OperationValueComponent', function () {
   it('should render ValueAccount if schema is account', async function () {
     consts.OPERATIONS = {
       test: {
-        name: 'test',
-        type: 'account',
+        schema: {
+          key: {
+            name: 'test',
+            type: 'account',
+          },
+        },
       },
     }
     await wrapper.setProps({
@@ -127,8 +139,12 @@ describe('OperationValueComponent', function () {
   it('should render OperationValueAmount if schema is account', async function () {
     consts.OPERATIONS = {
       test: {
-        name: 'test',
-        type: 'amount',
+        schema: {
+          key: {
+            name: 'test',
+            type: 'amount',
+          },
+        },
       },
     }
     await wrapper.setProps({
@@ -142,8 +158,12 @@ describe('OperationValueComponent', function () {
   it('should render OperationValueJson if schema is account', async function () {
     consts.OPERATIONS = {
       test: {
-        name: 'test',
-        type: 'json',
+        schema: {
+          key: {
+            name: 'test',
+            type: 'json',
+          },
+        },
       },
     }
     await wrapper.setProps({
@@ -157,8 +177,12 @@ describe('OperationValueComponent', function () {
   it('should render OperationValueBool if schema is account', async function () {
     consts.OPERATIONS = {
       test: {
-        name: 'test',
-        type: 'bool',
+        schema: {
+          key: {
+            name: 'test',
+            type: 'bool',
+          },
+        },
       },
     }
     await wrapper.setProps({
@@ -172,8 +196,12 @@ describe('OperationValueComponent', function () {
   it('should render date if schema is account', async function () {
     consts.OPERATIONS = {
       test: {
-        name: 'test',
-        type: 'time',
+        schema: {
+          key: {
+            name: 'test',
+            type: 'time',
+          },
+        },
       },
     }
     await wrapper.setProps({
@@ -187,8 +215,12 @@ describe('OperationValueComponent', function () {
   it('should render text if schema is account', async function () {
     consts.OPERATIONS = {
       test: {
-        name: 'test',
-        type: 'another',
+        schema: {
+          key: {
+            name: 'test',
+            type: 'another',
+          },
+        },
       },
     }
     await wrapper.setProps({

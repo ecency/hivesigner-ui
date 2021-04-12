@@ -2,7 +2,7 @@
   <span>
     <template v-if="value && Array.isArray(value)">
       <em v-if="value.length === 0">empty</em>
-      <OperationValue v-else v-for="(v, key) in value" :key="key" :value="v" />
+      <OperationValue v-else v-for="(v, key) in value" :key="key" :value="v" :schema-key="key" />
     </template>
     <template v-else-if="value && typeof value === 'object'">
       <div v-for="(v, key) in value" :key="key" class="mt-2">

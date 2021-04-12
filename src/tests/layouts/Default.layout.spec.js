@@ -4,6 +4,9 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Default from '@/layouts/default'
 
+jest.mock('@/store')
+import * as storeModules from '@/store'
+
 describe('DefaultLayout', function () {
   let localVue
   let router
@@ -16,6 +19,11 @@ describe('DefaultLayout', function () {
     localVue.use(Vuex)
     router = new VueRouter()
     store = new Vuex.Store()
+
+    storeModules.SettingsModule = {
+      loadSettings: () => Promise.resolve(),
+      getDynamicGlobalProperties: () => Promise.resolve(),
+    }
 
     wrapper = shallowMount(Default, {
       localVue,
