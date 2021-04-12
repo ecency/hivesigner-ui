@@ -16,14 +16,14 @@
             <span class="link-color">{{ parsed.params.callback | parseUrl }}</span
             >.
           </div>
-          <div class="flash flash-warn mb-4" v-if="username && !hasRequiredKey">
+          <div class="flash flash-warn mb-4" v-if="username && hasRequiredKey === false">
             This transaction requires your <b>{{ authority }}</b> key.
           </div>
           <div class="mb-4">
             <router-link
               :to="{ name: 'login', query: { redirect: this.$route.fullPath, authority } }"
               class="btn btn-large btn-blue mr-2 mb-2"
-              v-if="!username || !hasRequiredKey"
+              v-if="!username || hasRequiredKey === false"
             >
               Continue
             </router-link>

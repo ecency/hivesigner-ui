@@ -68,7 +68,9 @@ export default class Auth extends VuexModule {
     this.setAccount(account)
   }
 
-  @VuexAction
+  @VuexAction({
+    rawError: true,
+  })
   public async sign({ tx, authority }: any): Promise<SignedTransaction> {
     const { chainId } = this.context.rootState.settings
     const privateKey = authority && this.keys[authority]
@@ -77,7 +79,9 @@ export default class Auth extends VuexModule {
     return cryptoUtils.signTransaction(tx, [privateKey], Buffer.from(chainId, 'hex'))
   }
 
-  @VuexAction
+  @VuexAction({
+    rawError: true,
+  })
   public async signMessage({ message, authority }: any): Promise<any> {
     const timestamp = parseInt((new Date().getTime() / 1000) + '', 10)
     const messageObj: any = { signed_message: message, authors: [this.username], timestamp }
@@ -91,13 +95,17 @@ export default class Auth extends VuexModule {
     return messageObj
   }
 
-  @VuexAction
-  public async broadcast(tx: any): Promise<void> {
-    client.broadcast.send(tx)
+  @VuexAction({
+    rawError: true,
+  })
+  public async broadcast(tx: any): Promise<SignedTransaction> {
+    return client.broadcast.send(tx)
   }
 
-  @VuexAction
-  public async updateAccount(data: any): Promise<any> {
+  @VuexAction({
+    rawError: true,
+  })
+  public async updateAccount(data: any): Promise<SignedTransaction> {
     const privateKey = privateKeyFrom(this.keys.owner || this.keys.active)
     return client.broadcast.updateAccount(data, privateKey)
   }
