@@ -80,7 +80,7 @@ export default class Profile extends Vue {
     const accounts = await client.database.getAccounts([this.username])
     if (accounts[0]) {
       try {
-        this.profile = JSON.parse(accounts[0].json_metadata).profile
+        this.profile = JSON.parse(accounts[0].posting_json_metadata).profile
         if (!isValidUrl(this.profile.website)) {
           delete this.profile.website
         }

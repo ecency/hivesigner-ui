@@ -166,7 +166,7 @@ export default class Profile extends Vue {
 
   private get profile(): any {
     let profile = {}
-    const metadata = jsonParse(this.account.json_metadata)
+    const metadata = jsonParse(this.account.posting_json_metadata)
     if (metadata.profile && typeof metadata.profile === 'object') {
       profile = metadata.profile
     }

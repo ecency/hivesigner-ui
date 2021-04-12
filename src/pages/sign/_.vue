@@ -4,7 +4,7 @@
     <div v-if="parsed && uriIsValid" class="p-4 after-header">
       <div class="container-sm mx-auto">
         <Error v-if="!loading && failed" :error="error"/>
-        <Confirmation v-if="!loading && !!transactionId" :id="transactionId"/>
+        <Confirmation v-if="!loading && !!transactionId" :id="transactionId" />
         <div v-if="!failed && !transactionId">
           <Operation
             v-for="(operation, key) in parsed.tx.operations"
@@ -16,14 +16,14 @@
             <span class="link-color">{{ parsed.params.callback | parseUrl }}</span
             >.
           </div>
-          <div class="flash flash-warn mb-4" v-if="username && !hasRequiredKey">
+          <div class="flash flash-warn mb-4" v-if="username && hasRequiredKey === false">
             This transaction requires your <b>{{ authority }}</b> key.
           </div>
           <div class="mb-4">
             <router-link
               :to="{ name: 'login', query: { redirect: this.$route.fullPath, authority } }"
               class="btn btn-large btn-blue mr-2 mb-2"
-              v-if="!username || !hasRequiredKey"
+              v-if="!username || hasRequiredKey === false"
             >
               Continue
             </router-link>
@@ -65,7 +65,6 @@ import {
   signComplete,
 } from '~/utils'
 import { AuthModule, SettingsModule } from '~/store'
-import { SignedTransaction } from '@hiveio/dhive'
 import { Authority } from '~/enums'
 
 @Component

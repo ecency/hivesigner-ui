@@ -5,7 +5,7 @@
       <div v-for="(value, key) in operation[1]" :key="key">
         <p>
           <b class="form-label v-align-top">{{ schema[key].name || key }}</b>
-          <OperationValue :value="value" :path="operation[0] + '.schema.' + key" />
+          <OperationValue :value="value" :path="operation[0]" :schema-key="key" />
         </p>
       </div>
     </div>
@@ -25,7 +25,7 @@ export default class Operation extends Vue {
   private operation!: any[]
 
   private get schema(): any {
-    return OPERATIONS[this.operation[0]].schema || {}
+    return OPERATIONS[this.operation[0]]?.schema || {}
   }
 }
 </script>

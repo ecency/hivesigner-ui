@@ -11,7 +11,7 @@
         Going forward <b>{{ username }}</b> will not be able to perform actions on your
         behalf.
       </p>
-      <div class="flash flash-warn mt-4" v-if="account.name && !hasRequiredKey">
+      <div class="flash flash-warn mt-4" v-if="account.name && hasRequiredKey === false">
         This transaction requires your <b>active</b> key.
       </div>
     </div>
@@ -22,7 +22,7 @@
           query: { redirect: this.$route.fullPath, authority: 'active' },
         }"
         class="btn btn-large btn-blue mr-2 mb-2"
-        v-if="!account.name || !hasRequiredKey"
+        v-if="!account.name || hasRequiredKey === false"
       >
         Continue
       </router-link>

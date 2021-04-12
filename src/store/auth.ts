@@ -1,7 +1,7 @@
-import { Module, VuexAction, VuexMutation } from 'nuxt-property-decorator'
+import { Module, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
 import { Account, cryptoUtils, SignedTransaction } from '@hiveio/dhive'
 import { b64uEnc, client, credentialsValid, privateKeyFrom, signComplete } from '~/utils'
-import { VuexModule } from '~/models'
+import { TransactionConfirmation } from '@hiveio/dhive'
 
 @Module({
   stateFactory: true,
@@ -68,17 +68,20 @@ export default class Auth extends VuexModule {
     this.setAccount(account)
   }
 
-  @VuexAction
+  @VuexAction({
+    rawError: true,
+  })
   public async sign({ tx, authority }: any): Promise<SignedTransaction> {
     const { chainId } = this.context.rootState.settings
-    const privateKey =
-      authority && this.keys[authority]
+    const privateKey = authority && this.keys[authority]
         ? privateKeyFrom(this.keys[authority])
         : privateKeyFrom(this.password)
     return cryptoUtils.signTransaction(tx, [privateKey], Buffer.from(chainId, 'hex'))
   }
 
-  @VuexAction
+  @VuexAction({
+    rawError: true,
+  })
   public async signMessage({ message, authority }: any): Promise<any> {
     const timestamp = parseInt((new Date().getTime() / 1000) + '', 10)
     const messageObj: any = { signed_message: message, authors: [this.username], timestamp }
@@ -92,13 +95,17 @@ export default class Auth extends VuexModule {
     return messageObj
   }
 
-  @VuexAction
-  public async broadcast(tx: any): Promise<void> {
-    client.broadcast.send(tx)
+  @VuexAction({
+    rawError: true,
+  })
+  public async broadcast(tx: any): Promise<SignedTransaction> {
+    return client.broadcast.send(tx)
   }
 
-  @VuexAction
-  public async updateAccount(data: any): Promise<any> {
+  @VuexAction({
+    rawError: true,
+  })
+  public async updateAccount(data: any): Promise<SignedTransaction> {
     const privateKey = privateKeyFrom(this.keys.owner || this.keys.active)
     return client.broadcast.updateAccount(data, privateKey)
   }

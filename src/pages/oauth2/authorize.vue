@@ -6,8 +6,9 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import { Context } from '@nuxt/types'
 
-@Component({
-  middleware({ redirect, query }: Context): void {
+@Component
+export default class Authorize extends Vue {
+  public middleware({ redirect, query }: Context): void {
     let scope = 'posting'
     if (query.scope === 'login') {
       scope = 'login'
@@ -19,7 +20,5 @@ import { Context } from '@nuxt/types'
     query.scope = scope
     redirect('/login', query)
   }
-})
-export default class Authorize extends Vue {
 }
 </script>

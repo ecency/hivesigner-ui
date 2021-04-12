@@ -47,12 +47,15 @@ export default class OperationValue extends Vue {
   @Prop()
   private path!: any
 
+  @Prop()
+  private schemaKey!: string
+
   private get username(): string {
     return AuthModule.username
   }
 
   private get schema(): any {
-    return OPERATIONS[this.path] || {}
+    return OPERATIONS[this.path]?.schema[this.schemaKey] || {}
   }
 }
 </script>

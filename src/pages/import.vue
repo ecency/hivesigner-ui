@@ -237,7 +237,7 @@ export default class Import extends Vue {
     if (accounts[0]) {
       this.app = app
       try {
-        this.appProfile = JSON.parse(accounts[0].json_metadata).profile
+        this.appProfile = JSON.parse(accounts[0].posting_json_metadata).profile
         if (
           !isChromeExtension() &&
           (!this.appProfile.redirect_uris.includes(this.callback) || !isValidUrl(this.callback))

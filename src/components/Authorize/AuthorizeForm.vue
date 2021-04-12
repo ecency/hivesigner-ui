@@ -15,7 +15,7 @@
         Giving active authority enables the authorized account to do fund transfers from your
         account, this should be used with utmost care.
       </div>
-      <div class="flash flash-warn mt-4" v-if="accountName && !hasRequiredKey">
+      <div class="flash flash-warn mt-4" v-if="accountName && hasRequiredKey === false">
         This transaction requires your <b>active</b> key.
       </div>
     </div>
@@ -26,7 +26,7 @@
           query: { redirect: this.$route.fullPath, authority: 'active' },
         }"
         class="btn btn-large btn-blue mr-2 mb-2"
-        v-if="!accountName || !hasRequiredKey"
+        v-if="!accountName || hasRequiredKey === false"
       >
         Continue
       </router-link>

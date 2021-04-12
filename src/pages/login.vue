@@ -269,7 +269,7 @@ export default class Login extends Vue {
     if (accounts[0]) {
       this.app = app
       try {
-        this.appProfile = JSON.parse(accounts[0].json_metadata).profile
+        this.appProfile = JSON.parse(accounts[0].posting_json_metadata).profile
         if (!this.appProfile.redirect_uris.includes(this.callback) || !isValidUrl(this.callback)) {
           this.failed = true
         }
