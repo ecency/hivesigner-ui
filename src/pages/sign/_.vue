@@ -11,12 +11,15 @@
             :operation="operation"
             :key="key"
           />
-          <div class="flash flash-warn mb-4" v-if="parsed.params.callback">
+          <div class="flash flash-warn alert-callback mb-4" v-if="parsed.params.callback">
             You are going to get redirected to
-            <span class="link-color">{{ parsed.params.callback | parseUrl }}</span
-            >.
+            <span class="link-color">{{ parsed.params.callback | parseUrl }}</span>
+            .
           </div>
-          <div class="flash flash-warn mb-4" v-if="username && hasRequiredKey === false">
+          <div
+            class="flash flash-warn alert-required-transaction-key mb-4"
+            v-if="username && hasRequiredKey === false"
+          >
             This transaction requires your <b>{{ authority }}</b> key.
           </div>
           <div class="mb-4">
@@ -36,7 +39,7 @@
             >
               {{ parsed.params.no_broadcast ? 'Sign' : 'Approve' }}
             </button>
-            <button class="btn btn-large mb-2" @click.prevent="handleReject">
+            <button class="btn btn-cancel btn-large mb-2" @click.prevent="handleReject">
               Cancel
             </button>
           </div>
@@ -76,7 +79,7 @@ export default class Sign extends Vue {
   private failed = false
   private error = false
   private hasRequiredKey = null
-  private authority = getAuthority(this.$route.query.authority as Authority)
+  private authority!: Authority
 
   private get uri(): string {
     return `hive://sign/${this.$route.params.pathMatch}${buildSearchParams(this.$route)}`
@@ -105,6 +108,7 @@ export default class Sign extends Vue {
   }
 
   private mounted(): void {
+    this.authority = getAuthority(this.$route.query.authority as Authority)
     this.parseUri(this.uri)
     if (!this.authority && this.parsed && this.parsed.tx) {
       this.authority = getLowestAuthorityRequired(this.parsed.tx)

@@ -48,18 +48,18 @@ export default class Auth extends VuexModule {
 
     const result = await client.database.getAccounts([username])
 
-    this.setUser({ result: result[0], keys })
+    this.setUser({ result: result[0], keys });
 
-    this.store.app.$idleDetector.start(this.context.rootState.settings.timeout * 60 * 1000, () => {
-      this.store.app.$idleDetector.stop()
+    (this as any).store.app.$idleDetector.start(this.context.rootState.settings.timeout * 60 * 1000, () => {
+      (this as any).app.$idleDetector.stop()
       this.logout()
     })
   }
 
   @VuexAction
   public async logout(): Promise<void> {
-    this.clearUser()
-    this.store.app.router?.push('/')
+    this.clearUser();
+    (this as any).app.router?.push('/')
   }
 
   @VuexAction
