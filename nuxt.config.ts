@@ -27,8 +27,7 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
-    'primer/index.scss',
-    '@vue/ui/dist/vue-ui.css',
+    '@/assets/scss/tailwind.scss',
     '@/assets/scss/styles.scss',
     '@/assets/css/iconfont.css',
   ],
@@ -47,7 +46,8 @@ export default {
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
     // https://go.nuxtjs.dev/typescript
-    '@nuxt/typescript-build'
+    '@nuxt/typescript-build',
+    '@nuxtjs/tailwindcss'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -80,5 +80,8 @@ export default {
     extendRoutes(routes: any[]) {
       ADDITIONAL_ROUTES.forEach(route => routes.push(route))
     }
+  },
+  tailwindcss: {
+    jit: true
   }
 }
