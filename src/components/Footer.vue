@@ -1,34 +1,21 @@
 <template>
-  <div class="footer mb-4">
-    <ul>
-      <li class="d-inline mx-2">
-        <router-link to="/apps">Apps</router-link>
+  <div class="footer text-gray-400 mb-4">
+    <ul class="flex justify-center my-1">
+      <li class="inline mx-2">
+        <router-link to="/apps" class="hover:underline">Apps</router-link>
       </li>
-      <li class="d-inline mx-2">
-        <router-link to="/accounts">Accounts</router-link>
+      <li class="inline mx-2">
+        <router-link to="/accounts" class="hover:underline">Accounts</router-link>
       </li>
-      <li class="d-inline mx-2">
-        <router-link to="/settings">Settings</router-link>
+      <li class="inline mx-2">
+        <router-link to="/settings" class="hover:underline">Settings</router-link>
       </li>
-      <li class="d-inline mx-2">
-        <router-link to="/developers">Developers</router-link>
+      <li class="inline mx-2">
+        <router-link to="/developers" class="hover:underline">Developers</router-link>
       </li>
-      <li class="d-inline mx-2">
-        <router-link to="/about">About</router-link>
+      <li class="inline mx-2">
+        <router-link to="/about" class="hover:underline">About</router-link>
       </li>
     </ul>
   </div>
 </template>
-<style scoped lang="scss">
-  @import '../assets/scss/vars';
-
-  .footer {
-    ul {
-      list-style: none;
-
-      a {
-        color: $input-border-color;
-      }
-    }
-  }
-</style>

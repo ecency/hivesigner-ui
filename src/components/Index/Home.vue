@@ -26,7 +26,7 @@
           industry standard OAuth2.
         </p>
         <router-link
-          to="/login"
+          to="/login?redirect=accounts"
           class="bg-primary hover:bg-primary-dark text-white p-4 inline-flex items-center rounded-md"
         >
           <Icon name="Keychain" class="mr-2" />

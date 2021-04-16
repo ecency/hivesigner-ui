@@ -11,14 +11,16 @@ module.exports = {
       colors: {
         gray: {
           DEFAULT: "#828282",
-          light: "#C4C4C4"
+          '500': '#b5bbc3',
+          '400': "#C4C4C4"
         },
         primary: {
           DEFAULT: "#E31337",
           dark: "#CD1434"
         },
         black: {
-          light: '#4F4F4F'
+          '400': '#4F4F4F',
+          '500': '#414141'
         }
       },
       container: {
@@ -27,6 +29,9 @@ module.exports = {
           md: "600px",
           xl: "1280px"
         }
+      },
+      fontFamily: {
+        old: ['Circular-Pro', 'Helvetica', 'Arial', 'sans-serif']
       }
     },
   },

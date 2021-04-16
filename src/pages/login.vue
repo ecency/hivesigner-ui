@@ -1,12 +1,12 @@
 <template>
-  <Center>
+  <Center class="font-old">
     <router-link
       to="/"
-      class="d-inline-block my-2 no-decoration"
+      class="inline-block my-2"
       v-if="isRedirected"
     >
-      <span class="logo iconfont icon-hivesigner"/>
-      <h4 class="m-0">hivesigner</h4>
+      <Icon name="Logo" style="height: 32px" class="block mx-auto mb-3" />
+      <h4 class="font-bold text-black-500 text-2xl">hivesigner</h4>
     </router-link>
     <div
       v-if="!failed && !isRedirected"
@@ -44,7 +44,7 @@
       />
       <router-link
         :to="{ name: 'import', query: $route.query }"
-        class="btn btn-large input-block text-center mb-2"
+        class="button btn btn-large block text-center mb-2"
       >
         Import account
       </router-link>
@@ -72,8 +72,10 @@ import { AuthModule, PersistentFormsModule } from '~/store'
 import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
 import LoginForm from '~/components/Login/LoginForm.vue'
+import Icon from '../components/UI/Icons/Icon.vue'
 
 @Component({
+  components: { Icon },
   middleware: ['before-login'],
 })
 export default class Login extends Vue {

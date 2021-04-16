@@ -1,7 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
 
-@import './vars';
-@import './mixins';
+@import 'vars';
+@import "fonts";
+@import 'mixins';
+@import 'forms';
 
 html {
   -webkit-font-smoothing: antialiased;
@@ -18,4 +20,8 @@ body {
   > * {
     margin: auto;
   }
+}
+
+.container-xs {
+  max-width: 380px;
 }

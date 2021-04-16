@@ -1,13 +1,13 @@
 <template>
   <form @submit.prevent="submitForm" method="post" class="text-left">
     <label for="username">Username</label>
-    <div v-if="dirty.username && !!errors.username" class="error mb-2">
+    <div v-if="dirty.username && !!errors.username" class="text-primary mb-2">
       {{ errors.username }}
     </div>
     <select
       id="username"
       v-model.trim="username"
-      class="form-select input-lg input-block mb-2"
+      class="block mb-2"
       autocorrect="off"
       autocapitalize="none"
       autocomplete="username"
@@ -26,7 +26,7 @@
             <span class="iconfont icon-info"/>
           </span>
     </label>
-    <div v-if="dirty.key && !!errors.key" class="error mb-2">
+    <div v-if="dirty.key && !!errors.key" class="text-primary mb-2">
       {{ errors.key }}
     </div>
     <input
@@ -37,15 +37,15 @@
       autocorrect="off"
       autocapitalize="none"
       autocomplete="current-password"
-      class="form-control input-lg input-block mb-2"
+      class="block mb-2"
       :class="{ 'mb-4': !error }"
       @blur="handleBlur('key')"
     />
-    <div v-if="!!error" class="error mb-4">{{ error }}</div>
+    <div v-if="!!error" class="text-primary mb-6">{{ error }}</div>
     <button
       :disabled="submitDisabled || loading"
       type="submit"
-      class="btn btn-large btn-blue input-block mb-2"
+      class="button-primary block mb-2"
     >
       Login
     </button>

@@ -1,0 +1,29 @@
+select, input {
+  @apply border border-gray-400 px-3 py-1.5 rounded w-full focus:border-primary outline-none duration-300;
+
+  &.input-lg {
+    min-height: 42px;
+  }
+}
+
+select {
+  background: #fff url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAUCAMAAACzvE1FAAAADFBMVEUzMzMzMzMzMzMzMzMKAG/3AAAAA3RSTlMAf4C/aSLHAAAAPElEQVR42q3NMQ4AIAgEQTn//2cLdRKppSGzBYwzVXvznNWs8C58CiussPJj8h6NwgorrKRdTvuV9v16Afn0AYFOB7aYAAAAAElFTkSuQmCC) no-repeat right 8px center;
+  background-size: 8px 10px;
+  appearance: none;
+}
+
+label {
+  @apply font-medium text-lg mb-2 inline-block text-black-500;
+}
+
+button, .button {
+  @apply w-full py-3 px-5 rounded-md border border-gray-400 text-gray-500 font-bold hover:text-black-500 duration-300;
+
+  &:hover {
+    border-color: rgba(27, 31, 35, .35);
+  }
+
+  &.button-primary {
+    @apply border-0 bg-primary hover:bg-primary-dark text-white hover:text-white;
+  }
+}

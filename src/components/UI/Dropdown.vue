@@ -2,7 +2,7 @@
   <div class="dropdown relative">
     <transition name="fade">
       <div
-        class="overlay inset-0 fixed bg-black-light opacity-40 duration-500"
+        class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500"
         v-if="open"
         @click="open = false"
       ></div>
