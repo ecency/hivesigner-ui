@@ -78,10 +78,10 @@ export default class Dropdown extends Vue {
 
   private get menuClasses(): Record<string, boolean> {
     return {
-      'bottom-full -left-2': this.position === 'leftTop',
-      '-left-2 bottom-full': this.position === 'leftBottom',
-      'top-full -right-2': this.position === 'rightBottom',
-      'bottom-full -right-2': this.position === 'rightTop',
+      '-bottom-2 -left-2': this.position === 'leftTop',
+      '-top-2 -left-2': this.position === 'leftBottom',
+      '-top-2 -right-2': this.position === 'rightBottom',
+      '-bottom-2 -right-2': this.position === 'rightTop',
     }
   }
 

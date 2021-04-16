@@ -1,5 +1,10 @@
 <template>
-  <Dropdown ref="dropdown" with-chevron trigger-class="text-black-light hover:text-primary">
+  <Dropdown
+    ref="dropdown"
+    with-chevron
+    trigger-class="text-black-light hover:text-primary"
+    position="leftTop"
+  >
     <template slot="trigger">
       <span class="text-lg uppercase">{{ locale }}</span>
     </template>

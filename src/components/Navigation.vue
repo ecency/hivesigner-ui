@@ -1,5 +1,11 @@
 <template>
-  <div class="flex items-center justify-between">
+  <div
+    class="flex justify-between"
+    :class="{
+      'items-center': !vertical,
+      'items-start flex-col': vertical,
+    }"
+  >
     <locale-selector />
 
     <router-link
@@ -13,10 +19,16 @@
   </div>
 </template>
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator'
+import { Component, Prop, Vue } from 'nuxt-property-decorator'
 
 @Component
 export default class Navigation extends Vue {
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  private vertical!: string
+
   private get menu() {
     return [
       { label: 'Apps', to: '/apps' },

@@ -5,7 +5,7 @@
         <template slot="trigger">
           <Icon name="Menu" class="text-gray" />
         </template>
-        <navigation class="flex-col"/>
+        <navigation vertical />
       </Dropdown>
     </div>
     <div class="grid gap-2.5 xl:gap-40 grid-cols-2 items-center justify-center">
