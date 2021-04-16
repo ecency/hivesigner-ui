@@ -1,20 +1,29 @@
 <template>
-  <div class="container mx-auto px-4">
+  <div class="home container py-20 mx-auto px-4">
+    <div class="navigation-container block sm:hidden fixed top-0 right-0 pr-5 pt-5">
+      <Dropdown position="rightBottom">
+        <template slot="trigger">
+          <Icon name="Menu" class="text-gray" />
+        </template>
+        <navigation class="flex-col"/>
+      </Dropdown>
+    </div>
     <div class="grid gap-2.5 xl:gap-40 grid-cols-2 items-center justify-center">
       <div class="col-span-2 xl:col-span-1 mb-6 xl:mb-0">
         <div class="flex xl:hidden items-center justify-center mb-9">
-          <img class="block pr-5" :src="require('../../assets/img/logo.svg')" alt="">
-          <span class="font-bold text-5xl">Hivesigner</span>
+          <Icon class="logo mr-5" name="logo" />
+          <span class="font-bold text-3xl sm:text-4xl">Hivesigner</span>
         </div>
-        <img class="block mx-auto" :src="require('../../assets/img/home.png')" alt="">
+        <img class="block mx-auto image" :src="require('../../assets/img/home.png')" alt="">
       </div>
       <div class="col-span-2 xl:col-span-1 flex flex-col items-center xl:items-start">
         <div class="hidden xl:flex items-center mb-24">
-          <img class="block pr-5" :src="require('../../assets/img/logo.svg')" alt="">
+          <Icon name="logo" class="logo mr-5" />
           <span class="font-bold text-5xl">Hivesigner</span>
         </div>
         <p class="text-xl text-center xl:text-left text-gray pb-12">
-          Secure way to sign with Hivesigner. Best security for users and developers to integrate industry standard OAuth2.
+          Secure way to sign with Hivesigner. Best security for users and developers to integrate
+          industry standard OAuth2.
         </p>
         <router-link
           to="/login"
@@ -24,18 +33,7 @@
           Get started
         </router-link>
 
-        <div class="flex items-center justify-between w-full pt-32">
-          <locale-selector />
-
-          <router-link
-            v-for="item of menu"
-            :key="item.to"
-            class="text-gray text-lg hover:text-primary cursor-pointer"
-            :to="item.to"
-          >
-            {{ item.label }}
-          </router-link>
-        </div>
+        <navigation class="w-full pt-32 hidden sm:flex"/>
       </div>
     </div>
   </div>
@@ -44,20 +42,47 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
 import { PACKAGE } from '../../consts'
+import Dropdown from '../UI/Dropdown.vue'
+import Icon from '../UI/Icons/Icon.vue'
+import Navigation from '../Navigation.vue'
 
 @Component({
+  components: { Navigation, Icon, Dropdown },
   middleware: ['isWeb']
 })
 export default class Home extends Vue {
-  private pkg = PACKAGE
-
-  private get menu() {
-    return [
-      { label: 'Apps', to: '/apps' },
-      { label: 'Accounts', to: '/accounts' },
-      { label: 'Documentation', to: '/wiki' },
-      { label: 'About', to: '/about' },
-    ]
-  }
 }
 </script>
+<style lang="scss">
+.home {
+  .image {
+    max-width: 300px;
+  }
+}
+
+@screen sm {
+  .home {
+    .logo {
+      width: 55px;
+      height: 64px;
+    }
+
+    .image {
+      max-width: 450px;
+    }
+  }
+}
+
+@screen xl {
+  .home {
+    .logo {
+      width: 64px;
+      height: 75px;
+    }
+
+    .image {
+      max-width: 492px;
+    }
+  }
+}
+</style>
