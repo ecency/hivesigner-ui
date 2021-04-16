@@ -29,7 +29,7 @@
           to="/login"
           class="bg-primary hover:bg-primary-dark text-white p-4 inline-flex items-center rounded-md"
         >
-          <img class="mr-2" :src="require('../../assets/img/icons/keychain.svg')">
+          <Icon name="Keychain" class="mr-2" />
           Get started
         </router-link>
 
