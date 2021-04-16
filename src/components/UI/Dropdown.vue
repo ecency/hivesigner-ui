@@ -1,10 +1,12 @@
 <template>
   <div class="dropdown relative">
-    <div
-      class="overlay inset-0 fixed bg-black-light opacity-40"
-      v-if="open"
-      @click="open = false"
-    ></div>
+    <transition name="fade">
+      <div
+        class="overlay inset-0 fixed bg-black-light opacity-40 duration-500"
+        v-if="open"
+        @click="open = false"
+      ></div>
+    </transition>
     <div
       class="dropdown-trigger cursor-pointer"
       :class="triggerClasses"
@@ -15,17 +17,19 @@
         <Icon name="chevron" />
       </div>
     </div>
-    <div
-      class="dropdown-menu flex flex-col bg-white p-6 absolute m-2"
-      v-if="open"
-      :style="{ 'width': width }"
-      :class="menuClasses"
-    >
-      <div class="icon absolute right-4 top-4 cursor-pointer" @click="open = false">
-        <Icon name="close" class="text-gray" />
+    <transition name="fade">
+      <div
+        class="dropdown-menu flex flex-col bg-white p-6 absolute m-2 duration-500"
+        v-if="open"
+        :style="{ 'width': width }"
+        :class="menuClasses"
+      >
+        <div class="icon absolute right-4 top-4 cursor-pointer" @click="open = false">
+          <Icon name="close" class="text-gray" />
+        </div>
+        <slot></slot>
       </div>
-      <slot></slot>
-    </div>
+    </transition>
   </div>
 </template>
 
@@ -86,3 +90,8 @@ export default class Dropdown extends Vue {
   }
 }
 </script>
+<style lang="scss">
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+</style>
