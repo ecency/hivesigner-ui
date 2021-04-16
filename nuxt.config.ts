@@ -6,7 +6,7 @@ const numberFormats = require('./src/assets/data/number-formats.json')
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
-  srcDir: './src',
+  srcDir: 'src',
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -80,8 +80,5 @@ export default {
     extendRoutes(routes: any[]) {
       ADDITIONAL_ROUTES.forEach(route => routes.push(route))
     }
-  },
-  tailwindcss: {
-    jit: true
   }
 }

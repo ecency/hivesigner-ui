@@ -1,9 +1,12 @@
+const theme = require('tailwindcss/defaultTheme')
+
 module.exports = {
-  // purge: [
-  //   '**/*.vue'
-  // ],
+  purge: [
+    './**/*.vue'
+  ],
   darkMode: false, // or 'media' or 'class'
   theme: {
+    ...theme,
     extend: {
       colors: {
         gray: {
@@ -17,19 +20,15 @@ module.exports = {
         black: {
           light: '#4F4F4F'
         }
+      },
+      container: {
+        screens: {
+          sm: "100%",
+          md: "600px",
+          xl: "1280px"
+        }
       }
     },
-    container: {
-      screens: {
-        sm: "100%",
-        md: "100%",
-        lg: "1024px",
-        xl: "1280px"
-      }
-    }
-  },
-  variants: {
-    extend: {},
   },
   plugins: [],
 }
