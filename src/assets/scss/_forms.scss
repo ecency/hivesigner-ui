@@ -1,4 +1,4 @@
-select, input {
+select, input[type=text], input[type=password] {
   @apply border border-gray-400 px-3 py-1.5 rounded w-full focus:border-primary outline-none duration-300;
 
   &.input-lg {
@@ -21,6 +21,10 @@ button, .button {
 
   &:hover {
     border-color: rgba(27, 31, 35, .35);
+  }
+
+  &[disabled] {
+    opacity: 0.4;
   }
 
   &.button-primary {

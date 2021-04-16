@@ -7,7 +7,7 @@
     <select
       id="username"
       v-model.trim="username"
-      class="block mb-2"
+      class="input-lg block mb-2"
       autocorrect="off"
       autocapitalize="none"
       autocomplete="username"
@@ -37,7 +37,7 @@
       autocorrect="off"
       autocapitalize="none"
       autocomplete="current-password"
-      class="block mb-2"
+      class="input-lg block mb-2"
       :class="{ 'mb-4': !error }"
       @blur="handleBlur('key')"
     />

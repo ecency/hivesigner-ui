@@ -1,7 +1,7 @@
 <template>
   <div>
     <label for="username">Username</label>
-    <div v-if="dirty.username && !!errors.username" class="error mb-2">
+    <div v-if="dirty.username && !!errors.username" class="text-primary mb-2">
       {{ errors.username }}
     </div>
     <input
@@ -9,14 +9,14 @@
       v-model.trim="username"
       id="username"
       type="text"
-      class="form-control input-lg input-block mb-2"
+      class="input-lg block mb-2"
       autocorrect="off"
       autocapitalize="none"
       autocomplete="username"
       @blur="handleBlur('username')"
     />
     <label for="password"> Master password or {{ authority || 'private' }} key </label>
-    <div v-if="dirty.password && !!errors.password" class="error mb-2">
+    <div v-if="dirty.password && !!errors.password" class="text-primary mb-2">
       {{ errors.password }}
     </div>
     <input
@@ -27,16 +27,16 @@
       autocorrect="off"
       autocapitalize="none"
       autocomplete="current-password"
-      class="form-control input-lg input-block mb-2"
+      class="input-lg block mb-2"
       @blur="handleBlur('password')"
     />
-    <label class="mb-2" :class="{ 'mb-4': !error }">
+    <label :class="{ 'mb-6': !error, 'mb-2': error }">
       <input key="storeAccount" v-model="storeAccount" type="checkbox"/> Encrypt your keys
     </label>
     <div v-if="!!error" class="error mb-4">{{ error }}</div>
     <button
       :disabled="nextDisabled || loading"
-      class="btn btn-large btn-blue input-block mb-2"
+      class="button-primary block mb-2"
       @click.prevent="submitNext"
     >
       {{ nextText }}
@@ -44,13 +44,13 @@
     <router-link
       v-if="hasAccounts"
       :to="{ name: 'login', query: $route.query }"
-      class="btn btn-large input-block text-center mb-2"
+      class="button block text-center mb-2"
     >
       Select account
     </router-link>
     <button
       :disabled="loading"
-      class="btn btn-large input-block text-center mb-2"
+      class="block text-center mb-2"
       @click="signUp()"
     >Signup
     </button>

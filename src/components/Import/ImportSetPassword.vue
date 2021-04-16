@@ -9,7 +9,7 @@
         <span class="iconfont icon-info"></span>
       </span>
     </label>
-    <div v-if="dirty.key && !!errors.key" class="error mb-2">
+    <div v-if="dirty.key && !!errors.key" class="text-primary mb-2">
       {{ errors.key }}
     </div>
     <input
@@ -20,11 +20,11 @@
       autocorrect="off"
       autocapitalize="none"
       autocomplete="new-password"
-      class="form-control input-lg input-block mb-2"
+      class="input-lg block mb-2"
       @blur="handleBlur('key')"
     />
     <label for="key-confirmation">Confirm password</label>
-    <div v-if="dirty.keyConfirmation && !!errors.keyConfirmation" class="error mb-2">
+    <div v-if="dirty.keyConfirmation && !!errors.keyConfirmation" class="text-primary mb-2">
       {{ errors.keyConfirmation }}
     </div>
     <input
@@ -35,17 +35,17 @@
       autocorrect="off"
       autocapitalize="none"
       autocomplete="new-password"
-      class="form-control input-lg input-block mb-2"
+      class="input-lg block mb-2"
       @blur="handleBlur('keyConfirmation')"
     />
-    <legend class="mb-4 d-block">
+    <legend class="mb-6 block text-gray-600">
       The hivesigner password will be required to unlock your account for usage.
       {{ TOOLTIP_IMPORT_ENCRYPTION_KEY }}
     </legend>
     <button
       :disabled="submitDisabled || loading"
       type="submit"
-      class="btn btn-large btn-blue input-block mb-2"
+      class="button-primary mb-2"
     >
       Import account
     </button>
@@ -53,7 +53,6 @@
 </template>
 
 <script lang="ts">
-
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { TOOLTIP_IMPORT_ENCRYPTION_KEY } from '~/consts'
 import { PersistentFormsModule } from '~/store'

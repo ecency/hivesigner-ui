@@ -1,12 +1,12 @@
 <template>
-  <Center>
+  <Center class="font-old">
     <router-link
       to="/"
-      class="d-inline-block my-2 no-decoration"
+      class="inline-block my-2"
       v-if="isRedirected"
     >
-      <span class="logo iconfont icon-hivesigner"/>
-      <h4 class="m-0">hivesigner</h4>
+      <Icon name="Logo" style="height: 32px" class="block mx-auto mb-3" />
+      <h4 class="font-bold text-black-500 text-2xl">hivesigner</h4>
     </router-link>
     <div v-if="!failed && !isRedirected" class="p-4 after-header">
       <div class="container-sm mx-auto">
@@ -73,11 +73,13 @@ import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
 import ImportSetPassword from '~/components/Import/ImportSetPassword.vue'
 import ImportUserForm from '~/components/Import/ImportUserForm.vue'
+import Icon from '../components/UI/Icons/Icon.vue'
 
 const passphraseSchema = new PasswordValidator()
 passphraseSchema.is().min(8).is().max(50).has().uppercase().has().lowercase()
-
-@Component
+@Component({
+  components: { Icon }
+})
 export default class Import extends Vue {
   @Ref('set-password')
   private setPasswordRef!: ImportSetPassword
