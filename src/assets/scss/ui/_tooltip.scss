@@ -1,0 +1,25 @@
+.tooltip {
+  position: relative;
+
+  &::before {
+    @apply bottom-auto absolute right-1/2 border-8 -mr-1.5 border-transparent text-gray-900 -top-2 duration-200 opacity-0;
+
+    content: '';
+    border-top-color: theme('colors.current') !important;
+    border-width: 6px;
+  }
+
+  &::after {
+    content: attr(aria-label);
+    max-width: 270px;
+    transform: translate(-50%, -0.5rem);
+
+    @apply rounded px-1.5 py-1.5 absolute text-white bg-gray-900 text-xs font-normal text-center bottom-full left-1/2 right-auto pointer-events-none w-max duration-200 opacity-0;
+  }
+
+  &:hover {
+    &::before, &::after {
+      @apply opacity-100;
+    }
+  }
+}

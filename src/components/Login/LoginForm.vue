@@ -17,14 +17,14 @@
         {{ user }}
       </option>
     </select>
-    <label for="password" v-if="!decrypted">
+    <label for="password" class="flex items-center" v-if="!decrypted">
       Hivesigner password
       <span
-        class="tooltipped tooltipped-n tooltipped-multiline"
+        class="inline-block tooltip ml-1"
         :aria-label="tooltipLoginEncryptionKey"
       >
-            <span class="iconfont icon-info"/>
-          </span>
+        <Icon name="Info" style="width: 14px; height: 22px;" />
+      </span>
     </label>
     <div v-if="dirty.key && !!errors.key" class="text-primary mb-2">
       {{ errors.key }}
@@ -59,8 +59,11 @@ import { ERROR_INVALID_ENCRYPTION_KEY, TOOLTIP_LOGIN_ENCRYPTION_KEY } from '~/co
 import { PersistentFormsModule } from '~/store'
 import { signComplete } from '~/utils'
 import { Authority } from '~/enums'
+import Icon from '../UI/Icons/Icon.vue'
 
-@Component
+@Component({
+  components: { Icon }
+})
 export default class LoginForm extends Vue {
   @Prop({
     type: Boolean,
