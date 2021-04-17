@@ -13,15 +13,12 @@ html {
 body {
   font-family: Lato, Helvetica, Arial, sans-serif;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  > * {
-    margin: auto;
-  }
 }
 
 .container-xs {
   max-width: 380px;
+}
+
+.container-sm {
+  max-width: 544px;
 }

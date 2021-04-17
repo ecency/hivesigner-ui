@@ -6,21 +6,18 @@ import { Component, Vue } from 'nuxt-property-decorator'
 import { SettingsModule } from '~/store'
 
 @Component
-export default class Default extends Vue {
+export default class Page extends Vue {
   private async created(): Promise<void> {
     await SettingsModule.loadSettings()
     await SettingsModule.getDynamicGlobalProperties()
   }
-}
-</script>
-<style lang="scss">
-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 
-  > * {
-    margin: auto;
+  private mounted(): void {
+    document.body.classList.add('block');
+  }
+
+  private destroyed(): void {
+    document.body.classList.remove('block');
   }
 }
-</style>
+</script>
