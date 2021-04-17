@@ -21,6 +21,7 @@ module.exports = {
           dark: "#CD1434"
         },
         black: {
+          DEFAULT: '#000000',
           '400': '#4F4F4F',
           '500': '#414141'
         }

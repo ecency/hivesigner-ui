@@ -12,6 +12,7 @@ import Menu from './Menu.vue'
 import Logo from './Logo.vue'
 import Keychain from './Keychain.vue'
 import Trash from './Trash.vue'
+import Link from './Link.vue'
 
 @Component({
   components: {
@@ -21,6 +22,7 @@ import Trash from './Trash.vue'
     Logo,
     Keychain,
     Trash,
+    Link,
   }
 })
 export default class Icon extends Vue {

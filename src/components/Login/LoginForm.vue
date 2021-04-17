@@ -45,7 +45,7 @@
     <button
       :disabled="submitDisabled || loading"
       type="submit"
-      class="button-primary block mb-2"
+      class="button-primary w-full block mb-2"
     >
       Login
     </button>

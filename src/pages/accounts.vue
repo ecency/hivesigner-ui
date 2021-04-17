@@ -1,7 +1,7 @@
 <template>
   <div class="font-old">
     <Header title="Accounts"/>
-    <div class="p-4 after-header">
+    <div class="p-4">
       <div class="container-sm w-full mx-auto">
         <div v-if="usernames.length > 0">
           <AccountItem

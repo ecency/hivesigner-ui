@@ -36,7 +36,7 @@
     <div v-if="!!error" class="error mb-4">{{ error }}</div>
     <button
       :disabled="nextDisabled || loading"
-      class="button-primary block mb-2"
+      class="button-primary w-full block mb-2"
       @click.prevent="submitNext"
     >
       {{ nextText }}
@@ -50,7 +50,7 @@
     </router-link>
     <button
       :disabled="loading"
-      class="block text-center mb-2"
+      class="block text-center w-full mb-2"
       @click="signUp()"
     >Signup
     </button>
