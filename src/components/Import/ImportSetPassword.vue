@@ -1,12 +1,12 @@
 <template>
   <div>
-    <label for="key">
+    <label for="key" class="flex items-center">
       Hivesigner password
       <span
-        class="tooltipped tooltipped-n tooltipped-multiline"
+        class="inline-block tooltip ml-1"
         :aria-label="TOOLTIP_IMPORT_ENCRYPTION_KEY"
       >
-        <span class="iconfont icon-info"></span>
+        <Icon name="Info" style="width: 14px; height: 22px;" />
       </span>
     </label>
     <div v-if="dirty.key && !!errors.key" class="text-primary mb-2">
@@ -45,7 +45,7 @@
     <button
       :disabled="submitDisabled || loading"
       type="submit"
-      class="button-primary mb-2"
+      class="button-primary w-full mb-2"
     >
       Import account
     </button>
@@ -56,8 +56,10 @@
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { TOOLTIP_IMPORT_ENCRYPTION_KEY } from '~/consts'
 import { PersistentFormsModule } from '~/store'
-
-@Component
+import Icon from '../UI/Icons/Icon.vue'
+@Component({
+  components: { Icon }
+})
 export default class ImportSetPassword extends Vue {
   @Prop({
     type: Object,

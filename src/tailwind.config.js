@@ -39,6 +39,9 @@ module.exports = {
       },
       fontFamily: {
         old: ['Circular-Pro', 'Helvetica', 'Arial', 'sans-serif']
+      },
+      outline: {
+        disabled: 'none'
       }
     },
   },
