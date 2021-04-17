@@ -24,6 +24,10 @@ module.exports = {
           DEFAULT: '#000000',
           '400': '#4F4F4F',
           '500': '#414141'
+        },
+        success: {
+          '200': '#dcffe4',
+          '500': '#165c26'
         }
       },
       container: {

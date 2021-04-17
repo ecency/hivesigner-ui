@@ -3,8 +3,9 @@
 @import 'vars';
 @import "fonts";
 @import 'mixins';
-@import 'forms';
-@import "table";
+@import 'ui/forms';
+@import "ui/table";
+@import "ui/alerts";
 
 html {
   -webkit-font-smoothing: antialiased;

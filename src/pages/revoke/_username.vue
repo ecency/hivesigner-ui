@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="font-old">
     <Header title="Revoke (active)"/>
     <div class="p-4 after-header">
       <div class="container-sm mx-auto">
@@ -36,7 +36,9 @@ import { AuthModule } from '~/store'
 import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
 
-@Component
+@Component({
+  layout: 'page',
+})
 export default class RevokeUsername extends Vue {
   private loading = false
   private failed = false

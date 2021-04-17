@@ -3,9 +3,9 @@
     <div class="mb-4">
       <div class="mb-4 text-center" v-if="username">
         <Avatar :username="username" :size="80"/>
-        <h4 class="mb-0 mt-2">{{ username }}</h4>
+        <h4 class="mt-2 text-xl font-bold text-black-500">{{ username }}</h4>
       </div>
-      <p>
+      <p class="text-black-400 text-lg">
         By clicking "Continue" you are revoking <b>{{ authority }}</b> authority from
         <b>{{ username }}</b>.
         Going forward <b>{{ username }}</b> will not be able to perform actions on your
@@ -21,20 +21,20 @@
           name: 'login',
           query: { redirect: this.$route.fullPath, authority: 'active' },
         }"
-        class="btn btn-large btn-blue mr-2 mb-2"
+        class="button button-primary inline-block mr-2"
         v-if="!account.name || hasRequiredKey === false"
       >
         Continue
       </router-link>
       <button
         type="submit"
-        class="btn btn-large btn-success mb-2 mr-2"
+        class="button-success mr-2"
         :disabled="loading"
         v-else
       >
         Revoke
       </button>
-      <button class="btn btn-large mb-2" @click.prevent="handleReject">
+      <button @click.prevent="handleReject">
         Cancel
       </button>
     </div>
@@ -68,10 +68,7 @@ export default class RevokeForm extends Vue {
   })
   private transactionId!: string
 
-  @Prop({
-    type: String,
-    default: '',
-  })
+  @Prop()
   private error!: string
 
   @Prop({
