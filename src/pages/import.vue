@@ -8,7 +8,7 @@
       <Icon name="Logo" style="height: 32px" class="block mx-auto mb-3" />
       <h4 class="font-bold text-black-500 text-2xl">hivesigner</h4>
     </router-link>
-    <div v-if="!failed && !isRedirected" class="p-4 after-header">
+    <div v-if="!failed && !isRedirected" class="p-6">
       <div class="container-sm mx-auto">
         <div v-if="!failed && !signature">
           <div class="mb-4 text-center" v-if="app && appProfile">

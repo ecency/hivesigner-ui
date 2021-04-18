@@ -10,7 +10,7 @@
     </router-link>
     <div
       v-if="!failed && !isRedirected"
-      class="p-4 after-header"
+      class="p-6"
     >
       <div class="container-sm mx-auto">
         <div v-if="!failed && !signature">

@@ -1,7 +1,7 @@
 <template>
   <div>
     <Header :title="title"/>
-    <div v-if="parsed && uriIsValid" class="p-4 after-header">
+    <div v-if="parsed && uriIsValid" class="p-6">
       <div class="container-sm mx-auto">
         <Error v-if="!loading && failed" :error="error"/>
         <Confirmation v-if="!loading && !!transactionId" :id="transactionId" />
@@ -43,7 +43,7 @@
         </div>
       </div>
     </div>
-    <div class="p-4 after-header" v-else>
+    <div class="p-6" v-else>
       <div class="container-sm mx-auto flash flash-error mb-4">
         Oops, something went wrong. The signing URL provided is invalid.
       </div>

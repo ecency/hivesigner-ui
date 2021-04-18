@@ -1,7 +1,7 @@
 <template>
   <div>
     <Header title="Profile"/>
-    <div class="p-4 after-header">
+    <div class="p-6">
       <div class="container-sm mx-auto">
         <form @submit.prevent="handleSubmit" class="mb-4">
           <label>Account type</label>

@@ -1,13 +1,13 @@
 <template>
-  <div>
+  <div class="font-old">
     <Header title="Settings"/>
-    <div class="p-4 after-header">
+    <div class="p-6">
       <div class="container-sm mx-auto">
-        <div v-if="successVisible" class="flash flash-success mb-4">
+        <div v-if="successVisible" class="alert alert-success mb-6">
           Settings has been saved.
         </div>
-        <router-link to="/accounts" class="Box p-3 d-block border rounded-1 overflow-hidden mb-4">
-          <h4 class="m-0">Accounts</h4>
+        <router-link to="/accounts" class="p-4 block border rounded overflow-hidden mb-6">
+          <h4 class="text-xl font-bold text-black-500">Accounts</h4>
         </router-link>
         <form @submit.prevent="handleSubmit" class="mb-4">
           <!--
@@ -26,7 +26,7 @@
           <select
             v-model="timeout"
             id="timeout"
-            class="form-select input-lg input-block mb-2"
+            class="block mb-2"
             @blur="handleBlur('timeout')"
           >
             <option value="5">5 minutes</option>
@@ -53,12 +53,12 @@
             id="address"
             name="to"
             type="text"
-            class="form-control input-lg input-block mb-4"
+            class="block mb-4"
             autocorrect="off"
             autocapitalize="none"
             @blur="handleBlur('address')"
           />
-          <button type="submit" class="btn btn-large btn-blue mb-2">
+          <button type="submit" class="button-primary mb-2">
             Save
           </button>
         </form>
@@ -71,7 +71,9 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import { SettingsModule } from '~/store'
 
-@Component
+@Component({
+  layout: 'page',
+})
 export default class Settings extends Vue {
   private dirty = {
     language: false,

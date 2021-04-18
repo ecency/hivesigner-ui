@@ -1,7 +1,7 @@
 <template>
   <div class="font-old">
     <Header title="Authorize (active)"/>
-    <div class="p-4 after-header">
+    <div class="p-6">
       <div class="container-sm mx-auto">
         <authorize-form
           v-if="!hasAuthority && !failed && !transactionId"
