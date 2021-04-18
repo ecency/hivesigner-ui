@@ -1,11 +1,11 @@
 <template>
   <div class="flex items-center p-3 border rounded overflow-hidden mb-3 justify-between">
-    <div class="flex w-full items-center">
+    <div class="flex w-full sm:items-center flex-col sm:flex-row">
       <h4 class="flex items-center text-black-500 text-xl font-bold my-1.5">
         <Avatar :username="user" class="mr-2"/>
         {{ user }}
       </h4>
-      <span v-if="user === username">
+      <div v-if="user === username">
         <span class="ml-3 text-black-400">Unlocked</span>
         <router-link class="ml-3 hover:underline cursor-pointer" to="/auths">Auths</router-link>
         <a
@@ -14,7 +14,7 @@
         >
           Log out
         </a>
-      </span>
+      </div>
       <span v-else>
         <router-link class="ml-3 hover:underline cursor-pointer"
                      to="/login?redirect=accounts">
