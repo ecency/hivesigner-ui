@@ -11,14 +11,14 @@
     <div class="grid gap-2.5 xl:gap-40 grid-cols-2 items-center justify-center">
       <div class="col-span-2 xl:col-span-1 mb-6 xl:mb-0">
         <div class="flex xl:hidden items-center justify-center mb-9">
-          <Icon class="logo mr-5" name="logo" />
+          <Icon class="logo mr-5 text-primary" name="logo" />
           <span class="font-bold text-3xl sm:text-4xl">Hivesigner</span>
         </div>
         <img class="block mx-auto image" :src="require('../../assets/img/home.png')" alt="">
       </div>
       <div class="col-span-2 xl:col-span-1 flex flex-col items-center xl:items-start">
         <div class="hidden xl:flex items-center mb-24">
-          <Icon name="logo" class="logo mr-5" />
+          <Icon name="logo" class="logo text-primary mr-5" />
           <span class="font-bold text-5xl">Hivesigner</span>
         </div>
         <p class="text-xl text-center xl:text-left text-gray pb-12">

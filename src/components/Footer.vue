@@ -1,6 +1,6 @@
 <template>
   <div class="footer text-gray-400 mb-4">
-    <ul class="flex justify-center my-1">
+    <ul class="flex justify-center flex-wrap my-1">
       <li class="inline mx-2">
         <router-link to="/apps" class="hover:underline">Apps</router-link>
       </li>

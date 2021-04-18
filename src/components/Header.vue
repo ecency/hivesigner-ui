@@ -1,7 +1,7 @@
 <template>
   <div class="header border-b sticky bg-white top-0 left-0 w-full flex items-center">
     <router-link class="px-6 py-5 block border-r" to="/">
-      <Icon name="Logo" style="width: 16px; height: 16px;" />
+      <Icon name="Logo" style="width: 16px; height: 16px;" class="text-primary" />
     </router-link>
     <slot>
       <h5 class="ml-4 text-lg text-black-500">{{ title }}</h5>

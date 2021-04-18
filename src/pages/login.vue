@@ -5,7 +5,7 @@
       class="inline-block my-2"
       v-if="isRedirected"
     >
-      <Icon name="Logo" style="height: 32px" class="block mx-auto mb-3" />
+      <Icon name="Logo" style="height: 32px" class="block mx-auto mb-3 text-primary" />
       <h4 class="font-bold text-black-500 text-2xl">hivesigner</h4>
     </router-link>
     <div

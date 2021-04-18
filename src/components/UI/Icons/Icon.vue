@@ -17,6 +17,7 @@ import Info from './Info.vue'
 import Github from './Github.vue'
 import Discord from './Discord.vue'
 import Bookmark from './Bookmark.vue'
+import Search from './Search.vue'
 
 @Component({
   components: {
@@ -31,6 +32,7 @@ import Bookmark from './Bookmark.vue'
     Github,
     Discord,
     Bookmark,
+    Search,
   }
 })
 export default class Icon extends Vue {
