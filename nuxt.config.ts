@@ -29,14 +29,12 @@ export default {
   css: [
     '@/assets/scss/tailwind.scss',
     '@/assets/scss/styles.scss',
-    '@/assets/css/iconfont.css',
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     '~/plugins/idle-detector.ts',
     '~/plugins/hivesigner.ts',
-    '~/plugins/vue-ui.ts',
     '~/plugins/filters.ts'
   ],
 

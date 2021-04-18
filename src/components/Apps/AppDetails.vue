@@ -1,6 +1,6 @@
 <template>
   <div class="apps-details">
-    <VueLoadingIndicator v-if="isLoading" class="big"/>
+    <Loader v-if="isLoading" />
     <template v-else>
       <div class="mb-6 text-center" v-if="!failed">
         <div class="mb-6">
@@ -53,9 +53,10 @@
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
 import { client, isValidUrl } from '~/utils'
 import Icon from '../UI/Icons/Icon.vue'
+import Loader from '../UI/Loader.vue'
 
 @Component({
-  components: { Icon }
+  components: { Loader, Icon }
 })
 export default class AppDetails extends Vue {
   @Prop({

@@ -48,7 +48,7 @@
         />
       </form>
     </div>
-    <VueLoadingIndicator v-if="loading" class="overlay fixed big"/>
+    <Loader v-if="loading" class="overlay fixed"/>
     <Footer/>
   </Center>
 </template>
@@ -73,12 +73,13 @@ import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
 import ImportSetPassword from '~/components/Import/ImportSetPassword.vue'
 import ImportUserForm from '~/components/Import/ImportUserForm.vue'
-import Icon from '../components/UI/Icons/Icon.vue'
+import Icon from '~/components/UI/Icons/Icon.vue'
+import Loader from '~/components/UI/Loader.vue'
 
 const passphraseSchema = new PasswordValidator()
 passphraseSchema.is().min(8).is().max(50).has().uppercase().has().lowercase()
 @Component({
-  components: { Icon }
+  components: { Loader, Icon }
 })
 export default class Import extends Vue {
   @Ref('set-password')

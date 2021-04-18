@@ -49,7 +49,7 @@
         Import account
       </router-link>
     </div>
-    <VueLoadingIndicator v-if="loading" class="overlay fixed big"/>
+    <Loader v-if="loading" class="overlay fixed"/>
     <Footer/>
   </Center>
 </template>
@@ -73,9 +73,10 @@ import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
 import LoginForm from '~/components/Login/LoginForm.vue'
 import Icon from '../components/UI/Icons/Icon.vue'
+import Loader from '../components/UI/Loader.vue'
 
 @Component({
-  components: { Icon },
+  components: { Loader, Icon },
   middleware: ['before-login'],
 })
 export default class Login extends Vue {
