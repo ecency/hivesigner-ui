@@ -11,41 +11,43 @@
             :operation="operation"
             :key="key"
           />
-          <div class="flash flash-warn mb-4" v-if="parsed.params.callback">
-            You are going to get redirected to
+          <div class="alert alert-warning mb-6" v-if="parsed.params.callback">
+            {{ $t('sign.going_redirect_to') }}
             <span class="link-color">{{ parsed.params.callback | parseUrl }}</span
             >.
           </div>
-          <div class="flash flash-warn mb-4" v-if="username && hasRequiredKey === false">
-            This transaction requires your <b>{{ authority }}</b> key.
-          </div>
-          <div class="mb-4">
+          <div
+            class="alert alert-warning mb-6"
+            v-if="username && hasRequiredKey === false"
+            v-html="$t('authorize.requires_active_key')"
+          ></div>
+          <div class="mb-6">
             <router-link
               :to="{ name: 'login', query: { redirect: this.$route.fullPath, authority } }"
-              class="btn btn-large btn-blue mr-2 mb-2"
+              class="button button-primary mr-2 mb-2"
               v-if="!username || hasRequiredKey === false"
             >
-              Continue
+              {{ $t('common.continue') }}
             </router-link>
             <button
               type="submit"
-              class="btn btn-large btn-success mr-2 mb-2"
+              class="button-success mr-2 mb-2"
               :disabled="loading"
               @click="handleSubmit"
               v-else
             >
-              {{ parsed.params.no_broadcast ? 'Sign' : 'Approve' }}
+              this.$t({{ parsed.params.no_broadcast ? 'sign.sign' : 'sign.approve' }})
             </button>
-            <button class="btn btn-large mb-2" @click.prevent="handleReject">
-              Cancel
+            <button class="mb-2" @click.prevent="handleReject">
+              {{ $t('common.cancel') }}
             </button>
           </div>
         </div>
       </div>
     </div>
     <div class="p-6" v-else>
-      <div class="container-sm mx-auto flash flash-error mb-4">
-        Oops, something went wrong. The signing URL provided is invalid.
+      <div class="container-sm mx-auto alert alert-error mb-6">
+        {{ $t('errors.unknown') }}
       </div>
     </div>
   </div>
@@ -86,8 +88,8 @@ export default class Sign extends Vue {
     return this.$route.query.requestId as string
   }
 
-  private get title(): string {
-    let title = 'Confirm transaction'
+  private get title() {
+    let title = this.$t('sign.confirm_transaction')
     if (this.authority) {
       title += ` (${this.authority})`
     }

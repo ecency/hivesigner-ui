@@ -1,12 +1,8 @@
 <template>
   <div class="flash mb-4 overflow-hidden">
-    <div class="mb-3">
-      We recommend you to use the HiveSigner desktop app. If you don't have this, you can download
-      it from the
-      <a :href="homepage" target="_blank">official site</a>.
-    </div>
+    <div class="mb-3" v-html="$t('open_external', { homepage })"></div>
     <button class="btn btn-blue" @click="openURIScheme">
-      Open desktop app
+      {{ $t('open_desktop_app') }}
     </button>
   </div>
 </template>

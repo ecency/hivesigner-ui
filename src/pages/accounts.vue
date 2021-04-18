@@ -1,6 +1,6 @@
 <template>
   <div class="font-old">
-    <Header title="Accounts"/>
+    <Header :title="$t('accounts.accounts')"/>
     <div class="p-4">
       <div class="container-sm w-full mx-auto">
         <div v-if="usernames.length > 0">
@@ -12,11 +12,7 @@
           />
         </div>
         <div v-else>
-          <p>
-            There isn't any account stored on this device,
-            <router-link to="/import">click here</router-link>
-            if you want to import an account.
-          </p>
+          <p class="text-black-500" v-html="$t('accounts.empty')"></p>
         </div>
       </div>
     </div>
@@ -46,8 +42,3 @@ export default class Accounts extends Vue {
 }
 </script>
 
-<style scoped>
-.icon-trashcan {
-  font-size: 18px;
-}
-</style>

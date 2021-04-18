@@ -5,14 +5,12 @@
         <Avatar :username="username" :size="80"/>
         <h4 class="mt-2 text-xl font-bold text-black-500">{{ username }}</h4>
       </div>
-      <p class="text-black-400 text-lg">
-        By clicking "Continue" you are revoking <b>{{ authority }}</b> authority from
-        <b>{{ username }}</b>.
-        Going forward <b>{{ username }}</b> will not be able to perform actions on your
-        behalf.
-      </p>
-      <div class="flash flash-warn mt-4" v-if="account.name && hasRequiredKey === false">
-        This transaction requires your <b>active</b> key.
+      <p class="text-black-400 text-lg" v-html="$t('revoke.message', { authority, username })"></p>
+      <div
+        class="alert alert-warning mt-4"
+        v-if="account && account.name && hasRequiredKey ===false"
+      >
+        {{ $t('authorize.requires_active_key') }}
       </div>
     </div>
     <div class="mt-2">
@@ -22,9 +20,9 @@
           query: { redirect: this.$route.fullPath, authority: 'active' },
         }"
         class="button button-primary inline-block mr-2"
-        v-if="!account.name || hasRequiredKey === false"
+        v-if="!(account && account.name) || hasRequiredKey === false"
       >
-        Continue
+        {{ $t('common.continue') }}
       </router-link>
       <button
         type="submit"
@@ -32,10 +30,10 @@
         :disabled="loading"
         v-else
       >
-        Revoke
+        {{ $t('revoke.revoke') }}
       </button>
       <button @click.prevent="handleReject">
-        Cancel
+        {{ $t('common.cancel') }}
       </button>
     </div>
   </form>

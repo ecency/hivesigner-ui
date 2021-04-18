@@ -18,7 +18,7 @@
       </option>
     </select>
     <label for="password" class="flex items-center" v-if="!decrypted">
-      Hivesigner password
+      {{ $t('import.hs_password') }}
       <span
         class="inline-block tooltip ml-1"
         :aria-label="tooltipLoginEncryptionKey"
@@ -98,10 +98,10 @@ export default class LoginForm extends Vue {
     const current: Record<string, any> = {}
     const { username, key } = this
     if (!username) {
-      current.username = 'Username is required.'
+      current.username = this.$t('login.username_required')
     }
     if (!key && !this.dirty.key) {
-      current.key = 'Hivesigner password is required.'
+      current.key = this.$t('login.hs_password_required')
     }
     return current
   }
@@ -122,8 +122,8 @@ export default class LoginForm extends Vue {
     return PersistentFormsModule.saveLoginKey(value)
   }
 
-  private get tooltipLoginEncryptionKey(): string {
-    return TOOLTIP_LOGIN_ENCRYPTION_KEY
+  private get tooltipLoginEncryptionKey() {
+    return this.$t(TOOLTIP_LOGIN_ENCRYPTION_KEY)
   }
 
   private get submitDisabled(): boolean {

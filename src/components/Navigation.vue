@@ -11,7 +11,7 @@
     <router-link
       v-for="item of menu"
       :key="item.to"
-      class="text-gray text-lg hover:text-primary cursor-pointer"
+      class="text-gray py-1 text-lg hover:text-primary cursor-pointer"
       :to="item.to"
     >
       {{ item.label }}
@@ -31,10 +31,10 @@ export default class Navigation extends Vue {
 
   private get menu() {
     return [
-      { label: 'Apps', to: '/apps' },
-      { label: 'Accounts', to: '/accounts' },
-      { label: 'Documentation', to: '/developers' },
-      { label: 'About', to: '/about' },
+      { label: this.$t('footer.apps'), to: '/apps' },
+      { label: this.$t('footer.accounts'), to: '/accounts' },
+      { label: this.$t('footer.documentation'), to: '/developers' },
+      { label: this.$t('footer.about'), to: '/about' },
     ]
   }
 }

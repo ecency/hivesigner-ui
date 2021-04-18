@@ -22,9 +22,9 @@
             </div>
           </div>
           <p>
-            <span v-if="app">The app <b>{{ app }}</b></span>
-            <span v-else>This site </span>
-            is requesting access to view your current account username.
+            <span v-if="app">{{ $t('import.app') }}<b>{{ app }}</b></span>
+            <span v-else>{{ $t('import.site') }}</span>
+            {{ $t('import.request_access') }}
           </p>
         </div>
       </div>
@@ -44,7 +44,7 @@
       />
       <router-link
         :to="{ name: 'import', query: $route.query }"
-        class="button btn btn-large block text-center mb-2"
+        class="button block text-center mb-2"
       >
         Import account
       </router-link>
@@ -202,7 +202,7 @@ export default class Login extends Vue {
     const keys = jsonParse(buff.toString())
     if (authority && !keys[authority]) {
       this.isLoading = false
-      this.error = `You need to import your account using your password or at least ${authority} key to do this request. Click "Import account" button to proceed.`
+      this.error = this.$t('login.need_import', { authority }) as string
       return
     }
     this.loading = true
@@ -261,7 +261,7 @@ export default class Login extends Vue {
     } catch (err) {
       console.log('Login failed', err)
       this.isLoading = false
-      this.error = ERROR_INVALID_CREDENTIALS
+      this.error = this.$t(ERROR_INVALID_CREDENTIALS) as string
     }
   }
 

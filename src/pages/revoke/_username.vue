@@ -1,6 +1,6 @@
 <template>
   <div class="font-old">
-    <Header title="Revoke (active)"/>
+    <Header :title="$t('revoke.revoke_active')"/>
     <div class="p-6">
       <div class="container-sm mx-auto">
         <revoke-form
@@ -62,7 +62,7 @@ export default class RevokeUsername extends Vue {
   }
 
   private get hasAuthority(): boolean {
-    if (this.account.name) {
+    if (this.account?.name) {
       const auths = this.account[this.authority].account_auths.map(auth => auth[0])
       return auths.indexOf(this.username) !== -1
     }

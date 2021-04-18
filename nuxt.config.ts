@@ -1,7 +1,5 @@
 import { ADDITIONAL_ROUTES } from './src/additional-routes'
-
-const translations = require('./src/assets/data/translations.json')
-const numberFormats = require('./src/assets/data/number-formats.json')
+import { i18n } from './src/i18n'
 
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
@@ -53,7 +51,7 @@ export default {
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     '@nuxtjs/style-resources',
-    // 'nuxt-i18n'
+    'nuxt-i18n'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -62,16 +60,7 @@ export default {
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {},
 
-  // Vue i18n
-  // i18n: {
-  //   locales: ['en', 'fr'],
-  //   defaultLocale: 'en',
-  //   vueI18n: {
-  //     fallbackLocale: 'en',
-  //     messages: translations,
-  //     numberFormats
-  //   }
-  // },
+  i18n,
 
   // router
   router: {

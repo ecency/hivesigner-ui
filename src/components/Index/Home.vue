@@ -22,15 +22,14 @@
           <span class="font-bold text-5xl">Hivesigner</span>
         </div>
         <p class="text-xl text-center xl:text-left text-gray pb-12">
-          Secure way to sign with Hivesigner. Best security for users and developers to integrate
-          industry standard OAuth2.
+          {{ $t('index.description') }}
         </p>
         <router-link
           to="/login?redirect=accounts"
           class="bg-primary hover:bg-primary-dark text-white p-4 inline-flex items-center rounded-md"
         >
           <Icon name="Keychain" class="mr-2" />
-          Get started
+          {{ $t('index.get_started') }}
         </router-link>
 
         <navigation class="w-full pt-32 hidden sm:flex"/>

@@ -16,16 +16,16 @@
           :href="profile.website"
           target="_blank"
         >
-          <span class="font-medium">Visit</span>
+          <span class="font-medium">{{ $t('apps.visit') }}</span>
           <Icon name="Link" style="width: 12px;height: 12px" class="ml-2" />
         </a>
         <div class="text-left">
           <div v-if="profile.about" class="mb-6">
-            <p class="font-medium mb-2 text-black-400 text-lg">About</p>
+            <p class="font-medium mb-2 text-black-400 text-lg">{{ $t('apps.about') }}</p>
             <p class="mb-2">{{ profile.about }}</p>
           </div>
           <div v-if="profile.creator" class="mb-6">
-            <p class="font-medium mb-2 text-black-400 text-lg">Creator</p>
+            <p class="font-medium mb-2 text-black-400 text-lg">{{ $t('apps.creator') }}</p>
             <p class="mb-2">
               <a
                 :href="'https://hive.blog/@' + profile.creator"
@@ -42,7 +42,7 @@
       </div>
       <div v-else>
         <div class="alert alert-error mb-6">
-          Oops, something went wrong. The username provided is invalid.
+          {{ $t('errors.unknown') }}
         </div>
       </div>
     </template>

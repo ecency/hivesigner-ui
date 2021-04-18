@@ -6,29 +6,30 @@
           <Icon name="Logo" style="width: 32px;height: 32px" class="mx-auto"/>
         </router-link>
         <div class="mt-9 mb-16">
-          <h1 class="text-5xl font-bold">App store</h1>
+          <h1 class="text-5xl font-bold">{{ $t('apps.store') }}</h1>
         </div>
       </div>
     </div>
     <div class="border-b">
-      <Search v-model="search" class="container-sm mx-auto" placeholder="Search for apps"/>
+      <Search
+        v-model="search"
+        class="container-sm mx-auto"
+        :placeholder="$t('apps.search_placeholder')"
+      />
     </div>
     <div class="container-sm mx-auto p-6 text-center">
       <template v-if="search">
         <div class="mb-6">
-          <p class="font-bold mb-2">Search for "{{ search }}"</p>
-          {{ filteredApps.length }} apps
+          <p class="font-bold mb-2">{{ $t('apps.search_for', { search }) }}</p>
+          {{ filteredApps.length }} {{ $t('apps.apps') }}
         </div>
-        <div class="columns" v-if="filteredApps.length > 0">
-          <App
-            :username="app"
-            :key="app"
-            v-for="app in filteredApps.slice(0, 12)"
-            class="column col-sm-3 col-6 mb-6"
-            @select="openModal(app)"
-          />
-        </div>
-        <p v-else>We didn’t find any apps for "{{ search }}"</p>
+        <apps-list
+          v-if="filteredApps.length > 0"
+          :apps="filteredApps.slice(0, 12)"
+          :loading="isLoading"
+          @open-modal="openModal"
+        />
+        <p v-else>{{ $t('apps.empty_search', { search }) }}</p>
       </template>
       <template v-else>
         <apps-list

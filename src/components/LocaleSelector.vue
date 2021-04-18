@@ -3,18 +3,17 @@
     ref="dropdown"
     with-chevron
     trigger-class="text-black-light hover:text-primary"
-    position="leftTop"
   >
     <template slot="trigger">
-      <span class="text-lg uppercase">{{ locale }}</span>
+      <span class="text-lg uppercase">{{ currentLocale }}</span>
     </template>
     <a
       role="button"
-      class="cursor-pointer hover:text-primary"
+      class="cursor-pointer py-1 hover:text-primary"
       v-for="locale of locales"
       @click="onLocaleSelect(locale)"
     >
-      {{ locale }}
+      {{ locale.name }}
     </a>
   </Dropdown>
 </template>
@@ -30,18 +29,17 @@ export default class LocaleSelector extends Vue {
   @Ref('dropdown')
   private dropdownRef!: Dropdown
 
-  private locale = 'eng'
-
-  private get locales(): string[] {
-    return [
-      'ENG',
-      'RUS',
-      'FR'
-    ]
+  private get currentLocale(): string {
+    return this.$i18n.locale
   }
 
-  private onLocaleSelect(locale: string): void {
+  private get locales(): string[] {
+    return this.$i18n.locales
+  }
+
+  private onLocaleSelect({ code }): void {
     this.dropdownRef.hide()
+    this.$i18n.setLocale(code)
   }
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
   <span>
     <template v-if="value && Array.isArray(value)">
-      <em v-if="value.length === 0">empty</em>
+      <em v-if="value.length === 0">{{ $t('operations.empty') }}</em>
       <OperationValue v-else v-for="(v, key) in value" :key="key" :value="v" />
     </template>
     <template v-else-if="value && typeof value === 'object'">
@@ -17,10 +17,10 @@
         <template v-if="username">
           <OperationValueAccount :value="username" />
         </template>
-        <em v-else>you</em>
+        <em v-else>{{ $t('operations.you') }}</em>
       </template>
       <template v-else-if="!value && schema.type !== 'bool'">
-        <em>empty</em>
+        <em>{{ $t('operations.empty') }}</em>
       </template>
       <template v-else>
         <OperationValueAccount v-if="schema.type === 'account'" :value="value" />

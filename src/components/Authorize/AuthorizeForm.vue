@@ -5,23 +5,15 @@
         <Avatar :username="username" :size="80"/>
         <h4 class="mt-2 text-xl font-bold text-black-500">{{ username }}</h4>
       </div>
-      <p class="text-black-400 text-lg">
-        The <b>{{ username }}</b> requires your <b>{{ authority }}</b> authority in order for
-        you to be able to interact with it. By clicking "Continue" you are allowing
-        {{ authority }} access. This can be withdrawn by you at any time by clicking
-        <a
-          class="text-black hover:underline"
-          :href="'https://hivesigner.com/revoke/' + username"
-           target="_blank"
-        >HERE</a>.
-      </p>
-      <div class="flash flash-error mt-4" v-if="authority === 'active'">
-        Giving active authority enables the authorized account to do fund transfers from your
-        account, this should be used with utmost care.
+      <p class="text-black-400 text-lg" v-html="$t('authorize.authority_require', { username, authority })"></p>
+      <div class="alert alert-error mt-4" v-if="authority === 'active'">
+        {{ $t('authorize.authority_active') }}
       </div>
-      <div class="flash flash-warn mt-4" v-if="accountName && hasRequiredKey === false">
-        This transaction requires your <b>active</b> key.
-      </div>
+      <div
+        class="alert alert-warning mt-4"
+        v-if="accountName && hasRequiredKey === false"
+        v-html="$t('authorize.requires_active_key')"
+      ></div>
     </div>
     <div class="mt-2">
       <router-link
@@ -32,7 +24,7 @@
         class="button button-primary inline-block mr-2"
         v-if="!accountName || hasRequiredKey === false"
       >
-        Continue
+        {{ $t('common.continue') }}
       </router-link>
       <button
         type="submit"
@@ -40,10 +32,10 @@
         :disabled="loading"
         v-else
       >
-        Authorize
+        {{ $t('authorize.authorize') }}
       </button>
       <button class="mb-2" @click.prevent="handleReject">
-        Cancel
+        {{ $t('common.cancel') }}
       </button>
     </div>
   </form>

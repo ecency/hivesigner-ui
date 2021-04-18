@@ -1,7 +1,7 @@
 <template>
   <div>
     <label for="key" class="flex items-center">
-      Hivesigner password
+      {{ $t('import.hs_password') }}
       <span
         class="inline-block tooltip ml-1"
         :aria-label="TOOLTIP_IMPORT_ENCRYPTION_KEY"
@@ -23,7 +23,7 @@
       class="input-lg block mb-2"
       @blur="handleBlur('key')"
     />
-    <label for="key-confirmation">Confirm password</label>
+    <label for="key-confirmation">{{ $t('import.confirm_password') }}</label>
     <div v-if="dirty.keyConfirmation && !!errors.keyConfirmation" class="text-primary mb-2">
       {{ errors.keyConfirmation }}
     </div>
@@ -39,15 +39,15 @@
       @blur="handleBlur('keyConfirmation')"
     />
     <legend class="mb-6 block text-gray-600">
-      The hivesigner password will be required to unlock your account for usage.
-      {{ TOOLTIP_IMPORT_ENCRYPTION_KEY }}
+      {{ $t('import.require_hs_password') }}
+      {{ $t(TOOLTIP_IMPORT_ENCRYPTION_KEY) }}
     </legend>
     <button
       :disabled="submitDisabled || loading"
       type="submit"
       class="button-primary w-full mb-2"
     >
-      Import account
+      {{ $t('import.import_account') }}
     </button>
   </div>
 </template>

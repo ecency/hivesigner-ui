@@ -1,8 +1,8 @@
 <template>
   <div class="font-old overflow-x-hidden">
-    <Header title="Auths"/>
+    <Header :title="$t('auths.auths')" />
     <Table
-      :columns="['Type', 'Key', 'Weight']"
+      :columns="columns"
       :values="tableValues"
     >
       <template v-slot:Key="slotProps">
@@ -21,7 +21,7 @@
               "
           class="button button-sm float-right"
         >
-          Revoke
+          {{ $t('revoke.revoke') }}
         </router-link>
       </template>
     </Table>
@@ -45,6 +45,14 @@ import Table from '~/components/UI/Table.vue'
 export default class Auths extends Vue {
   private get account(): Account | null {
     return AuthModule.account
+  }
+
+  private get columns() {
+    return [
+      this.$t('auths.type'),
+      this.$t('auths.key'),
+      this.$t('auths.weight')
+    ]
   }
 
   private get auths(): string[] {

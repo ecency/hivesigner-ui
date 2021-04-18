@@ -1,13 +1,13 @@
 <template>
   <div class="font-old">
-    <Header title="Settings"/>
+    <Header :title="$t('settings.settings')"/>
     <div class="p-6">
       <div class="container-sm mx-auto">
         <div v-if="successVisible" class="alert alert-success mb-6">
-          Settings has been saved.
+          {{ $t('settings.saved') }}
         </div>
         <router-link to="/accounts" class="p-4 block border rounded overflow-hidden mb-6">
-          <h4 class="text-xl font-bold text-black-500">Accounts</h4>
+          <h4 class="text-xl font-bold text-black-500">{{ $t('accounts.accounts') }}</h4>
         </router-link>
         <form @submit.prevent="handleSubmit" class="mb-4">
           <!--
@@ -22,18 +22,18 @@
             <option value="fr">Français</option>
           </select>
           -->
-          <label for="timeout">Session timeout in</label>
+          <label for="timeout">{{ $t('settings.session') }}</label>
           <select
             v-model="timeout"
             id="timeout"
             class="block mb-2"
             @blur="handleBlur('timeout')"
           >
-            <option value="5">5 minutes</option>
-            <option value="10">10 minutes</option>
-            <option value="20">20 minutes</option>
-            <option value="40">40 minutes</option>
-            <option value="60">1 hour</option>
+            <option value="5">{{ $t('settings.minutes', { min: '5' }) }}</option>
+            <option value="10">{{ $t('settings.minutes', { min: '10' }) }}</option>
+            <option value="20">{{ $t('settings.minutes', { min: '20' }) }}</option>
+            <option value="40">{{ $t('settings.minutes', { min: '40' }) }}</option>
+            <option value="60">{{ $t('settings.hours', { min: '1' }) }}</option>
           </select>
           <!--
           <label for="theme">Theme</label>
@@ -47,7 +47,7 @@
             <option value="black">Black</option>
           </select>
           -->
-          <label for="address">Node address</label>
+          <label for="address">{{ $t('settings.node') }}</label>
           <input
             v-model.trim="address"
             id="address"
@@ -59,7 +59,7 @@
             @blur="handleBlur('address')"
           />
           <button type="submit" class="button-primary mb-2">
-            Save
+            {{ $t('common.save') }}
           </button>
         </form>
       </div>

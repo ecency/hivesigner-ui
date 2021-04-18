@@ -7,18 +7,19 @@
       </h4>
       <div v-if="user === username">
         <span class="ml-3 text-black-400">Unlocked</span>
-        <router-link class="ml-3 hover:underline cursor-pointer" to="/auths">Auths</router-link>
+        <router-link class="ml-3 hover:underline cursor-pointer" to="/auths">
+          {{ $t('accounts.auths') }}
+        </router-link>
         <a
           class="ml-3 text-primary hover:text-primary-dark cursor-pointer hover:underline"
           @click="logout"
         >
-          Log out
+          {{ $t('accounts.logout') }}
         </a>
       </div>
       <span v-else>
-        <router-link class="ml-3 hover:underline cursor-pointer"
-                     to="/login?redirect=accounts">
-          Unlock
+        <router-link class="ml-3 hover:underline cursor-pointer" to="/login?redirect=accounts">
+          {{ $t('accounts.unlock') }}
         </router-link>
       </span>
     </div>

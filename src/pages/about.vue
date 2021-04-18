@@ -1,12 +1,12 @@
 <template>
   <div class="font-old">
-    <Header title="About"/>
+    <Header :title="$t('about.about')" />
     <div class="p-6">
       <div class="container-sm mx-auto">
         <h2 class="text-3xl text-black-500 font-bold mb-2">{{ pkg.name }}</h2>
         <div class="mb-4 text-lg text-black-400">
           <p class="mb-2">
-            Secure way to sign with Hivesigner. Best security for users and developers to integrate industry standard OAuth2.
+            {{ $t('index.description') }}
           </p>
           <p class="mb-2">Version: {{ pkg.version }}</p>
           <p class="mb-2" v-if="pkg.license">License: {{ pkg.license }}</p>
@@ -17,7 +17,7 @@
               class="text-black hover:underline flex items-center"
             >
               <Icon name="Link" class="mr-2" style="width: 12px; height: 12px;" />
-              Website
+              {{ $t('about.website') }}
             </a>
           </p>
           <p class="mb-2">
@@ -27,19 +27,19 @@
               class="text-black hover:underline flex items-center"
             >
               <Icon name="Link" class="mr-2" style="width: 12px; height: 12px;" />
-              Download logo
+              {{ $t('about.download_logo') }}
             </a>
           </p>
           <p v-if="pkg.bugs">
             <a :href="pkg.bugs.url" target="_blank"
                class="text-black hover:underline flex items-center">
               <Icon name="Github" class="mr-1" />
-              Report a bug
+              {{ $t('about.report_bug') }}
             </a>
           </p>
         </div>
         <div v-if="contributors.length > 0">
-          <p>Contributors</p>
+          <p>{{ $t('about.contributors') }}</p>
           <p class="mb-2" :key="i" v-for="(contributor, i) in contributors">
             <a
               class="text-black hover:underline flex items-center"

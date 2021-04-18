@@ -1,6 +1,6 @@
 <template>
   <div class="font-old">
-    <Header title="Authorize (active)"/>
+    <Header :title="$t('authorize.authorize_active')"/>
     <div class="p-6">
       <div class="container-sm mx-auto">
         <authorize-form

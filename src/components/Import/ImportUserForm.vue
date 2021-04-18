@@ -15,7 +15,9 @@
       autocomplete="username"
       @blur="handleBlur('username')"
     />
-    <label for="password"> Master password or {{ authority || 'private' }} key </label>
+    <label for="password">
+      {{ $t('import.master_password', { authority: authority || 'private' }) }}
+    </label>
     <div v-if="dirty.password && !!errors.password" class="text-primary mb-2">
       {{ errors.password }}
     </div>
@@ -31,7 +33,8 @@
       @blur="handleBlur('password')"
     />
     <label :class="{ 'mb-6': !error, 'mb-2': error }">
-      <input key="storeAccount" v-model="storeAccount" type="checkbox"/> Encrypt your keys
+      <input key="storeAccount" v-model="storeAccount" type="checkbox"/>
+      {{ $t('import.encrypt_keys') }}
     </label>
     <div v-if="!!error" class="error mb-4">{{ error }}</div>
     <button
@@ -46,13 +49,14 @@
       :to="{ name: 'login', query: $route.query }"
       class="button block text-center mb-2"
     >
-      Select account
+      {{ $t('import.select_account') }}
     </router-link>
     <button
       :disabled="loading"
       class="block text-center w-full mb-2"
       @click="signUp()"
-    >Signup
+    >
+      {{ $t('import.signup') }}
     </button>
   </div>
 </template>
@@ -116,8 +120,8 @@ export default class ImportUserForm extends Vue {
     return PersistentFormsModule.saveImportPassword(value)
   }
 
-  private get nextText(): string {
-    return this.storeAccount ? 'Continue' : 'Import account'
+  private get nextText() {
+    return this.storeAccount ? this.$t('common.continue') : this.$t('import.import_account')
   }
 
   private get nextDisabled(): boolean {
@@ -140,7 +144,7 @@ export default class ImportUserForm extends Vue {
     const invalidCredentials = !(await credentialsValid(this.username, this.password))
     this.$emit('loading', false)
     if (invalidCredentials) {
-      this.$emit('error', ERROR_INVALID_CREDENTIALS)
+      this.$emit('error', this.$t(ERROR_INVALID_CREDENTIALS))
       return
     }
     this.$emit('error', '')

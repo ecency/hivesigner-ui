@@ -25,3 +25,7 @@ body {
 .container-sm {
   max-width: 544px;
 }
+
+b {
+  @apply font-bold;
+}
