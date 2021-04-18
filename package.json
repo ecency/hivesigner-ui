@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "homepage": "TODO: Add homepage",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ecency/hivesigner-ui/issues"
+  },
   "scripts": {
     "dev": "nuxt-ts",
     "build": "nuxt-ts build",
