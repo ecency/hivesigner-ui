@@ -1,5 +1,5 @@
 <template>
-  <div class="header border-b relative top-0 left-0 w-full flex items-center">
+  <div class="header border-b sticky bg-white top-0 left-0 w-full flex items-center">
     <router-link class="px-6 py-5 block border-r" to="/">
       <Icon name="Logo" style="width: 16px; height: 16px;" />
     </router-link>

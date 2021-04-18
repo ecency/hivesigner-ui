@@ -31,8 +31,10 @@
             </a>
           </p>
           <p v-if="pkg.bugs">
-            <a :href="pkg.bugs.url" target="_blank" class="text-black hover:underline">
-              <span class="iconfont icon-mark-github"/> Report a bug
+            <a :href="pkg.bugs.url" target="_blank"
+               class="text-black hover:underline flex items-center">
+              <Icon name="Github" class="mr-1" />
+              Report a bug
             </a>
           </p>
         </div>

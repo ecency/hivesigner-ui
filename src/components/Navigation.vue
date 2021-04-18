@@ -33,7 +33,7 @@ export default class Navigation extends Vue {
     return [
       { label: 'Apps', to: '/apps' },
       { label: 'Accounts', to: '/accounts' },
-      { label: 'Documentation', to: '/wiki' },
+      { label: 'Documentation', to: '/developers' },
       { label: 'About', to: '/about' },
     ]
   }

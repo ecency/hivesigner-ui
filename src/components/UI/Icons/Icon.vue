@@ -14,6 +14,9 @@ import Keychain from './Keychain.vue'
 import Trash from './Trash.vue'
 import Link from './Link.vue'
 import Info from './Info.vue'
+import Github from './Github.vue'
+import Discord from './Discord.vue'
+import Bookmark from './Bookmark.vue'
 
 @Component({
   components: {
@@ -25,6 +28,9 @@ import Info from './Info.vue'
     Trash,
     Link,
     Info,
+    Github,
+    Discord,
+    Bookmark,
   }
 })
 export default class Icon extends Vue {
