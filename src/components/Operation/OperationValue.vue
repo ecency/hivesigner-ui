@@ -1,5 +1,5 @@
 <template>
-  <span>
+  <span class="inline-block text-gray-600 lowercase">
     <template v-if="value && Array.isArray(value)">
       <em v-if="value.length === 0">{{ $t('operations.empty') }}</em>
       <OperationValue v-else v-for="(v, key) in value" :key="key" :value="v" />

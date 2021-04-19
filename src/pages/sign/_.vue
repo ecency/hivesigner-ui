@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="font-old">
     <Header :title="title"/>
     <div v-if="parsed && uriIsValid" class="p-6">
       <div class="container-sm mx-auto">
@@ -13,8 +13,9 @@
           />
           <div class="alert alert-warning mb-6" v-if="parsed.params.callback">
             {{ $t('sign.going_redirect_to') }}
-            <span class="link-color">{{ parsed.params.callback | parseUrl }}</span
-            >.
+            <span class="text-black">
+              {{ parsed.params.callback | parseUrl }}
+            </span>.
           </div>
           <div
             class="alert alert-warning mb-6"
@@ -24,7 +25,7 @@
           <div class="mb-6">
             <router-link
               :to="{ name: 'login', query: { redirect: this.$route.fullPath, authority } }"
-              class="button button-primary mr-2 mb-2"
+              class="button button-primary mr-2 mb-2 inline-block"
               v-if="!username || hasRequiredKey === false"
             >
               {{ $t('common.continue') }}
@@ -69,7 +70,9 @@ import {
 import { AuthModule, SettingsModule } from '~/store'
 import { Authority } from '~/enums'
 
-@Component
+@Component({
+  layout: 'page',
+})
 export default class Sign extends Vue {
   private parsed = null
   private uriIsValid = true

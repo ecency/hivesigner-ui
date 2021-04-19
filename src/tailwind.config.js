@@ -29,6 +29,10 @@ module.exports = {
         success: {
           '200': '#dcffe4',
           '500': '#165c26'
+        },
+        warning: {
+          '200': '#fffbdd',
+          '500': '#735c0f'
         }
       },
       container: {
