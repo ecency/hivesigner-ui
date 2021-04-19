@@ -9,19 +9,23 @@
       </Dropdown>
     </div>
     <div class="grid gap-2.5 xl:gap-40 grid-cols-2 items-center justify-center">
-      <div class="col-span-2 xl:col-span-1 mb-6 xl:mb-0">
+      <div class="col-span-2 xl:col-span-1 sm:mb-6 xl:mb-0">
         <div class="flex xl:hidden items-center justify-center mb-9">
           <Icon class="logo mr-5 text-primary" name="logo" />
           <span class="font-bold text-3xl sm:text-4xl">Hivesigner</span>
         </div>
-        <img class="block mx-auto image" :src="require('../../assets/img/home.png')" alt="">
+        <img class="block mx-auto image" :src="require('../../assets/img/home.svg')" alt="">
+        <p
+          class="text-3xl sm:text-5xl xl:text-6xl font-light text-center text-black-500 sm:text-gray-550">
+          {{ $t('index.secure_way_sign_in') }}
+        </p>
       </div>
       <div class="col-span-2 xl:col-span-1 flex flex-col items-center xl:items-start">
         <div class="hidden xl:flex items-center mb-24">
           <Icon name="logo" class="logo text-primary mr-5" />
           <span class="font-bold text-5xl">Hivesigner</span>
         </div>
-        <p class="text-xl text-center xl:text-left text-gray pb-12">
+        <p class="text-base sm:text-xl text-center xl:text-left text-gray pb-8 xl:pb-12">
           {{ $t('index.description') }}
         </p>
         <router-link

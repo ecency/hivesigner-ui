@@ -8,7 +8,8 @@ export default {
   },
   index: {
     description: `Secure way to sign with Hivesigner. Best security for users and developers to integrate industry standard OAuth2.`,
-    get_started: 'Get started'
+    get_started: 'Get started',
+    secure_way_sign_in: 'Secure way to sign in'
   },
   about: {
     about: 'About',
