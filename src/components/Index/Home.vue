@@ -59,7 +59,7 @@ export default class Home extends Vue {
 <style lang="scss">
 .home {
   .image {
-    max-width: 300px;
+    max-width: 242px;
   }
 }
 

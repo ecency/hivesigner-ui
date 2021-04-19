@@ -6,12 +6,12 @@
       'items-start flex-col': vertical,
     }"
   >
-    <locale-selector />
+    <locale-selector class="py-1.5" />
 
     <router-link
       v-for="item of menu"
       :key="item.to"
-      class="text-gray py-1 text-lg hover:text-primary cursor-pointer"
+      class="text-gray py-1.5 text-lg hover:text-primary cursor-pointer"
       :to="item.to"
     >
       {{ item.label }}
