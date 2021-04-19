@@ -1,7 +1,9 @@
 <template>
-  <div class="flash flash-success mb-4">
-    Your transaction is on the way! Here is the ID of the transaction:
-    <a :href="`https://hiveblocks.com/tx/${id}`" target="_blank">{{ id }}</a>
+  <div class="alert alert-success mb-4">
+    {{ $t('confirmation') }}
+    <a :href="`https://hiveblocks.com/tx/${id}`" target="_blank" class="text-black hover:underline">
+      {{ id }}
+    </a>
   </div>
 </template>
 

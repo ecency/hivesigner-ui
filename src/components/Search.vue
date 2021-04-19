@@ -1,6 +1,6 @@
 <template>
-  <div class="search px-4">
-    <span class="iconfont icon-search"/>
+  <div class="search px-6">
+    <Icon name="search" class="text-gray-400" />
     <input
       :value="value"
       :placeholder="placeholder"
@@ -8,15 +8,18 @@
       type="text"
       autocorrect="off"
       autocapitalize="none"
-      class="px-4 py-3 border-0 input-lg"
+      class="border-none"
+      style="height: 56px"
     />
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop } from 'nuxt-property-decorator'
-
-@Component
+import Icon from './UI/Icons/Icon.vue'
+@Component({
+  components: { Icon }
+})
 export default class Search extends Vue {
   @Prop({
     type: String,

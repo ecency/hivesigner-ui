@@ -1,109 +1,99 @@
 <template>
-  <div>
+  <div class="font-old">
     <Header title="Developers"/>
-    <div class="p-4 after-header">
+    <div class="p-6">
       <div class="container-sm mx-auto mb-4">
-        <p class="mb-4">
-          You’ve found the HiveSigner developer documentation! This page dedicated to showing you
-          all the ways that you can use HiveSigner to make cool stuff.
+        <p class="mb-6 text-black-400 text-lg">
+          {{ $t('developers.description') }}
         </p>
-        <developer-item title="1. Add new app" v-model="currentItem">
-          <div class="mb-3">
-            <p>
-              To create a new app on HiveSigner you need a Hive account for it. If you don't have
-              one yet you can create one on
-              <a href="https://signup.hive.io" target="_blank">signup.hive.io</a> in with your app
-              account and update your profile with "application" as account type.
-            </p>
-            <router-link to="/profile" class="btn btn-large">
-              Enable app
+        <developer-item :title="$t('developers.1.title')" v-model="currentItem">
+          <div class="mb-4">
+            <p class="mb-2" v-html="$t('developers.1.message')"></p>
+            <router-link to="/profile" class="button inline-flex text-base">
+              {{ $t('developers.1.enable_app') }}
             </router-link>
           </div>
-          <p>
-            If you would like to use the OAuth 2 API for posting with HiveSigner server you need to
-            authorize the Hive account "hivesigner" to post on the behalf of your app account.
-            <router-link to="/authorize/hivesigner">Click here</router-link>
-            to do this and sign with your app account.
-          </p>
+          <p class="mb-2" v-html="$t('developers.1.message_hs_authorize')"></p>
         </developer-item>
-        <developer-item title="2. Edit app settings" v-model="currentItem">
-          <p>You can edit your app settings by updating your app account profile.</p>
-          <router-link to="/profile" class="btn btn-large">
-            Edit app settings
+        <developer-item :title="$t('developers.2.title')" v-model="currentItem">
+          <p class="mb-2">{{ $t('developers.2.message') }}</p>
+          <router-link to="/profile" class="button inline-flex text-base">
+            {{ $t('developers.2.edit_settings') }}
           </router-link>
         </developer-item>
-        <developer-item title="3. Hivesigner JS SDK" v-model="currentItem">
-          <p>
-            Get started integrating HiveSigner on your website with HiveSigner.js, the official
-            JavaScript SDK. Learn how to setup and use
-            <a href="https://github.com/ledgerconnect/hivesigner.js#sdk-methods" target="_blank">
-              SDK methods
-            </a>.
-          </p>
-          <p>
+        <developer-item :title="$t('developers.3.title')" v-model="currentItem">
+          <p class="mb-2" v-html="$t('developer.3.message_1')"></p>
+          <p class="mb-2">
             <a href="https://github.com/ledgerconnect/hivesigner.js#getting-started"
-               target="_blank">
-              <span class="iconfont icon-mark-github"/> hivesigner.js
+               target="_blank" class="text-black hover:underline flex items-center">
+              <Icon name="Github" class="mr-1" />
+              hivesigner.js
             </a>
           </p>
         </developer-item>
-        <developer-item title="4. How OAuth2 works" v-model="currentItem">
-          <p>
-            OAuth 2 is the industry-standard protocol for authorization. After you have checked
-            above steps, You can read more about
+        <developer-item :title="$t('developers.4.title')" v-model="currentItem">
+          <p class="mb-2" v-html="$t('developers.4.message')"></p>
+        </developer-item>
+        <developer-item :title="$t('developers.5.title')" v-model="currentItem">
+          <p class="mt-2">{{ $t('developers.5.message') }}</p>
+          <p class="mb-2">
             <a
-              href="https://github.com/ledgerconnect/hivesigner/wiki/How-OAuth2-Work%3F"
+              href="https://demo.hivesigner.com"
               target="_blank"
-            >
-              authorization flow in our Wiki page
-            </a>
+              class="text-black hover:underline mb-2"
+            >{{ $t('developers.5.try_demo') }}</a>
           </p>
-        </developer-item>
-        <developer-item title="5. Demo app" v-model="currentItem">
-          <p class="mt-2">Checkout HiveSigner demo with Vue.js</p>
-          <p><a href="https://demo.hivesigner.com" target="_blank" class="mr-2">Try demo</a></p>
           <p>
             <a
               href="https://github.com/ledgerconnect/hivesigner.js/blob/master/docs/index.html"
               target="_blank"
+              class="text-black hover:underline flex items-center"
             >
-              <span class="iconfont icon-mark-github"/> See on GitHub
+              <Icon name="github" class="mr-1" />
+              {{ $t('developers.5.see_gh') }}
             </a>
           </p>
         </developer-item>
-        <developer-item title="6. Other use cases" v-model="currentItem">
-          <p class="mt-2">Checkout HiveSigner demo with Vue.js</p>
-          <p><a href="https://demo.hivesigner.com" target="_blank" class="mr-2">Try demo</a></p>
-          <p>
+        <developer-item :title="$t('developers.6.title')" v-model="currentItem">
+          <p class="my-2">{{ $t('developers.6.message') }}</p>
+          <p class="mb-2">
             <a
-              href="https://github.com/ledgerconnect/hivesigner.js/blob/master/docs/index.html"
+              href="https://github.com/ledgerconnect/hivesigner/wiki/What-other-ways-to-use-Hivesigner-auth%3F"
+              target="_blank"
+              class="text-black hover:underline"
+            >{{ $t('developers.6.read_wiki') }}</a>
+          </p>
+        </developer-item>
+        <developer-item :title="$t('developers.7.title')" v-model="currentItem">
+          <p class="mb-2" v-html="$t('developers.7.message')"></p>
+          <p v-if="pkg.bugs" class="mb-2">
+            <a
+              class="text-black hover:underline flex items-center"
+              :href="pkg.bugs.url"
               target="_blank"
             >
-              <span class="iconfont icon-mark-github"/> See on GitHub
+              <Icon name="github" class="mr-1" />
+              {{ $t('about.report_bug') }}
             </a>
           </p>
-        </developer-item>
-        <developer-item title="7. Contact us" v-model="currentItem">
-          <p>
-            If you believe you're experiencing a bug with our API or want to report incorrect
-            documentation, open an issue on our issue tracker. For a more real-time avenue of
-            communication, check out the official Discord server. There you'll find community
-            members who can help answer questions about our API, libraries and other development
-            questions.
-          </p>
-          <p v-if="pkg.bugs">
-            <a :href="pkg.bugs.url" target="_blank">
-              <span class="iconfont icon-mark-github"/> Report a bug
+          <p class="mb-2">
+            <a
+              class="text-black hover:underline flex items-center"
+              href="https://hive.hivesigner.com"
+              target="_blank"
+            >
+              <Icon name="bookmark" class="mr-1" />
+              {{ $t('developers.7.try_interactive') }}
             </a>
           </p>
-          <p>
-            <a href="https://hive.hivesigner.com" target="_blank">
-              <span class="iconfont icon-bookmark"/> Try interactive Hive API
-            </a>
-          </p>
-          <p>
-            <a href="https://discord.gg/pNJn7wh" target="_blank">
-              <span class="iconfont icon-discord"/> Join us on Discord
+          <p class="mb-2">
+            <a
+              class="text-black hover:underline flex items-center"
+              href="https://discord.gg/pNJn7wh"
+              target="_blank"
+            >
+              <Icon name="discord" class="mr-1" />
+              {{ $t('developers.7.join_discord') }}
             </a>
           </p>
         </developer-item>
@@ -116,8 +106,11 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import { PACKAGE } from '../consts'
 import DeveloperItem from '../components/Developers/DeveloperItem.vue'
+import Icon from '../components/UI/Icons/Icon.vue'
+
 @Component({
-  components: { DeveloperItem }
+  components: { Icon, DeveloperItem },
+  layout: 'page',
 })
 export default class Developers extends Vue {
   private currentItem: string | null = null

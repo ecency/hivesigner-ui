@@ -1,13 +1,13 @@
 <template>
-  <div>
-    <Header title="Settings"/>
-    <div class="p-4 after-header">
+  <div class="font-old">
+    <Header :title="$t('settings.settings')"/>
+    <div class="p-6">
       <div class="container-sm mx-auto">
-        <div v-if="successVisible" class="flash flash-success mb-4">
-          Settings has been saved.
+        <div v-if="successVisible" class="alert alert-success mb-6">
+          {{ $t('settings.saved') }}
         </div>
-        <router-link to="/accounts" class="Box p-3 d-block border rounded-1 overflow-hidden mb-4">
-          <h4 class="m-0">Accounts</h4>
+        <router-link to="/accounts" class="p-4 block border rounded overflow-hidden mb-6">
+          <h4 class="text-xl font-bold text-black-500">{{ $t('accounts.accounts') }}</h4>
         </router-link>
         <form @submit.prevent="handleSubmit" class="mb-4">
           <!--
@@ -22,18 +22,18 @@
             <option value="fr">Français</option>
           </select>
           -->
-          <label for="timeout">Session timeout in</label>
+          <label for="timeout">{{ $t('settings.session') }}</label>
           <select
             v-model="timeout"
             id="timeout"
-            class="form-select input-lg input-block mb-2"
+            class="block mb-2"
             @blur="handleBlur('timeout')"
           >
-            <option value="5">5 minutes</option>
-            <option value="10">10 minutes</option>
-            <option value="20">20 minutes</option>
-            <option value="40">40 minutes</option>
-            <option value="60">1 hour</option>
+            <option value="5">{{ $t('settings.minutes', { min: '5' }) }}</option>
+            <option value="10">{{ $t('settings.minutes', { min: '10' }) }}</option>
+            <option value="20">{{ $t('settings.minutes', { min: '20' }) }}</option>
+            <option value="40">{{ $t('settings.minutes', { min: '40' }) }}</option>
+            <option value="60">{{ $t('settings.hours', { min: '1' }) }}</option>
           </select>
           <!--
           <label for="theme">Theme</label>
@@ -47,19 +47,19 @@
             <option value="black">Black</option>
           </select>
           -->
-          <label for="address">Node address</label>
+          <label for="address">{{ $t('settings.node') }}</label>
           <input
             v-model.trim="address"
             id="address"
             name="to"
             type="text"
-            class="form-control input-lg input-block mb-4"
+            class="block mb-4"
             autocorrect="off"
             autocapitalize="none"
             @blur="handleBlur('address')"
           />
-          <button type="submit" class="btn btn-large btn-blue mb-2">
-            Save
+          <button type="submit" class="button-primary mb-2">
+            {{ $t('common.save') }}
           </button>
         </form>
       </div>
@@ -71,7 +71,9 @@
 import { Component, Vue } from 'nuxt-property-decorator'
 import { SettingsModule } from '~/store'
 
-@Component
+@Component({
+  layout: 'page',
+})
 export default class Settings extends Vue {
   private dirty = {
     language: false,

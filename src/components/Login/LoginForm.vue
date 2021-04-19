@@ -1,13 +1,13 @@
 <template>
   <form @submit.prevent="submitForm" method="post" class="text-left">
     <label for="username">Username</label>
-    <div v-if="dirty.username && !!errors.username" class="error mb-2">
+    <div v-if="dirty.username && !!errors.username" class="text-primary mb-2">
       {{ errors.username }}
     </div>
     <select
       id="username"
       v-model.trim="username"
-      class="form-select input-lg input-block mb-2"
+      class="input-lg block mb-2"
       autocorrect="off"
       autocapitalize="none"
       autocomplete="username"
@@ -17,16 +17,16 @@
         {{ user }}
       </option>
     </select>
-    <label for="password" v-if="!decrypted">
-      Hivesigner password
+    <label for="password" class="flex items-center" v-if="!decrypted">
+      {{ $t('import.hs_password') }}
       <span
-        class="tooltipped tooltipped-n tooltipped-multiline"
+        class="inline-block tooltip ml-1"
         :aria-label="tooltipLoginEncryptionKey"
       >
-            <span class="iconfont icon-info"/>
-          </span>
+        <Icon name="Info" style="width: 14px; height: 22px;" />
+      </span>
     </label>
-    <div v-if="dirty.key && !!errors.key" class="error mb-2">
+    <div v-if="dirty.key && !!errors.key" class="text-primary mb-2">
       {{ errors.key }}
     </div>
     <input
@@ -37,15 +37,15 @@
       autocorrect="off"
       autocapitalize="none"
       autocomplete="current-password"
-      class="form-control input-lg input-block mb-2"
+      class="input-lg block mb-2"
       :class="{ 'mb-4': !error }"
       @blur="handleBlur('key')"
     />
-    <div v-if="!!error" class="error mb-4">{{ error }}</div>
+    <div v-if="!!error" class="text-primary mb-6">{{ error }}</div>
     <button
       :disabled="submitDisabled || loading"
       type="submit"
-      class="btn btn-large btn-blue input-block mb-2"
+      class="button-primary w-full block mb-2"
     >
       Login
     </button>
@@ -59,8 +59,11 @@ import { ERROR_INVALID_ENCRYPTION_KEY, TOOLTIP_LOGIN_ENCRYPTION_KEY } from '~/co
 import { PersistentFormsModule } from '~/store'
 import { signComplete } from '~/utils'
 import { Authority } from '~/enums'
+import Icon from '../UI/Icons/Icon.vue'
 
-@Component
+@Component({
+  components: { Icon }
+})
 export default class LoginForm extends Vue {
   @Prop({
     type: Boolean,
@@ -95,10 +98,10 @@ export default class LoginForm extends Vue {
     const current: Record<string, any> = {}
     const { username, key } = this
     if (!username) {
-      current.username = 'Username is required.'
+      current.username = this.$t('login.username_required')
     }
     if (!key && !this.dirty.key) {
-      current.key = 'Hivesigner password is required.'
+      current.key = this.$t('login.hs_password_required')
     }
     return current
   }
@@ -119,8 +122,8 @@ export default class LoginForm extends Vue {
     return PersistentFormsModule.saveLoginKey(value)
   }
 
-  private get tooltipLoginEncryptionKey(): string {
-    return TOOLTIP_LOGIN_ENCRYPTION_KEY
+  private get tooltipLoginEncryptionKey() {
+    return this.$t(TOOLTIP_LOGIN_ENCRYPTION_KEY)
   }
 
   private get submitDisabled(): boolean {

@@ -3,16 +3,14 @@
     <div class="mb-4">
       <div class="mb-4 text-center" v-if="username">
         <Avatar :username="username" :size="80"/>
-        <h4 class="mb-0 mt-2">{{ username }}</h4>
+        <h4 class="mt-2 text-xl font-bold text-black-500">{{ username }}</h4>
       </div>
-      <p>
-        By clicking "Continue" you are revoking <b>{{ authority }}</b> authority from
-        <b>{{ username }}</b>.
-        Going forward <b>{{ username }}</b> will not be able to perform actions on your
-        behalf.
-      </p>
-      <div class="flash flash-warn mt-4" v-if="account.name && hasRequiredKey === false">
-        This transaction requires your <b>active</b> key.
+      <p class="text-black-400 text-lg" v-html="$t('revoke.message', { authority, username })"></p>
+      <div
+        class="alert alert-warning mt-4"
+        v-if="account && account.name && hasRequiredKey ===false"
+      >
+        {{ $t('authorize.requires_active_key') }}
       </div>
     </div>
     <div class="mt-2">
@@ -21,21 +19,21 @@
           name: 'login',
           query: { redirect: this.$route.fullPath, authority: 'active' },
         }"
-        class="btn btn-large btn-blue mr-2 mb-2"
-        v-if="!account.name || hasRequiredKey === false"
+        class="button button-primary inline-block mr-2"
+        v-if="!(account && account.name) || hasRequiredKey === false"
       >
-        Continue
+        {{ $t('common.continue') }}
       </router-link>
       <button
         type="submit"
-        class="btn btn-large btn-success mb-2 mr-2"
+        class="button-success mr-2"
         :disabled="loading"
         v-else
       >
-        Revoke
+        {{ $t('revoke.revoke') }}
       </button>
-      <button class="btn btn-large mb-2" @click.prevent="handleReject">
-        Cancel
+      <button @click.prevent="handleReject">
+        {{ $t('common.cancel') }}
       </button>
     </div>
   </form>
@@ -68,10 +66,7 @@ export default class RevokeForm extends Vue {
   })
   private transactionId!: string
 
-  @Prop({
-    type: String,
-    default: '',
-  })
+  @Prop()
   private error!: string
 
   @Prop({

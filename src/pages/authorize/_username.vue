@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <Header title="Authorize (active)"/>
-    <div class="p-4 after-header">
+  <div class="font-old">
+    <Header :title="$t('authorize.authorize_active')"/>
+    <div class="p-6">
       <div class="container-sm mx-auto">
         <authorize-form
           v-if="!hasAuthority && !failed && !transactionId"
@@ -34,7 +34,9 @@ import { AuthModule } from '~/store'
 import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
 
-@Component
+@Component({
+  layout: 'page'
+})
 export default class AuthorizeUsername extends Vue {
   private loading = false
   private failed = false

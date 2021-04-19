@@ -1,0 +1,47 @@
+select,
+input[type=text],
+input[type=password],
+input[type=url],
+textarea {
+  min-height: 42px;
+
+  @apply border border-gray-400 px-3 py-1.5 rounded w-full focus:border-primary outline-none duration-300;
+}
+
+select {
+  background: #fff url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAUCAMAAACzvE1FAAAADFBMVEUzMzMzMzMzMzMzMzMKAG/3AAAAA3RSTlMAf4C/aSLHAAAAPElEQVR42q3NMQ4AIAgEQTn//2cLdRKppSGzBYwzVXvznNWs8C58CiussPJj8h6NwgorrKRdTvuV9v16Afn0AYFOB7aYAAAAAElFTkSuQmCC) no-repeat right 8px center;
+  background-size: 8px 10px;
+  appearance: none;
+}
+
+label {
+  @apply font-medium text-lg mb-2 inline-block text-black-500;
+
+  &.label-light {
+    @apply font-normal;
+  }
+}
+
+button, .button {
+  @apply py-2.5 px-5 rounded-md border border-gray-400 text-gray-500 font-bold hover:text-black-500 duration-200 focus:outline-disabled;
+
+  &:hover {
+    border-color: rgba(27, 31, 35, .35);
+  }
+
+  &[disabled] {
+    opacity: 0.4;
+  }
+
+  &.button-primary {
+    @apply border-0 bg-primary hover:bg-primary-dark text-white hover:text-white;
+  }
+
+  &.button-success {
+    @apply border-0 bg-green-400 hover:bg-green-500 text-white hover:text-white;
+  }
+
+  &.button-sm {
+    @apply text-xs px-2.5 py-1.5 rounded;
+  }
+}

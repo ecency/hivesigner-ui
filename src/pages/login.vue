@@ -1,16 +1,16 @@
 <template>
-  <Center>
+  <Center class="font-old">
     <router-link
       to="/"
-      class="d-inline-block my-2 no-decoration"
+      class="inline-block my-2"
       v-if="isRedirected"
     >
-      <span class="logo iconfont icon-hivesigner"/>
-      <h4 class="m-0">hivesigner</h4>
+      <Icon name="Logo" style="height: 32px" class="block mx-auto mb-3 text-primary" />
+      <h4 class="font-bold text-black-500 text-2xl">hivesigner</h4>
     </router-link>
     <div
       v-if="!failed && !isRedirected"
-      class="p-4 after-header"
+      class="p-6"
     >
       <div class="container-sm mx-auto">
         <div v-if="!failed && !signature">
@@ -22,9 +22,9 @@
             </div>
           </div>
           <p>
-            <span v-if="app">The app <b>{{ app }}</b></span>
-            <span v-else>This site </span>
-            is requesting access to view your current account username.
+            <span v-if="app">{{ $t('import.app') }}<b>{{ app }}</b></span>
+            <span v-else>{{ $t('import.site') }}</span>
+            {{ $t('import.request_access') }}
           </p>
         </div>
       </div>
@@ -44,12 +44,12 @@
       />
       <router-link
         :to="{ name: 'import', query: $route.query }"
-        class="btn btn-large input-block text-center mb-2"
+        class="button block text-center mb-2"
       >
         Import account
       </router-link>
     </div>
-    <VueLoadingIndicator v-if="loading" class="overlay fixed big"/>
+    <Loader v-if="loading" class="overlay fixed"/>
     <Footer/>
   </Center>
 </template>
@@ -72,8 +72,11 @@ import { AuthModule, PersistentFormsModule } from '~/store'
 import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
 import LoginForm from '~/components/Login/LoginForm.vue'
+import Icon from '../components/UI/Icons/Icon.vue'
+import Loader from '../components/UI/Loader.vue'
 
 @Component({
+  components: { Loader, Icon },
   middleware: ['before-login'],
 })
 export default class Login extends Vue {
@@ -199,7 +202,7 @@ export default class Login extends Vue {
     const keys = jsonParse(buff.toString())
     if (authority && !keys[authority]) {
       this.isLoading = false
-      this.error = `You need to import your account using your password or at least ${authority} key to do this request. Click "Import account" button to proceed.`
+      this.error = this.$t('login.need_import', { authority }) as string
       return
     }
     this.loading = true
@@ -258,7 +261,7 @@ export default class Login extends Vue {
     } catch (err) {
       console.log('Login failed', err)
       this.isLoading = false
-      this.error = ERROR_INVALID_CREDENTIALS
+      this.error = this.$t(ERROR_INVALID_CREDENTIALS) as string
     }
   }
 

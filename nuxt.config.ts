@@ -1,12 +1,10 @@
 import { ADDITIONAL_ROUTES } from './src/additional-routes'
-
-const translations = require('./src/assets/data/translations.json')
-const numberFormats = require('./src/assets/data/number-formats.json')
+import { i18n } from './src/i18n'
 
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
-  srcDir: './src',
+  srcDir: 'src',
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -27,17 +25,14 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
-    'primer/index.scss',
-    '@vue/ui/dist/vue-ui.css',
+    '@/assets/scss/tailwind.scss',
     '@/assets/scss/styles.scss',
-    '@/assets/css/iconfont.css',
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     '~/plugins/idle-detector.ts',
     '~/plugins/hivesigner.ts',
-    '~/plugins/vue-ui.ts',
     '~/plugins/filters.ts'
   ],
 
@@ -47,7 +42,8 @@ export default {
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
     // https://go.nuxtjs.dev/typescript
-    '@nuxt/typescript-build'
+    '@nuxt/typescript-build',
+    '@nuxtjs/tailwindcss'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -55,7 +51,7 @@ export default {
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     '@nuxtjs/style-resources',
-    // 'nuxt-i18n'
+    'nuxt-i18n'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -64,16 +60,7 @@ export default {
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {},
 
-  // Vue i18n
-  // i18n: {
-  //   locales: ['en', 'fr'],
-  //   defaultLocale: 'en',
-  //   vueI18n: {
-  //     fallbackLocale: 'en',
-  //     messages: translations,
-  //     numberFormats
-  //   }
-  // },
+  i18n,
 
   // router
   router: {

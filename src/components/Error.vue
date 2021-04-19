@@ -1,11 +1,8 @@
 <template>
   <div class="flash flash-error mb-4">
-    Oops, something went wrong.
-    <span v-if="message">
-      Here is the error message:
-      <br /><b>"{{ message }}"</b>
-    </span>
-    <span v-else>Please try again later.</span>
+    {{ $t('errors.something_wrong') }}
+    <span v-if="message" v-html="$t('errors.here_message', { message })"></span>
+    <span v-else>{{ $t('common.try_again') }}</span>
   </div>
 </template>
 

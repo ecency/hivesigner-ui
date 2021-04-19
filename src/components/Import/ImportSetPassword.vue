@@ -1,15 +1,15 @@
 <template>
   <div>
-    <label for="key">
-      Hivesigner password
+    <label for="key" class="flex items-center">
+      {{ $t('import.hs_password') }}
       <span
-        class="tooltipped tooltipped-n tooltipped-multiline"
+        class="inline-block tooltip ml-1"
         :aria-label="TOOLTIP_IMPORT_ENCRYPTION_KEY"
       >
-        <span class="iconfont icon-info"></span>
+        <Icon name="Info" style="width: 14px; height: 22px;" />
       </span>
     </label>
-    <div v-if="dirty.key && !!errors.key" class="error mb-2">
+    <div v-if="dirty.key && !!errors.key" class="text-primary mb-2">
       {{ errors.key }}
     </div>
     <input
@@ -20,11 +20,11 @@
       autocorrect="off"
       autocapitalize="none"
       autocomplete="new-password"
-      class="form-control input-lg input-block mb-2"
+      class="input-lg block mb-2"
       @blur="handleBlur('key')"
     />
-    <label for="key-confirmation">Confirm password</label>
-    <div v-if="dirty.keyConfirmation && !!errors.keyConfirmation" class="error mb-2">
+    <label for="key-confirmation">{{ $t('import.confirm_password') }}</label>
+    <div v-if="dirty.keyConfirmation && !!errors.keyConfirmation" class="text-primary mb-2">
       {{ errors.keyConfirmation }}
     </div>
     <input
@@ -35,30 +35,31 @@
       autocorrect="off"
       autocapitalize="none"
       autocomplete="new-password"
-      class="form-control input-lg input-block mb-2"
+      class="input-lg block mb-2"
       @blur="handleBlur('keyConfirmation')"
     />
-    <legend class="mb-4 d-block">
-      The hivesigner password will be required to unlock your account for usage.
-      {{ TOOLTIP_IMPORT_ENCRYPTION_KEY }}
+    <legend class="mb-6 block text-gray-600">
+      {{ $t('import.require_hs_password') }}
+      {{ $t(TOOLTIP_IMPORT_ENCRYPTION_KEY) }}
     </legend>
     <button
       :disabled="submitDisabled || loading"
       type="submit"
-      class="btn btn-large btn-blue input-block mb-2"
+      class="button-primary w-full mb-2"
     >
-      Import account
+      {{ $t('import.import_account') }}
     </button>
   </div>
 </template>
 
 <script lang="ts">
-
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { TOOLTIP_IMPORT_ENCRYPTION_KEY } from '~/consts'
 import { PersistentFormsModule } from '~/store'
-
-@Component
+import Icon from '../UI/Icons/Icon.vue'
+@Component({
+  components: { Icon }
+})
 export default class ImportSetPassword extends Vue {
   @Prop({
     type: Object,

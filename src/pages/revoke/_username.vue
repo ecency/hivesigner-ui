@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <Header title="Revoke (active)"/>
-    <div class="p-4 after-header">
+  <div class="font-old">
+    <Header :title="$t('revoke.revoke_active')"/>
+    <div class="p-6">
       <div class="container-sm mx-auto">
         <revoke-form
           v-if="hasAuthority && !failed && !transactionId"
@@ -36,7 +36,9 @@ import { AuthModule } from '~/store'
 import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
 
-@Component
+@Component({
+  layout: 'page',
+})
 export default class RevokeUsername extends Vue {
   private loading = false
   private failed = false
@@ -60,7 +62,7 @@ export default class RevokeUsername extends Vue {
   }
 
   private get hasAuthority(): boolean {
-    if (this.account.name) {
+    if (this.account?.name) {
       const auths = this.account[this.authority].account_auths.map(auth => auth[0])
       return auths.indexOf(this.username) !== -1
     }

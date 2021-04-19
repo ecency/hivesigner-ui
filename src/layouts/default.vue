@@ -13,3 +13,14 @@ export default class Default extends Vue {
   }
 }
 </script>
+<style lang="scss">
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  > * {
+    margin: auto;
+  }
+}
+</style>

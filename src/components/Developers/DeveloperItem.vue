@@ -1,9 +1,9 @@
 <template>
   <div>
-    <a @click="toggle" class="Box p-3 d-block border rounded-1 overflow-hidden mb-3">
-      <h4 class="m-0">{{ title }}</h4>
+    <a @click="toggle" class="p-4 block border rounded overflow-hidden mb-3 cursor-pointer hover:underline">
+      <h4 class="text-xl text-black-500 font-bold">{{ title }}</h4>
     </a>
-    <div v-if="open" class="mb-4">
+    <div v-if="open" class="mb-6 text-black-400 text-lg">
       <slot />
     </div>
   </div>

@@ -1,41 +1,30 @@
 <template>
-  <div>
-    <Header title="Auths"/>
-    <table class="table width-full after-header">
-      <thead>
-      <tr class="border-bottom">
-        <th>Type</th>
-        <th>Key</th>
-        <th>Weight</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-for="(auth, i) in orderedUsers" class="border-bottom" :key="i">
-        <td>{{ auth.authority }}</td>
-        <td>
-          <OperationValueAccount v-if="auth.type === 'account'" :value="auth.auth[0]"/>
-          <template v-else>{{ auth.auth[0] }}</template>
-          <router-link
-            v-if="auth.type === 'account'"
-            :to="
-                auth.authority !== 'posting'
-                  ? `/revoke/${auth.auth[0]}?authority=${auth.authority}`
-                  : `/revoke/${auth.auth[0]}`
+  <div class="font-old overflow-x-hidden">
+    <Header :title="$t('auths.auths')" />
+    <Table
+      :columns="columns"
+      :values="tableValues"
+    >
+      <template v-slot:Key="slotProps">
+        <OperationValueAccount
+          class="text-black"
+          v-if="slotProps.cellData.type === 'account'"
+          :value="slotProps.cellData.auth[0]"
+        />
+        <template v-else>{{ slotProps.cellData.auth[0] }}</template>
+        <router-link
+          v-if="slotProps.cellData.type === 'account'"
+          :to="
+                slotProps.cellData.authority !== 'posting'
+                  ? `/revoke/${slotProps.cellData.auth[0]}?authority=${slotProps.cellData.authority}`
+                  : `/revoke/${slotProps.cellData.auth[0]}`
               "
-            class="btn btn-sm float-right"
-          >
-            Revoke
-          </router-link>
-        </td>
-        <td>{{ auth.auth[1] }}</td>
-      </tr>
-      <tr class="border-bottom" v-if="publicKeys['memo'] === account.memo_key">
-        <td>memo</td>
-        <td>{{ account.memo_key }}</td>
-        <td></td>
-      </tr>
-      </tbody>
-    </table>
+          class="button button-sm float-right"
+        >
+          {{ $t('revoke.revoke') }}
+        </router-link>
+      </template>
+    </Table>
   </div>
 </template>
 
@@ -46,13 +35,24 @@ import { AuthModule } from '~/store'
 import { privateKeyFrom } from '~/utils'
 import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
+import Table from '~/components/UI/Table.vue'
 
 @Component({
+  components: { Table },
   middleware: ['auth'],
+  layout: 'page',
 })
 export default class Auths extends Vue {
   private get account(): Account | null {
     return AuthModule.account
+  }
+
+  private get columns() {
+    return [
+      this.$t('auths.type'),
+      this.$t('auths.key'),
+      this.$t('auths.weight')
+    ]
   }
 
   private get auths(): string[] {
@@ -69,10 +69,6 @@ export default class Auths extends Vue {
     return auths
   }
 
-  private get orderedUsers(): any {
-    return _.orderBy(this.auths, 'type')
-  }
-
   private get publicKeys(): Record<string, string> {
     const { keys } = AuthModule
     return Object.keys(keys).reduce<Record<string, string>>((acc, b) => {
@@ -82,6 +78,20 @@ export default class Auths extends Vue {
         .toString()
       return acc
     }, {})
+  }
+
+  private get tableValues(): Record<string, any>[] {
+    const values = _.orderBy(this.auths, 'type')
+      .map(auth => ({
+        Type: auth.authority,
+        Key: auth,
+        Weight: auth.auth[1],
+      }))
+    const memo = { Type: 'memo', Key: { auth: [this.account.memo_key] }, Weight: '' }
+    return [
+      ...values,
+      ...(this.publicKeys['memo'] === this.account.memo_key ? [memo] : []),
+    ]
   }
 }
 </script>

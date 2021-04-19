@@ -1,1 +1,1 @@
-export const ERROR_INVALID_ENCRYPTION_KEY = 'Invalid hivesigner password.'
+export const ERROR_INVALID_ENCRYPTION_KEY = 'login.invalid_hs_password'

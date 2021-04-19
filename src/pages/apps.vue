@@ -1,80 +1,80 @@
 <template>
-  <div class="height-full">
+  <div class="h-full font-old">
     <div class="apps-hero text-center">
-      <div class="mx-auto py-5 container-sm">
-        <router-link to="/">
-          <span class="logo iconfont icon-hivesigner"/>
+      <div class="mx-auto py-8 container-sm">
+        <router-link to="/" class="text-white">
+          <Icon name="Logo" style="width: 32px;height: 32px" class="mx-auto"/>
         </router-link>
-        <div class="mt-4 mb-7">
-          <h1 class="mb-6">App store</h1>
+        <div class="mt-9 mb-16">
+          <h1 class="text-5xl font-bold">{{ $t('apps.store') }}</h1>
         </div>
       </div>
     </div>
-    <div class="border-bottom">
-      <Search v-model="search" class="container-sm" placeholder="Search for apps"/>
+    <div class="border-b">
+      <Search
+        v-model="search"
+        class="container-sm mx-auto"
+        :placeholder="$t('apps.search_placeholder')"
+      />
     </div>
-    <div class="container-sm p-4 text-center">
+    <div class="container-sm mx-auto p-6 text-center">
       <template v-if="search">
-        <div class="mb-4">
-          <p>
-            <b>Search for "{{ search }}"</b>
-          </p>
-          {{ filteredApps.length }} apps
+        <div class="mb-6">
+          <p class="font-bold mb-2">{{ $t('apps.search_for', { search }) }}</p>
+          {{ filteredApps.length }} {{ $t('apps.apps') }}
         </div>
-        <div class="columns" v-if="filteredApps.length > 0">
-          <App
-            :username="app"
-            :key="app"
-            v-for="app in filteredApps.slice(0, 12)"
-            class="column col-sm-3 col-6 mb-4"
-            @select="openModal(app)"
-          />
-        </div>
-        <p v-else>We didn’t find any apps for "{{ search }}"</p>
+        <apps-list
+          v-if="filteredApps.length > 0"
+          :apps="filteredApps.slice(0, 12)"
+          :loading="isLoading"
+          @open-modal="openModal"
+        />
+        <p v-else>{{ $t('apps.empty_search', { search }) }}</p>
       </template>
       <template v-else>
-        <p class="mb-4"><b>Top apps</b></p>
-        <VueLoadingIndicator v-if="isLoading && topApps.length === 0" class="big mb-4"/>
-        <div class="columns mb-4" v-else>
-          <App
-            :username="app"
-            :key="app"
-            v-for="app in topApps.slice(0, 12)"
-            class="column col-sm-3 col-6 mb-4"
-            @select="openModal(app)"
-          />
-        </div>
-        <p class="mb-4"><b>Recently created</b></p>
-        <VueLoadingIndicator v-if="isLoading && apps.length === 0" class="big mb-4"/>
-        <div class="columns mb-4" v-else>
-          <App
-            :username="app"
-            :key="app"
-            v-for="app in apps.slice(0, 4)"
-            class="column col-sm-3 col-6 mb-4"
-            @select="openModal(app)"
-          />
-        </div>
+        <apps-list
+          title="Top apps"
+          :apps="topApps"
+          :loading="isLoading"
+          @open-modal="openModal"
+        />
+        <apps-list
+          title="Recently created"
+          :apps="apps"
+          :loading="isLoading"
+          @open-modal="openModal"
+        />
       </template>
-      <Footer class="my-4"/>
+      <Footer class="my-6"/>
     </div>
-    <ModalProfile :open="modalOpen" :username="selectedApp" @close="closeModal"/>
+    <SideModal ref="modal" :title="selectedApp">
+      <AppDetails :username="selectedApp" @close="closeModal" />
+    </SideModal>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator'
+import { Component, Vue, Ref } from 'nuxt-property-decorator'
 import { client, jsonParse } from '~/utils'
 import { ORACLE_PERMLINK, ORACLE_USERNAME } from '~/consts'
+import Icon from '~/components/UI/Icons/Icon.vue'
+import AppsList from '~/components/Apps/AppsList.vue'
+import AppDetails from '~/components/Apps/AppDetails.vue'
+import SideModal from '~/components/UI/SideModal.vue'
 
-@Component
+@Component({
+  components: { SideModal, AppDetails, AppsList, Icon },
+  layout: 'page',
+})
 export default class Apps extends Vue {
+  @Ref('modal')
+  private modalRef!: SideModal
+
   private isLoading = false
   private search = null
   private topApps = []
   private apps = []
   private selectedApp = null
-  private modalOpen = false
 
   private get filteredApps(): any[] {
     const apps = JSON.parse(JSON.stringify(this.apps))
@@ -111,11 +111,12 @@ export default class Apps extends Vue {
 
   private openModal(username: string): void {
     this.selectedApp = username
-    this.modalOpen = true
+    console.log(this.modalRef)
+    this.modalRef.show()
   }
 
   private closeModal(): void {
-    this.modalOpen = false
+    this.modalRef.hide()
   }
 }
 </script>
