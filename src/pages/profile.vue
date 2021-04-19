@@ -1,98 +1,100 @@
 <template>
-  <div>
-    <Header title="Profile"/>
+  <div class="font-old">
+    <Header :title="$t('profile.profile')"/>
     <div class="p-6">
       <div class="container-sm mx-auto">
-        <form @submit.prevent="handleSubmit" class="mb-4">
-          <label>Account type</label>
+        <form @submit.prevent="handleSubmit" class="mb-6">
+          <label class="label-light">{{ $t('profile.account_type') }}</label>
           <div class="mb-2">
             <input v-model="draft.type" type="radio" value="user" id="type-user" class="mr-2"/>
-            <label for="type-user" class="mr-3">User</label>
+            <label for="type-user" class="mr-4 label-light">{{ $t('profile.user') }}</label>
             <input v-model="draft.type" type="radio" value="app" id="type-app" class="mr-2"/>
-            <label for="type-app" class="mr-3">Application</label>
+            <label for="type-app" class="mr-4 label-light">{{ $t('profile.app') }}</label>
           </div>
-          <label for="name">Name</label>
+          <label for="name" class="label-light">{{ $t('profile.name') }}</label>
           <input
             v-model.trim="draft.name"
             id="name"
             name="name"
             type="text"
-            class="form-control input-lg input-block mb-2"
+            class="block mb-2"
             maxlength="64"
           />
-          <label for="profile_image">Profile picture URL</label>
+          <label for="profile_image" class="label-light">{{ $t('profile.profile_pic') }}</label>
           <input
             v-model.trim="draft.profile_image"
             id="profile_image"
             name="profile_image"
             type="text"
-            class="form-control input-lg input-block mb-2"
+            class="block mb-2"
             maxlength="256"
           />
-          <label for="cover_image">Cover image URL</label>
+          <label for="cover_image" class="label-light">{{ $t('profile.cover_pic') }}</label>
           <input
             v-model.trim="draft.cover_image"
             id="cover_image"
             name="cover_image"
             type="text"
-            class="form-control input-lg input-block mb-2"
+            class="block mb-2"
             maxlength="256"
           />
-          <label for="about">About</label>
+          <label for="about" class="label-light">{{ $t('profile.about') }}</label>
           <textarea
             v-model.trim="draft.about"
             id="about"
             name="about"
             type="text"
-            class="form-control input-lg input-block mb-2"
+            class="block mb-2"
             maxlength="256"
             rows="3"
           ></textarea>
-          <label for="website">Website</label>
+          <label for="website" class="label-light">{{ $t('profile.website') }}</label>
           <input
             v-model.trim="draft.website"
             id="website"
             name="website"
             type="url"
-            class="form-control input-lg input-block mb-2"
+            class="block mb-2"
             maxlength="128"
-            placeholder="i.e. https://example.com"
+            :placeholder="$t('profile.i_e_placeholder', { example: 'https://example.com' })"
           />
-          <label for="location">Location</label>
+          <label for="location" class="label-light">{{ $t('profile.location') }}</label>
           <input
             v-model.trim="draft.location"
             id="location"
             name="location"
             type="text"
             maxlength="64"
-            class="form-control input-lg input-block mb-2"
+            class="block mb-2"
           />
           <div v-if="draft.type === 'app'">
-            <label for="redirect_uris">Redirect URIs</label>
+            <label for="redirect_uris" class="label-light">{{ $t('profile.redirect_uris') }}</label>
             <textarea
               v-model.trim="draft.redirect_uris"
               id="redirect_uris"
               name="redirect_uris"
               type="text"
-              class="form-control input-lg input-block mb-2"
+              class="block mb-2"
               rows="3"
-              placeholder="i.e. https://example.com/callback"
+              :placeholder="$t('profile.i_e_placeholder', {
+                example: 'https://example.com/callback'
+              })"
             ></textarea>
             <div>
               <legend class="mb-2 d-block">
-                One URI per line. Need to have a protocol, no URL fragments, and no relative paths.
+                {{ $t('profile.one_uri_line') }}
               </legend>
             </div>
-            <label for="creator">Creator</label>
+            <label for="creator" class="label-light">{{ $t('profile.creator') }}</label>
             <input
               v-model.trim="draft.creator"
               id="creator"
               name="creator"
               type="text"
               maxlength="16"
-              class="form-control input-lg input-block mb-2"
+              class="block mb-2"
             />
-            <label>Status</label>
+            <label class="label-light">{{ $t('profile.status') }}</label>
             <div class="mb-2">
               <input
                 v-model="draft.is_public"
@@ -101,7 +103,7 @@
                 id="public-true"
                 class="mr-2"
               />
-              <label for="public-true" class="mr-3">Production</label>
+              <label for="public-true" class="mr-4 label-light">{{ $t('profile.production') }}</label>
               <input
                 v-model="draft.is_public"
                 type="radio"
@@ -109,24 +111,24 @@
                 id="public-false"
                 class="mr-2"
               />
-              <label for="public-false" class="mr-3">Sandbox</label>
+              <label for="public-false" class="mr-4 label-light">{{ $t('profile.sandbox') }}</label>
             </div>
-            <label for="secret">Secret</label>
+            <label for="secret" class="label-light">{{ $t('profile.secret') }}</label>
             <input
               v-model.trim="draft.secret"
               id="secret"
               name="secret"
               type="text"
-              class="form-control input-lg input-block mb-2"
+              class="block mb-2"
             />
             <div>
-              <legend class="mb-2 d-block">
-                Leave this field blank to keep your secret unchanged.
+              <legend class="mb-2 block">
+                {{ $t('profile.blank_field') }}
               </legend>
             </div>
           </div>
-          <button type="submit" class="btn btn-large mb-2 mt-2">
-            Continue
+          <button type="submit" class="mb-2 mt-2">
+            {{ $t('common.continue') }}
           </button>
         </form>
       </div>
@@ -143,7 +145,8 @@ import { AuthModule } from '~/store'
 import { Operation } from '@hiveio/dhive'
 
 @Component({
-  middleware: ['auth']
+  middleware: ['auth'],
+  layout: 'page',
 })
 export default class Profile extends Vue {
   private draft = {

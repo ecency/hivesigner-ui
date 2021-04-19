@@ -182,5 +182,26 @@ export default {
     minutes: '{min} minutes',
     hours: '{min} hours',
     node: 'Node address'
+  },
+  profile: {
+    profile: 'Profile',
+    account_type: 'Account type',
+    user: 'User',
+    app: 'Application',
+    name: 'Name',
+    profile_pic: 'Profile picture URL',
+    cover_pic: 'Cover image URL',
+    about: 'About',
+    website: 'Website',
+    location: 'Location',
+    i_e_placeholder: 'i.e. {example}',
+    redirect_uris: 'Redirect URIs',
+    one_uri_line: `One URI per line. Need to have a protocol, no URL fragments, and no relative paths.`,
+    creator: 'Creator',
+    status: 'Status',
+    production: 'Production',
+    sandbox: 'Sandbox',
+    secret: 'Secret',
+    blank_field: 'Leave this field blank to keep your secret unchanged.'
   }
 }
