@@ -78,6 +78,7 @@ export default {
     login: 'Login'
   },
   login: {
+    username: 'Username',
     username_required: 'Username is required.',
     password_required: 'Password is required.',
     hs_password_required: 'Hivesigner password is required.',

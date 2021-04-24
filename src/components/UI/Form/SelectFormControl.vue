@@ -1,17 +1,9 @@
 <template>
   <base-form-control-container :name="name" :label="label" :tooltip="tooltip" :error="error">
-    <input
-      :key="name"
+    <custom-select
       :value="value"
-      :id="name"
-      :name="name"
-      :type="type"
-      class="input-lg block mb-2"
-      autocorrect="off"
-      autocapitalize="none"
-      :autocomplete="autocomplete || name"
-      @input="onInput"
-      @blur="() => $emit('blur')"
+      :options="options"
+      @select="onInput"
     />
   </base-form-control-container>
 </template>
@@ -19,10 +11,11 @@
 <script lang="ts">
 import { Component, Prop, Vue, Emit } from 'nuxt-property-decorator'
 import Icon from '../Icons/Icon.vue'
+import CustomSelect from './Select.vue'
 import BaseFormControlContainer from './BaseFormControlContainer.vue'
 
 @Component({
-  components: { BaseFormControlContainer, Icon }
+  components: { BaseFormControlContainer, CustomSelect, Icon }
 })
 export default class BaseFormControl extends Vue {
   @Prop()
@@ -64,9 +57,15 @@ export default class BaseFormControl extends Vue {
   })
   private tooltip!: string
 
+  @Prop({
+    type: Array,
+    default: () => [],
+  })
+  private options!: any[]
+
   @Emit('input')
-  private onInput(event: InputEvent): string {
-    return (event.target as HTMLInputElement).value
+  private onInput(value: any): any {
+    return value
   }
 }
 </script>

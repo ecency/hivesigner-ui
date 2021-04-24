@@ -1,11 +1,12 @@
 select,
+.input,
 input[type=text],
 input[type=password],
 input[type=url],
 textarea {
   min-height: 42px;
 
-  @apply border border-gray-400 px-6 py-4 rounded w-full focus:border-primary outline-none duration-300;
+  @apply border border-gray-400 hover:border-gray-600 text-lg px-5 py-3.5 rounded w-full focus:border-primary outline-none duration-300;
 }
 
 select {

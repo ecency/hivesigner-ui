@@ -18,6 +18,7 @@ import Github from './Github.vue'
 import Discord from './Discord.vue'
 import Bookmark from './Bookmark.vue'
 import Search from './Search.vue'
+import SelectArrow from './SelectArrow.vue'
 
 @Component({
   components: {
@@ -33,7 +34,8 @@ import Search from './Search.vue'
     Discord,
     Bookmark,
     Search,
-  }
+    SelectArrow,
+  },
 })
 export default class Icon extends Vue {
   @Prop({

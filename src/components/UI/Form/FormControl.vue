@@ -8,6 +8,7 @@
     :error="error"
     :autocomplete="autocomplete"
     :tooltip="tooltip"
+    :options="options"
     @input="onInput"
     @blur="onBlur"
   />
@@ -17,11 +18,13 @@
 import { Component, Prop, Vue, Emit } from 'nuxt-property-decorator'
 import CheckboxFormControl from './CheckboxFormControl.vue'
 import BaseFormControl from './BaseFormControl.vue'
+import SelectFormControl from './SelectFormControl.vue'
 
 @Component({
   components: {
     CheckboxFormControl,
     BaseFormControl,
+    SelectFormControl,
   }
 })
 export default class FormControl extends Vue {
@@ -64,10 +67,18 @@ export default class FormControl extends Vue {
   })
   private tooltip!: string
 
+  @Prop({
+    type: Array,
+    default: () => [],
+  })
+  private options!: any[]
+
   private get controlComponent(): string {
     switch (this.type) {
       case 'checkbox':
         return 'checkbox-form-control'
+      case 'select':
+        return 'select-form-control'
       default:
         return 'base-form-control'
     }

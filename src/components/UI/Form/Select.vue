@@ -1,0 +1,84 @@
+<template>
+  <div class="select text-lg relative text-black-500" :class="{ '-opened': open }">
+    <transition name="fade">
+      <div
+        class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500"
+        v-if="open"
+        @click="hide"
+      ></div>
+    </transition>
+    <div
+      class="input cursor-pointer flex justify-between items-center relative z-10 bg-white"
+      :class="{ 'border border-black-500': open }"
+      @click="toggle"
+    >
+      <span>{{ value }}</span>
+      <icon class="arrow duration-200 text-black-400" name="select-arrow"/>
+    </div>
+    <transition>
+      <div
+        v-if="open"
+        class="select-options border border-black-500 rounded-md mt-4 absolute z-10 w-full bg-white overflow-hidden"
+      >
+        <div
+          class="select-option cursor-pointer py-4 px-5 hover:bg-gray-100"
+          :class="{ 'bg-gray-200': value === option }"
+          v-for="option of options"
+          @click="onOptionSelect(option)"
+        >
+          {{ option }}
+        </div>
+      </div>
+    </transition>
+  </div>
+</template>
+
+<script lang="ts">
+import { Component, Prop, Vue, Emit } from 'nuxt-property-decorator'
+import Icon from '../Icons/Icon.vue'
+
+@Component({
+  components: { Icon }
+})
+export default class Select extends Vue {
+  @Prop({
+    default: '',
+  })
+  private value!: any
+
+  @Prop({
+    type: Array,
+    default: () => [],
+  })
+  private options!: any[]
+
+  private open = false
+
+  public show(): void {
+    this.open = true
+  }
+
+  public hide(): void {
+    this.open = false
+  }
+
+  private toggle(): void {
+    this.open = !this.open
+  }
+
+  @Emit('select')
+  private onOptionSelect(option: any): any {
+    this.hide()
+    return option
+  }
+}
+</script>
+<style lang="scss">
+.select {
+  &.-opened {
+    .arrow {
+      transform: matrix(1, 0, 0, -1, 0, 0);
+    }
+  }
+}
+</style>
