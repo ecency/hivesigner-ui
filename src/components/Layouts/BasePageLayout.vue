@@ -14,7 +14,7 @@
       <router-link
         to="/"
         class="block navigation-title xl:hidden flex items-center sm:justify-center cursor-pointer"
-        :class="{ 'mb-9 justify-center': primaryPage }"
+        :class="{ 'my-9 justify-center': primaryPage }"
       >
         <Icon class="logo mr-5 text-primary" name="logo"/>
         <span class="font-bold text-3xl sm:text-4xl">Hivesigner</span>
