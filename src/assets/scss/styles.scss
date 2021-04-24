@@ -18,6 +18,10 @@ body {
   height: 100%;
 }
 
+#__nuxt, #__layout {
+  @apply w-full;
+}
+
 .container-xs {
   max-width: 380px;
 }

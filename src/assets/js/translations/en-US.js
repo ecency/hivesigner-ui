@@ -61,6 +61,7 @@ export default {
     confirm_password: 'Confirm password',
     require_hs_password: `The hivesigner password will be required to unlock your account for usage.`,
     import_account: 'Import account',
+    username: 'Username',
     import_encryption_key: `This is a new custom password to encrypt your credentials. This is not your Hive private key.`,
     master_password: 'Master password or {authority} key',
     master_key: 'You need to use master or at least {authority} key to login.',
@@ -70,7 +71,11 @@ export default {
     app: 'The app ',
     site: 'This site ',
     request_access: 'is requesting access to view your current account username.',
-    invalid_username_password: 'Invalid username or password. You need to use master, active, posting or memo key to login.'
+    invalid_username_password: `Invalid username or password. You need to use master, active, posting or memo key to login.`,
+    add_another_account: 'Add another account',
+    dont_have_an_account: 'Don`t have an account?',
+    sign_up_here: 'Signup here',
+    login: 'Login'
   },
   login: {
     username_required: 'Username is required.',

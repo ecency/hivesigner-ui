@@ -5,7 +5,7 @@ input[type=url],
 textarea {
   min-height: 42px;
 
-  @apply border border-gray-400 px-3 py-1.5 rounded w-full focus:border-primary outline-none duration-300;
+  @apply border border-gray-400 px-6 py-4 rounded w-full focus:border-primary outline-none duration-300;
 }
 
 select {
@@ -23,7 +23,7 @@ label {
 }
 
 button, .button {
-  @apply py-2.5 px-5 rounded-md border border-gray-400 text-gray-500 font-bold hover:text-black-500 duration-200 focus:outline-disabled;
+  @apply py-4 px-6 text-lg rounded-md border border-gray-400 text-gray-500 hover:text-black-500 duration-200 focus:outline-disabled;
 
   &:hover {
     border-color: rgba(27, 31, 35, .35);
