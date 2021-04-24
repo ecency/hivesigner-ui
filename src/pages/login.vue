@@ -44,6 +44,15 @@
         >
           {{ $t('import.add_another_account') }}
         </router-link>
+        <div class="text-gray text-lg pt-4">
+          {{ $t('import.dont_have_an_account') }}
+          <a
+            href="https://signup.hive.io"
+            target="_blank"
+            rel="noopener"
+            class="text-black-500 hover:underline"
+          >{{ $t('import.sign_up_here') }}</a>
+        </div>
       </div>
       <Loader v-if="loading" class="overlay fixed"/>
     </template>

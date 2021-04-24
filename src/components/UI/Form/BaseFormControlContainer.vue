@@ -4,13 +4,7 @@
       <label :for="name" class="flex items-center">
         {{ label }}
 
-        <span
-          v-if="tooltip"
-          class="inline-block tooltip ml-1 cursor-pointer hover:text-black"
-          :aria-label="tooltip"
-        >
-        <Icon name="Info" class="input-block" style="width: 20px; height: 20px;" />
-      </span>
+       <tooltip class="ml-1" :tooltip="tooltip" />
       </label>
       <span v-if="error" class="mx-1">/</span>
       <div v-if="error" class="text-primary">{{ error }}</div>
@@ -21,8 +15,12 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
+import Icon from '../Icons/Icon.vue'
+import Tooltip from '../Tooltip.vue'
 
-@Component
+@Component({
+  components: { Tooltip, Icon }
+})
 export default class BaseFormControlContainer extends Vue {
   @Prop({
     type: String,

@@ -8,8 +8,8 @@
       ></div>
     </transition>
     <div
-      class="input cursor-pointer flex justify-between items-center relative z-10 bg-white"
-      :class="{ 'border border-black-500': open }"
+      class="input cursor-pointer flex justify-between items-center relative bg-white"
+      :class="{ 'border border-black-500 z-10': open }"
       @click="toggle"
     >
       <span>{{ value }}</span>

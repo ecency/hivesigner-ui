@@ -1,53 +1,35 @@
 <template>
   <form @submit.prevent="submitForm" method="post" class="text-left">
-    <label for="username">Username</label>
-    <div v-if="dirty.username && !!errors.username" class="text-primary mb-2">
-      {{ errors.username }}
-    </div>
-    <select
-      id="username"
-      v-model.trim="username"
-      class="input-lg block mb-2"
-      autocorrect="off"
-      autocapitalize="none"
-      autocomplete="username"
-      @change="handleBlur('username')"
-    >
-      <option v-for="user in Object.keys(keychain)" :key="user" :value="user">
-        {{ user }}
-      </option>
-    </select>
-    <label for="password" class="flex items-center" v-if="!decrypted">
-      {{ $t('import.hs_password') }}
-      <span
-        class="inline-block tooltip ml-1"
-        :aria-label="tooltipLoginEncryptionKey"
-      >
-        <Icon name="Info" style="width: 14px; height: 22px;" />
-      </span>
-    </label>
-    <div v-if="dirty.key && !!errors.key" class="text-primary mb-2">
-      {{ errors.key }}
-    </div>
-    <input
-      id="password"
+    <form-control
+      v-model="username"
+      name="username"
+      :label="$t('login.switch_an_account')"
+      :error="dirty.username && errors.username"
+      :options="Object.keys(keychain)"
+      type="select"
+      @blur="handleBlur('username')"
+    />
+
+    <form-control
       v-if="!decrypted"
-      v-model.trim="loginKey"
+      v-model="loginKey"
+      name="key"
+      :label="$t('import.hs_password')"
+      :error="dirty.key && errors.key"
+      :options="Object.keys(keychain)"
+      :tooltip="tooltipLoginEncryptionKey"
+      autocomplete="password"
       type="password"
-      autocorrect="off"
-      autocapitalize="none"
-      autocomplete="current-password"
-      class="input-lg block mb-2"
-      :class="{ 'mb-4': !error }"
       @blur="handleBlur('key')"
     />
+
     <div v-if="!!error" class="text-primary mb-6">{{ error }}</div>
     <button
       :disabled="submitDisabled || loading"
       type="submit"
       class="button-primary w-full block mb-2"
     >
-      Login
+      {{ $t('common.continue') }}
     </button>
   </form>
 </template>
@@ -60,9 +42,10 @@ import { PersistentFormsModule } from '~/store'
 import { signComplete } from '~/utils'
 import { Authority } from '~/enums'
 import Icon from '../UI/Icons/Icon.vue'
+import FormControl from '../UI/Form/FormControl.vue'
 
 @Component({
-  components: { Icon }
+  components: { FormControl, Icon }
 })
 export default class LoginForm extends Vue {
   @Prop({
