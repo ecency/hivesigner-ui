@@ -1,5 +1,5 @@
 <template>
-  <label class="checkbox-form-control text-lg text-black-500 flex items-center mb-4">
+  <label class="checkbox-form-control text-lg text-black-500 flex items-center mb-4 cursor-pointer">
     <input
       :key="name"
       :checked="value"

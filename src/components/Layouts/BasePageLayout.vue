@@ -1,20 +1,25 @@
 <template>
-  <div class="home container py-20 mx-auto px-4">
-    <div class="navigation-container block sm:hidden fixed top-0 right-0 pr-5 pt-5">
-      <Dropdown position="rightBottom">
+  <div class="base-page-layout container mx-auto px-4 py-20">
+    <div
+      class="navigation-container grid items-center mb-7"
+      :class="{ 'primary': primaryPage }"
+    >
+      <Dropdown class="navigation-toggle sm:hidden" position="rightBottom">
         <template slot="trigger">
-          <Icon name="Menu" class="text-gray" />
+          <Icon name="Menu" class="text-gray"/>
         </template>
-        <Navigation vertical />
+        <Navigation vertical/>
       </Dropdown>
+
+      <div
+        class="navigation-title xl:hidden flex items-center sm:justify-center"
+        :class="{ 'mb-9': primaryPage }"
+      >
+        <Icon class="logo mr-5 text-primary" name="logo"/>
+        <span class="font-bold text-3xl sm:text-4xl">Hivesigner</span>
+      </div>
     </div>
     <div class="grid gap-2.5 xl:gap-40 grid-cols-2 items-center justify-center">
-      <div class="col-span-2 xl:hidden">
-        <div class="flex items-center justify-center mb-9">
-          <Icon class="logo mr-5 text-primary" name="logo"/>
-          <span class="font-bold text-3xl sm:text-4xl">Hivesigner</span>
-        </div>
-      </div>
       <div class="col-span-2 xl:col-span-1 sm:mb-6 xl:mb-0">
         <slot name="left"></slot>
       </div>
@@ -31,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator'
+import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import Dropdown from '../UI/Dropdown.vue'
 import Icon from '../UI/Icons/Icon.vue'
 import Navigation from '../Navigation.vue'
@@ -39,9 +44,48 @@ import Navigation from '../Navigation.vue'
 @Component({
   components: { Navigation, Icon, Dropdown }
 })
-export default class BasePageLayout extends Vue {}
+export default class BasePageLayout extends Vue {
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  private primaryPage!: boolean
+}
 </script>
 
-<style scoped>
+<style lang="scss">
+.base-page-layout {
+  .navigation-container {
+    grid-template-areas: "title navigation";
+    grid-template-columns: 1fr min-content;
 
+    &.primary {
+      grid-template-areas:
+      "empty navigation"
+      "title title";
+    }
+
+    .navigation-title {
+      grid-area: title;
+    }
+
+    .navigation-toggle {
+      grid-area: navigation;
+    }
+  }
+
+  @screen sm {
+    .logo {
+      width: 55px;
+      height: 64px;
+    }
+  }
+
+  @screen xl {
+    .logo {
+      width: 64px;
+      height: 75px;
+    }
+  }
+}
 </style>

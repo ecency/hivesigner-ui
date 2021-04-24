@@ -1,8 +1,9 @@
 <template>
   <div class="form-control mb-4">
-    <label :for="name">{{ label }}</label>
-    <div v-if="error" class="text-primary mb-2">
-      {{ error }}
+    <div class="flex items-center text-lg text-black-500 mb-2">
+      <label :for="name">{{ label }}</label>
+      <span v-if="error" class="mx-1">/</span>
+      <div v-if="error" class="text-primary">{{ error }}</div>
     </div>
     <input
       :key="name"

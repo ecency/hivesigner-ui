@@ -1,5 +1,5 @@
 <template>
-  <base-page-layout>
+  <base-page-layout primary-page>
     <template slot="left">
       <img class="block mx-auto image" :src="require('../../assets/img/home.svg')" alt="">
       <p

@@ -1,5 +1,5 @@
 <template>
-  <base-page-layout>
+  <base-page-layout class="import">
     <template slot="left">
       <img class="block mx-auto image" :src="require('../assets/img/auth.svg')" alt="">
     </template>
@@ -22,7 +22,7 @@
           </div>
         </div>
       </div>
-      <div class="width-full p-4 mb-2">
+      <div class="mb-2">
         <form @submit.prevent="submitForm" method="post" class="text-left">
           <import-user-form
             ref="import-user"
@@ -355,3 +355,28 @@ export default class Import extends Vue {
   }
 }
 </script>
+<style lang="scss">
+.import {
+  .image {
+    max-width: 144px;
+  }
+}
+
+@screen sm {
+  .import {
+
+    .image {
+      max-width: 222px;
+    }
+  }
+}
+
+@screen xl {
+  .import {
+
+    .image {
+      max-width: 411px;
+    }
+  }
+}
+</style>

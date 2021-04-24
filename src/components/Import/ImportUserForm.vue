@@ -27,7 +27,7 @@
       type="checkbox"
     />
 
-    <div v-if="!!error" class="error mb-4">{{ error }}</div>
+    <div v-if="!!error" class="text-primary text-lg mb-6">{{ error }}</div>
     <button
       :disabled="nextDisabled || loading"
       class="button-primary w-full block mb-2"
