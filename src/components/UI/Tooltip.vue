@@ -7,7 +7,8 @@
       ></div>
     </transition>
     <span
-      class="inline-block tooltip-popup cursor-pointer hover:text-black"
+      class="inline-block tooltip-popup cursor-pointer hover:text-black relative"
+      :class="{ 'z-20': open }"
       :aria-label="tooltip"
       @mouseover="open = true"
       @mouseleave="open = false"
@@ -36,11 +37,9 @@ export default class Tooltip extends Vue {
 </script>
 <style lang="scss">
 .tooltip-popup {
-  position: relative;
-
   &::before {
-    @apply top-auto absolute right-1/2 border-8 -mr-1.5 border-transparent text-white -bottom-2
-    duration-200 opacity-0 z-20;
+    @apply top-auto absolute right-1/2 border-8 border-transparent text-white -bottom-3
+    duration-200 opacity-0;
 
     content: '';
     border-bottom-color: theme('colors.current') !important;
@@ -53,8 +52,12 @@ export default class Tooltip extends Vue {
     max-width: 300px;
     transform: translate(-50%, -0.5rem);
 
-    @apply absolute text-black-400 bg-white xl:text-lg text-center top-full mt-4
-    left-1/2 right-auto pointer-events-none w-max duration-200 opacity-0 z-20 p-6;
+    @apply absolute text-black-400 bg-white xl:text-lg text-center top-full mt-5 left-1/2
+    right-auto pointer-events-none w-max duration-200 opacity-0 p-6 md:py-8 md:px-9;
+
+    @screen md {
+      max-width: 500px;
+    }
   }
 
   &:hover {

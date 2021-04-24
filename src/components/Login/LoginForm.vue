@@ -145,7 +145,7 @@ export default class LoginForm extends Vue {
         }, (decryptError, buff) => {
           if (decryptError) {
             this.$emit('loading', false)
-            this.$emit('error', ERROR_INVALID_ENCRYPTION_KEY)
+            this.$emit('error', this.$t(ERROR_INVALID_ENCRYPTION_KEY))
             console.log('err', decryptError)
             return
           }

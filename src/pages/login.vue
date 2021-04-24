@@ -1,5 +1,5 @@
 <template>
-  <base-page-layout>
+  <base-page-layout class="login">
     <template slot="left">
       <img class="block mx-auto image" :src="require('../assets/img/auth.svg')" alt="">
     </template>
@@ -292,3 +292,28 @@ export default class Login extends Vue {
   }
 }
 </script>
+<style lang="scss">
+.login {
+  .image {
+    max-width: 144px;
+  }
+}
+
+@screen sm {
+  .login {
+
+    .image {
+      max-width: 222px;
+    }
+  }
+}
+
+@screen xl {
+  .login {
+
+    .image {
+      max-width: 411px;
+    }
+  }
+}
+</style>

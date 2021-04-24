@@ -21,7 +21,7 @@
         class="select-options border border-black-500 rounded-md mt-4 absolute z-10 w-full bg-white overflow-hidden"
       >
         <div
-          class="select-option cursor-pointer py-4 px-5 hover:bg-gray-100"
+          class="select-option cursor-pointer py-4 px-5 hover:bg-primary-100"
           :class="{ 'bg-gray-200': value === option }"
           v-for="option of options"
           @click="onOptionSelect(option)"

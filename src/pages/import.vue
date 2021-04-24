@@ -226,6 +226,10 @@ export default class Import extends Vue {
     }
   }
 
+  private beforeDestroy(): void {
+    this.resetForm()
+  }
+
   private login(data: any): Promise<any> {
     return AuthModule.login(data)
   }
@@ -254,8 +258,8 @@ export default class Import extends Vue {
   }
 
   private resetForm(): void {
-    this.importUserRef.reset()
-    this.setPasswordRef.reset()
+    this.importUserRef?.reset()
+    this.setPasswordRef?.reset()
     this.step = 1
     this.username = ''
     this.password = ''

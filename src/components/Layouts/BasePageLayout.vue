@@ -11,23 +11,24 @@
         <Navigation vertical/>
       </Dropdown>
 
-      <div
-        class="navigation-title xl:hidden flex items-center sm:justify-center"
-        :class="{ 'mb-9': primaryPage }"
+      <router-link
+        to="/"
+        class="block navigation-title xl:hidden flex items-center sm:justify-center cursor-pointer"
+        :class="{ 'mb-9 justify-center': primaryPage }"
       >
         <Icon class="logo mr-5 text-primary" name="logo"/>
         <span class="font-bold text-3xl sm:text-4xl">Hivesigner</span>
-      </div>
+      </router-link>
     </div>
     <div class="grid gap-2.5 xl:gap-40 grid-cols-2 items-center justify-center">
       <div class="col-span-2 xl:col-span-1 sm:mb-6 xl:mb-0">
         <slot name="left"></slot>
       </div>
       <div class="col-span-2 xl:col-span-1 sm:mb-6 xl:mb-0">
-        <div class="hidden xl:flex items-center mb-20">
+        <router-link to="/" class="hidden xl:flex items-center mb-20 cursor-pointer block">
           <Icon name="logo" class="logo text-primary mr-5"/>
           <span class="font-bold text-5xl">Hivesigner</span>
-        </div>
+        </router-link>
         <slot name="right"></slot>
         <Navigation class="w-full pt-28 hidden sm:flex"/>
       </div>
