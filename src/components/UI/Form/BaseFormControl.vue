@@ -62,7 +62,6 @@ export default class BaseFormControl extends Vue {
   private type!: string
 
   @Prop({
-    type: String,
     default: '',
   })
   private error!: string

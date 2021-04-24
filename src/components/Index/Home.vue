@@ -13,7 +13,7 @@
       </p>
       <div class="flex justify-center xl:justify-start">
         <router-link
-          to="/import?redirect=accounts"
+          :to="hasAccounts ? '/login?redirect=accounts' : '/import?redirect=accounts'"
           class="button button-primary inline-flex items-center"
         >
           <Icon name="Keychain" class="mr-2"/>
@@ -26,17 +26,20 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { PACKAGE } from '../../consts'
 import Dropdown from '../UI/Dropdown.vue'
 import Icon from '../UI/Icons/Icon.vue'
 import Navigation from '../Navigation.vue'
 import BasePageLayout from '../Layouts/BasePageLayout.vue'
+import { hasAccounts } from '~/utils'
 
 @Component({
   components: { BasePageLayout, Navigation, Icon, Dropdown },
   middleware: ['isWeb']
 })
 export default class Home extends Vue {
+  private get hasAccounts(): boolean {
+    return hasAccounts()
+  }
 }
 </script>
 <style lang="scss">

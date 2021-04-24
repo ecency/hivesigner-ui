@@ -48,7 +48,6 @@ export default class FormControl extends Vue {
   private type!: string
 
   @Prop({
-    type: String,
     default: '',
   })
   private error!: string
