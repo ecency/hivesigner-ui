@@ -1,57 +1,53 @@
 <template>
-  <Center class="font-old">
-    <router-link
-      to="/"
-      class="inline-block my-2"
-      v-if="isRedirected"
-    >
-      <Icon name="Logo" style="height: 32px" class="block mx-auto mb-3 text-primary" />
-      <h4 class="font-bold text-black-500 text-2xl">hivesigner</h4>
-    </router-link>
-    <div
-      v-if="!failed && !isRedirected"
-      class="p-6"
-    >
-      <div class="container-sm mx-auto">
-        <div v-if="!failed && !signature">
-          <div class="mb-4 text-center" v-if="app && appProfile">
-            <Avatar :username="app" :size="80"/>
-            <div class="mt-2">
-              <h4 v-if="appProfile.name" class="mb-0">{{ appProfile.name }}</h4>
-              <span v-if="appProfile.website">{{ appProfile.website | parseUrl }}</span>
+  <base-page-layout>
+    <template slot="left">
+      <img class="block mx-auto image" :src="require('../assets/img/auth.svg')" alt="">
+    </template>
+    <template slot="right">
+      <div
+        v-if="!failed && !isRedirected"
+        class="p-6"
+      >
+        <div class="container-sm mx-auto">
+          <div v-if="!failed && !signature">
+            <div class="mb-4 text-center" v-if="app && appProfile">
+              <Avatar :username="app" :size="80"/>
+              <div class="mt-2">
+                <h4 v-if="appProfile.name" class="mb-0">{{ appProfile.name }}</h4>
+                <span v-if="appProfile.website">{{ appProfile.website | parseUrl }}</span>
+              </div>
             </div>
+            <p>
+              <span v-if="app">{{ $t('import.app') }}<b>{{ app }}</b></span>
+              <span v-else>{{ $t('import.site') }}</span>
+              {{ $t('import.request_access') }}
+            </p>
           </div>
-          <p>
-            <span v-if="app">{{ $t('import.app') }}<b>{{ app }}</b></span>
-            <span v-else>{{ $t('import.site') }}</span>
-            {{ $t('import.request_access') }}
-          </p>
         </div>
       </div>
-    </div>
-    <div class="width-full p-4 mb-2">
-      <login-form
-        ref="login-form"
-        :loading="isLoading"
-        :keychain="keychain"
-        :error="error"
-        :authority="authority"
-        @failed="value => this.failed = value"
-        @error="value => this.error = value"
-        @loading="value => this.loading = value"
-        @signature="value => this.signature = value"
-        @submit="loginMe"
-      />
-      <router-link
-        :to="{ name: 'import', query: $route.query }"
-        class="button block text-center mb-2"
-      >
-        Import account
-      </router-link>
-    </div>
-    <Loader v-if="loading" class="overlay fixed"/>
-    <Footer/>
-  </Center>
+      <div class="mb-2">
+        <login-form
+          ref="login-form"
+          :loading="isLoading"
+          :keychain="keychain"
+          :error="error"
+          :authority="authority"
+          @failed="value => this.failed = value"
+          @error="value => this.error = value"
+          @loading="value => this.loading = value"
+          @signature="value => this.signature = value"
+          @submit="loginMe"
+        />
+        <router-link
+          :to="{ name: 'import', query: $route.query }"
+          class="button block text-center mb-2"
+        >
+          {{ $t('import.add_another_account') }}
+        </router-link>
+      </div>
+      <Loader v-if="loading" class="overlay fixed"/>
+    </template>
+  </base-page-layout>
 </template>
 
 <script lang="ts">
@@ -74,9 +70,10 @@ import { Account } from '@hiveio/dhive'
 import LoginForm from '~/components/Login/LoginForm.vue'
 import Icon from '../components/UI/Icons/Icon.vue'
 import Loader from '../components/UI/Loader.vue'
+import BasePageLayout from '../components/Layouts/BasePageLayout.vue'
 
 @Component({
-  components: { Loader, Icon },
+  components: { BasePageLayout, Loader, Icon },
   middleware: ['before-login'],
 })
 export default class Login extends Vue {

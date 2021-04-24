@@ -7,6 +7,7 @@
     :type="type"
     :error="error"
     :autocomplete="autocomplete"
+    :tooltip="tooltip"
     @input="onInput"
     @blur="onBlur"
   />
@@ -57,6 +58,12 @@ export default class FormControl extends Vue {
     default: '',
   })
   private autocomplete!: string
+
+  @Prop({
+    type: String,
+    default: '',
+  })
+  private tooltip!: string
 
   private get controlComponent(): string {
     switch (this.type) {

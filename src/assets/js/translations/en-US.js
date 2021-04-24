@@ -63,7 +63,7 @@ export default {
     import_account: 'Import account',
     username: 'Username',
     import_encryption_key: `This is a new custom password to encrypt your credentials. This is not your Hive private key.`,
-    master_password: 'Master password or {authority} key',
+    master_password: 'Private key',
     master_key: 'You need to use master or at least {authority} key to login.',
     encrypt_keys: 'Encrypt your keys',
     select_account: 'Select account',
