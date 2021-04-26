@@ -193,7 +193,7 @@ export default class Login extends Vue {
   private loadKeychain(): void {
     this.keychain = getKeychain()
     const usernames = Object.keys(this.keychain)
-    if (usernames.length > 0) {
+    if (usernames.length > 0 && !this.username) {
       [this.username] = usernames
     }
   }
