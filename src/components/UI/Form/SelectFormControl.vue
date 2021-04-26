@@ -4,6 +4,7 @@
       :value="value"
       :options="options"
       @select="onInput"
+      @blur="onBlur"
     />
   </base-form-control-container>
 </template>
@@ -66,6 +67,10 @@ export default class BaseFormControl extends Vue {
   @Emit('input')
   private onInput(value: any): any {
     return value
+  }
+
+  @Emit('blur')
+  private onBlur(): void {
   }
 }
 </script>

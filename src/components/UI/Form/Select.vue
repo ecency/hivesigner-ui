@@ -34,7 +34,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Emit } from 'nuxt-property-decorator'
+import { Component, Prop, Vue, Emit, Watch } from 'nuxt-property-decorator'
 import Icon from '../Icons/Icon.vue'
 
 @Component({
@@ -70,6 +70,17 @@ export default class Select extends Vue {
   private onOptionSelect(option: any): any {
     this.hide()
     return option
+  }
+
+  @Watch('open')
+  private openChanged(): void {
+    if (!this.open) {
+      this.onBlur()
+    }
+  }
+
+  @Emit('blur')
+  private onBlur(): void {
   }
 }
 </script>
