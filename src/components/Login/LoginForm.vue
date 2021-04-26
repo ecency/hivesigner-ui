@@ -135,7 +135,12 @@ export default class LoginForm extends Vue {
     this.$emit('loading', true)
     if (this.decrypted) {
       this.$emit('loading', false)
-      const bb = Buffer.from(encryptedKeys.replace('decrypted', ''), 'hex').toString()
+      let bb = encryptedKeys
+      try {
+        bb = Buffer.from(encryptedKeys.replace('decrypted', ''), 'hex').toString()
+      } catch (_) {
+        this.handleReject()
+      }
       this.$emit('submit', bb)
     } else {
       // @ts-ignore
@@ -173,7 +178,6 @@ export default class LoginForm extends Vue {
     this.$emit('failed', false)
     this.$emit('loading', false)
     this.$emit('signature', '')
-    this.$router.push('/')
   }
 }
 </script>

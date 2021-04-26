@@ -34,7 +34,7 @@
           :authority="authority"
           @failed="value => this.failed = value"
           @error="value => this.error = value"
-          @loading="value => this.loading = value"
+          @loading="value => this.isLoading = value"
           @signature="value => this.signature = value"
           @submit="loginMe"
         />
@@ -54,7 +54,7 @@
           >{{ $t('import.sign_up_here') }}</a>
         </div>
       </div>
-      <Loader v-if="loading" class="overlay fixed"/>
+      <Loader v-if="isLoading" class="overlay fixed"/>
     </template>
   </base-page-layout>
 </template>
@@ -94,7 +94,6 @@ export default class Login extends Vue {
   private isLoading = false
   private redirected = ''
   private showLoading = false
-  private loading = false
   private failed = false
   private signature = null
   private app = null
@@ -191,10 +190,6 @@ export default class Login extends Vue {
     }
   }
 
-  private login(data: any): Promise<void> {
-    return AuthModule.login(data)
-  }
-
   private loadKeychain(): void {
     this.keychain = getKeychain()
     const usernames = Object.keys(this.keychain)
@@ -211,10 +206,10 @@ export default class Login extends Vue {
       this.error = this.$t('login.need_import', { authority }) as string
       return
     }
-    this.loading = true
+    this.isLoading = true
     this.showLoading = true
     try {
-      await this.login({ username: this.username, keys })
+      await AuthModule.login({ username: this.username, keys })
       const redirect = this.$route.query.redirect as string
 
       if (this.redirected !== '' && !this.redirected.includes('/login-request')) {
@@ -260,7 +255,7 @@ export default class Login extends Vue {
           if (this.requestId) {
             signComplete(this.requestId, err, null)
           }
-          this.loading = false
+          this.isLoading = false
           this.showLoading = false
         }
       }
