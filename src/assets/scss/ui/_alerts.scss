@@ -8,7 +8,7 @@
   }
 
   &.alert-error {
-
+    @apply bg-error-200 text-error-500;
   }
 
   &.alert-warning {

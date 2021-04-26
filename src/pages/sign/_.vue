@@ -37,7 +37,7 @@
               @click="handleSubmit"
               v-else
             >
-              this.$t({{ parsed.params.no_broadcast ? 'sign.sign' : 'sign.approve' }})
+              {{ this.$t(parsed.params.no_broadcast ? 'sign.sign' : 'sign.approve') }}
             </button>
             <button class="mb-2" @click.prevent="handleReject">
               {{ $t('common.cancel') }}
