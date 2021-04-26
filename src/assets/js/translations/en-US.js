@@ -57,7 +57,7 @@ export default {
     requires_active_key: `This transaction requires your <b>active</b> key.`
   },
   import: {
-    hs_password: 'Hivesigner password',
+    hs_password: 'Encryption password',
     confirm_password: 'Confirm password',
     require_hs_password: `The hivesigner password will be required to unlock your account for usage.`,
     import_account: 'Import account',
