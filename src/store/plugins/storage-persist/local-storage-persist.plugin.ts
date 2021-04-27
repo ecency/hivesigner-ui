@@ -9,13 +9,15 @@ export class LocalStoragePersist<T extends Record<any, any>> extends StoragePers
   protected onStoreInit(): void {
     this.forModules.forEach(module => {
       try {
-        const snapshot = JSON.parse(localStorage.getItem(`vuex__${module}`) || '{}')
-        if (snapshot) {
-          this.store.replaceState({
-            ...this.store.state,
-            [module]: snapshot,
-          })
+        const rawSnapshot = localStorage.getItem(`vuex__${module}`)
+        if (!rawSnapshot) {
+          return
         }
+        const snapshot = JSON.parse(rawSnapshot)
+        this.store.replaceState({
+          ...this.store.state,
+          [module]: snapshot,
+        })
       } catch (e) {
         console.error(`Failed to load persistent data from localstorage for ${module} Vuex module`)
       }

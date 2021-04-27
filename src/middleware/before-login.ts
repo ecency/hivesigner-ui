@@ -1,8 +1,7 @@
-import { hasAccounts } from '~/utils'
 import { Context } from '@nuxt/types'
 
-export default function ({ redirect, query }: Context): void {
-  if (!hasAccounts()) {
+export default function ({ redirect, query, store }: Context): void {
+  if (!store.getters['accounts/hasAccounts']) {
     redirect('/import', query)
   }
 }

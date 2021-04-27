@@ -1,4 +1,4 @@
-import { Module, VuexModule, VuexMutation } from 'nuxt-property-decorator'
+import { Module, Vue, VuexModule, VuexMutation } from 'nuxt-property-decorator'
 
 @Module({
   stateFactory: true,
@@ -7,8 +7,11 @@ import { Module, VuexModule, VuexMutation } from 'nuxt-property-decorator'
 })
 export default class Accounts extends VuexModule {
   public accountsKeychains: Record<string, string> = {}
-  // TODO: It should be first account by default
   public selectedAccount: string = ''
+
+  public get hasAccounts(): boolean {
+    return !!this.accountsUsernamesList.length
+  }
 
   public get accountsUsernamesList(): string[] {
     return Object.keys(this.accountsKeychains)
@@ -33,5 +36,18 @@ export default class Accounts extends VuexModule {
   @VuexMutation
   public setSelectedAccount(value: string): void {
     this.selectedAccount = value
+  }
+
+  @VuexMutation
+  public saveAccount({ username, key }: { username: string, key: string }): void {
+    if (!this.selectedAccount) {
+      this.selectedAccount = username
+    }
+    Vue.set(this.accountsKeychains, username, key)
+  }
+
+  @VuexMutation
+  public removeAccount(username: string): void {
+    Vue.delete(this.accountsKeychains, username)
   }
 }

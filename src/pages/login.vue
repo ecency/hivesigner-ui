@@ -67,12 +67,11 @@ import {
   buildSearchParams,
   client,
   getAuthority,
-  getKeychain,
   isValidUrl,
   jsonParse,
   signComplete
 } from '~/utils'
-import { AccountsModule, AuthModule, PersistentFormsModule } from '~/store'
+import { AccountsModule, AuthModule } from '~/store'
 import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
 import LoginForm from '~/components/Login/LoginForm.vue'
