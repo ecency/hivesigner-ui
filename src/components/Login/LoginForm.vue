@@ -38,7 +38,7 @@
 import triplesec from 'triplesec'
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { ERROR_INVALID_ENCRYPTION_KEY, TOOLTIP_LOGIN_ENCRYPTION_KEY } from '~/consts'
-import { PersistentFormsModule } from '~/store'
+import { AccountsModule, PersistentFormsModule } from '~/store'
 import { signComplete } from '~/utils'
 import { Authority } from '~/enums'
 import Icon from '../UI/Icons/Icon.vue'
@@ -90,11 +90,11 @@ export default class LoginForm extends Vue {
   }
 
   private get username(): string {
-    return PersistentFormsModule.login.username
+    return AccountsModule.selectedAccount
   }
 
   private set username(value: string) {
-    PersistentFormsModule.saveLoginUsername(value)
+    AccountsModule.setSelectedAccount(value)
   }
 
   private get loginKey(): string {
