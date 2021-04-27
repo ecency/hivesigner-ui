@@ -5,18 +5,17 @@
       name="username"
       :label="$t('login.switch_an_account')"
       :error="dirty.username && errors.username"
-      :options="Object.keys(keychain)"
+      :options="accountsList"
       type="select"
       @blur="handleBlur('username')"
     />
 
     <form-control
-      v-if="!decrypted"
+      v-if="!isSelectedAccountDecrypted"
       v-model="loginKey"
       name="key"
       :label="$t('import.hs_password')"
       :error="dirty.key && errors.key"
-      :options="Object.keys(keychain)"
       :tooltip="tooltipLoginEncryptionKey"
       autocomplete="password"
       type="password"
@@ -66,15 +65,17 @@ export default class LoginForm extends Vue {
   })
   private authority!: Authority
 
-  @Prop({
-    default: () => ({}),
-  })
-  private keychain!: Record<string, any>
-
-  private decrypted = true
   private dirty = {
     username: false,
     key: false,
+  }
+
+  private get isSelectedAccountDecrypted(): boolean {
+    return AccountsModule.isSelectedAccountDecrypted
+  }
+
+  private get accountsList(): string[] {
+    return AccountsModule.accountsUsernamesList
   }
 
   private get errors(): Record<string, any> {
@@ -122,22 +123,17 @@ export default class LoginForm extends Vue {
       username: false,
       key: false,
     }
-    this.username = ''
     this.loginKey = ''
   }
 
-  private mounted(): void {
-    this.handleBlur('username')
-  }
-
   private submitForm(): void {
-    const encryptedKeys = this.keychain[this.username]
+    const encryptedKeys = AccountsModule.selectedAccountEncryptedKey
     this.$emit('loading', true)
-    if (this.decrypted) {
+    if (this.isSelectedAccountDecrypted) {
       this.$emit('loading', false)
       let bb = encryptedKeys
       try {
-        bb = Buffer.from(encryptedKeys.replace('decrypted', ''), 'hex').toString()
+        bb = Buffer.from(encryptedKeys, 'hex').toString()
       } catch (_) {
         this.handleReject()
       }
@@ -161,13 +157,6 @@ export default class LoginForm extends Vue {
 
   private handleBlur(name: string): void {
     this.dirty[name] = true
-    if (name === 'username' && this.keychain[this.username].includes('decrypted')) {
-      this.decrypted = true
-      this.dirty.key = true
-    } else {
-      this.decrypted = false
-      this.dirty.key = true
-    }
   }
 
   private handleReject(): void {

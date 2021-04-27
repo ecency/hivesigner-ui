@@ -29,7 +29,6 @@
         <login-form
           ref="login-form"
           :loading="isLoading"
-          :keychain="keychain"
           :error="error"
           :authority="authority"
           @failed="value => this.failed = value"
@@ -73,7 +72,7 @@ import {
   jsonParse,
   signComplete
 } from '~/utils'
-import { AuthModule, PersistentFormsModule } from '~/store'
+import { AccountsModule, AuthModule, PersistentFormsModule } from '~/store'
 import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
 import LoginForm from '~/components/Login/LoginForm.vue'
@@ -89,7 +88,6 @@ export default class Login extends Vue {
   @Ref('login-form')
   private loginFormRef!: LoginForm
 
-  private keychain = {}
   private error = ''
   private isLoading = false
   private redirected = ''
@@ -143,14 +141,6 @@ export default class Login extends Vue {
     return `hive://login-request/${this.$route.params.clientId}${buildSearchParams(this.$route)}`
   }
 
-  private get username(): string {
-    return PersistentFormsModule.login.username
-  }
-
-  private set username(value: string) {
-    PersistentFormsModule.saveLoginUsername(value)
-  }
-
   private get currentAccountUsername(): string {
     return AuthModule.username
   }
@@ -162,10 +152,6 @@ export default class Login extends Vue {
   private get hasAuthority(): boolean {
     const auths = this.account.posting.account_auths.map(auth => auth[0])
     return auths.indexOf(this.clientId) !== -1
-  }
-
-  private created(): void {
-    this.loadKeychain()
   }
 
   private mounted(): void {
@@ -189,15 +175,6 @@ export default class Login extends Vue {
       this.loadAppProfile()
     }
   }
-
-  private loadKeychain(): void {
-    this.keychain = getKeychain()
-    const usernames = Object.keys(this.keychain)
-    if (usernames.length > 0 && !this.username) {
-      [this.username] = usernames
-    }
-  }
-
   private async loginMe(buff): Promise<void> {
     const { authority } = this
     const keys = jsonParse(buff.toString())
@@ -209,7 +186,7 @@ export default class Login extends Vue {
     this.isLoading = true
     this.showLoading = true
     try {
-      await AuthModule.login({ username: this.username, keys })
+      await AuthModule.login({ username: AccountsModule.selectedAccount, keys })
       const redirect = this.$route.query.redirect as string
 
       if (this.redirected !== '' && !this.redirected.includes('/login-request')) {
@@ -239,7 +216,7 @@ export default class Login extends Vue {
 
         try {
           await AuthModule.signAndRedirectToCallback({
-            username: this.username,
+            username: AccountsModule.selectedAccount,
             authority: this.authority,
             signature: this.signature,
             state: this.state,
