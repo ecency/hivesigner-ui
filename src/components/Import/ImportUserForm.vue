@@ -1,42 +1,33 @@
 <template>
   <div>
-    <label for="username">Username</label>
-    <div v-if="dirty.username && !!errors.username" class="text-primary mb-2">
-      {{ errors.username }}
-    </div>
-    <input
-      key="username"
-      v-model.trim="username"
-      id="username"
-      type="text"
-      class="input-lg block mb-2"
-      autocorrect="off"
-      autocapitalize="none"
-      autocomplete="username"
+    <form-control
+      v-model="username"
+      :error="dirty.username ? errors.username : ''"
+      :label="$t('import.username')"
+      name="username"
       @blur="handleBlur('username')"
     />
-    <label for="password">
-      {{ $t('import.master_password', { authority: authority || 'private' }) }}
-    </label>
-    <div v-if="dirty.password && !!errors.password" class="text-primary mb-2">
-      {{ errors.password }}
-    </div>
-    <input
-      key="password"
-      v-model.trim="password"
-      id="password"
-      type="password"
-      autocorrect="off"
-      autocapitalize="none"
+
+    <form-control
+      v-model="password"
+      :error="dirty.password ? errors.password : ''"
+      :label="$t('import.master_password', { authority: authority || 'private' })"
       autocomplete="current-password"
-      class="input-lg block mb-2"
+      name="password"
+      type="password"
       @blur="handleBlur('password')"
     />
-    <label :class="{ 'mb-6': !error, 'mb-2': error }">
-      <input key="storeAccount" v-model="storeAccount" type="checkbox"/>
-      {{ $t('import.encrypt_keys') }}
-    </label>
-    <div v-if="!!error" class="error mb-4">{{ error }}</div>
+
+    <form-control
+      v-model="storeAccount"
+      :label="$t('import.encrypt_keys')"
+      class="mb-7"
+      autocomplete="current-password"
+      name="storeAccount"
+      type="checkbox"
+    />
+
+    <div v-if="!!error" class="text-primary text-lg mb-6">{{ error }}</div>
     <button
       :disabled="nextDisabled || loading"
       class="button-primary w-full block mb-2"
@@ -44,20 +35,15 @@
     >
       {{ nextText }}
     </button>
-    <router-link
-      v-if="hasAccounts"
-      :to="{ name: 'login', query: $route.query }"
-      class="button block text-center mb-2"
-    >
-      {{ $t('import.select_account') }}
-    </router-link>
-    <button
-      :disabled="loading"
-      class="block text-center w-full mb-2"
-      @click="signUp()"
-    >
-      {{ $t('import.signup') }}
-    </button>
+    <div class="text-gray text-lg pt-4">
+      {{ $t('import.dont_have_an_account') }}
+      <a
+        href="https://signup.hive.io"
+        target="_blank"
+        rel="noopener"
+        class="text-black-500 hover:underline"
+      >{{ $t('import.sign_up_here') }}</a>
+    </div>
   </div>
 </template>
 
@@ -67,8 +53,10 @@ import { addToKeychain, credentialsValid, getKeys, hasAccounts } from '~/utils'
 import { PersistentFormsModule } from '~/store'
 import { ERROR_INVALID_CREDENTIALS } from '~/consts'
 import { Authority } from '~/enums'
-
-@Component
+import FormControl from '../UI/Form/FormControl.vue'
+@Component({
+  components: { FormControl }
+})
 export default class ImportUserForm extends Vue {
   @Prop({
     type: Object,
@@ -121,7 +109,7 @@ export default class ImportUserForm extends Vue {
   }
 
   private get nextText() {
-    return this.storeAccount ? this.$t('common.continue') : this.$t('import.import_account')
+    return this.storeAccount ? this.$t('common.continue') : this.$t('import.login')
   }
 
   private get nextDisabled(): boolean {
@@ -133,10 +121,6 @@ export default class ImportUserForm extends Vue {
       username: false,
       password: false,
     }
-  }
-
-  private signUp(): void {
-    window.open('https://signup.hive.io', '_blank')
   }
 
   private async submitNext(): Promise<void> {

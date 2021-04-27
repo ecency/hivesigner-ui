@@ -1,59 +1,49 @@
 <template>
-  <div class="home container py-20 mx-auto px-4">
-    <div class="navigation-container block sm:hidden fixed top-0 right-0 pr-5 pt-5">
-      <Dropdown position="rightBottom">
-        <template slot="trigger">
-          <Icon name="Menu" class="text-gray" />
-        </template>
-        <navigation vertical />
-      </Dropdown>
-    </div>
-    <div class="grid gap-2.5 xl:gap-40 grid-cols-2 items-center justify-center">
-      <div class="col-span-2 xl:col-span-1 sm:mb-6 xl:mb-0">
-        <div class="flex xl:hidden items-center justify-center mb-9">
-          <Icon class="logo mr-5 text-primary" name="logo" />
-          <span class="font-bold text-3xl sm:text-4xl">Hivesigner</span>
-        </div>
-        <img class="block mx-auto image" :src="require('../../assets/img/home.svg')" alt="">
-        <p
-          class="text-3xl sm:text-5xl xl:text-6xl font-light text-center text-black-500 sm:text-gray-550">
-          {{ $t('index.secure_way_sign_in') }}
-        </p>
-      </div>
-      <div class="col-span-2 xl:col-span-1 flex flex-col items-center xl:items-start">
-        <div class="hidden xl:flex items-center mb-24">
-          <Icon name="logo" class="logo text-primary mr-5" />
-          <span class="font-bold text-5xl">Hivesigner</span>
-        </div>
-        <p class="text-base sm:text-xl text-center xl:text-left text-gray pb-8 xl:pb-12">
-          {{ $t('index.description') }}
-        </p>
+  <base-page-layout class="home" primary-page>
+    <template slot="left">
+      <img
+        class="block mx-auto image mb-16 sm:mb-0"
+        :src="require('../../assets/img/home.svg')"
+        alt=""
+      >
+      <p
+        class="text-3xl sm:text-5xl xl:text-6xl font-light text-center text-black-500 sm:text-gray-550">
+        <span class="hidden sm:block">{{ $t('index.secure_way_sign_in') }}</span>
+      </p>
+    </template>
+    <template slot="right">
+      <p class="text-base sm:text-xl text-center xl:text-left text-gray pb-8 xl:pb-12">
+        {{ $t('index.description') }}
+      </p>
+      <div class="flex justify-center xl:justify-start">
         <router-link
-          to="/login?redirect=accounts"
-          class="bg-primary hover:bg-primary-dark text-white p-4 inline-flex items-center rounded-md"
+          :to="hasAccounts ? '/login?redirect=accounts' : '/import?redirect=accounts'"
+          class="button button-primary inline-flex items-center"
         >
-          <Icon name="Keychain" class="mr-2" />
+          <Icon name="Keychain" class="mr-2"/>
           {{ $t('index.get_started') }}
         </router-link>
-
-        <navigation class="w-full pt-32 hidden sm:flex"/>
       </div>
-    </div>
-  </div>
+    </template>
+  </base-page-layout>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { PACKAGE } from '../../consts'
 import Dropdown from '../UI/Dropdown.vue'
 import Icon from '../UI/Icons/Icon.vue'
 import Navigation from '../Navigation.vue'
+import BasePageLayout from '../Layouts/BasePageLayout.vue'
+import { hasAccounts } from '~/utils'
 
 @Component({
-  components: { Navigation, Icon, Dropdown },
+  components: { BasePageLayout, Navigation, Icon, Dropdown },
   middleware: ['isWeb']
 })
 export default class Home extends Vue {
+  private get hasAccounts(): boolean {
+    return hasAccounts()
+  }
 }
 </script>
 <style lang="scss">

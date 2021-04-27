@@ -1,57 +1,62 @@
 <template>
-  <Center class="font-old">
-    <router-link
-      to="/"
-      class="inline-block my-2"
-      v-if="isRedirected"
-    >
-      <Icon name="Logo" style="height: 32px" class="block mx-auto mb-3 text-primary" />
-      <h4 class="font-bold text-black-500 text-2xl">hivesigner</h4>
-    </router-link>
-    <div
-      v-if="!failed && !isRedirected"
-      class="p-6"
-    >
-      <div class="container-sm mx-auto">
-        <div v-if="!failed && !signature">
-          <div class="mb-4 text-center" v-if="app && appProfile">
-            <Avatar :username="app" :size="80"/>
-            <div class="mt-2">
-              <h4 v-if="appProfile.name" class="mb-0">{{ appProfile.name }}</h4>
-              <span v-if="appProfile.website">{{ appProfile.website | parseUrl }}</span>
+  <base-page-layout class="login">
+    <template slot="left">
+      <img class="block mx-auto image" :src="require('../assets/img/auth.svg')" alt="">
+    </template>
+    <template slot="right">
+      <div
+        v-if="!failed && !isRedirected"
+        class="p-6"
+      >
+        <div class="container-sm mx-auto">
+          <div v-if="!failed && !signature">
+            <div class="mb-4 text-center" v-if="app && appProfile">
+              <Avatar :username="app" :size="80"/>
+              <div class="mt-2">
+                <h4 v-if="appProfile.name" class="mb-0">{{ appProfile.name }}</h4>
+                <span v-if="appProfile.website">{{ appProfile.website | parseUrl }}</span>
+              </div>
             </div>
+            <p>
+              <span v-if="app">{{ $t('import.app') }}<b>{{ app }}</b></span>
+              <span v-else>{{ $t('import.site') }}</span>
+              {{ $t('import.request_access') }}
+            </p>
           </div>
-          <p>
-            <span v-if="app">{{ $t('import.app') }}<b>{{ app }}</b></span>
-            <span v-else>{{ $t('import.site') }}</span>
-            {{ $t('import.request_access') }}
-          </p>
         </div>
       </div>
-    </div>
-    <div class="width-full p-4 mb-2">
-      <login-form
-        ref="login-form"
-        :loading="isLoading"
-        :keychain="keychain"
-        :error="error"
-        :authority="authority"
-        @failed="value => this.failed = value"
-        @error="value => this.error = value"
-        @loading="value => this.loading = value"
-        @signature="value => this.signature = value"
-        @submit="loginMe"
-      />
-      <router-link
-        :to="{ name: 'import', query: $route.query }"
-        class="button block text-center mb-2"
-      >
-        Import account
-      </router-link>
-    </div>
-    <Loader v-if="loading" class="overlay fixed"/>
-    <Footer/>
-  </Center>
+      <div class="mb-2">
+        <login-form
+          ref="login-form"
+          :loading="isLoading"
+          :keychain="keychain"
+          :error="error"
+          :authority="authority"
+          @failed="value => this.failed = value"
+          @error="value => this.error = value"
+          @loading="value => this.isLoading = value"
+          @signature="value => this.signature = value"
+          @submit="loginMe"
+        />
+        <router-link
+          :to="{ name: 'import', query: $route.query }"
+          class="button block text-center mb-2"
+        >
+          {{ $t('import.add_another_account') }}
+        </router-link>
+        <div class="text-gray text-lg pt-4">
+          {{ $t('import.dont_have_an_account') }}
+          <a
+            href="https://signup.hive.io"
+            target="_blank"
+            rel="noopener"
+            class="text-black-500 hover:underline"
+          >{{ $t('import.sign_up_here') }}</a>
+        </div>
+      </div>
+      <Loader v-if="isLoading" class="overlay fixed"/>
+    </template>
+  </base-page-layout>
 </template>
 
 <script lang="ts">
@@ -74,9 +79,10 @@ import { Account } from '@hiveio/dhive'
 import LoginForm from '~/components/Login/LoginForm.vue'
 import Icon from '../components/UI/Icons/Icon.vue'
 import Loader from '../components/UI/Loader.vue'
+import BasePageLayout from '../components/Layouts/BasePageLayout.vue'
 
 @Component({
-  components: { Loader, Icon },
+  components: { BasePageLayout, Loader, Icon },
   middleware: ['before-login'],
 })
 export default class Login extends Vue {
@@ -88,7 +94,6 @@ export default class Login extends Vue {
   private isLoading = false
   private redirected = ''
   private showLoading = false
-  private loading = false
   private failed = false
   private signature = null
   private app = null
@@ -185,14 +190,10 @@ export default class Login extends Vue {
     }
   }
 
-  private login(data: any): Promise<void> {
-    return AuthModule.login(data)
-  }
-
   private loadKeychain(): void {
     this.keychain = getKeychain()
     const usernames = Object.keys(this.keychain)
-    if (usernames.length > 0) {
+    if (usernames.length > 0 && !this.username) {
       [this.username] = usernames
     }
   }
@@ -205,10 +206,10 @@ export default class Login extends Vue {
       this.error = this.$t('login.need_import', { authority }) as string
       return
     }
-    this.loading = true
+    this.isLoading = true
     this.showLoading = true
     try {
-      await this.login({ username: this.username, keys })
+      await AuthModule.login({ username: this.username, keys })
       const redirect = this.$route.query.redirect as string
 
       if (this.redirected !== '' && !this.redirected.includes('/login-request')) {
@@ -254,7 +255,7 @@ export default class Login extends Vue {
           if (this.requestId) {
             signComplete(this.requestId, err, null)
           }
-          this.loading = false
+          this.isLoading = false
           this.showLoading = false
         }
       }
@@ -286,3 +287,28 @@ export default class Login extends Vue {
   }
 }
 </script>
+<style lang="scss">
+.login {
+  .image {
+    max-width: 144px;
+  }
+}
+
+@screen sm {
+  .login {
+
+    .image {
+      max-width: 222px;
+    }
+  }
+}
+
+@screen xl {
+  .login {
+
+    .image {
+      max-width: 411px;
+    }
+  }
+}
+</style>

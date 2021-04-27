@@ -6,7 +6,6 @@
 @import 'ui/forms';
 @import "ui/table";
 @import "ui/alerts";
-@import "ui/tooltip";
 
 html {
   -webkit-font-smoothing: antialiased;
@@ -16,6 +15,10 @@ html {
 body {
   font-family: Lato, Helvetica, Arial, sans-serif;
   height: 100%;
+}
+
+#__nuxt, #__layout {
+  @apply w-full h-full;
 }
 
 .container-xs {

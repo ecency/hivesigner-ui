@@ -1,44 +1,27 @@
 <template>
   <div>
-    <label for="key" class="flex items-center">
-      {{ $t('import.hs_password') }}
-      <span
-        class="inline-block tooltip ml-1"
-        :aria-label="TOOLTIP_IMPORT_ENCRYPTION_KEY"
-      >
-        <Icon name="Info" style="width: 14px; height: 22px;" />
-      </span>
-    </label>
-    <div v-if="dirty.key && !!errors.key" class="text-primary mb-2">
-      {{ errors.key }}
-    </div>
-    <input
-      key="key"
-      id="key"
-      v-model.trim="importKey"
+    <form-control
+      v-model="importKey"
+      name="key"
+      :label="$t('import.hs_password')"
+      :error="dirty.key && errors.key"
+      :tooltip="$t(TOOLTIP_IMPORT_ENCRYPTION_KEY)"
       type="password"
-      autocorrect="off"
-      autocapitalize="none"
       autocomplete="new-password"
-      class="input-lg block mb-2"
       @blur="handleBlur('key')"
     />
-    <label for="key-confirmation">{{ $t('import.confirm_password') }}</label>
-    <div v-if="dirty.keyConfirmation && !!errors.keyConfirmation" class="text-primary mb-2">
-      {{ errors.keyConfirmation }}
-    </div>
-    <input
-      key="keyConfirmation"
-      id="key-confirmation"
-      v-model.trim="keyConfirmation"
+
+    <form-control
+      v-model="keyConfirmation"
+      name="keyConfirmation"
+      :label="$t('import.confirm_password')"
+      :error="dirty.keyConfirmation && errors.keyConfirmation"
       type="password"
-      autocorrect="off"
-      autocapitalize="none"
       autocomplete="new-password"
-      class="input-lg block mb-2"
       @blur="handleBlur('keyConfirmation')"
     />
-    <legend class="mb-6 block text-gray-600">
+
+    <legend class="mb-6 block text-gray-600 text-lg">
       {{ $t('import.require_hs_password') }}
       {{ $t(TOOLTIP_IMPORT_ENCRYPTION_KEY) }}
     </legend>
@@ -47,7 +30,7 @@
       type="submit"
       class="button-primary w-full mb-2"
     >
-      {{ $t('import.import_account') }}
+      {{ $t('common.continue') }}
     </button>
   </div>
 </template>
@@ -57,8 +40,9 @@ import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { TOOLTIP_IMPORT_ENCRYPTION_KEY } from '~/consts'
 import { PersistentFormsModule } from '~/store'
 import Icon from '../UI/Icons/Icon.vue'
+import FormControl from '../UI/Form/FormControl.vue'
 @Component({
-  components: { Icon }
+  components: { FormControl, Icon }
 })
 export default class ImportSetPassword extends Vue {
   @Prop({

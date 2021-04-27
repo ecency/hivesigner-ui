@@ -37,7 +37,9 @@ export default class Auth extends VuexModule {
     this.account = account
   }
 
-  @VuexAction
+  @VuexAction({
+    rawError: true
+  })
   public async login({ username, keys }: any): Promise<any> {
     const key = keys.owner || keys.active || keys.posting || keys.memo
     const valid = await credentialsValid(username, key)

@@ -1,5 +1,5 @@
 <template functional>
-  <div class="loader flex items-center justify-center" :class="data.staticClass">
+  <div class="loader flex items-center justify-center z-10" :class="data.staticClass">
     <div class="spin"></div>
   </div>
 </template>

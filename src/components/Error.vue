@@ -1,5 +1,5 @@
 <template>
-  <div class="flash flash-error mb-4">
+  <div class="alert alert-error mb-4">
     {{ $t('errors.something_wrong') }}
     <span v-if="message" v-html="$t('errors.here_message', { message })"></span>
     <span v-else>{{ $t('common.try_again') }}</span>
