@@ -189,9 +189,7 @@ export default class Login extends Vue {
       const redirect = this.$route.query.redirect as string
 
       if (this.redirected !== '' && !this.redirected.includes('/login-request')) {
-        this.$router.push(redirect || '/')
-        this.error = ''
-        this.isLoading = false
+        await this.$router.push(redirect || '/')
         this.loginFormRef.resetForm()
       } else {
         if (
