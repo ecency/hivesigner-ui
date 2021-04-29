@@ -54,7 +54,6 @@ import triplesec from 'triplesec'
 import PasswordValidator from 'password-validator'
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
 import {
-  addToKeychain,
   buildSearchParams,
   client,
   getAuthority,
@@ -63,7 +62,7 @@ import {
   isValidUrl,
   signComplete
 } from '~/utils'
-import { AuthModule, PersistentFormsModule } from '~/store'
+import { AccountsModule, AuthModule, PersistentFormsModule } from '~/store'
 import { ERROR_INVALID_CREDENTIALS } from '~/consts'
 import { Authority } from '~/enums'
 import { Account } from '@hiveio/dhive'
@@ -352,7 +351,10 @@ export default class Import extends Vue {
           console.log('err', encryptError)
           return
         }
-        addToKeychain(this.username, buff.toString('hex'))
+        AccountsModule.saveAccount({
+          username: this.username,
+          key: buff.toString('hex'),
+        })
         this.startLogin()
       },
     )

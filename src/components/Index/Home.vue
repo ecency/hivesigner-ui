@@ -34,7 +34,7 @@ import Dropdown from '../UI/Dropdown.vue'
 import Icon from '../UI/Icons/Icon.vue'
 import Navigation from '../Navigation.vue'
 import BasePageLayout from '../Layouts/BasePageLayout.vue'
-import { hasAccounts } from '~/utils'
+import { AccountsModule } from '~/store'
 
 @Component({
   components: { BasePageLayout, Navigation, Icon, Dropdown },
@@ -42,7 +42,7 @@ import { hasAccounts } from '~/utils'
 })
 export default class Home extends Vue {
   private get hasAccounts(): boolean {
-    return hasAccounts()
+    return AccountsModule.hasAccounts
   }
 }
 </script>

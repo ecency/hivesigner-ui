@@ -3,12 +3,11 @@
     <Header :title="$t('accounts.accounts')"/>
     <div class="p-4">
       <div class="container-sm w-full mx-auto">
-        <div v-if="usernames.length > 0">
+        <div v-if="accountsList.length > 0">
           <AccountItem
-            v-for="user in usernames"
+            v-for="user in accountsList"
             :key="user"
             :user="user"
-            @load-keychain="loadKeychain"
           />
         </div>
         <div v-else>
@@ -21,23 +20,16 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { getKeychain } from '~/utils'
 import AccountItem from '~/components/Accounts/AccountItem.vue'
+import { AccountsModule } from '~/store'
 
 @Component({
   components: { AccountItem },
   layout: 'page',
 })
 export default class Accounts extends Vue {
-  private usernames: string[] = []
-
-  private created(): void {
-    this.loadKeychain()
-  }
-
-  private loadKeychain(): void {
-    const keychain = getKeychain()
-    this.usernames = Object.keys(keychain)
+  private get accountsList(): string[] {
+    return AccountsModule.accountsUsernamesList
   }
 }
 </script>

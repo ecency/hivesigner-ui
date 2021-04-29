@@ -34,8 +34,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import { AuthModule } from '~/store'
-import { removeFromKeychain } from '~/utils'
+import { AccountsModule, AuthModule } from '~/store'
 import Icon from '~/components/UI/Icons/Icon.vue'
 import Avatar from '~/components/Avatar.vue'
 
@@ -57,9 +56,8 @@ export default class AccountItem extends Vue {
     return AuthModule.logout()
   }
 
-  private removeAccount(username): void {
-    removeFromKeychain(username)
-    this.$emit('load-keychain')
+  private removeAccount(username: string): void {
+    AccountsModule.removeAccount(username)
   }
 }
 </script>

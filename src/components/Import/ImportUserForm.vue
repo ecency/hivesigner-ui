@@ -49,8 +49,8 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import { addToKeychain, credentialsValid, getKeys, hasAccounts } from '~/utils'
-import { PersistentFormsModule } from '~/store'
+import { credentialsValid, getKeys } from '~/utils'
+import { AccountsModule, PersistentFormsModule } from '~/store'
 import { ERROR_INVALID_CREDENTIALS } from '~/consts'
 import { Authority } from '~/enums'
 import FormControl from '../UI/Form/FormControl.vue'
@@ -87,10 +87,6 @@ export default class ImportUserForm extends Vue {
     password: false,
   }
   private storeAccount = true
-
-  private get hasAccounts(): boolean {
-    return hasAccounts()
-  }
 
   private get username(): string {
     return PersistentFormsModule.import.username
@@ -137,7 +133,10 @@ export default class ImportUserForm extends Vue {
     } else {
       const keys = await getKeys(this.username, this.password)
       const k = Buffer.from(JSON.stringify(keys))
-      addToKeychain(this.username as string, `${k.toString('hex')}decrypted`)
+      AccountsModule.saveAccount({
+        username: this.username,
+        key: `${k.toString('hex')}decrypted`
+      })
       this.$emit('submit')
     }
   }
