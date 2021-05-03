@@ -19,6 +19,7 @@ import Discord from './Discord.vue'
 import Bookmark from './Bookmark.vue'
 import Search from './Search.vue'
 import SelectArrow from './SelectArrow.vue'
+import Options from './Options.vue'
 
 @Component({
   components: {
@@ -35,6 +36,7 @@ import SelectArrow from './SelectArrow.vue'
     Bookmark,
     Search,
     SelectArrow,
+    Options,
   },
 })
 export default class Icon extends Vue {

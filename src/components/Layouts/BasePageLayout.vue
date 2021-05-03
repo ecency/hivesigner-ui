@@ -1,5 +1,5 @@
 <template>
-  <div class="base-page-layout container mx-auto p-4 sm:py-20">
+  <div class="base-page-layout container mx-auto p-4 sm:py-20 flex flex-col justify-center h-full">
     <div
       class="navigation-container grid items-center mb-7"
       :class="{ 'primary': primaryPage }"

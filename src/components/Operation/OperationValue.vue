@@ -1,5 +1,8 @@
 <template>
-  <span class="inline-block text-gray-600 lowercase">
+  <span
+    class="operation-value inline-block text-gray-600 lowercase"
+    :class="{ 'responsive-short overflow-hidden w-full': responsiveShort }"
+  >
     <template v-if="value && Array.isArray(value)">
       <em v-if="value.length === 0">{{ $t('operations.empty') }}</em>
       <OperationValue v-else v-for="(v, key) in value" :key="key" :value="v" />
@@ -50,6 +53,12 @@ export default class OperationValue extends Vue {
   @Prop()
   private schemaKey!: string
 
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  private responsiveShort!: boolean
+
   private get username(): string {
     return AuthModule.username
   }
@@ -59,3 +68,10 @@ export default class OperationValue extends Vue {
   }
 }
 </script>
+<style lang="scss">
+.operation-value {
+  &.responsive-short {
+
+  }
+}
+</style>

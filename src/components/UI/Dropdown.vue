@@ -19,12 +19,13 @@
     </div>
     <transition name="fade">
       <div
-        class="dropdown-menu flex flex-col bg-white p-6 absolute m-2 duration-500"
+        class="dropdown-menu flex flex-col bg-white absolute m-2 duration-500 z-10"
         v-if="open"
         :style="{ 'width': width }"
         :class="menuClasses"
+        @click="flat && hide()"
       >
-        <div class="icon absolute right-4 top-4 cursor-pointer" @click="open = false">
+        <div v-if="!flat" class="icon absolute right-4 top-4 cursor-pointer" @click="open = false">
           <Icon name="close" class="text-gray" />
         </div>
         <slot></slot>
@@ -46,6 +47,12 @@ export default class Dropdown extends Vue {
     default: false,
   })
   private withChevron!: boolean
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  private flat!: boolean
 
   @Prop({
     type: String,
@@ -82,6 +89,8 @@ export default class Dropdown extends Vue {
       '-top-2 -left-2': this.position === 'leftBottom',
       '-top-2 -right-2': this.position === 'rightBottom',
       '-bottom-2 -right-2': this.position === 'rightTop',
+      'p-0 rounded-md': this.flat,
+      'p-6': !this.flat,
     }
   }
 

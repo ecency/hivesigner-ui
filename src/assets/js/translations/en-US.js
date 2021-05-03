@@ -36,10 +36,12 @@ export default {
     visit: 'Visit'
   },
   auths: {
-    auths: 'Auths',
+    auths: 'Authorities',
     type: 'Type',
     key: 'Key',
-    weight: 'Weight'
+    weight: 'Weight',
+    reveal_pub_key: 'Reveal public key',
+    copy: 'Copy'
   },
   errors: {
     something_wrong: 'Oops, something went wrong.',

@@ -6,7 +6,7 @@
   >
     <Avatar :username="value" :size="22" class="mr-1" />
     {{ value }}
-    <Icon name="Link" class="ml-1" style="width: 11px;height: 11px;" />
+    <Icon name="Link" class="ml-2" style="width: 16px;height: 16px;" />
   </a>
 </template>
 
