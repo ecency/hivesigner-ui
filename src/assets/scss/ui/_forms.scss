@@ -37,4 +37,8 @@ button, .button {
   &.button-sm {
     @apply text-xs px-2.5 py-1.5 rounded;
   }
+
+  &.button-md {
+    @apply text-base p-3 md:p-4 rounded;
+  }
 }

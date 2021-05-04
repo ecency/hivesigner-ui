@@ -34,7 +34,8 @@ export default {
     '~/plugins/transform-old-keychain.ts',
     '~/plugins/idle-detector.ts',
     '~/plugins/hivesigner.ts',
-    '~/plugins/filters.ts'
+    '~/plugins/filters.ts',
+    '~/plugins/vue-carousel.ts'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

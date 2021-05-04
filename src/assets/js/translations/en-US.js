@@ -23,7 +23,8 @@ export default {
     empty: ` There isn't any account stored on this device, <a href="/import" target="_blank" class="text-black hover:underline">click here</a> if you want to import an account.`,
     logout: 'Log out',
     unlock: 'Unlock',
-    auths: 'Auths'
+    auths: 'Auths',
+    add_another: 'Add another account'
   },
   apps: {
     store: 'App store',

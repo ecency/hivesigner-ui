@@ -20,6 +20,7 @@ import Bookmark from './Bookmark.vue'
 import Search from './Search.vue'
 import SelectArrow from './SelectArrow.vue'
 import Options from './Options.vue'
+import Check from './Check.vue'
 
 @Component({
   components: {
@@ -37,6 +38,7 @@ import Options from './Options.vue'
     Search,
     SelectArrow,
     Options,
+    Check,
   },
 })
 export default class Icon extends Vue {
