@@ -1,4 +1,6 @@
-import { Module, Vue, VuexModule, VuexMutation } from 'nuxt-property-decorator'
+import { Module, Vue, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
+import { decrypt, jsonParse } from '~/utils'
+import { DecryptionExceptions } from '~/enums'
 
 @Module({
   stateFactory: true,
@@ -18,7 +20,7 @@ export default class Accounts extends VuexModule {
   }
 
   public get isDecrypted(): (username: string) => boolean {
-    return (username: string) => this.accountsKeychains[username]?.includes('decrypted')
+    return username => this.accountsKeychains[username]?.includes('decrypted')
   }
 
   public get isSelectedAccountDecrypted(): boolean {
@@ -26,7 +28,7 @@ export default class Accounts extends VuexModule {
   }
 
   public get getEncryptedKey(): (username: string) => string {
-    return (username: string) => this.accountsKeychains[username]?.replace('decrypted', '')
+    return username => this.accountsKeychains[username]?.replace('decrypted', '')
   }
 
   public get selectedAccountEncryptedKey(): string {
@@ -49,5 +51,38 @@ export default class Accounts extends VuexModule {
   @VuexMutation
   public removeAccount(username: string): void {
     Vue.delete(this.accountsKeychains, username)
+  }
+
+  /**
+   * @throws DecryptionExceptions.BuiltInBufferError
+   * @throws DecryptionExceptions.TriplesecError
+   * */
+  @VuexAction({ rawError: true })
+  public async getEncryptedKeys(
+    { username, encryptionKey }: { username: string, encryptionKey?: string },
+  ): Promise<Record<string, string>> {
+    const key = this.getEncryptedKey(username)
+    let error: DecryptionExceptions | null = null
+
+    let buffer: Buffer | string | null = key
+    if (this.isDecrypted(username)) {
+      try {
+        buffer = Buffer.from(key, 'hex').toString()
+      } catch (_) {
+        error = DecryptionExceptions.BuiltInBufferError
+      }
+    } else {
+      try {
+        buffer = await decrypt(key, encryptionKey)
+      } catch (e) {
+        error = e
+      }
+    }
+
+    if (error) {
+      throw error
+    }
+
+    return jsonParse(buffer.toString())
   }
 }

@@ -174,9 +174,10 @@ export default class Login extends Vue {
       this.loadAppProfile()
     }
   }
-  private async loginMe(buff): Promise<void> {
+
+  private async loginMe(keys: Record<string, string>): Promise<void> {
+    debugger
     const { authority } = this
-    const keys = jsonParse(buff.toString())
     if (authority && !keys[authority]) {
       this.isLoading = false
       this.error = this.$t('login.need_import', { authority }) as string

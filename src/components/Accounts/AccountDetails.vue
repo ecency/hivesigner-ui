@@ -22,7 +22,7 @@
 <script lang="ts">
 import { Component, Emit, Prop, Vue } from 'nuxt-property-decorator'
 import AccountItem from './AccountItem.vue'
-import { AccountsModule } from '~/store'
+import { AccountsModule, AuthModule } from '~/store'
 
 @Component({
   components: { AccountItem },
@@ -33,6 +33,17 @@ export default class AccountDetails extends Vue {
     required: true,
   })
   private account!: string
+
+  private async mounted(): Promise<void> {
+    try {
+      await AuthModule.login({
+        username: this.account,
+        keys: await AccountsModule.getEncryptedKeys({ username: this.account })
+      })
+      await AccountsModule.setSelectedAccount(this.account)
+    } catch (_) {
+    }
+  }
 
   @Emit('removed')
   private removeAccount(): void {

@@ -39,7 +39,7 @@ import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { ERROR_INVALID_ENCRYPTION_KEY, TOOLTIP_LOGIN_ENCRYPTION_KEY } from '~/consts'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 import { signComplete } from '~/utils'
-import { Authority } from '~/enums'
+import { Authority, DecryptionExceptions } from '~/enums'
 import Icon from '../UI/Icons/Icon.vue'
 import FormControl from '../UI/Form/FormControl.vue'
 
@@ -126,32 +126,22 @@ export default class LoginForm extends Vue {
     this.loginKey = ''
   }
 
-  private submitForm(): void {
-    const encryptedKeys = AccountsModule.selectedAccountEncryptedKey
-    this.$emit('loading', true)
-    if (this.isSelectedAccountDecrypted) {
-      this.$emit('loading', false)
-      let bb = encryptedKeys
-      try {
-        bb = Buffer.from(encryptedKeys, 'hex').toString()
-      } catch (_) {
-        this.handleReject()
+  private async submitForm(): Promise<void> {
+    try {
+      const keys = await AccountsModule.getEncryptedKeys({
+        username: this.username,
+        encryptionKey: this.loginKey,
+      })
+      this.$emit('submit', keys)
+    } catch (e) {
+      switch (e) {
+        case DecryptionExceptions.TriplesecError:
+          this.$emit('error', this.$t(ERROR_INVALID_ENCRYPTION_KEY))
+          break
+        case DecryptionExceptions.BuiltInBufferError:
+          this.handleReject()
+          break
       }
-      this.$emit('submit', bb)
-    } else {
-      // @ts-ignore
-      triplesec.decrypt({
-          data: new triplesec.Buffer(encryptedKeys, 'hex'),
-          key: new triplesec.Buffer(this.loginKey),
-        }, (decryptError, buff) => {
-          if (decryptError) {
-            this.$emit('loading', false)
-            this.$emit('error', this.$t(ERROR_INVALID_ENCRYPTION_KEY))
-            console.log('err', decryptError)
-            return
-          }
-          this.$emit('submit', buff)
-        })
     }
   }
 
