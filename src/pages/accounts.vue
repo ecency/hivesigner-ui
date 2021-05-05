@@ -8,9 +8,11 @@
         }"
       >
         <account-item
+          class="cursor-pointer"
           v-for="account of accountsList"
           :user="account"
           :key="account"
+          @click.native="selectAccount(account)"
         />
       </div>
       <div class="hidden xl:flex" v-if="slides.length > 1">
@@ -18,9 +20,11 @@
           <slide v-for="(slide, key) of slides" :key="key">
             <div class="grid grid-cols-3 sm:grid-cols-4 gap-6 pt-8">
               <account-item
+                class="cursor-pointer"
                 v-for="account of slide"
                 :user="account"
                 :key="account"
+                @click.native="selectAccount(account)"
               />
             </div>
           </slide>
@@ -32,20 +36,31 @@
         {{ $t('accounts.add_another') }}
       </router-link>
     </div>
+
+    <side-modal ref="modal" flat>
+      <account-details :account="selectedAccount" @removed="selectAccount(null)" />
+    </side-modal>
   </single-page-layout>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator'
+import { Component, Vue, Ref } from 'nuxt-property-decorator'
 import AccountItem from '~/components/Accounts/AccountItem.vue'
 import { AccountsModule } from '~/store'
 import SinglePageLayout from '../components/Layouts/SinglePageLayout.vue'
+import SideModal from '../components/UI/SideModal.vue'
+import AccountDetails from '../components/Accounts/AccountDetails.vue'
 
 @Component({
-  components: { SinglePageLayout, AccountItem },
+  components: { AccountDetails, SideModal, SinglePageLayout, AccountItem },
   layout: 'page',
 })
 export default class Accounts extends Vue {
+  @Ref('modal')
+  private sideModalRef!: SideModal
+
+  private selectedAccount: string | null = null
+
   private get accountsList(): string[] {
     return AccountsModule.accountsUsernamesList
   }
@@ -60,6 +75,11 @@ export default class Accounts extends Vue {
       }
     })
     return results
+  }
+
+  private selectAccount(account: string): void {
+    this.selectedAccount = account
+    account ? this.sideModalRef.show() : this.sideModalRef.hide()
   }
 }
 </script>

@@ -13,7 +13,7 @@
           class="auths-cell auths-cell-header items-end pb-2 sm:pb-0 hidden xl:flex auths-cell-weight">
           {{ this.$t('auths.weight') }}
         </div>
-        <template v-for="(value, i) of tableValues">
+        <template v-for="value of tableValues">
           <div class="auths-cell auths-cell-type flex items-center text-gray">{{ value.Type }}</div>
           <div class="auths-cell auths-cell-key flex items-center">
             <operation-value-account

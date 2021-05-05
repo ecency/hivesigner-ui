@@ -21,10 +21,11 @@ export default {
   accounts: {
     accounts: 'Accounts',
     empty: ` There isn't any account stored on this device, <a href="/import" target="_blank" class="text-black hover:underline">click here</a> if you want to import an account.`,
-    logout: 'Log out',
+    delete: 'Delete account',
     unlock: 'Unlock',
-    auths: 'Auths',
-    add_another: 'Add another account'
+    auths: 'Authorities',
+    add_another: 'Add another account',
+    sign_transactions: 'Sign transactions'
   },
   apps: {
     store: 'App store',

@@ -12,14 +12,23 @@
         class="modal-content overflow-y-auto w-full fixed h-full top-0 right-0 bg-white duration-300"
         v-if="open"
       >
-        <div class="modal-title py-5 pl-6 pr-4 border-b flex items-center justify-between">
-          <span class="text-lg text-black-400">{{ title }}</span>
-          <a role="button" @click="hide"
-             class="cursor-pointer text-black-400 p-2 rounded-full hover:bg-green-100">
-            <Icon name="close" style="width: 18px; height: 18px" />
+        <div
+          class="modal-title py-5 pl-6 pr-4 flex items-center"
+          :class="{
+            'border-b justify-between': !flat,
+            'justify-end': flat,
+          }"
+        >
+          <span v-if="!flat" class="text-lg text-black-400">{{ title }}</span>
+          <a
+            role="button"
+            @click="hide"
+            class="cursor-pointer text-gray hover:text-black-500 rounded-full"
+          >
+            <Icon name="close" style="width: 23px; height: 23px"/>
           </a>
         </div>
-        <div class="modal-body p-6">
+        <div class="modal-body h-full p-6">
           <slot></slot>
         </div>
       </div>
@@ -30,6 +39,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import Icon from './Icons/Icon.vue'
+
 @Component({
   components: { Icon }
 })
@@ -47,6 +57,12 @@ export default class SideModal extends Vue {
   })
   private title!: string
 
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  private flat!: boolean
+
   private open = false
 
   public show(): void {
@@ -63,6 +79,10 @@ export default class SideModal extends Vue {
 
 <style lang="scss">
 .modal {
+
+  .modal-body {
+    margin-top: -63px;
+  }
 
   .modal-content {
     max-width: 500px;
