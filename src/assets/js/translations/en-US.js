@@ -43,7 +43,8 @@ export default {
     key: 'Key',
     weight: 'Weight',
     reveal_pub_key: 'Reveal public key',
-    copy: 'Copy'
+    copy: 'Copy',
+    successfully_copied: 'The key copied to clipboard'
   },
   errors: {
     something_wrong: 'Oops, something went wrong.',

@@ -65,6 +65,10 @@ export default class SideModal extends Vue {
 
   private open = false
 
+  private beforeDestroy(): void {
+    this.hide()
+  }
+
   public show(): void {
     this.open = true
     document.body.classList.add('overflow-hidden')

@@ -31,7 +31,9 @@
               role="button"
               class="cursor-pointer button button-sm mr-8 last:mr-0 hidden sm:block"
               v-for="option of getCellDropdownOptions(value)"
-              @click="option.click"
+              @click="option.click({
+                  clipboard: value.Key.auth[0]
+                })"
             >{{ option.text }}</a>
 
             <Dropdown ref="dropdown" position="rightBottom" flat width="213px" class="sm:hidden">
@@ -44,7 +46,9 @@
                 role="button"
                 class="cursor-pointer p-4"
                 v-for="option of getCellDropdownOptions(value)"
-                @click="option.click"
+                @click="option.click({
+                  clipboard: value.Key.auth[0]
+                })"
               >{{ option.text }}</a>
             </Dropdown>
           </div>
@@ -119,7 +123,8 @@ export default class Auths extends Vue {
     return authority !== 'posting' ? `/revoke/${auth[0]}?authority=${authority}` : `/revoke/${auth[0]}`
   }
 
-  private getCellDropdownOptions(cell: Record<string, any>): { text: string, click: () => void }[] {
+  private getCellDropdownOptions(cell: Record<string, any>):
+    { text: string, click: (options?: Record<string, any>) => void }[] {
     if (cell.Key.type === 'account') {
       return [
         {
@@ -129,11 +134,13 @@ export default class Auths extends Vue {
       ]
     }
     return [
-      // TODO
       {
-        text: this.$t('auths.copy') as string, click: () => {
+        text: this.$t('auths.copy') as string, click: async ({ clipboard }) => {
+          await navigator.clipboard.writeText(clipboard)
+          this.$popupMessages.show('auths.successfully_copied', 3000)
         }
       },
+      // TODO
       {
         text: this.$t('auths.reveal_pub_key') as string, click: () => {
         }

@@ -35,7 +35,8 @@ export default {
     '~/plugins/idle-detector.ts',
     '~/plugins/hivesigner.ts',
     '~/plugins/filters.ts',
-    '~/plugins/vue-carousel.ts'
+    '~/plugins/vue-carousel.ts',
+    '~/plugins/popup-messages.ts',
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

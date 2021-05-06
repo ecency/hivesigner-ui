@@ -13,6 +13,7 @@
       <span class="text-primary text-3xl sm:text-5xl">{{ title }}</span>
     </router-link>
     <slot></slot>
+    <Navigation class="container-sm mx-auto w-full pt-28 hidden sm:flex"/>
   </div>
 </template>
 

@@ -176,7 +176,6 @@ export default class Login extends Vue {
   }
 
   private async loginMe(keys: Record<string, string>): Promise<void> {
-    debugger
     const { authority } = this
     if (authority && !keys[authority]) {
       this.isLoading = false
