@@ -55,7 +55,7 @@ import PasswordValidator from 'password-validator'
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
 import {
   buildSearchParams,
-  client,
+  client, encrypt,
   getAuthority,
   getKeys,
   isChromeExtension,
@@ -339,25 +339,16 @@ export default class Import extends Vue {
   private async submitForm(): Promise<void> {
     this.isLoading = true
     const keys = await getKeys(this.username, this.password)
-    // @ts-ignore
-    triplesec.encrypt(
-      {
-        data: new triplesec.Buffer(JSON.stringify(keys)),
-        key: new triplesec.Buffer(this.importKey),
-      },
-      (encryptError, buff) => {
-        if (encryptError) {
-          this.isLoading = false
-          console.log('err', encryptError)
-          return
-        }
-        AccountsModule.saveAccount({
-          username: this.username,
-          key: buff.toString('hex'),
-        })
-        this.startLogin()
-      },
-    )
+    try {
+      const buff = await encrypt(keys, this.importKey)
+      AccountsModule.saveAccount({
+        username: this.username,
+        key: buff.toString('hex'),
+      })
+      await this.startLogin()
+    } catch (e) {
+      this.isLoading = false
+    }
   }
 }
 </script>

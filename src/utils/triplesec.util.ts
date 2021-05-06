@@ -14,3 +14,20 @@ export function decrypt(key: string, encryptionKey?: string): Promise<Buffer> {
     })
   })
 }
+
+export function encrypt(key: Record<string, string>, encryptionKey?: string): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    triplesec.encrypt(
+      {
+        data: new triplesec.Buffer(JSON.stringify(key)),
+        key: new triplesec.Buffer(encryptionKey),
+      },
+      (encryptError, buff) => {
+        if (encryptError) {
+          reject(DecryptionExceptions.TriplesecError)
+        }
+        resolve(buff as Buffer)
+      },
+    )
+  })
+}
