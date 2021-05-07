@@ -11,21 +11,28 @@
     <a
       role="button"
       class="p-4 hover:bg-gray-100"
-      @click="removeAccount"
+      @click="confirmModalRef.show()"
     >
       {{ $t('accounts.delete') }}
     </a>
   </div>
+  <confirm-modal
+    ref="confirm-modal"
+    message="accounts.delete_account_confirm"
+    positive-label="accounts.delete_account"
+    @positive="removeAccount"
+  />
 </div>
 </template>
 
 <script lang="ts">
-import { Component, Emit, Prop, Vue } from 'nuxt-property-decorator'
+import { Component, Emit, Prop, Vue, Ref } from 'nuxt-property-decorator'
 import AccountItem from './AccountItem.vue'
 import { AccountsModule, AuthModule } from '~/store'
+import ConfirmModal from '../UI/ConfirmModal.vue'
 
 @Component({
-  components: { AccountItem },
+  components: { ConfirmModal, AccountItem },
 })
 export default class AccountDetails extends Vue {
   @Prop({
@@ -33,6 +40,9 @@ export default class AccountDetails extends Vue {
     required: true,
   })
   private account!: string
+
+  @Ref('confirm-modal')
+  private confirmModalRef!: ConfirmModal
 
   private async mounted(): Promise<void> {
     try {

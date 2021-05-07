@@ -85,4 +85,9 @@ export default class Accounts extends VuexModule {
 
     return jsonParse(buffer.toString())
   }
+
+  @VuexAction
+  public async getAuthoritiesKeys() {
+
+  }
 }

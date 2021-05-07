@@ -4,7 +4,9 @@ export default {
     continue_to: 'Continue to {item}',
     cancel: 'Cancel',
     try_again: 'Please try again later.',
-    save: 'Save'
+    save: 'Save',
+    yes: 'Yes',
+    no: 'No'
   },
   index: {
     description: `Secure way to sign with Hivesigner. Best security for users and developers to integrate industry standard OAuth2.`,
@@ -25,7 +27,9 @@ export default {
     unlock: 'Unlock',
     auths: 'Authorities',
     add_another: 'Add another account',
-    sign_transactions: 'Sign transactions'
+    sign_transactions: 'Sign transactions',
+    delete_account: 'Delete account',
+    delete_account_confirm: `<div>Do you want to delete account?</div><div>This will remove account from local storage.</div>`
   },
   apps: {
     store: 'App store',

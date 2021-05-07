@@ -37,6 +37,7 @@ export default {
     '~/plugins/filters.ts',
     '~/plugins/vue-carousel.ts',
     '~/plugins/popup-messages.ts',
+    '~/plugins/modals-manager.ts',
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -54,7 +55,8 @@ export default {
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     '@nuxtjs/style-resources',
-    'nuxt-i18n'
+    'nuxt-i18n',
+    'portal-vue/nuxt'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios

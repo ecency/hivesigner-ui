@@ -1,6 +1,6 @@
 <template>
-  <portal to="side-modal">
-    <div class="side-modal">
+  <portal to="modal">
+    <div ref="container" class="modal">
       <transition name="fade">
         <div
           class="duration-300 cursor-pointer bg-black opacity-70 fixed top-0 left-0 right-0 bottom-0"
@@ -8,19 +8,12 @@
           @click="hide"
         ></div>
       </transition>
-      <transition name="slide-right">
+      <transition name="slide-bottom">
         <div
-          class="modal-content overflow-y-auto w-full fixed h-full top-0 right-0 bg-white duration-300"
+          class="modal-content overflow-y-auto w-full relative bg-white duration-300"
           v-if="open"
         >
-          <div
-            class="modal-title py-5 pl-6 pr-4 flex items-center"
-            :class="{
-            'border-b justify-between': !flat,
-            'justify-end': flat,
-          }"
-          >
-            <span v-if="!flat" class="text-lg text-black-400">{{ title }}</span>
+          <div class="modal-title py-3 pl-6 pr-4 flex items-center justify-end">
             <a
               role="button"
               @click="hide"
@@ -29,7 +22,7 @@
               <Icon name="close" style="width: 23px; height: 23px"/>
             </a>
           </div>
-          <div class="modal-body h-full p-6">
+          <div class="modal-body h-full px-14 pb-6">
             <slot></slot>
           </div>
         </div>
@@ -39,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'nuxt-property-decorator'
+import { Component, Prop, Ref, Vue } from 'nuxt-property-decorator'
 import Icon from './Icons/Icon.vue'
 
 @Component({
@@ -59,11 +52,8 @@ export default class SideModal extends Vue {
   })
   private title!: string
 
-  @Prop({
-    type: Boolean,
-    default: false,
-  })
-  private flat!: boolean
+  @Ref('container')
+  private containerRef!: HTMLElement
 
   private open = false
 
@@ -74,37 +64,34 @@ export default class SideModal extends Vue {
   public show(): void {
     this.open = true
     this.$modalsManager.expose()
+    this.containerRef.className = 'modal flex items-center justify-center top-0 left-0 bottom-0 right-0 fixed'
   }
 
   public hide(): void {
     this.open = false
     this.$modalsManager.release()
+    setTimeout(() => this.containerRef.className = 'modal', 300)
   }
 }
 </script>
 
 <style lang="scss">
-.side-modal {
+.modal {
 
   > .modal-content {
-    max-width: 500px;
-
-
-    > .modal-body {
-      margin-top: -63px;
-    }
+    max-width: 686px;
   }
 
   .fade-enter, .fade-leave-to {
     @apply opacity-0;
   }
 
-  .slide-right-active, .slide-right-leave-active {
-    transform: translateX(0);
+  .slide-bottom-active, .slide-bottom-leave-active {
+    transform: translateY(0);
   }
 
-  .slide-right-enter, .slide-right-leave-to {
-    transform: translateX(100%);
+  .slide-bottom-enter, .slide-bottom-leave-to {
+    transform: translateY(-2rem);
     @apply opacity-0;
   }
 }

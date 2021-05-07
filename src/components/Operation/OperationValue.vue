@@ -1,6 +1,6 @@
 <template>
   <span
-    class="operation-value inline-block text-gray-600 lowercase"
+    class="operation-value inline-block text-gray-600"
     :class="{ 'responsive-short overflow-hidden w-full': responsiveShort }"
   >
     <template v-if="value && Array.isArray(value)">
