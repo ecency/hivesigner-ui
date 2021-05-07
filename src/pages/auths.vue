@@ -137,7 +137,7 @@ export default class Auths extends Vue {
       {
         text: this.$t('auths.copy') as string, click: async ({ clipboard }) => {
           await navigator.clipboard.writeText(clipboard)
-          this.$popupMessages.show('auths.successfully_copied', 3000)
+          this.$popupMessages.show('auths.successfully_copied', 5000)
         }
       },
       // TODO

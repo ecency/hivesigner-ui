@@ -14,18 +14,25 @@ class PopupMessages {
     const el = PopupMessages.createElement()
     el.innerText = this.i18n.t(message).toString()
     this.containerElement.appendChild(el)
+    setTimeout(() => {
+      el.classList.remove('translate-y-full')
+      el.classList.remove('opacity-0')
+    }, 300)
     if (ms) {
       setTimeout(() => this.hide(el), ms)
     }
   }
 
   private hide(el: HTMLElement): void {
-    this.containerElement.removeChild(el)
+    el.classList.add('translate-y-full')
+    el.classList.add('opacity-0')
+    setTimeout(() => this.containerElement.removeChild(el), 300)
   }
 
   private static createElement(): HTMLElement {
     const el = document.createElement('div')
-    el.className = 'bg-white text-lg text-black-400 text-center p-5 rounded shadow-xl mt-5 container-sm w-full'
+    el.className = 'bg-white text-lg text-black-400 text-center p-5 rounded shadow-xl mt-5' +
+      ' container-sm w-full transform translate-y-full opacity-0 duration-300'
     return el
   }
 
