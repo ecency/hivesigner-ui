@@ -1,6 +1,8 @@
 import { Module, Vue, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
-import { decrypt, jsonParse } from '~/utils'
+import { decrypt, getUserKeysMap, isKey, jsonParse, privateKeyFrom } from '~/utils'
 import { DecryptionExceptions } from '~/enums'
+import { AccountKeychain } from '~/models'
+import { PrivateKey } from '@hiveio/dhive'
 
 @Module({
   stateFactory: true,
@@ -8,7 +10,7 @@ import { DecryptionExceptions } from '~/enums'
   name: 'accounts',
 })
 export default class Accounts extends VuexModule {
-  public accountsKeychains: Record<string, string> = {}
+  public accountsKeychains: AccountKeychain = {}
   public selectedAccount: string = ''
 
   public get hasAccounts(): boolean {
@@ -20,7 +22,7 @@ export default class Accounts extends VuexModule {
   }
 
   public get isDecrypted(): (username: string) => boolean {
-    return username => this.accountsKeychains[username]?.includes('decrypted')
+    return username => this.accountsKeychains[username]?.password.includes('decrypted')
   }
 
   public get isSelectedAccountDecrypted(): boolean {
@@ -28,11 +30,17 @@ export default class Accounts extends VuexModule {
   }
 
   public get getEncryptedKey(): (username: string) => string {
-    return username => this.accountsKeychains[username]?.replace('decrypted', '')
+    return username => this.accountsKeychains[username]?.password.replace('decrypted', '')
   }
 
   public get selectedAccountEncryptedKey(): string {
     return this.getEncryptedKey(this.selectedAccount)
+  }
+
+  public get hasAuthorityPrivateKey(): (username: string, authority: string) => boolean {
+    return (username, authority) => {
+      return !!this.accountsKeychains[username][authority]
+    }
   }
 
   @VuexMutation
@@ -41,11 +49,21 @@ export default class Accounts extends VuexModule {
   }
 
   @VuexMutation
-  public saveAccount({ username, key }: { username: string, key: string }): void {
+  public saveAccount({ username, keys }: { username: string, keys: Record<string, string> }): void {
     if (!this.selectedAccount) {
       this.selectedAccount = username
     }
-    Vue.set(this.accountsKeychains, username, key)
+    Vue.set(this.accountsKeychains, username, keys)
+  }
+
+  @VuexMutation
+  public saveAccountKeys({ username, keys }: any): void {
+    if (this.accountsKeychains[username]) {
+      Vue.set(this.accountsKeychains, username, {
+        ...keys,
+        password: this.accountsKeychains[username].password,
+      })
+    }
   }
 
   @VuexMutation
@@ -86,8 +104,42 @@ export default class Accounts extends VuexModule {
     return jsonParse(buffer.toString())
   }
 
-  @VuexAction
-  public async getAuthoritiesKeys() {
+  @VuexAction({ rawError: true })
+  public async getAuthoritiesKeys({ username, password }: any): Promise<Record<string, any>> {
+    const keys: Record<string, any> = {
+      active: null,
+      memo: null,
+      posting: null,
+    }
 
+    const keysMap = await getUserKeysMap(username)
+
+    if (isKey(username, password)) {
+      const type = keysMap[privateKeyFrom(password).createPublic().toString()]
+      keys[type] = password
+      return keys
+    }
+
+    keys.owner = PrivateKey.fromLogin(username, password, 'owner').toString()
+    keys.active = PrivateKey.fromLogin(username, password, 'active').toString()
+    keys.posting = PrivateKey.fromLogin(username, password, 'posting').toString()
+
+    const memoKey = PrivateKey.fromLogin(username, password, 'memo')
+    if (keysMap[memoKey.createPublic().toString()] === 'memo') {
+      keys.memo = memoKey.toString()
+    }
+
+    return keys
+  }
+
+  @VuexAction({ rawError: true })
+  public async isValidCredentials({ username, password }: any): Promise<boolean> {
+    const keysMap = await getUserKeysMap(username)
+
+    const key = isKey(username, password)
+      ? privateKeyFrom(password)
+      : PrivateKey.fromLogin(username, password, 'active')
+
+    return !!keysMap[key.createPublic().toString()]
   }
 }

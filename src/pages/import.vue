@@ -50,14 +50,12 @@
 </template>
 
 <script lang="ts">
-import triplesec from 'triplesec'
 import PasswordValidator from 'password-validator'
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
 import {
   buildSearchParams,
   client, encrypt,
   getAuthority,
-  getKeys,
   isChromeExtension,
   isValidUrl,
   signComplete
@@ -269,7 +267,7 @@ export default class Import extends Vue {
   private async startLogin(): Promise<void> {
     this.isLoading = true
     const { username, password, authority } = this
-    const keys = await getKeys(username, password)
+    const keys = await AccountsModule.getAuthoritiesKeys({ username, password })
     if (authority && !keys[authority]) {
       this.isLoading = false
       this.error = this.$t('import.master_key', { authority }) as string
@@ -338,12 +336,17 @@ export default class Import extends Vue {
 
   private async submitForm(): Promise<void> {
     this.isLoading = true
-    const keys = await getKeys(this.username, this.password)
+    const keys = await AccountsModule.getAuthoritiesKeys({
+      username: this.username,
+      password: this.password
+    })
     try {
       const buff = await encrypt(keys, this.importKey)
       AccountsModule.saveAccount({
         username: this.username,
-        key: buff.toString('hex'),
+        keys: {
+          password: buff.toString('hex'),
+        }
       })
       await this.startLogin()
     } catch (e) {

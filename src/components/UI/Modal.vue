@@ -11,9 +11,17 @@
       <transition name="slide-bottom">
         <div
           class="modal-content overflow-y-auto w-full relative bg-white duration-300"
+          :class="{
+            'h-full flex flex-col justify-center': mobileFull
+          }"
           v-if="open"
         >
-          <div class="modal-title py-3 pl-6 pr-4 flex items-center justify-end">
+          <div
+            class="modal-title py-3 pl-6 pr-4 flex items-center justify-end"
+            :class="{
+              'absolute sm:static top-0 w-full': mobileFull,
+            }"
+          >
             <a
               role="button"
               @click="hide"
@@ -22,7 +30,13 @@
               <Icon name="close" style="width: 23px; height: 23px"/>
             </a>
           </div>
-          <div class="modal-body h-full px-14 pb-6">
+          <div
+            class="modal-body sm:px-14 pb-6"
+            :class="{
+              'px-4': mobileFull,
+              'px-14 h-full': !mobileFull,
+            }"
+          >
             <slot></slot>
           </div>
         </div>
@@ -51,6 +65,12 @@ export default class SideModal extends Vue {
     default: '',
   })
   private title!: string
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  private mobileFull!: boolean
 
   @Ref('container')
   private containerRef!: HTMLElement

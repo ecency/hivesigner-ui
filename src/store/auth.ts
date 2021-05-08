@@ -1,7 +1,7 @@
 import { Module, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
 import { Account, cryptoUtils, SignedTransaction } from '@hiveio/dhive'
-import { b64uEnc, client, credentialsValid, privateKeyFrom, signComplete } from '~/utils'
-import { TransactionConfirmation } from '@hiveio/dhive'
+import { b64uEnc, client, privateKeyFrom, signComplete } from '~/utils'
+import { AccountsModule } from './index'
 
 @Module({
   stateFactory: true,
@@ -42,7 +42,10 @@ export default class Auth extends VuexModule {
   })
   public async login({ username, keys }: any): Promise<any> {
     const key = keys.owner || keys.active || keys.posting || keys.memo
-    const valid = await credentialsValid(username, key)
+    const valid = await AccountsModule.isValidCredentials({
+      username,
+      password: key,
+    })
 
     if (!valid) {
       throw new Error('Invalid credentials')
@@ -76,8 +79,8 @@ export default class Auth extends VuexModule {
   public async sign({ tx, authority }: any): Promise<SignedTransaction> {
     const { chainId } = this.context.rootState.settings
     const privateKey = authority && this.keys[authority]
-        ? privateKeyFrom(this.keys[authority])
-        : privateKeyFrom(this.password)
+      ? privateKeyFrom(this.keys[authority])
+      : privateKeyFrom(this.password)
     return cryptoUtils.signTransaction(tx, [privateKey], Buffer.from(chainId, 'hex'))
   }
 

@@ -47,6 +47,7 @@ export default {
     key: 'Key',
     weight: 'Weight',
     reveal_pub_key: 'Reveal public key',
+    import_private_key: 'Import private key',
     copy: 'Copy',
     successfully_copied: 'The key copied to clipboard'
   },
@@ -84,7 +85,10 @@ export default {
     add_another_account: 'Add another account',
     dont_have_an_account: 'Don`t have an account?',
     sign_up_here: 'Signup here',
-    login: 'Login'
+    login: 'Login',
+    private_key: 'Private key',
+    import_private_key: 'Import private key',
+    incorrect_private_key: 'Private key is not correct'
   },
   login: {
     switch_an_account: 'Switch an account',

@@ -3,12 +3,13 @@
     <div class="flex flex-col w-full text-black-400 w-full overflow-hidden pt-12 px-3">
       <div class="auths-table">
         <div class="auths-cell auths-cell-header flex items-end auths-cell-type pb-2 sm:pb-0">
-          {{this.$t('auths.type') }}
+          {{ this.$t('auths.type') }}
         </div>
         <div class="auths-cell auths-cell-header flex items-end auths-cell-key pb-2 sm:pb-0">
           {{ this.$t('auths.key') }}
         </div>
-        <div class="auths-cell auths-cell-header flex items-end pb-2 sm:pb-0 auths-cell-actions"></div>
+        <div
+          class="auths-cell auths-cell-header flex items-end pb-2 sm:pb-0 auths-cell-actions"></div>
         <div
           class="auths-cell auths-cell-header items-end pb-2 sm:pb-0 hidden xl:flex auths-cell-weight">
           {{ this.$t('auths.weight') }}
@@ -56,26 +57,35 @@
         </template>
       </div>
     </div>
+
+    <modal mobile-full ref="import-modal">
+      <import-auth-key @import:success="importModalRef.hide()" />
+    </modal>
   </single-page-layout>
 </template>
 
 <script lang="ts">
 import _ from 'lodash'
+import { Account } from '@hiveio/dhive'
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
-import { AuthModule } from '~/store'
+import { AccountsModule, AuthModule } from '~/store'
 import { privateKeyFrom } from '~/utils'
 import { Authority } from '~/enums'
-import { Account } from '@hiveio/dhive'
-import SinglePageLayout from '../components/Layouts/SinglePageLayout.vue'
-import Icon from '../components/UI/Icons/Icon.vue'
-import Dropdown from '../components/UI/Dropdown.vue'
+import SinglePageLayout from '~/components/Layouts/SinglePageLayout.vue'
+import Icon from '~/components/UI/Icons/Icon.vue'
+import Dropdown from '~/components/UI/Dropdown.vue'
+import Modal from '~/components/UI/Modal.vue'
+import ImportAuthKey from '~/components/Import/ImportAuthKey.vue'
 
 @Component({
-  components: { Dropdown, SinglePageLayout, Icon },
+  components: { ImportAuthKey, Modal, Dropdown, SinglePageLayout, Icon },
   middleware: ['auth'],
   layout: 'page',
 })
 export default class Auths extends Vue {
+  @Ref('import-modal')
+  private importModalRef!: Modal
+
   private get account(): Account | null {
     return AuthModule.account
   }
@@ -115,7 +125,7 @@ export default class Auths extends Vue {
     const memo = { Type: 'memo', Key: { auth: [this.account.memo_key] }, Weight: '' }
     return [
       ...values,
-      ...(this.publicKeys['memo'] === this.account.memo_key ? [memo] : []),
+      ...(this.publicKeys.memo === this.account.memo_key ? [memo] : []),
     ]
   }
 
@@ -123,8 +133,7 @@ export default class Auths extends Vue {
     return authority !== 'posting' ? `/revoke/${auth[0]}?authority=${authority}` : `/revoke/${auth[0]}`
   }
 
-  private getCellDropdownOptions(cell: Record<string, any>):
-    { text: string, click: (options?: Record<string, any>) => void }[] {
+  private getCellDropdownOptions(cell: Record<string, any>): any[] {
     if (cell.Key.type === 'account') {
       return [
         {
@@ -133,17 +142,23 @@ export default class Auths extends Vue {
         },
       ]
     }
+    const hasKey = AccountsModule.hasAuthorityPrivateKey(this.account.name, cell.Key.authority)
     return [
       {
-        text: this.$t('auths.copy') as string, click: async ({ clipboard }) => {
+        text: this.$t('auths.copy'), click: async ({ clipboard }) => {
           await navigator.clipboard.writeText(clipboard)
           this.$popupMessages.show('auths.successfully_copied', 5000)
         }
       },
-      // TODO
       {
-        text: this.$t('auths.reveal_pub_key') as string, click: () => {
-        }
+        text: hasKey ? this.$t('auths.reveal_pub_key') : this.$t('auths.import_private_key'),
+        click: () => {
+          if (hasKey) {
+
+          } else {
+            this.importModalRef.show()
+          }
+        },
       },
     ]
   }
