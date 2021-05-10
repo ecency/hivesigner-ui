@@ -58,7 +58,7 @@
       </div>
     </div>
 
-    <modal mobile-full ref="import-modal">
+    <modal mobile-full animation="slide-right" ref="import-modal">
       <import-auth-key @import:success="importModalRef.hide()" />
     </modal>
   </single-page-layout>

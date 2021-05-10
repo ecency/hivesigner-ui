@@ -227,10 +227,6 @@ export default class Import extends Vue {
     this.resetForm()
   }
 
-  private login(data: any): Promise<any> {
-    return AuthModule.login(data)
-  }
-
   private async loadAppProfile(): Promise<void> {
     this.showLoading = true
     const app = this.clientId
@@ -277,7 +273,7 @@ export default class Import extends Vue {
     this.showLoading = true
 
     try {
-      await this.login({ username: this.username, keys })
+      await AuthModule.login({ username: this.username, keys })
       const redirect = this.$route.query.redirect as string
 
       if (this.redirected !== '' && !this.redirected.includes('/login-request')) {

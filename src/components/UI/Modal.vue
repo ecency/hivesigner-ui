@@ -8,18 +8,18 @@
           @click="hide"
         ></div>
       </transition>
-      <transition name="slide-bottom">
+      <transition :name="animation">
         <div
           class="modal-content overflow-y-auto w-full relative bg-white duration-300"
           :class="{
-            'h-full flex flex-col justify-center': mobileFull
+            'h-full xl:h-auto flex flex-col justify-center': mobileFull
           }"
           v-if="open"
         >
           <div
             class="modal-title py-3 pl-6 pr-4 flex items-center justify-end"
             :class="{
-              'absolute sm:static top-0 w-full': mobileFull,
+              'absolute top-0 w-full': mobileFull,
             }"
           >
             <a
@@ -52,19 +52,12 @@ import Icon from './Icons/Icon.vue'
 @Component({
   components: { Icon }
 })
-export default class SideModal extends Vue {
+export default class Modal extends Vue {
   @Prop({
     type: String,
-    default: 'right',
-    validator: value => ['center', 'left', 'right'].includes(value),
+    default: 'slide-bottom',
   })
-  private position!: string
-
-  @Prop({
-    type: String,
-    default: '',
-  })
-  private title!: string
+  private animation!: string
 
   @Prop({
     type: Boolean,
@@ -81,10 +74,17 @@ export default class SideModal extends Vue {
     this.hide()
   }
 
+  private get baseClassList(): string[] {
+    return [
+      'modal flex items-center justify-center top-0 left-0 bottom-0 right-0 fixed',
+      this.mobileFull ? 'mobile-full' : '',
+    ]
+  }
+
   public show(): void {
     this.open = true
     this.$modalsManager.expose()
-    this.containerRef.className = 'modal flex items-center justify-center top-0 left-0 bottom-0 right-0 fixed'
+    this.containerRef.className = this.baseClassList.join(' ')
   }
 
   public hide(): void {
@@ -102,17 +102,29 @@ export default class SideModal extends Vue {
     max-width: 686px;
   }
 
-  .fade-enter, .fade-leave-to {
-    @apply opacity-0;
-  }
+  &.mobile-full {
 
-  .slide-bottom-active, .slide-bottom-leave-active {
-    transform: translateY(0);
-  }
+    > .modal-content {
+      @apply max-w-full;
 
-  .slide-bottom-enter, .slide-bottom-leave-to {
-    transform: translateY(-2rem);
-    @apply opacity-0;
+      > .modal-body {
+        max-width: 550px;
+
+        @apply mx-auto w-full;
+      }
+    }
+
+    @screen sm {
+      > .modal-content {
+        @apply py-36;
+      }
+    }
+
+    @screen xl {
+      > .modal-content {
+        max-width: 735px;
+      }
+    }
   }
 }
 </style>

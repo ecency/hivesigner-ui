@@ -94,18 +94,5 @@ export default class SideModal extends Vue {
       margin-top: -63px;
     }
   }
-
-  .fade-enter, .fade-leave-to {
-    @apply opacity-0;
-  }
-
-  .slide-right-active, .slide-right-leave-active {
-    transform: translateX(0);
-  }
-
-  .slide-right-enter, .slide-right-leave-to {
-    transform: translateX(100%);
-    @apply opacity-0;
-  }
 }
 </style>

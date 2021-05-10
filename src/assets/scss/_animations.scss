@@ -1,0 +1,21 @@
+.fade-enter, .fade-leave-to {
+  @apply opacity-0;
+}
+
+.slide-right-active, .slide-right-leave-active {
+  transform: translateX(0);
+}
+
+.slide-right-enter, .slide-right-leave-to {
+  transform: translateX(100%);
+  @apply opacity-0;
+}
+
+.slide-bottom-active, .slide-bottom-leave-active {
+  transform: translateY(0);
+}
+
+.slide-bottom-enter, .slide-bottom-leave-to {
+  transform: translateY(-2rem);
+  @apply opacity-0;
+}

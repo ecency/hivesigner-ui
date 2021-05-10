@@ -73,4 +73,11 @@ export default class ImportAuthKey extends Vue {
   width: 80px;
   height: 98px;
 }
+
+@screen sm {
+  .logo {
+    width: 116px;
+    height: 143px;
+  }
+}
 </style>
