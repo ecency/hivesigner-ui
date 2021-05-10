@@ -19,23 +19,23 @@
           <div class="auths-cell auths-cell-key flex items-center">
             <operation-value-account
               v-if="value.Key.type === 'account'"
-              :value="value.Key.auth[0]"
+              :value="value.Key.public"
             />
             <operation-value
               responsive-short
               v-else
-              :value="value.Key.auth[0]"
+              :value="privateKeysShowing[value.Type] ? value.Key.private : value.Key.public"
             />
           </div>
           <div class="auths-cell auths-cell-actions flex justify-end sm:justify-start items-center">
-            <a
-              role="button"
-              class="cursor-pointer button button-sm mr-8 last:mr-0 hidden sm:block"
-              v-for="option of getCellDropdownOptions(value)"
-              @click="option.click({
-                  clipboard: value.Key.auth[0]
-                })"
-            >{{ option.text }}</a>
+            <auths-actions
+              classes="cursor-pointer button button-sm mr-8 last:mr-0 hidden sm:block"
+              :account="account"
+              :is-private-key="privateKeysShowing[value.Type]"
+              :value="value"
+              @private:show="setPrivateKeyShowing(value.Type, $event)"
+              @import:show="() => importModalRef.show()"
+            />
 
             <Dropdown ref="dropdown" position="rightBottom" flat width="213px" class="sm:hidden">
               <template slot="trigger">
@@ -43,14 +43,13 @@
                   <Icon name="options"/>
                 </a>
               </template>
-              <a
-                role="button"
-                class="cursor-pointer p-4"
-                v-for="option of getCellDropdownOptions(value)"
-                @click="option.click({
-                  clipboard: value.Key.auth[0]
-                })"
-              >{{ option.text }}</a>
+              <auths-actions
+                :account="account"
+                :is-private-key="privateKeysShowing[value.Type]"
+                :value="value"
+                @private:show="setPrivateKeyShowing(value.Type, $event)"
+                @import:show="() => importModalRef.show()"
+              />
             </Dropdown>
           </div>
           <div class="auths-cell auths-cell-weight hidden xl:block">{{ value.Weight }}</div>
@@ -59,7 +58,7 @@
     </div>
 
     <modal mobile-full animation="slide-right" ref="import-modal">
-      <import-auth-key @import:success="importModalRef.hide()" />
+      <import-auth-key @import:success="importModalRef.hide()"/>
     </modal>
   </single-page-layout>
 </template>
@@ -76,9 +75,10 @@ import Icon from '~/components/UI/Icons/Icon.vue'
 import Dropdown from '~/components/UI/Dropdown.vue'
 import Modal from '~/components/UI/Modal.vue'
 import ImportAuthKey from '~/components/Import/ImportAuthKey.vue'
+import AuthsActions from '../components/Auths/AuthsActions.vue'
 
 @Component({
-  components: { ImportAuthKey, Modal, Dropdown, SinglePageLayout, Icon },
+  components: { AuthsActions, ImportAuthKey, Modal, Dropdown, SinglePageLayout, Icon },
   middleware: ['auth'],
   layout: 'page',
 })
@@ -86,19 +86,21 @@ export default class Auths extends Vue {
   @Ref('import-modal')
   private importModalRef!: Modal
 
+  private privateKeysShowing: Record<string, boolean> = {}
+
   private get account(): Account | null {
     return AuthModule.account
   }
 
-  private get auths(): string[] {
+  private get auths(): any[] {
     const auths = []
 
     Object.values(Authority).forEach(authority => {
       this.account[authority]?.key_auths.forEach(auth => {
-        auths.push({ type: 'key', authority, auth })
+        auths.push({ type: 'key', authority, auth: auth[0], weight: auth[1] })
       })
       this.account[authority]?.account_auths.forEach(auth => {
-        auths.push({ type: 'account', authority, auth })
+        auths.push({ type: 'account', authority, auth: auth[0], weight: auth[1] })
       })
     })
     return auths
@@ -107,7 +109,9 @@ export default class Auths extends Vue {
   private get publicKeys(): Record<string, string> {
     const { keys } = AuthModule
     return Object.keys(keys).reduce<Record<string, string>>((acc, b) => {
-      if (!keys[b]) return acc
+      if (!keys[b]) {
+        return acc
+      }
       acc[b] = privateKeyFrom(keys[b])
         .createPublic()
         .toString()
@@ -117,50 +121,32 @@ export default class Auths extends Vue {
 
   private get tableValues(): Record<string, any>[] {
     const values = _.orderBy(this.auths, 'type')
-      .map(auth => ({
-        Type: auth.authority,
-        Key: auth,
-        Weight: auth.auth[1],
+      .map(({ type, authority, auth, weight }) => ({
+        Type: authority,
+        Key: {
+          public: auth,
+          private: AccountsModule.accountsKeychains[this.account.name][authority],
+          type,
+        },
+        Weight: weight,
       }))
-    const memo = { Type: 'memo', Key: { auth: [this.account.memo_key] }, Weight: '' }
+    const memo = {
+      Type: 'memo',
+      Key: {
+        public: this.account.memo_key,
+        private: AccountsModule.accountsKeychains[this.account.name].memo,
+        type: 'memo',
+      },
+      Weight: '',
+    }
     return [
       ...values,
       ...(this.publicKeys.memo === this.account.memo_key ? [memo] : []),
     ]
   }
 
-  private getRevokeLink({ authority, auth }): string {
-    return authority !== 'posting' ? `/revoke/${auth[0]}?authority=${authority}` : `/revoke/${auth[0]}`
-  }
-
-  private getCellDropdownOptions(cell: Record<string, any>): any[] {
-    if (cell.Key.type === 'account') {
-      return [
-        {
-          text: this.$t('revoke.revoke') as string,
-          click: () => this.$router.push(this.getRevokeLink(cell.Key)),
-        },
-      ]
-    }
-    const hasKey = AccountsModule.hasAuthorityPrivateKey(this.account.name, cell.Key.authority)
-    return [
-      {
-        text: this.$t('auths.copy'), click: async ({ clipboard }) => {
-          await navigator.clipboard.writeText(clipboard)
-          this.$popupMessages.show('auths.successfully_copied', 5000)
-        }
-      },
-      {
-        text: hasKey ? this.$t('auths.reveal_pub_key') : this.$t('auths.import_private_key'),
-        click: () => {
-          if (hasKey) {
-
-          } else {
-            this.importModalRef.show()
-          }
-        },
-      },
-    ]
+  private setPrivateKeyShowing(authority: string, value: boolean): void {
+    Vue.set(this.privateKeysShowing, authority, value)
   }
 }
 </script>

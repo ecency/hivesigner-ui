@@ -46,7 +46,6 @@ export default class Auth extends VuexModule {
       username,
       password: key,
     })
-    console.log(valid)
 
     if (!valid) {
       throw new Error('Invalid credentials')
@@ -60,7 +59,7 @@ export default class Auth extends VuexModule {
       this.store.app.$idleDetector.stop()
       this.logout()
     })
-  }P9nCkwDxQHoyoxvbp2ziBEyyYKGU1NRGHjSPButBvGZzn
+  }
 
   @VuexAction
   public async logout(): Promise<void> {

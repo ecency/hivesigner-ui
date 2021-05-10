@@ -64,6 +64,7 @@ export default class ImportAuthKey extends Vue {
       keys,
     })
 
+    this.$popupMessages.show('auths.successfully_imported', 5000)
     this.$emit('import:success')
   }
 }

@@ -47,9 +47,11 @@ export default {
     key: 'Key',
     weight: 'Weight',
     reveal_pub_key: 'Reveal public key',
+    reveal_private_key: 'Reveal private key',
     import_private_key: 'Import private key',
     copy: 'Copy',
-    successfully_copied: 'The key copied to clipboard'
+    successfully_copied: 'The key copied to clipboard',
+    successfully_imported: 'Authorities keys imported successfully!'
   },
   errors: {
     something_wrong: 'Oops, something went wrong.',

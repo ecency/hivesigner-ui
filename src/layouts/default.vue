@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="h-full">
     <Nuxt/>
     <portal-target name="side-modal" />
     <portal-target name="modal" />
