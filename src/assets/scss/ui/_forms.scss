@@ -7,6 +7,22 @@ textarea {
   min-height: 42px;
 
   @apply border border-gray-400 hover:border-gray-600 text-lg px-5 py-3.5 rounded w-full focus:border-primary outline-none duration-300;
+
+   &::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    @apply italic;
+  }
+
+  &::-moz-placeholder { /* Firefox 19+ */
+    @apply italic;
+  }
+
+  &:-ms-input-placeholder { /* IE 10+ */
+    @apply italic;
+  }
+
+  &:-moz-placeholder { /* Firefox 18- */
+    @apply italic;
+  }
 }
 
 select {

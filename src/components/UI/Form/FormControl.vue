@@ -9,6 +9,7 @@
     :autocomplete="autocomplete"
     :tooltip="tooltip"
     :options="options"
+    :placeholder="placeholder"
     @input="onInput"
     @blur="onBlur"
   />
@@ -66,6 +67,12 @@ export default class FormControl extends Vue {
     default: '',
   })
   private tooltip!: string
+
+  @Prop({
+    type: String,
+    default: '',
+  })
+  private placeholder!: string
 
   @Prop({
     type: Array,

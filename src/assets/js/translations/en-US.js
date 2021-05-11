@@ -228,5 +228,10 @@ export default {
     sandbox: 'Sandbox',
     secret: 'Secret',
     blank_field: 'Leave this field blank to keep your secret unchanged.'
+  },
+  signs: {
+    title: 'Sign transaction',
+    search_placeholder: 'Please type name of transaction that need to sign',
+    sign: 'Sign'
   }
 }

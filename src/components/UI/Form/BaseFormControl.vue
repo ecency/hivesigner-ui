@@ -6,6 +6,7 @@
       :id="name"
       :name="name"
       :type="type"
+      :placeholder="placeholder"
       class="input-lg block mb-2"
       autocorrect="off"
       autocapitalize="none"
@@ -57,6 +58,12 @@ export default class BaseFormControl extends Vue {
     default: '',
   })
   private autocomplete!: string
+
+  @Prop({
+    type: String,
+    default: '',
+  })
+  private placeholder!: string
 
   @Prop({
     type: String,
