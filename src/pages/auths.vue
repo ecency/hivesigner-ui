@@ -44,6 +44,7 @@
                 </a>
               </template>
               <auths-actions
+                class="flex-col"
                 :account="account"
                 :is-private-key="privateKeysShowing[value.Type]"
                 :value="value"

@@ -1,7 +1,9 @@
 <template>
   <span
     class="operation-value inline-block text-gray-600"
-    :class="{ 'responsive-short overflow-hidden w-full': responsiveShort }"
+    :class="{ 'responsive-short overflow-hidden w-full': responsiveShort && !schema.type }"
+    :responsive-key-start="value.slice(0, 3)"
+    :responsive-key-end="value.slice(value.length - 4, value.length - 1)"
   >
     <template v-if="value && Array.isArray(value)">
       <em v-if="value.length === 0">{{ $t('operations.empty') }}</em>
@@ -31,7 +33,9 @@
         <OperationValueJson v-else-if="schema.type === 'json'" :value="value" />
         <OperationValueBool v-else-if="schema.type === 'bool'" :value="value" />
         <template v-else-if="schema.type === 'time'">{{ value | dateHeader }}</template>
-        <template v-else>{{ value }}</template>
+        <span class="block xl:hidden" v-if="!schema.type && responsiveShort"></span>
+        <span class="hidden xl:block" v-if="!schema.type && responsiveShort">{{ value }}</span>
+        <span v-else>{{ value }}</span>
       </template>
     </template>
   </span>
@@ -71,7 +75,35 @@ export default class OperationValue extends Vue {
 <style lang="scss">
 .operation-value {
   &.responsive-short {
+    @apply flex justify-between items-end;
 
+    @screen xl {
+      @apply block;
+    }
+
+    span {
+      @apply border-dotted border-b-2 border-gray-600 w-full mb-1.5;
+
+      @screen xl {
+        @apply border-0;
+      }
+    }
+
+    &::before, &::after {
+      @apply block;
+
+      @screen xl {
+        @apply hidden;
+      }
+    }
+
+    &::before {
+      content: attr(responsive-key-start);
+    }
+
+    &::after {
+      content: attr(responsive-key-end);
+    }
   }
 }
 </style>

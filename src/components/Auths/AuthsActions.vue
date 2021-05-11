@@ -42,7 +42,7 @@ export default class AuthsActions extends Vue {
 
   @Prop({
     type: String,
-    default: 'cursor-pointer p-4"',
+    default: 'cursor-pointer p-4 block w-full',
   })
   private classes!: string
 
