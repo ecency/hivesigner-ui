@@ -1,6 +1,11 @@
 <template>
-  <div class="single-page-layout container-page mx-auto p-4 sm:py-20 w-full sm:px-9">
-    <div class="navigation-container flex justify-end">
+  <div
+    class="single-page-layout container-page mx-auto p-4 sm:py-20 w-full sm:px-9"
+    :class="{
+      'h-full flex flex-col items-center md:justify-center': flat
+    }"
+  >
+    <div v-if="!flat" class="navigation-container flex justify-end">
       <dropdown class="navigation-toggle sm:hidden" position="rightBottom">
         <template slot="trigger">
           <Icon name="Menu" class="text-gray"/>
@@ -8,7 +13,7 @@
         <navigation vertical/>
       </dropdown>
     </div>
-    <router-link to="/" class="flex flex-col items-center mb-12">
+    <router-link v-if="!flat" to="/" class="flex flex-col items-center mb-12">
       <icon class="logo text-primary" name="logo"/>
       <span class="text-primary text-3xl sm:text-5xl">{{ title }}</span>
     </router-link>
@@ -32,6 +37,12 @@ export default class SinglePageLayout extends Vue {
     required: true,
   })
   private title!: string
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  private flat!: boolean
 }
 </script>
 

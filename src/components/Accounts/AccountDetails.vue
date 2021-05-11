@@ -5,7 +5,7 @@
     <router-link to="/auths" class="p-4 hover:bg-gray-100">
       {{ $t('accounts.auths') }}
     </router-link>
-    <router-link to="/sign/transactions" class="p-4 hover:bg-gray-100">
+    <router-link to="/signs" class="p-4 hover:bg-gray-100">
       {{ $t('accounts.sign_transactions') }}
     </router-link>
     <a

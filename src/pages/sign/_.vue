@@ -1,10 +1,13 @@
 <template>
-  <div class="font-old">
-    <Header :title="title"/>
+  <single-page-layout :title="title" :flat="!loading && (failed || !!transactionId)">
     <div v-if="parsed && uriIsValid" class="p-6">
+      <transaction-status
+        v-if="!loading && (failed || !!transactionId)"
+        :status="failed ? 'failure' : 'success'"
+        :success-message="successMessage"
+        :failure-message="failureMessage"
+      />
       <div class="container-sm mx-auto">
-        <Error v-if="!loading && failed" :error="error"/>
-        <Confirmation v-if="!loading && !!transactionId" :id="transactionId" />
         <div v-if="!failed && !transactionId">
           <Operation
             v-for="(operation, key) in parsed.tx.operations"
@@ -51,7 +54,7 @@
         {{ $t('errors.unknown') }}
       </div>
     </div>
-  </div>
+  </single-page-layout>
 </template>
 
 <script lang="ts">
@@ -69,9 +72,11 @@ import {
 } from '~/utils'
 import { AuthModule, SettingsModule } from '~/store'
 import { Authority } from '~/enums'
+import SinglePageLayout from '~/components/Layouts/SinglePageLayout.vue'
+import TransactionStatus from '../../components/TransactionStatus.vue'
 
 @Component({
-  layout: 'page',
+  components: { TransactionStatus, SinglePageLayout },
 })
 export default class Sign extends Vue {
   private parsed = null
@@ -107,6 +112,14 @@ export default class Sign extends Vue {
     return {
       vestsToSP: getVestsToSP(SettingsModule.properties),
     }
+  }
+
+  private get successMessage(): string {
+    return `<span class="text-gray">${this.$t('sign.transaction_id')}:</span> ${this.transactionId}`
+  }
+
+  private get failureMessage(): string {
+    return `<span class="text-gray">${this.$t('sign.error_message')}:</span> ${this.error}`
   }
 
   private mounted(): void {

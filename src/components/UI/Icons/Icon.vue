@@ -21,6 +21,9 @@ import Search from './Search.vue'
 import SelectArrow from './SelectArrow.vue'
 import Options from './Options.vue'
 import Check from './Check.vue'
+import TransactionSuccess from './TransactionSuccess.vue'
+import TransactionFailure from './TransactionFailure.vue'
+import BackArrow from './BackArrow.vue'
 
 @Component({
   components: {
@@ -39,6 +42,9 @@ import Check from './Check.vue'
     SelectArrow,
     Options,
     Check,
+    TransactionSuccess,
+    TransactionFailure,
+    BackArrow,
   },
 })
 export default class Icon extends Vue {

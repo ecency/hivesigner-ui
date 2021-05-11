@@ -134,6 +134,10 @@ export default {
     approve: 'Approve',
     going_redirect_to: 'You are going to get redirected to',
     confirm_transaction: 'Confirm transaction',
+    success_title: 'Transaction has been successfully broadcasted',
+    failure_title: 'Your transaction was not successfully broadcasted',
+    back_to_sign: 'Back to Sign transaction',
+    error_message: 'Error message'
   },
   developers: {
     description: `You’ve found the HiveSigner developer documentation! This page dedicated to showing you all the ways that you can use HiveSigner to make cool stuff.`,

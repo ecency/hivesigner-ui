@@ -1,11 +1,11 @@
 <template>
-  <div class="border rounded mb-6">
+  <div class="border-2 rounded-md mb-6">
     <OperationHeader :operation="operation[0]" />
     <div class="border-t p-4">
       <div v-for="(value, key) in operation[1]" :key="key">
         <p class="mb-2 text-lg block">
           <span
-            class="align-top inline-block text-gray-600 font-bold"
+            class="align-top inline-block text-black-400 font-bold"
             style="min-width: 160px;"
           >
             {{ schema[key].name || key }}
