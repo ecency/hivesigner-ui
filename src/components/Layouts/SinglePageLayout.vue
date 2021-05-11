@@ -15,7 +15,7 @@
     </div>
     <router-link v-if="!flat" to="/" class="flex flex-col items-center mb-12">
       <icon class="logo text-primary" name="logo"/>
-      <span class="text-primary text-3xl sm:text-5xl">{{ title }}</span>
+      <span class="text-primary text-center text-3xl sm:text-5xl">{{ title }}</span>
     </router-link>
     <slot></slot>
     <Navigation class="container-sm mx-auto w-full pt-28 hidden sm:flex"/>

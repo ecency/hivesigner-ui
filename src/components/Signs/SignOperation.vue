@@ -7,7 +7,12 @@
         :value="form[schema.name]"
         @input="onInput(schema.name, $event)"
       />
-      <button class="button button-primary mb-12">{{ $t('signs.sign') }}</button>
+      <button
+        class="button button-primary mb-12"
+        style="min-width: 120px"
+      >
+        {{ $t('signs.sign') }}
+      </button>
     </form>
   </accordion>
 </template>

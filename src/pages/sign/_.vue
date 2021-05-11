@@ -1,6 +1,6 @@
 <template>
   <single-page-layout :title="title" :flat="!loading && (failed || !!transactionId)">
-    <div v-if="parsed && uriIsValid" class="p-6">
+    <div v-if="parsed && uriIsValid" class="sm:p-6">
       <transaction-status
         v-if="!loading && (failed || !!transactionId)"
         :status="failed ? 'failure' : 'success'"
@@ -49,7 +49,7 @@
         </div>
       </div>
     </div>
-    <div class="p-6" v-else>
+    <div class="sm:p-6" v-else>
       <div class="container-sm mx-auto alert alert-error mb-6">
         {{ $t('errors.unknown') }}
       </div>

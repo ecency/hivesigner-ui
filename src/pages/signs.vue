@@ -8,7 +8,7 @@
       <icon
         name="search"
         style="width: 29px;height: 29px;top: 22px"
-        class="absolute right-4 text-gray"
+        class="absolute right-4 text-gray bg-white pl-2"
       />
     </div>
     <div class="container-sm mx-auto">
