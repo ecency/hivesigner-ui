@@ -5,6 +5,7 @@
         v-for="schema of schemas"
         :label="schema.name"
         :value="form[schema.name]"
+        :type="schema.type === 'amount' ? 'number' : 'text'"
         @input="onInput(schema.name, $event)"
       />
       <button
@@ -22,6 +23,7 @@ import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import Accordion from '../UI/Accordion.vue'
 import { Operation } from '~/models'
 import FormControl from '../UI/Form/FormControl.vue'
+import { encodeOp } from 'hive-uri'
 
 @Component({
   components: { FormControl, Accordion },
@@ -38,7 +40,7 @@ export default class SignOperation extends Vue {
   private get schemas(): any[] {
     return Object.keys(this.operation.details.schema).map(name => {
       this.form[name] = this.operation.details.schema[name].defaultValue
-      return { name }
+      return { name, type: this.operation.details.schema[name].type }
     })
   }
 
@@ -47,13 +49,10 @@ export default class SignOperation extends Vue {
   }
 
   private submit(): void {
-    this.$router.push({
-      path: `/sign/${this.operation.name}`,
-      query: {
-        ...this.form,
-        authority: this.operation.details.authority,
-      },
-    })
+    this.$router.push(encodeOp([
+      this.operation.name,
+      this.form,
+    ] as any).replace('hive://', '/'))
   }
 }
 </script>

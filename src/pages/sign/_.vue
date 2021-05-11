@@ -84,7 +84,7 @@ export default class Sign extends Vue {
   private loading = false
   private transactionId = ''
   private failed = false
-  private error = false
+  private error = ''
   private hasRequiredKey = null
   private authority = getAuthority(this.$route.query.authority as Authority)
 
@@ -156,6 +156,7 @@ export default class Sign extends Vue {
       signedTx = await AuthModule.sign({ tx, authority: this.authority });
       [sig] = signedTx.signatures
     } catch (err) {
+      this.error = err.message
       console.error('Failed to resolve and sign transaction', err)
     }
     if (!sig) {

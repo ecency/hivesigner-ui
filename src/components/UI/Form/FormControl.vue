@@ -47,7 +47,7 @@ export default class FormControl extends Vue {
   @Prop({
     type: String,
     default: 'text',
-    validator: value => ['text', 'password', 'select', 'checkbox'].includes(value),
+    validator: value => ['text', 'password', 'select', 'checkbox', 'number'].includes(value),
   })
   private type!: string
 
