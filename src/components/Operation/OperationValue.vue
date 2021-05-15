@@ -33,9 +33,11 @@
         <OperationValueJson v-else-if="schema.type === 'json'" :value="value" />
         <OperationValueBool v-else-if="schema.type === 'bool'" :value="value" />
         <template v-else-if="schema.type === 'time'">{{ value | dateHeader }}</template>
-        <span class="block xl:hidden" v-if="!schema.type && responsiveShort"></span>
-        <span class="hidden xl:block" v-if="!schema.type && responsiveShort">{{ value }}</span>
-        <span v-else>{{ value }}</span>
+        <span v-else-if="schema.type">{{ value }}</span>
+        <template v-else-if="!schema.type && responsiveShort">
+          <span class="block xl:hidden"></span>
+          <span class="hidden xl:block">{{ value }}</span>
+        </template>
       </template>
     </template>
   </span>

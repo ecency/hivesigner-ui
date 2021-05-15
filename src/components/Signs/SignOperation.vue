@@ -6,7 +6,6 @@
         :key="schema.name"
         :label="schema.name"
         :value="form[schema.name]"
-        :type="schema.type === 'amount' ? 'number' : 'text'"
         @input="onInput(schema.name, $event)"
       />
       <button
