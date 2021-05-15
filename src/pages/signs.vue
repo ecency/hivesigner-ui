@@ -16,6 +16,7 @@
         class="mb-5"
         v-for="operation of operations"
         :operation="operation"
+        :key="operation.name"
       />
     </div>
   </single-page-layout>

@@ -1,6 +1,6 @@
 <template>
   <single-page-layout :title="$t('auths.auths')" class="auths-page">
-    <div class="flex flex-col w-full text-black-400 w-full overflow-hidden pt-12 px-3">
+    <div class="flex flex-col w-full text-black-400 w-full pt-12 px-3">
       <div class="auths-table">
         <div class="auths-cell auths-cell-header flex items-end auths-cell-type pb-2 sm:pb-0">
           {{ this.$t('auths.type') }}

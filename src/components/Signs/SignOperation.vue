@@ -3,6 +3,7 @@
     <form @submit.prevent.stop="submit">
       <form-control
         v-for="schema of schemas"
+        :key="schema.name"
         :label="schema.name"
         :value="form[schema.name]"
         :type="schema.type === 'amount' ? 'number' : 'text'"

@@ -84,13 +84,13 @@ export default class Modal extends Vue {
   public show(): void {
     this.open = true
     this.$modalsManager.expose()
-    this.containerRef.className = this.baseClassList.join(' ')
+    this.containerRef?.className = this.baseClassList.join(' ')
   }
 
   public hide(): void {
     this.open = false
     this.$modalsManager.release()
-    setTimeout(() => this.containerRef.className = 'modal', 300)
+    setTimeout(() => this.containerRef?.className = 'modal', 300)
   }
 }
 </script>
