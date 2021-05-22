@@ -14,6 +14,8 @@ class PopupMessages {
     const el = PopupMessages.createElement()
     el.innerText = this.i18n.t(message).toString()
     this.containerElement.appendChild(el)
+    this.containerElement.classList.remove('hidden')
+    this.containerElement.classList.add('flex')
     setTimeout(() => {
       el.classList.remove('translate-y-full')
       el.classList.remove('opacity-0')
@@ -26,7 +28,13 @@ class PopupMessages {
   private hide(el: HTMLElement): void {
     el.classList.add('translate-y-full')
     el.classList.add('opacity-0')
-    setTimeout(() => this.containerElement.removeChild(el), 300)
+    setTimeout(() => {
+      this.containerElement.removeChild(el)
+      if (this.containerElement.children.length === 0) {
+        this.containerElement.classList.add('hidden')
+        this.containerElement.classList.remove('flex')
+      }
+    }, 300)
   }
 
   private static createElement(): HTMLElement {
@@ -37,7 +45,8 @@ class PopupMessages {
   }
 
   private initContainer(): void {
-    this.containerElement.className = 'fixed bottom-0 left-0 right-0 flex flex-col justify-center mb-5 items-center p-4'
+    this.containerElement.className = 'fixed bottom-0 left-0 right-0 hidden flex-col' +
+      ' justify-center mb-5 items-center p-4'
     document.body.appendChild(this.containerElement)
   }
 }
