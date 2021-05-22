@@ -8,14 +8,23 @@
   >
     <locale-selector class="py-1.5" />
 
-    <router-link
-      v-for="item of menu"
-      :key="item.to"
-      class="text-gray py-1.5 text-lg hover:text-primary cursor-pointer"
-      :to="item.to"
-    >
-      {{ item.label }}
-    </router-link>
+    <template v-for="item of menu">
+      <router-link
+        v-if="item.to"
+        :key="item.to"
+        class="text-gray py-1.5 text-lg hover:text-primary cursor-pointer"
+        :to="item.to"
+      >
+        {{ item.label }}
+      </router-link>
+      <a
+        v-else-if="item.href" :href="item.href"
+        target="_blank"
+        rel="noopener"
+        :key="item.to"
+        class="text-gray py-1.5 text-lg hover:text-primary cursor-pointer"
+      >{{ item.label }}</a>
+    </template>
   </div>
 </template>
 <script lang="ts">
@@ -33,7 +42,8 @@ export default class Navigation extends Vue {
     return [
       { label: this.$t('footer.apps'), to: '/apps' },
       { label: this.$t('footer.accounts'), to: '/accounts' },
-      { label: this.$t('footer.documentation'), to: '/developers' },
+      { label: this.$t('footer.signs'), to: '/signs' },
+      { label: this.$t('footer.documentation'), href: 'https://docs.hivesigner.com/' },
       { label: this.$t('footer.about'), to: '/about' },
     ]
   }

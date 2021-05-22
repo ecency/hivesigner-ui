@@ -125,7 +125,8 @@ export default {
     settings: 'Settings',
     developers: 'Developers',
     about: 'About',
-    documentation: 'Documentation'
+    documentation: 'Documentation',
+    signs: 'Signer'
   },
   open_external: `We recommend you to use the HiveSigner desktop app. If you don't have this, you can download it from the <a href="{homepage}" target="_blank">official site</a>.`,
   open_desktop_app: 'Open desktop app',
@@ -137,7 +138,8 @@ export default {
     success_title: 'Transaction has been successfully broadcasted',
     failure_title: 'Your transaction was not successfully broadcasted',
     back_to_sign: 'Back to Sign transaction',
-    error_message: 'Error message'
+    error_message: 'Error message',
+    transaction_id: 'Transaction id',
   },
   developers: {
     description: `You’ve found the HiveSigner developer documentation! This page dedicated to showing you all the ways that you can use HiveSigner to make cool stuff.`,

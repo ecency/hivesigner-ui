@@ -10,6 +10,11 @@
         </router-link>
       </li>
       <li class="inline mx-2">
+        <router-link to="/signs" class="hover:underline">
+          {{ $t('footer.signs') }}
+        </router-link>
+      </li>
+      <li class="inline mx-2">
         <router-link to="/settings" class="hover:underline">
           {{ $t('footer.settings') }}
         </router-link>
