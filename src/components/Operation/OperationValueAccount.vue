@@ -18,6 +18,6 @@ import Icon from '../UI/Icons/Icon.vue'
 })
 export default class OperationValueAccount extends Vue {
   @Prop()
-  private value!: any
+  private value!: string
 }
 </script>

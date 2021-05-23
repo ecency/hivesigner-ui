@@ -5,7 +5,7 @@ export interface Operation {
   schema: {
     [name: string]: {
       type: string // 'account' 'amount' 'text' TODO: move to enum
-      defaultValue?: string
+      defaultValue?: any
       maxLength?: number
     }
   }

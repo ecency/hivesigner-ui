@@ -76,7 +76,7 @@ export default class Apps extends Vue {
   private apps = []
   private selectedApp = null
 
-  private get filteredApps(): any[] {
+  private get filteredApps(): Record<string, string>[] {
     const apps = JSON.parse(JSON.stringify(this.apps))
     return apps
       .sort((a, b) => a.length - b.length)

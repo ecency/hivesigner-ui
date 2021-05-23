@@ -30,7 +30,7 @@ import SelectFormControl from './SelectFormControl.vue'
 })
 export default class FormControl extends Vue {
   @Prop()
-  private value!: any
+  private value!: string | string[]
 
   @Prop({
     type: String,

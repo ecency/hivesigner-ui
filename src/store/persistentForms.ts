@@ -10,11 +10,11 @@ import { Module, VuexModule, VuexMutation, Vue } from 'nuxt-property-decorator'
   name: 'persistentForms',
 })
 export default class PersistentForms extends VuexModule {
-  public login: any = {
+  public login: Record<string, string> = {
     username: '',
     key: '',
   }
-  public import: any = {
+  public import: Record<string, string | number> = {
     step: 1,
     username: '',
     password: '',

@@ -47,6 +47,7 @@
 import { Vue, Prop, Component } from 'nuxt-property-decorator'
 import { AuthModule } from '~/store'
 import { OPERATIONS } from '~/consts'
+import { Operation } from '../../models'
 
 @Component
 export default class OperationValue extends Vue {
@@ -54,7 +55,7 @@ export default class OperationValue extends Vue {
   private value!: any
 
   @Prop()
-  private path!: any
+  private path!: string
 
   @Prop()
   private schemaKey!: string
@@ -69,7 +70,7 @@ export default class OperationValue extends Vue {
     return AuthModule.username
   }
 
-  private get schema(): any {
+  private get schema(): Operation['schema'][0]['key'] {
     return OPERATIONS[this.path]?.schema[this.schemaKey] || {}
   }
 }

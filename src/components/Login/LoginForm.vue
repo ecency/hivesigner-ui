@@ -34,11 +34,9 @@
 </template>
 
 <script lang="ts">
-import triplesec from 'triplesec'
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { ERROR_INVALID_ENCRYPTION_KEY, TOOLTIP_LOGIN_ENCRYPTION_KEY } from '~/consts'
 import { AccountsModule, PersistentFormsModule } from '~/store'
-import { signComplete } from '~/utils'
 import { Authority, DecryptionExceptions } from '~/enums'
 import Icon from '../UI/Icons/Icon.vue'
 import FormControl from '../UI/Form/FormControl.vue'
@@ -78,14 +76,14 @@ export default class LoginForm extends Vue {
     return AccountsModule.accountsUsernamesList
   }
 
-  private get errors(): Record<string, any> {
-    const current: Record<string, any> = {}
+  private get errors(): Record<string, string> {
+    const current: Record<string, string> = {}
     const { username, key } = this
     if (!username) {
-      current.username = this.$t('login.username_required')
+      current.username = this.$t('login.username_required') as string
     }
     if (!key && !this.dirty.key) {
-      current.key = this.$t('login.hs_password_required')
+      current.key = this.$t('login.hs_password_required') as string
     }
     return current
   }
@@ -151,9 +149,6 @@ export default class LoginForm extends Vue {
 
   private handleReject(): void {
     const requestId = this.$route.query.requestId as string
-    if (requestId) {
-      signComplete(requestId, 'Request canceled', null)
-    }
     this.$emit('failed', false)
     this.$emit('loading', false)
     this.$emit('signature', '')

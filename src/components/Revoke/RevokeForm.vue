@@ -40,11 +40,9 @@
 </template>
 
 <script lang="ts">
-
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { AuthModule } from '~/store'
-import { Account } from '@hiveio/dhive'
-import { isWeb } from '~/utils'
+import { Account, TransactionConfirmation } from '@hiveio/dhive'
 
 @Component
 export default class RevokeForm extends Vue {
@@ -83,7 +81,7 @@ export default class RevokeForm extends Vue {
     return !!(AuthModule.username && AuthModule.keys.active)
   }
 
-  private updateAccount(data: any): Promise<any> {
+  private updateAccount(data: any): Promise<TransactionConfirmation> {
     return AuthModule.updateAccount(data)
   }
 
@@ -107,7 +105,7 @@ export default class RevokeForm extends Vue {
       const confirmation = await this.updateAccount(data)
       await this.loadAccount()
 
-      if (isWeb && callback) {
+      if (callback) {
         if (callback[0] === '/') {
           this.$router.push(callback)
         } else {

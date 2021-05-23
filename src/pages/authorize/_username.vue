@@ -32,7 +32,7 @@ import { Component, Vue } from 'nuxt-property-decorator'
 import { getAuthority } from '~/utils'
 import { AuthModule } from '~/store'
 import { Authority } from '~/enums'
-import { Account } from '@hiveio/dhive'
+import { Account, TransactionConfirmation } from '@hiveio/dhive'
 
 @Component({
   layout: 'page'
@@ -71,7 +71,7 @@ export default class AuthorizeUsername extends Vue {
     return false
   }
 
-  private updateAccount(data: any): Promise<any> {
+  private updateAccount(data: any): Promise<TransactionConfirmation> {
     return AuthModule.updateAccount(data)
   }
 

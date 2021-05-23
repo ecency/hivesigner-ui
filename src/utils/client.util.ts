@@ -17,8 +17,7 @@ const handler = {
   },
 }
 
-// TODO: Fix typings
-export const client = new Proxy({}, handler)
+export const client: Client = new Proxy({}, handler)
 
 export async function resolveTransaction(parsed: any, signer: string) {
   const props = await client.database.getDynamicGlobalProperties()

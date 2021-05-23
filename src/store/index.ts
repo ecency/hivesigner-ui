@@ -13,7 +13,7 @@ let UiModule: Ui
 let PersistentFormsModule: PersistentForms
 let AccountsModule: Accounts
 
-const initializer = (store: Store<any>) => {
+const initializer = (store: Store<{}>) => {
   AuthModule = getModule<Auth>(Auth, store)
   SettingsModule = getModule<Settings>(Settings, store)
   UiModule = getModule<Ui>(Ui, store)

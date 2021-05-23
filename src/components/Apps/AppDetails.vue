@@ -67,7 +67,7 @@ export default class AppDetails extends Vue {
 
   private isLoading = false
   private failed = false
-  private profile: any = {}
+  private profile: Record<string, string> = {}
 
   private mounted(): void {
     this.loadProfile()

@@ -57,7 +57,7 @@ export default class Accounts extends VuexModule {
   }
 
   @VuexMutation
-  public saveAccountKeys({ username, keys }: any): void {
+  public saveAccountKeys({ username, keys }: { username: string, keys: Record<string, string> }): void {
     if (this.accountsKeychains[username]) {
       Vue.set(this.accountsKeychains, username, {
         ...keys,
@@ -105,8 +105,8 @@ export default class Accounts extends VuexModule {
   }
 
   @VuexAction({ rawError: true })
-  public async getAuthoritiesKeys({ username, password }: any): Promise<Record<string, any>> {
-    const keys: Record<string, any> = {
+  public async getAuthoritiesKeys({ username, password }: { username: string, password: string }): Promise<Record<string, string | null>> {
+    const keys: Record<string, string | null> = {
       active: null,
       memo: null,
       posting: null,
@@ -133,7 +133,7 @@ export default class Accounts extends VuexModule {
   }
 
   @VuexAction({ rawError: true })
-  public async isValidCredentials({ username, password }: any): Promise<boolean> {
+  public async isValidCredentials({ username, password }: { username: string, password: string }): Promise<boolean> {
     const keysMap = await getUserKeysMap(username)
 
     const key = isKey(username, password)

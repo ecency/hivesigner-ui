@@ -1,6 +1,12 @@
 import { Module, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
-import { Account, cryptoUtils, SignedTransaction } from '@hiveio/dhive'
-import { b64uEnc, client, privateKeyFrom, signComplete } from '~/utils'
+import {
+  Account, AccountUpdateOperation,
+  cryptoUtils,
+  SignedTransaction,
+  Transaction,
+  TransactionConfirmation
+} from '@hiveio/dhive'
+import { b64uEnc, client, privateKeyFrom } from '~/utils'
 import { AccountsModule } from './index'
 
 @Module({
@@ -40,7 +46,7 @@ export default class Auth extends VuexModule {
   @VuexAction({
     rawError: true
   })
-  public async login({ username, keys }: any): Promise<any> {
+  public async login({ username, keys }: { username: string, keys: Record<string, string> }): Promise<void> {
     const key = keys.owner || keys.active || keys.posting || keys.memo
     const valid = await AccountsModule.isValidCredentials({
       username,
@@ -76,7 +82,7 @@ export default class Auth extends VuexModule {
   @VuexAction({
     rawError: true,
   })
-  public async sign({ tx, authority }: any): Promise<SignedTransaction> {
+  public async sign({ tx, authority }: { tx: Transaction, authority: string }): Promise<SignedTransaction> {
     const { chainId } = this.context.rootState.settings
     const privateKey = authority && this.keys[authority]
       ? privateKeyFrom(this.keys[authority])
@@ -87,9 +93,9 @@ export default class Auth extends VuexModule {
   @VuexAction({
     rawError: true,
   })
-  public async signMessage({ message, authority }: any): Promise<any> {
+  public async signMessage({ message, authority }: { message: Record<string, string>, authority: string }): Promise<Record<string, object | object[] | number>> {
     const timestamp = parseInt((new Date().getTime() / 1000) + '', 10)
-    const messageObj: any = { signed_message: message, authors: [this.username], timestamp }
+    const messageObj: Record<string, object | object[] | number> = { signed_message: message, authors: [this.username], timestamp }
     const hash = cryptoUtils.sha256(JSON.stringify(messageObj))
     const privateKey =
       authority && this.keys[authority]
@@ -103,21 +109,21 @@ export default class Auth extends VuexModule {
   @VuexAction({
     rawError: true,
   })
-  public async broadcast(tx: any): Promise<SignedTransaction> {
+  public async broadcast(tx: SignedTransaction): Promise<TransactionConfirmation> {
     return client.broadcast.send(tx)
   }
 
   @VuexAction({
     rawError: true,
   })
-  public async updateAccount(data: any): Promise<SignedTransaction> {
+  public async updateAccount(data: AccountUpdateOperation[1]): Promise<TransactionConfirmation> {
     const privateKey = privateKeyFrom(this.keys.owner || this.keys.active)
     return client.broadcast.updateAccount(data, privateKey)
   }
 
   @VuexAction
-  public async signAndRedirectToCallback(payload: any): Promise<void> {
-    const loginObj: Record<string, any> = {
+  public async signAndRedirectToCallback(payload: Record<string, string>): Promise<void> {
+    const loginObj: Record<string, string> = {
       type: payload.responseType === 'code' ? 'code' : payload.scope,
       ...(payload.app ? { app: payload.app } : {})
     }
@@ -125,12 +131,8 @@ export default class Auth extends VuexModule {
       message: loginObj,
       authority: payload.authority,
     });
-    [payload.signature] = signedMessageObj.signatures
+    [payload.signature] = signedMessageObj.signatures as string[]
     const token = b64uEnc(JSON.stringify(signedMessageObj))
-
-    if (payload.requestId) {
-      signComplete(payload.requestId, null, token)
-    }
 
     const additionalCallbackQuery = new URLSearchParams({
       ...(payload.responseType === 'code' ? { code: token } : {}),

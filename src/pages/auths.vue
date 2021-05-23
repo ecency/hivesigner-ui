@@ -93,7 +93,7 @@ export default class Auths extends Vue {
     return AuthModule.account
   }
 
-  private get auths(): any[] {
+  private get auths(): { type: string, authority: Authority, auth: string, weight: number }[] {
     const auths = []
 
     Object.values(Authority).forEach(authority => {
@@ -120,7 +120,7 @@ export default class Auths extends Vue {
     }, {})
   }
 
-  private get tableValues(): Record<string, any>[] {
+  private get tableValues(): object[] {
     const values = _.orderBy(this.auths, 'type')
       .map(({ type, authority, auth, weight }) => ({
         Type: authority,

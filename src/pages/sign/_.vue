@@ -68,18 +68,18 @@ import {
   legacyToHiveUri,
   processTransaction,
   resolveTransaction,
-  signComplete,
 } from '~/utils'
 import { AuthModule, SettingsModule } from '~/store'
 import { Authority } from '~/enums'
 import SinglePageLayout from '~/components/Layouts/SinglePageLayout.vue'
 import TransactionStatus from '../../components/TransactionStatus.vue'
+import { DecodeResult } from 'hive-uri'
 
 @Component({
   components: { TransactionStatus, SinglePageLayout },
 })
 export default class Sign extends Vue {
-  private parsed = null
+  private parsed: DecodeResult | null = null
   private uriIsValid = true
   private loading = false
   private transactionId = ''
@@ -133,7 +133,7 @@ export default class Sign extends Vue {
   }
 
   private parseUri(uri): void {
-    let parsed
+    let parsed: DecodeResult
     try {
       parsed = hiveuri.decode(uri)
     } catch (err) {
@@ -170,17 +170,11 @@ export default class Sign extends Vue {
         confirmation = await AuthModule.broadcast(signedTx)
         this.transactionId = confirmation.id
         this.failed = false
-        if (this.requestId) {
-          signComplete(this.requestId, null, { result: confirmation })
-        }
       } catch (err) {
         this.error = err
         console.error('Failed to broadcast transaction', err)
         this.transactionId = ''
         this.failed = true
-        if (this.requestId) {
-          signComplete(this.requestId, err, null)
-        }
       }
     }
     // Use redirect uri
@@ -200,9 +194,6 @@ export default class Sign extends Vue {
   }
 
   private handleReject(): void {
-    if (this.requestId) {
-      signComplete(this.requestId, 'Request rejected', null)
-    }
     this.failed = false
     this.loading = false
     this.transactionId = ''

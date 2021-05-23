@@ -68,8 +68,6 @@ import {
   client,
   getAuthority,
   isValidUrl,
-  jsonParse,
-  signComplete
 } from '~/utils'
 import { AccountsModule, AuthModule } from '~/store'
 import { Authority } from '~/enums'
@@ -94,7 +92,7 @@ export default class Login extends Vue {
   private failed = false
   private signature = null
   private app = null
-  private appProfile: Record<string, any> = {}
+  private appProfile: Record<string, string> = {}
 
   private get isRedirected(): boolean {
     return this.redirected === '/auths' ||
@@ -226,9 +224,6 @@ export default class Login extends Vue {
           console.error('Failed to login', err)
           this.signature = ''
           this.failed = true
-          if (this.requestId) {
-            signComplete(this.requestId, err, null)
-          }
           this.isLoading = false
           this.showLoading = false
         }
@@ -247,7 +242,7 @@ export default class Login extends Vue {
     if (accounts[0]) {
       this.app = app
       try {
-        this.appProfile = JSON.parse(accounts[0].posting_json_metadata).profile
+        this.appProfile = JSON.parse(accounts[0].posting_json_metadata).profile as Record<string, string>
         if (!this.appProfile.redirect_uris.includes(this.callback) || !isValidUrl(this.callback)) {
           this.failed = true
         }
