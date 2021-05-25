@@ -1,5 +1,5 @@
 <template>
-  <div class="dropdown relative">
+  <div class="dropdown relative z-10">
     <transition name="fade">
       <div
         class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500"

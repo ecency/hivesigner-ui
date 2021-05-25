@@ -18,7 +18,7 @@
       <div class="flex justify-center xl:justify-start">
         <router-link
           :to="hasAccounts ? '/login?redirect=accounts' : '/import?redirect=accounts'"
-          class="button button-primary inline-flex items-center"
+          class="button button-primary inline-flex items-center mb-12 sm:mb-0"
         >
           <Icon name="Keychain" class="mr-2"/>
           {{ $t('index.get_started') }}
