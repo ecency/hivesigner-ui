@@ -16,6 +16,15 @@
     "lint": "yarn lint:js",
     "test": "jest"
   },
+  "contributors": [
+    "Feruz Muradov",
+    "Ildar Timerbaev",
+    "Fabien Marino",
+    "Wiktor Tkaczyński",
+    "Johan Nordberg",
+    "Nico Wehmöller",
+    "Mahdi Yari"
+  ],
   "dependencies": {
     "@hiveio/dhive": "^0.14.12",
     "@nuxt/typescript-runtime": "^2.0.1",

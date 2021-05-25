@@ -18,7 +18,8 @@ export default {
     website: 'Website',
     download_logo: 'Download logo',
     report_bug: 'Report a bug',
-    contributors: 'Contributors'
+    contributors: 'Contributors',
+    maintained: 'Maintained by'
   },
   accounts: {
     accounts: 'Accounts',
