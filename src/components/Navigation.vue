@@ -1,12 +1,19 @@
 <template>
   <div
-    class="flex justify-between"
+    class="flex"
     :class="{
       'items-center': !vertical,
       'items-start flex-col': vertical,
+      'justify-between': !wrappable,
+      'justify-center md:justify-between flex-wrap': wrappable
     }"
   >
-    <locale-selector class="py-1.5" />
+    <locale-selector
+      class="py-1.5"
+      :class="{
+          'px-2': wrappable
+        }"
+    />
 
     <template v-for="item of menu">
       <router-link
@@ -14,6 +21,9 @@
         :key="item.to"
         class="text-gray py-1.5 text-lg hover:text-primary cursor-pointer"
         :to="item.to"
+        :class="{
+          'px-2': wrappable
+        }"
       >
         {{ item.label }}
       </router-link>
@@ -23,6 +33,9 @@
         rel="noopener"
         :key="item.to"
         class="text-gray py-1.5 text-lg hover:text-primary cursor-pointer"
+        :class="{
+          'px-2': wrappable
+        }"
       >{{ item.label }}</a>
     </template>
   </div>
@@ -37,6 +50,12 @@ export default class Navigation extends Vue {
     default: false,
   })
   private vertical!: string
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  private wrappable!: string
 
   private get menu() {
     return [

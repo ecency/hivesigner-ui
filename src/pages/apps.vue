@@ -45,7 +45,9 @@
           @open-modal="openModal"
         />
       </template>
-      <Footer class="my-6"/>
+      <div class="my-6">
+        <navigation wrappable class="container-sm w-full" />
+      </div>
     </div>
     <SideModal ref="modal" :title="selectedApp">
       <AppDetails :username="selectedApp" @close="closeModal" />
