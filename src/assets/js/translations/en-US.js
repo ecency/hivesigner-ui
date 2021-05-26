@@ -9,7 +9,8 @@ export default {
     no: 'No'
   },
   index: {
-    description: `Secure way to sign with Hivesigner. Best security for users and developers to integrate industry standard OAuth2.`,
+    title: 'Hivesigner',
+    description: `Secure way to sign with Hivesigner. Best security for users and developers to integrate industry standard OAuth2 for their Blockchain applications. Transform web 2.0 apps into web 3.0 decentralized apps.`,
     get_started: 'Get started',
     secure_way_sign_in: 'Secure way to sign in'
   },

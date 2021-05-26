@@ -2,7 +2,7 @@
   "name": "hivesigner-ui",
   "version": "1.0.0",
   "private": true,
-  "homepage": "TODO: Add homepage",
+  "homepage": "https://hivesigner.com",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ecency/hivesigner-ui/issues"
@@ -17,13 +17,14 @@
     "test": "jest"
   },
   "contributors": [
-    "Feruz Muradov",
-    "Ildar Timerbaev",
-    "Fabien Marino",
-    "Wiktor Tkaczyński",
-    "Johan Nordberg",
-    "Nico Wehmöller",
-    "Mahdi Yari"
+    "Feruz Muradov (https://ecency.com/@good-karma)",
+    "Ildar Timerbaev (https://ecency.com/@dkildar)",
+    "Dmytro Khomenchuk (https://ecency.com/@zetrix)",
+    "Fabien Marino (https://ecency.com/@fabien)",
+    "Wiktor Tkaczyński (https://ecency.com/@sekhmet)",
+    "Johan Nordberg (https://ecency.com/@jnordberg)",
+    "Nico Wehmöller (https://ecency.com/@wehmoen)",
+    "Mahdi Yari (https://ecency.com/@mahdiyari)"
   ],
   "dependencies": {
     "@hiveio/dhive": "^0.14.12",

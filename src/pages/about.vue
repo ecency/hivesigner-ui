@@ -2,7 +2,7 @@
   <single-page-layout :title="$t('about.about')">
     <div class="p-6 text-lg">
       <div class="container-sm mx-auto">
-        <h2 class="text-4xl text-black font-bold mb-8">{{ pkg.name }}</h2>
+        <h2 class="text-4xl text-black font-bold mb-8">{{ $t('index.title') }}</h2>
         <div class="mb-4 text-lg text-black-400">
           <p class="mb-8">
             {{ $t('index.description') }}
