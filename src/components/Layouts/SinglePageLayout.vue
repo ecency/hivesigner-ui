@@ -18,7 +18,7 @@
       <span class="text-primary text-center text-3xl sm:text-5xl">{{ title }}</span>
     </router-link>
     <slot></slot>
-    <div class="sticky bottom-0 bg-white">
+    <div class="sticky bottom-0 bg-white w-full">
       <Navigation class="container-sm mx-auto w-full mt-20 hidden sm:flex py-8" />
     </div>
   </div>
