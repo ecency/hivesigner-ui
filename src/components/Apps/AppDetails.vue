@@ -28,7 +28,7 @@
             <p class="font-medium mb-2 text-black-400 text-lg">{{ $t('apps.creator') }}</p>
             <p class="mb-2">
               <a
-                :href="'https://hive.blog/@' + profile.creator"
+                :href="'https://ecency.com/@' + profile.creator"
                 target="_blank"
                 class="text-black hover:underline items-center flex"
               >

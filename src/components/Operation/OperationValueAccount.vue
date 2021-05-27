@@ -1,6 +1,6 @@
 <template>
   <a
-    :href="'https://hive.blog/@' + value"
+    :href="'https://ecency.com/@' + value"
     target="_blank"
     class="inline-flex items-center hover:underline"
   >
