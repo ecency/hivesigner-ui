@@ -144,6 +144,7 @@ export default {
     transaction_id: 'Transaction id',
   },
   developers: {
+    developers: 'Developers',
     description: `You’ve found the HiveSigner developer documentation! This page dedicated to showing you all the ways that you can use HiveSigner to make cool stuff.`,
     1: {
       title: '1. Add new app',
