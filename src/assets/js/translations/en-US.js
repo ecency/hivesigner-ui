@@ -139,7 +139,7 @@ export default {
     confirm_transaction: 'Confirm transaction',
     success_title: 'Transaction has been successfully broadcasted',
     failure_title: 'Your transaction was not successfully broadcasted',
-    back_to_sign: 'Back to Sign transaction',
+    back_to_sign: 'Back to Signer',
     error_message: 'Error message',
     transaction_id: 'Transaction id',
   },
