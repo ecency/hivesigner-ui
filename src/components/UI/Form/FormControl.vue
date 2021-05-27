@@ -20,12 +20,14 @@ import { Component, Prop, Vue, Emit } from 'nuxt-property-decorator'
 import CheckboxFormControl from './CheckboxFormControl.vue'
 import BaseFormControl from './BaseFormControl.vue'
 import SelectFormControl from './SelectFormControl.vue'
+import TextareaFormControl from './TextareaFormControl.vue'
 
 @Component({
   components: {
     CheckboxFormControl,
     BaseFormControl,
     SelectFormControl,
+    TextareaFormControl,
   }
 })
 export default class FormControl extends Vue {
@@ -47,7 +49,8 @@ export default class FormControl extends Vue {
   @Prop({
     type: String,
     default: 'text',
-    validator: value => ['text', 'password', 'select', 'checkbox', 'number'].includes(value),
+    validator: value =>
+      ['text', 'password', 'select', 'checkbox', 'number', 'textarea'].includes(value),
   })
   private type!: string
 
@@ -86,6 +89,8 @@ export default class FormControl extends Vue {
         return 'checkbox-form-control'
       case 'select':
         return 'select-form-control'
+      case 'textarea':
+        return 'textarea-form-control'
       default:
         return 'base-form-control'
     }
