@@ -7,45 +7,43 @@
         :success-message="successMessage"
         :failure-message="failureMessage"
       />
-      <div class="container-sm mx-auto">
-        <div v-if="!failed && !transactionId">
-          <Operation
-            v-for="(operation, key) in parsed.tx.operations"
-            :operation="operation"
-            :key="key"
-          />
-          <div class="alert alert-warning mb-6" v-if="parsed.params.callback">
-            {{ $t('sign.going_redirect_to') }}
-            <span class="text-black">
+      <div class="container-sm mx-auto" v-if="!failed && !transactionId">
+        <Operation
+          v-for="(operation, key) in parsed.tx.operations"
+          :operation="operation"
+          :key="key"
+        />
+        <div class="alert alert-warning mb-6" v-if="parsed.params.callback">
+          {{ $t('sign.going_redirect_to') }}
+          <span class="text-black">
               {{ parsed.params.callback | parseUrl }}
             </span>.
-          </div>
-          <div
-            class="alert alert-warning mb-6"
-            v-if="username && hasRequiredKey === false"
-            v-html="$t('authorize.requires_active_key')"
-          ></div>
-          <div class="mb-6">
-            <router-link
-              :to="{ name: 'login', query: { redirect: this.$route.fullPath, authority } }"
-              class="button button-primary mr-2 mb-2 inline-block"
-              v-if="!username || hasRequiredKey === false"
-            >
-              {{ $t('common.continue') }}
-            </router-link>
-            <button
-              type="submit"
-              class="button-success mr-2 mb-2"
-              :disabled="loading"
-              @click="handleSubmit"
-              v-else
-            >
-              {{ this.$t(parsed.params.no_broadcast ? 'sign.sign' : 'sign.approve') }}
-            </button>
-            <button class="mb-2" @click.prevent="handleReject">
-              {{ $t('common.cancel') }}
-            </button>
-          </div>
+        </div>
+        <div
+          class="alert alert-warning mb-6"
+          v-if="username && hasRequiredKey === false"
+          v-html="$t('authorize.requires_active_key')"
+        ></div>
+        <div class="mb-6">
+          <router-link
+            :to="{ name: 'login', query: { redirect: this.$route.fullPath, authority } }"
+            class="button button-primary mr-2 mb-2 inline-block"
+            v-if="!username || hasRequiredKey === false"
+          >
+            {{ $t('common.continue') }}
+          </router-link>
+          <button
+            type="submit"
+            class="button-success mr-2 mb-2"
+            :disabled="loading"
+            @click="handleSubmit"
+            v-else
+          >
+            {{ this.$t(parsed.params.no_broadcast ? 'sign.sign' : 'sign.approve') }}
+          </button>
+          <button class="mb-2" @click.prevent="handleReject">
+            {{ $t('common.cancel') }}
+          </button>
         </div>
       </div>
     </div>

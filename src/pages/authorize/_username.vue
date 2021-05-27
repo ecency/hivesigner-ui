@@ -1,30 +1,36 @@
 <template>
-  <div class="font-old">
-    <Header :title="$t('authorize.authorize_active')"/>
-    <div class="p-6">
-      <div class="container-sm mx-auto">
-        <authorize-form
-          v-if="!hasAuthority && !failed && !transactionId"
-          :username="username"
-          :account="account"
-          :authority="authority"
-          :loading="loading"
-          @submit="handleSubmit"
-          @loading="onLoadingChange"
-          @reject="handleReject"
-        />
-        <already
-          v-if="hasAuthority && !failed && !transactionId"
-          action="authorized"
-          :username="username"
-          :authority="authority"
-          :callback="callback"
-        />
-        <Error v-if="!loading && failed" :error="error"/>
-        <Confirmation v-if="!loading && !!transactionId" :id="transactionId"/>
-      </div>
+  <single-page-layout
+    :title="$t('authorize.authorize')"
+    :flat="!loading && (failed || !!transactionId)"
+  >
+    <transaction-status
+      v-if="!loading && (failed || !!transactionId)"
+      :status="failed ? 'failure' : 'success'"
+      :success-message="successMessage"
+      :failure-message="failureMessage"
+    />
+    <div class="container-sm mx-auto" v-if="!failed && !transactionId">
+      <authorize-form
+        v-if="!hasAuthority && !failed && !transactionId"
+        :username="username"
+        :account="account"
+        :authority="authority"
+        :loading="loading"
+        @submit="handleSubmit"
+        @loading="onLoadingChange"
+        @reject="handleReject"
+      />
+      <already
+        v-if="hasAuthority && !failed && !transactionId"
+        action="authorized"
+        :username="username"
+        :authority="authority"
+        :callback="callback"
+      />
+      <Error v-if="!loading && failed" :error="error"/>
+      <Confirmation v-if="!loading && !!transactionId" :id="transactionId"/>
     </div>
-  </div>
+  </single-page-layout>
 </template>
 
 <script lang="ts">
@@ -33,8 +39,11 @@ import { getAuthority } from '~/utils'
 import { AuthModule } from '~/store'
 import { Authority } from '~/enums'
 import { Account, TransactionConfirmation } from '@hiveio/dhive'
+import SinglePageLayout from '../../components/Layouts/SinglePageLayout.vue'
+import TransactionStatus from '../../components/TransactionStatus.vue'
 
 @Component({
+  components: { TransactionStatus, SinglePageLayout },
   layout: 'page'
 })
 export default class AuthorizeUsername extends Vue {
@@ -69,6 +78,14 @@ export default class AuthorizeUsername extends Vue {
       return auths.indexOf(this.username) !== -1
     }
     return false
+  }
+
+  private get successMessage(): string {
+    return `<span class="text-gray">${this.$t('sign.transaction_id')}:</span> <a href="https://hiveblocks.com/tx/${this.transactionId}" target="_blank" class="text-black hover:underline cursor-pointer">${this.transactionId}</a>`
+  }
+
+  private get failureMessage(): string {
+    return `<span class="text-gray">${this.$t('sign.error_message')}:</span> ${this.error}`
   }
 
   private updateAccount(data: any): Promise<TransactionConfirmation> {
