@@ -113,7 +113,6 @@ export default class Apps extends Vue {
 
   private openModal(username: string): void {
     this.selectedApp = username
-    console.log(this.modalRef)
     this.modalRef.show()
   }
 

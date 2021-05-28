@@ -5,7 +5,6 @@ import * as hiveuri from 'hive-uri'
 // TODO: Move it from utils
 let network = process.env.BROADCAST_NETWORK || 'mainnet';
 let servers = network === 'testnet' ? DEFAULT_TESTNET_SERVER : DEFAULT_SERVER;
-console.log(servers);
 let rawClient = new Client(servers, CLIENT_OPTIONS)
 
 const handler = {
