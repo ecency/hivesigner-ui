@@ -64,6 +64,7 @@ export default class Navigation extends Vue {
       { label: this.$t('footer.signs'), to: '/signs' },
       { label: this.$t('footer.documentation'), href: 'https://docs.hivesigner.com/' },
       { label: this.$t('footer.about'), to: '/about' },
+      //{ label: this.$t('footer.network', {network: process.env.BROADCAST_NETWORK === 'testnet' ? 'T' : '' }), to: '/about' },
     ]
   }
 }

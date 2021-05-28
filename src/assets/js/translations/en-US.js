@@ -12,7 +12,7 @@ export default {
     title: 'Hivesigner',
     description: `Secure way to sign with Hivesigner. Best security for users and developers to integrate industry standard OAuth2 for their Blockchain applications. Transform web 2.0 apps into web 3.0 decentralized apps.`,
     get_started: 'Get started',
-    secure_way_sign_in: 'Secure way to sign in'
+    secure_way_sign_in: 'Secure way to sign'
   },
   about: {
     about: 'About',
@@ -128,7 +128,8 @@ export default {
     developers: 'Developers',
     about: 'About',
     documentation: 'Documentation',
-    signs: 'Signer'
+    signs: 'Signer',
+    network: `{network}`
   },
   open_external: `We recommend you to use the HiveSigner desktop app. If you don't have this, you can download it from the <a href="{homepage}" target="_blank">official site</a>.`,
   open_desktop_app: 'Open desktop app',
