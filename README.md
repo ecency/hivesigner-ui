@@ -1,4 +1,10 @@
-# hivesigner-ui
+# Hivesigner UI
+
+## Environment variable
+
+Optional env variable:
+
+`BROADCAST_NETWORK` could be either `'mainnet'` or `'testnet'`.
 
 ## Build Setup
 

@@ -109,12 +109,14 @@ export default class Auths extends Vue {
 
   private get publicKeys(): Record<string, string> {
     const { keys } = AuthModule
+    const network = process.env.BROADCAST_NETWORK || 'mainnet'
+
     return Object.keys(keys).reduce<Record<string, string>>((acc, b) => {
       if (!keys[b]) {
         return acc
       }
       acc[b] = privateKeyFrom(keys[b])
-        .createPublic()
+        .createPublic(network==='testnet'?'TST':'SMT')
         .toString()
       return acc
     }, {})

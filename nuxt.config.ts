@@ -67,6 +67,10 @@ export default {
 
   i18n,
 
+  env: {
+    BROADCAST_NETWORK: process.env.BROADCAST_NETWORK || 'mainnet'
+  },
+
   // router
   router: {
     extendRoutes(routes: any[]) {

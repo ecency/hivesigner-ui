@@ -1,10 +1,12 @@
-import { CLIENT_OPTIONS, DEFAULT_SERVER, EXPIRE_TIME } from '~/consts'
+import { CLIENT_OPTIONS, DEFAULT_SERVER, DEFAULT_TESTNET_SERVER, EXPIRE_TIME } from '~/consts'
 import { Client } from '@hiveio/dhive'
 import * as hiveuri from 'hive-uri'
 
 // TODO: Move it from utils
-
-let rawClient = new Client(DEFAULT_SERVER, CLIENT_OPTIONS)
+let network = process.env.BROADCAST_NETWORK || 'mainnet';
+let servers = network === 'testnet' ? DEFAULT_TESTNET_SERVER : DEFAULT_SERVER;
+console.log(servers);
+let rawClient = new Client(servers, CLIENT_OPTIONS)
 
 const handler = {
   get(target: any, prop: string) {
