@@ -1,5 +1,9 @@
 <template>
-  <Nuxt />
+  <div class="h-full">
+    <Nuxt/>
+    <portal-target name="side-modal" />
+    <portal-target name="modal" />
+  </div>
 </template>
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'

@@ -1,4 +1,6 @@
-export function processValue(schema: any, key: string, value: any, { vestsToSP }: any): any {
+import { Operation } from '../models'
+
+export function processValue(schema: Operation['schema'], key: string, value: string | boolean, { vestsToSP }: Record<string, number>): string | number | boolean {
   const { type, defaultValue, maxLength } = schema[key]
   const realValue = !value && typeof defaultValue !== 'undefined' ? defaultValue : value
   switch (type) {

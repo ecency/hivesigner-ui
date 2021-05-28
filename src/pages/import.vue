@@ -50,17 +50,13 @@
 </template>
 
 <script lang="ts">
-import triplesec from 'triplesec'
 import PasswordValidator from 'password-validator'
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
 import {
   buildSearchParams,
-  client,
+  client, encrypt,
   getAuthority,
-  getKeys,
-  isChromeExtension,
   isValidUrl,
-  signComplete
 } from '~/utils'
 import { AccountsModule, AuthModule, PersistentFormsModule } from '~/store'
 import { ERROR_INVALID_CREDENTIALS } from '~/consts'
@@ -94,7 +90,7 @@ export default class Import extends Vue {
   private requestId = this.$route.query.requestId as string
   private clientId = this.$route.params.clientId || this.$route.query.client_id as string
   private app = null
-  private appProfile: Record<string, any> = {}
+  private appProfile: Record<string, string> = {}
   private callback = this.$route.query.redirect_uri as string
   private uri = `hive =//login-request/${this.$route.params.clientId}${buildSearchParams(this.$route)}`
 
@@ -117,7 +113,7 @@ export default class Import extends Vue {
   }
 
   private get step(): number {
-    return PersistentFormsModule.import.step
+    return PersistentFormsModule.import.step as number
   }
 
   private set step(value: number) {
@@ -125,7 +121,7 @@ export default class Import extends Vue {
   }
 
   private get username(): string {
-    return PersistentFormsModule.import.username
+    return PersistentFormsModule.import.username as string
   }
 
   private set username(value: string) {
@@ -133,7 +129,7 @@ export default class Import extends Vue {
   }
 
   private get password(): string {
-    return PersistentFormsModule.import.password
+    return PersistentFormsModule.import.password as string
   }
 
   private set password(value: string) {
@@ -141,7 +137,7 @@ export default class Import extends Vue {
   }
 
   private get importKey(): string {
-    return PersistentFormsModule.import.key
+    return PersistentFormsModule.import.key as string
   }
 
   private set importKey(value: string) {
@@ -149,7 +145,7 @@ export default class Import extends Vue {
   }
 
   private get keyConfirmation(): string {
-    return PersistentFormsModule.import.keyConfirmation
+    return PersistentFormsModule.import.keyConfirmation as string
   }
 
   private set keyConfirmation(value: string) {
@@ -170,24 +166,24 @@ export default class Import extends Vue {
       this.redirected.includes('/revoke')
   }
 
-  private get errors(): Record<string, any> {
-    const current: Record<string, any> = {}
+  private get errors(): Record<string, string> {
+    const current: Record<string, string> = {}
     const { username, password, importKey, keyConfirmation } = this
     if (!username) {
-      current.username = this.$t('login.username_required')
+      current.username = this.$t('login.username_required') as string
     }
     if (!password) {
-      current.password = this.$t('login.password_required')
+      current.password = this.$t('login.password_required') as string
     }
     if (!importKey) {
-      current.key = this.$t('login.hs_password_required')
+      current.key = this.$t('login.hs_password_required') as string
     } else if (!passphraseSchema.validate(importKey as string)) {
-      current.key = this.$t('login.hs_password_length')
+      current.key = this.$t('login.hs_password_length') as string
     }
     if (!keyConfirmation) {
-      current.keyConfirmation = this.$t('login.hs_password_confirmation_required')
+      current.keyConfirmation = this.$t('login.hs_password_confirmation_required') as string
     } else if (keyConfirmation !== importKey) {
-      current.keyConfirmation = this.$t('login.hs_password_not_match')
+      current.keyConfirmation = this.$t('login.hs_password_not_match') as string
     }
     return current
   }
@@ -229,10 +225,6 @@ export default class Import extends Vue {
     this.resetForm()
   }
 
-  private login(data: any): Promise<any> {
-    return AuthModule.login(data)
-  }
-
   private async loadAppProfile(): Promise<void> {
     this.showLoading = true
     const app = this.clientId
@@ -241,10 +233,7 @@ export default class Import extends Vue {
       this.app = app
       try {
         this.appProfile = JSON.parse(accounts[0].posting_json_metadata).profile
-        if (
-          !isChromeExtension() &&
-          (!this.appProfile.redirect_uris.includes(this.callback) || !isValidUrl(this.callback))
-        ) {
+        if ((!this.appProfile.redirect_uris.includes(this.callback) || !isValidUrl(this.callback))) {
           this.failed = true
         }
       } catch (e) {
@@ -269,7 +258,7 @@ export default class Import extends Vue {
   private async startLogin(): Promise<void> {
     this.isLoading = true
     const { username, password, authority } = this
-    const keys = await getKeys(username, password)
+    const keys = await AccountsModule.getAuthoritiesKeys({ username, password })
     if (authority && !keys[authority]) {
       this.isLoading = false
       this.error = this.$t('import.master_key', { authority }) as string
@@ -279,7 +268,7 @@ export default class Import extends Vue {
     this.showLoading = true
 
     try {
-      await this.login({ username: this.username, keys })
+      await AuthModule.login({ username: this.username, keys })
       const redirect = this.$route.query.redirect as string
 
       if (this.redirected !== '' && !this.redirected.includes('/login-request')) {
@@ -322,9 +311,6 @@ export default class Import extends Vue {
           console.error('Failed to login', err)
           this.signature = ''
           this.failed = true
-          if (this.requestId) {
-            signComplete(this.requestId, err, null)
-          }
           this.loading = false
           this.showLoading = false
         }
@@ -338,26 +324,22 @@ export default class Import extends Vue {
 
   private async submitForm(): Promise<void> {
     this.isLoading = true
-    const keys = await getKeys(this.username, this.password)
-    // @ts-ignore
-    triplesec.encrypt(
-      {
-        data: new triplesec.Buffer(JSON.stringify(keys)),
-        key: new triplesec.Buffer(this.importKey),
-      },
-      (encryptError, buff) => {
-        if (encryptError) {
-          this.isLoading = false
-          console.log('err', encryptError)
-          return
+    const keys = await AccountsModule.getAuthoritiesKeys({
+      username: this.username,
+      password: this.password
+    })
+    try {
+      const buff = await encrypt(keys, this.importKey)
+      AccountsModule.saveAccount({
+        username: this.username,
+        keys: {
+          password: buff.toString('hex'),
         }
-        AccountsModule.saveAccount({
-          username: this.username,
-          key: buff.toString('hex'),
-        })
-        this.startLogin()
-      },
-    )
+      })
+      await this.startLogin()
+    } catch (e) {
+      this.isLoading = false
+    }
   }
 }
 </script>

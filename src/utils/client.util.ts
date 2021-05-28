@@ -1,10 +1,11 @@
-import { CLIENT_OPTIONS, DEFAULT_SERVER, EXPIRE_TIME } from '~/consts'
+import { CLIENT_OPTIONS, DEFAULT_SERVER, DEFAULT_TESTNET_SERVER, EXPIRE_TIME } from '~/consts'
 import { Client } from '@hiveio/dhive'
 import * as hiveuri from 'hive-uri'
 
 // TODO: Move it from utils
-
-let rawClient = new Client(DEFAULT_SERVER, CLIENT_OPTIONS)
+let network = process.env.BROADCAST_NETWORK || 'mainnet';
+let servers = network === 'testnet' ? DEFAULT_TESTNET_SERVER : DEFAULT_SERVER;
+let rawClient = new Client(servers, CLIENT_OPTIONS)
 
 const handler = {
   get(target: any, prop: string) {
@@ -17,8 +18,7 @@ const handler = {
   },
 }
 
-// TODO: Fix typings
-export const client = new Proxy({}, handler)
+export const client: Client = new Proxy({}, handler)
 
 export async function resolveTransaction(parsed: any, signer: string) {
   const props = await client.database.getDynamicGlobalProperties()

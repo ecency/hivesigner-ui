@@ -15,7 +15,6 @@ export const ADDITIONAL_ROUTES = [
     path: '/login-request/:clientId',
     name: 'login-request-app',
     beforeEnter(to: Route, from: Route, next: any): void {
-      console.log(to)
       next({
         name: 'login',
         query: to.fullPath,

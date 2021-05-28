@@ -9,6 +9,7 @@
     :autocomplete="autocomplete"
     :tooltip="tooltip"
     :options="options"
+    :placeholder="placeholder"
     @input="onInput"
     @blur="onBlur"
   />
@@ -19,17 +20,19 @@ import { Component, Prop, Vue, Emit } from 'nuxt-property-decorator'
 import CheckboxFormControl from './CheckboxFormControl.vue'
 import BaseFormControl from './BaseFormControl.vue'
 import SelectFormControl from './SelectFormControl.vue'
+import TextareaFormControl from './TextareaFormControl.vue'
 
 @Component({
   components: {
     CheckboxFormControl,
     BaseFormControl,
     SelectFormControl,
+    TextareaFormControl,
   }
 })
 export default class FormControl extends Vue {
   @Prop()
-  private value!: any
+  private value!: string | string[]
 
   @Prop({
     type: String,
@@ -46,7 +49,8 @@ export default class FormControl extends Vue {
   @Prop({
     type: String,
     default: 'text',
-    validator: value => ['text', 'password', 'select', 'checkbox'].includes(value),
+    validator: value =>
+      ['text', 'password', 'select', 'checkbox', 'number', 'textarea'].includes(value),
   })
   private type!: string
 
@@ -68,6 +72,12 @@ export default class FormControl extends Vue {
   private tooltip!: string
 
   @Prop({
+    type: String,
+    default: '',
+  })
+  private placeholder!: string
+
+  @Prop({
     type: Array,
     default: () => [],
   })
@@ -79,6 +89,8 @@ export default class FormControl extends Vue {
         return 'checkbox-form-control'
       case 'select':
         return 'select-form-control'
+      case 'textarea':
+        return 'textarea-form-control'
       default:
         return 'base-form-control'
     }

@@ -4,26 +4,34 @@ export default {
     continue_to: 'Continue to {item}',
     cancel: 'Cancel',
     try_again: 'Please try again later.',
-    save: 'Save'
+    save: 'Save',
+    yes: 'Yes',
+    no: 'No'
   },
   index: {
-    description: `Secure way to sign with Hivesigner. Best security for users and developers to integrate industry standard OAuth2.`,
+    title: 'Hivesigner',
+    description: `Secure way to sign with Hivesigner. Best security for users and developers to integrate industry standard OAuth2 for their Blockchain applications. Transform web 2.0 apps into web 3.0 decentralized apps.`,
     get_started: 'Get started',
-    secure_way_sign_in: 'Secure way to sign in'
+    secure_way_sign_in: 'Secure way to sign'
   },
   about: {
     about: 'About',
     website: 'Website',
     download_logo: 'Download logo',
     report_bug: 'Report a bug',
-    contributors: 'Contributors'
+    contributors: 'Contributors',
+    maintained: 'Maintained by'
   },
   accounts: {
     accounts: 'Accounts',
     empty: ` There isn't any account stored on this device, <a href="/import" target="_blank" class="text-black hover:underline">click here</a> if you want to import an account.`,
-    logout: 'Log out',
+    delete: 'Delete account',
     unlock: 'Unlock',
-    auths: 'Auths'
+    auths: 'Authorities',
+    add_another: 'Add another account',
+    sign_transactions: 'Sign transactions',
+    delete_account: 'Delete account',
+    delete_account_confirm: `<div>Do you want to delete account?</div><div>This will remove account from local storage.</div>`
   },
   apps: {
     store: 'App store',
@@ -36,10 +44,16 @@ export default {
     visit: 'Visit'
   },
   auths: {
-    auths: 'Auths',
+    auths: 'Authorities',
     type: 'Type',
     key: 'Key',
-    weight: 'Weight'
+    weight: 'Weight',
+    reveal_pub_key: 'Reveal public key',
+    reveal_private_key: 'Reveal private key',
+    import_private_key: 'Import private key',
+    copy: 'Copy',
+    successfully_copied: 'The key copied to clipboard',
+    successfully_imported: 'Authorities keys imported successfully!'
   },
   errors: {
     something_wrong: 'Oops, something went wrong.',
@@ -75,7 +89,10 @@ export default {
     add_another_account: 'Add another account',
     dont_have_an_account: 'Don`t have an account?',
     sign_up_here: 'Signup here',
-    login: 'Login'
+    login: 'Login',
+    private_key: 'Private key',
+    import_private_key: 'Import private key',
+    incorrect_private_key: 'Private key is not correct'
   },
   login: {
     switch_an_account: 'Switch an account',
@@ -110,7 +127,9 @@ export default {
     settings: 'Settings',
     developers: 'Developers',
     about: 'About',
-    documentation: 'Documentation'
+    documentation: 'Documentation',
+    signs: 'Signer',
+    network: `{network}`
   },
   open_external: `We recommend you to use the HiveSigner desktop app. If you don't have this, you can download it from the <a href="{homepage}" target="_blank">official site</a>.`,
   open_desktop_app: 'Open desktop app',
@@ -119,9 +138,15 @@ export default {
     approve: 'Approve',
     going_redirect_to: 'You are going to get redirected to',
     confirm_transaction: 'Confirm transaction',
+    success_title: 'Transaction has been successfully broadcasted',
+    failure_title: 'Your transaction was not successfully broadcasted',
+    back_to_sign: 'Back to Signer',
+    error_message: 'Error message',
+    transaction_id: 'Transaction id',
   },
   developers: {
-    description: `You’ve found the HiveSigner developer documentation! This page dedicated to showing you all the ways that you can use HiveSigner to make cool stuff.`,
+    developers: 'Developers',
+    description: `Check our new documentation page here <a href="https://docs.hivesigner.com" class="text-black hover:underline" target="_blank">https://docs.hivesigner.com</a>`,
     1: {
       title: '1. Add new app',
       message: `To create a new app on HiveSigner you need a Hive account for it. If you don't have one yet you can create one on
@@ -171,7 +196,7 @@ export default {
       read_wiki: 'Read more about it on our Wiki page'
     },
     7: {
-      title: '7. Contact us',
+      title: 'Contact us',
       message: `If you believe you're experiencing a bug with our API or want to report incorrect
             documentation, open an issue on our issue tracker. For a more real-time avenue of
             communication, check out the official Discord server. There you'll find community
@@ -209,5 +234,10 @@ export default {
     sandbox: 'Sandbox',
     secret: 'Secret',
     blank_field: 'Leave this field blank to keep your secret unchanged.'
-  }
+  },
+  signs: {
+    title: 'Sign transaction',
+    search_placeholder: 'Please type name of transaction that need to sign',
+    sign: 'Sign'
+  },
 }

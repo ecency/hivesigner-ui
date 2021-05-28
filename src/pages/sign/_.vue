@@ -1,57 +1,58 @@
 <template>
-  <div class="font-old">
-    <Header :title="title"/>
-    <div v-if="parsed && uriIsValid" class="p-6">
-      <div class="container-sm mx-auto">
-        <Error v-if="!loading && failed" :error="error"/>
-        <Confirmation v-if="!loading && !!transactionId" :id="transactionId" />
-        <div v-if="!failed && !transactionId">
-          <Operation
-            v-for="(operation, key) in parsed.tx.operations"
-            :operation="operation"
-            :key="key"
-          />
-          <div class="alert alert-warning mb-6" v-if="parsed.params.callback">
-            {{ $t('sign.going_redirect_to') }}
-            <span class="text-black">
+  <single-page-layout :title="title" :flat="!loading && (failed || !!transactionId)">
+    <div v-if="parsed && uriIsValid" class="sm:p-6">
+      <transaction-status
+        v-if="!loading && (failed || !!transactionId)"
+        :status="failed ? 'failure' : 'success'"
+        :success-message="successMessage"
+        :failure-message="failureMessage"
+      />
+      <div class="container-sm mx-auto" v-if="!failed && !transactionId">
+        <Operation
+          v-for="(operation, key) in parsed.tx.operations"
+          :operation="operation"
+          :key="key"
+        />
+        <div class="alert alert-warning mb-6" v-if="parsed.params.callback">
+          {{ $t('sign.going_redirect_to') }}
+          <span class="text-black">
               {{ parsed.params.callback | parseUrl }}
             </span>.
-          </div>
-          <div
-            class="alert alert-warning mb-6"
-            v-if="username && hasRequiredKey === false"
-            v-html="$t('authorize.requires_active_key')"
-          ></div>
-          <div class="mb-6">
-            <router-link
-              :to="{ name: 'login', query: { redirect: this.$route.fullPath, authority } }"
-              class="button button-primary mr-2 mb-2 inline-block"
-              v-if="!username || hasRequiredKey === false"
-            >
-              {{ $t('common.continue') }}
-            </router-link>
-            <button
-              type="submit"
-              class="button-success mr-2 mb-2"
-              :disabled="loading"
-              @click="handleSubmit"
-              v-else
-            >
-              {{ this.$t(parsed.params.no_broadcast ? 'sign.sign' : 'sign.approve') }}
-            </button>
-            <button class="mb-2" @click.prevent="handleReject">
-              {{ $t('common.cancel') }}
-            </button>
-          </div>
+        </div>
+        <div
+          class="alert alert-warning mb-6"
+          v-if="username && hasRequiredKey === false"
+          v-html="$t('authorize.requires_active_key')"
+        ></div>
+        <div class="mb-6">
+          <router-link
+            :to="{ name: 'login', query: { redirect: this.$route.fullPath, authority } }"
+            class="button button-primary mr-2 mb-2 inline-block"
+            v-if="!username || hasRequiredKey === false"
+          >
+            {{ $t('common.continue') }}
+          </router-link>
+          <button
+            type="submit"
+            class="button-success mr-2 mb-2"
+            :disabled="loading"
+            @click="handleSubmit"
+            v-else
+          >
+            {{ this.$t(parsed.params.no_broadcast ? 'sign.sign' : 'sign.approve') }}
+          </button>
+          <button class="mb-2" @click.prevent="handleReject">
+            {{ $t('common.cancel') }}
+          </button>
         </div>
       </div>
     </div>
-    <div class="p-6" v-else>
+    <div class="sm:p-6" v-else>
       <div class="container-sm mx-auto alert alert-error mb-6">
         {{ $t('errors.unknown') }}
       </div>
     </div>
-  </div>
+  </single-page-layout>
 </template>
 
 <script lang="ts">
@@ -65,21 +66,23 @@ import {
   legacyToHiveUri,
   processTransaction,
   resolveTransaction,
-  signComplete,
 } from '~/utils'
 import { AuthModule, SettingsModule } from '~/store'
 import { Authority } from '~/enums'
+import SinglePageLayout from '~/components/Layouts/SinglePageLayout.vue'
+import TransactionStatus from '../../components/TransactionStatus.vue'
+import { DecodeResult } from 'hive-uri'
 
 @Component({
-  layout: 'page',
+  components: { TransactionStatus, SinglePageLayout },
 })
 export default class Sign extends Vue {
-  private parsed = null
+  private parsed: DecodeResult | null = null
   private uriIsValid = true
   private loading = false
   private transactionId = ''
   private failed = false
-  private error = false
+  private error = ''
   private hasRequiredKey = null
   private authority = getAuthority(this.$route.query.authority as Authority)
 
@@ -109,6 +112,14 @@ export default class Sign extends Vue {
     }
   }
 
+  private get successMessage(): string {
+    return `<span class="text-gray">${this.$t('sign.transaction_id')}:</span> <a href="https://hiveblocks.com/tx/${this.transactionId}" target="_blank" class="text-black hover:underline cursor-pointer">${this.transactionId}</a>`
+  }
+
+  private get failureMessage(): string {
+    return `<span class="text-gray">${this.$t('sign.error_message')}:</span> ${this.error}`
+  }
+
   private mounted(): void {
     this.parseUri(this.uri)
     if (!this.authority && this.parsed && this.parsed.tx) {
@@ -120,7 +131,7 @@ export default class Sign extends Vue {
   }
 
   private parseUri(uri): void {
-    let parsed
+    let parsed: DecodeResult
     try {
       parsed = hiveuri.decode(uri)
     } catch (err) {
@@ -143,6 +154,7 @@ export default class Sign extends Vue {
       signedTx = await AuthModule.sign({ tx, authority: this.authority });
       [sig] = signedTx.signatures
     } catch (err) {
+      this.error = err.message
       console.error('Failed to resolve and sign transaction', err)
     }
     if (!sig) {
@@ -156,17 +168,11 @@ export default class Sign extends Vue {
         confirmation = await AuthModule.broadcast(signedTx)
         this.transactionId = confirmation.id
         this.failed = false
-        if (this.requestId) {
-          signComplete(this.requestId, null, { result: confirmation })
-        }
       } catch (err) {
         this.error = err
         console.error('Failed to broadcast transaction', err)
         this.transactionId = ''
         this.failed = true
-        if (this.requestId) {
-          signComplete(this.requestId, err, null)
-        }
       }
     }
     // Use redirect uri
@@ -186,9 +192,6 @@ export default class Sign extends Vue {
   }
 
   private handleReject(): void {
-    if (this.requestId) {
-      signComplete(this.requestId, 'Request rejected', null)
-    }
     this.failed = false
     this.loading = false
     this.transactionId = ''

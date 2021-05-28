@@ -49,11 +49,11 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import { credentialsValid, getKeys } from '~/utils'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 import { ERROR_INVALID_CREDENTIALS } from '~/consts'
 import { Authority } from '~/enums'
 import FormControl from '../UI/Form/FormControl.vue'
+
 @Component({
   components: { FormControl }
 })
@@ -121,7 +121,10 @@ export default class ImportUserForm extends Vue {
 
   private async submitNext(): Promise<void> {
     this.$emit('loading', true)
-    const invalidCredentials = !(await credentialsValid(this.username, this.password))
+    const invalidCredentials = !(await AccountsModule.isValidCredentials({
+      username: this.username,
+      password: this.password,
+    }))
     this.$emit('loading', false)
     if (invalidCredentials) {
       this.$emit('error', this.$t(ERROR_INVALID_CREDENTIALS))
@@ -131,11 +134,17 @@ export default class ImportUserForm extends Vue {
     if (this.storeAccount) {
       this.$emit('next-step')
     } else {
-      const keys = await getKeys(this.username, this.password)
+      const keys = await AccountsModule.getAuthoritiesKeys({
+        username: this.username,
+        password: this.password,
+      })
       const k = Buffer.from(JSON.stringify(keys))
       AccountsModule.saveAccount({
         username: this.username,
-        key: `${k.toString('hex')}decrypted`
+        keys: {
+          password: `${k.toString('hex')}decrypted`,
+          ...keys,
+        }
       })
       this.$emit('submit')
     }

@@ -17,6 +17,7 @@ export default function ({ store }: Context): void {
         key: oldSnapshot[username],
       })
     )
+    localStorage.removeItem('keychain')
   } catch (_) {
     console.error('Unable to parse old keychain from localstorage')
   }

@@ -45,7 +45,9 @@
           @open-modal="openModal"
         />
       </template>
-      <Footer class="my-6"/>
+      <div class="my-6">
+        <navigation wrappable class="container-sm w-full" />
+      </div>
     </div>
     <SideModal ref="modal" :title="selectedApp">
       <AppDetails :username="selectedApp" @close="closeModal" />
@@ -76,7 +78,7 @@ export default class Apps extends Vue {
   private apps = []
   private selectedApp = null
 
-  private get filteredApps(): any[] {
+  private get filteredApps(): Record<string, string>[] {
     const apps = JSON.parse(JSON.stringify(this.apps))
     return apps
       .sort((a, b) => a.length - b.length)
@@ -111,7 +113,6 @@ export default class Apps extends Vue {
 
   private openModal(username: string): void {
     this.selectedApp = username
-    console.log(this.modalRef)
     this.modalRef.show()
   }
 

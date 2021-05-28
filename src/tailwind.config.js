@@ -54,6 +54,9 @@ module.exports = {
       outline: {
         disabled: 'none',
       },
+      zIndex: {
+        '-1': '-1',
+      }
     },
   },
   plugins: [],

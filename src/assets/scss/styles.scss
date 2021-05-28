@@ -1,10 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
 
 @import 'vars';
+@import "animations";
 @import "fonts";
 @import 'mixins';
 @import 'ui/forms';
-@import "ui/table";
 @import "ui/alerts";
 
 html {
@@ -28,6 +28,11 @@ body {
 .container-sm {
   max-width: 544px;
 }
+
+.container-md {
+  max-width: 689px;
+}
+
 
 b {
   @apply font-bold;

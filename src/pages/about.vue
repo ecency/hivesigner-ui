@@ -1,22 +1,24 @@
 <template>
-  <div class="font-old">
-    <Header :title="$t('about.about')" />
-    <div class="p-6">
+  <single-page-layout :title="$t('about.about')">
+    <div class="p-6 text-lg">
       <div class="container-sm mx-auto">
-        <h2 class="text-3xl text-black-500 font-bold mb-2">{{ pkg.name }}</h2>
+        <h2 class="text-4xl text-black font-bold mb-8">{{ $t('index.title') }}</h2>
         <div class="mb-4 text-lg text-black-400">
-          <p class="mb-2">
+          <p class="mb-8">
             {{ $t('index.description') }}
           </p>
-          <p class="mb-2">Version: {{ pkg.version }}</p>
-          <p class="mb-2" v-if="pkg.license">License: {{ pkg.license }}</p>
+          <p class="mb-8"><span class="text-black">Version:</span> {{ pkg.version }}</p>
+          <p class="mb-8" v-if="pkg.license">
+            <span class="text-black">License:</span>
+            {{pkg.license }}
+          </p>
           <p class="mb-2" v-if="pkg.homepage">
             <a
               :href="pkg.homepage"
               target="_blank"
               class="text-black hover:underline flex items-center"
             >
-              <Icon name="Link" class="mr-2" style="width: 12px; height: 12px;" />
+              <Icon name="Link" class="mr-2" style="width: 18px; height: 18px;"/>
               {{ $t('about.website') }}
             </a>
           </p>
@@ -26,43 +28,56 @@
               target="_blank"
               class="text-black hover:underline flex items-center"
             >
-              <Icon name="Link" class="mr-2" style="width: 12px; height: 12px;" />
+              <Icon name="Link" class="mr-2" style="width: 18px; height: 18px;"/>
               {{ $t('about.download_logo') }}
             </a>
           </p>
-          <p v-if="pkg.bugs">
+          <p v-if="pkg.bugs" class="mb-8">
             <a :href="pkg.bugs.url" target="_blank"
                class="text-black hover:underline flex items-center">
-              <Icon name="Github" class="mr-1" />
+              <Icon name="Github" class="mr-2" style="width: 18px; height: 18px"/>
               {{ $t('about.report_bug') }}
             </a>
           </p>
         </div>
-        <div v-if="contributors.length > 0">
-          <p>{{ $t('about.contributors') }}</p>
+        <div v-if="contributors.length > 0" class="mb-8">
+          <p class="text-black mb-3">{{ $t('about.contributors') }}:</p>
           <p class="mb-2" :key="i" v-for="(contributor, i) in contributors">
             <a
-              class="text-black hover:underline flex items-center"
+              class="text-black-400 hover:underline flex items-center cursor-pointer"
               :href="contributor[3]"
               target="_blank"
+              rel="noopener"
             >
               {{ contributor[1] }}
             </a>
-            <template v-if="i !== contributors.length - 1">,</template>
           </p>
+        </div>
+        <div class="text-black-400">
+          {{ $t('about.maintained') }}
+          <a
+            href="https://ecency.com"
+            class="text-blue-500 hover:underline cursor-pointer"
+            target="_blank"
+            rel="noopener"
+          >
+            Ecency Team
+          </a>
+          .
         </div>
       </div>
     </div>
-  </div>
+  </single-page-layout>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
 import { PACKAGE } from '../consts'
 import Icon from '../components/UI/Icons/Icon.vue'
+import SinglePageLayout from '../components/Layouts/SinglePageLayout.vue'
 
 @Component({
-  components: { Icon },
+  components: { SinglePageLayout, Icon },
   layout: 'page',
 })
 export default class About extends Vue {

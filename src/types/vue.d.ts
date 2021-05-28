@@ -1,8 +1,8 @@
-import { Vue } from 'nuxt-property-decorator'
+import Vue from 'vue'
 
-declare module 'nuxt-property-decorator' {
-
+declare module 'vue/types/vue' {
   interface Vue {
-    $hivesigner: any
+    readonly $hivesigner: any
+    readonly $popupMessages: any
   }
 }

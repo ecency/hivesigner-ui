@@ -1,40 +1,21 @@
 <template>
-  <div class="flex items-center p-3 border rounded overflow-hidden mb-3 justify-between">
-    <div class="flex w-full sm:items-center flex-col sm:flex-row">
-      <h4 class="flex items-center text-black-500 text-xl font-bold my-1.5">
-        <Avatar :username="user" class="mr-2"/>
-        {{ user }}
-      </h4>
-      <div v-if="user === username">
-        <span class="ml-3 text-black-400">Unlocked</span>
-        <router-link class="ml-3 hover:underline cursor-pointer" to="/auths">
-          {{ $t('accounts.auths') }}
-        </router-link>
-        <a
-          class="ml-3 text-primary hover:text-primary-dark cursor-pointer hover:underline"
-          @click="logout"
-        >
-          {{ $t('accounts.logout') }}
-        </a>
-      </div>
-      <span v-else>
-        <router-link class="ml-3 hover:underline cursor-pointer" to="/login?redirect=accounts">
-          {{ $t('accounts.unlock') }}
-        </router-link>
-      </span>
+  <div class="account-item flex flex-col items-center">
+    <div class="relative mb-3">
+      <avatar display="block" :username="user" :size="60" />
+      <i
+        v-if="isCurrentUser"
+        class="absolute bottom-0 right-0 icon-check flex items-center justify-center"
+      >
+        <icon name="check" />
+      </i>
     </div>
-    <a
-      class="float-right text-primary hover:text-primary-dark p-2 cursor-pointer"
-      @click="removeAccount(user)"
-    >
-      <Icon name="Trash"/>
-    </a>
+    <span class="text-sm md:text-base text-black-400">{{ user }}</span>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import { AccountsModule, AuthModule } from '~/store'
+import { AuthModule } from '~/store'
 import Icon from '~/components/UI/Icons/Icon.vue'
 import Avatar from '~/components/Avatar.vue'
 
@@ -52,12 +33,41 @@ export default class AccountItem extends Vue {
     return AuthModule.username
   }
 
-  private logout(): Promise<void> {
-    return AuthModule.logout()
-  }
-
-  private removeAccount(username: string): void {
-    AccountsModule.removeAccount(username)
+  private get isCurrentUser(): boolean {
+    return this.user === this.username
   }
 }
 </script>
+
+<style lang="scss">
+.account-item {
+  .avatar {
+    @screen md {
+      width: 80px !important;
+      height: 80px !important;
+    }
+  }
+
+  .icon-check {
+    width: 21px;
+    height: 21px;
+
+    @apply bg-white rounded-full;
+
+    @screen md {
+      width: 27px;
+      height: 27px;
+    }
+
+    svg {
+      width: 12px;
+      height: 10px;
+
+      @screen md {
+        width: 15px;
+        height: 12px;
+      }
+    }
+  }
+}
+</style>

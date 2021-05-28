@@ -1,12 +1,12 @@
 <template>
   <a
-    :href="'https://hive.blog/@' + value"
+    :href="'https://ecency.com/@' + value"
     target="_blank"
     class="inline-flex items-center hover:underline"
   >
     <Avatar :username="value" :size="22" class="mr-1" />
     {{ value }}
-    <Icon name="Link" class="ml-1" style="width: 11px;height: 11px;" />
+    <Icon name="Link" class="ml-2" style="width: 16px;height: 16px;" />
   </a>
 </template>
 
@@ -18,6 +18,6 @@ import Icon from '../UI/Icons/Icon.vue'
 })
 export default class OperationValueAccount extends Vue {
   @Prop()
-  private value!: any
+  private value!: string
 }
 </script>

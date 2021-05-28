@@ -1,5 +1,5 @@
 <template>
-  <div class="select text-lg relative text-black-500" :class="{ '-opened': open }">
+  <div class="select text-lg relative text-black-500 z-10" :class="{ '-opened': open }">
     <transition name="fade">
       <div
         class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500"
@@ -26,7 +26,7 @@
           v-for="option of options"
           @click="onOptionSelect(option)"
         >
-          {{ option }}
+          {{ option.label || option }}
         </div>
       </div>
     </transition>
@@ -69,7 +69,7 @@ export default class Select extends Vue {
   @Emit('select')
   private onOptionSelect(option: any): any {
     this.hide()
-    return option
+    return option.value || option
   }
 
   @Watch('open')

@@ -1,6 +1,7 @@
 <template>
   <span
-    class="avatar inline-block rounded-full bg-cover bg-no-repeat bg-center bg-gray-300"
+    class="avatar rounded-full bg-cover bg-no-repeat bg-center bg-gray-300"
+    :class="{ [display]: true }"
     :style="styles"
   />
 </template>
@@ -21,6 +22,12 @@ export default class Avatar extends Vue {
     default: 32,
   })
   private size!: number
+
+  @Prop({
+    type: String,
+    default: 'inline-block',
+  })
+  private display!: string
 
   private get styles(): Record<string, string> {
     return {

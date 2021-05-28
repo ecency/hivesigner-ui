@@ -1,5 +1,10 @@
 <template>
-  <span class="inline-block text-gray-600 lowercase">
+  <span
+    class="operation-value inline-block text-gray-600"
+    :class="{ 'responsive-short overflow-hidden w-full': responsiveShort && !schema.type }"
+    :responsive-key-start="value.length > 8 && value.slice(0, 3)"
+    :responsive-key-end="value.length > 8 && value.slice(value.length - 4, value.length - 1)"
+  >
     <template v-if="value && Array.isArray(value)">
       <em v-if="value.length === 0">{{ $t('operations.empty') }}</em>
       <OperationValue v-else v-for="(v, key) in value" :key="key" :value="v" />
@@ -28,7 +33,11 @@
         <OperationValueJson v-else-if="schema.type === 'json'" :value="value" />
         <OperationValueBool v-else-if="schema.type === 'bool'" :value="value" />
         <template v-else-if="schema.type === 'time'">{{ value | dateHeader }}</template>
-        <template v-else>{{ value }}</template>
+        <span v-else-if="schema.type">{{ value }}</span>
+        <template v-else-if="!schema.type && responsiveShort">
+          <span class="block xl:hidden"></span>
+          <span class="hidden xl:block">{{ value }}</span>
+        </template>
       </template>
     </template>
   </span>
@@ -38,6 +47,7 @@
 import { Vue, Prop, Component } from 'nuxt-property-decorator'
 import { AuthModule } from '~/store'
 import { OPERATIONS } from '~/consts'
+import { Operation } from '../../models'
 
 @Component
 export default class OperationValue extends Vue {
@@ -45,17 +55,58 @@ export default class OperationValue extends Vue {
   private value!: any
 
   @Prop()
-  private path!: any
+  private path!: string
 
   @Prop()
   private schemaKey!: string
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  private responsiveShort!: boolean
 
   private get username(): string {
     return AuthModule.username
   }
 
-  private get schema(): any {
+  private get schema(): Operation['schema'][0]['key'] {
     return OPERATIONS[this.path]?.schema[this.schemaKey] || {}
   }
 }
 </script>
+<style lang="scss">
+.operation-value {
+  &.responsive-short {
+    @apply flex justify-between items-end;
+
+    @screen xl {
+      @apply block;
+    }
+
+    span {
+      @apply border-dotted border-b-2 border-gray-600 w-full mb-1.5;
+
+      @screen xl {
+        @apply border-0;
+      }
+    }
+
+    &::before, &::after {
+      @apply block;
+
+      @screen xl {
+        @apply hidden;
+      }
+    }
+
+    &::before {
+      content: attr(responsive-key-start);
+    }
+
+    &::after {
+      content: attr(responsive-key-end);
+    }
+  }
+}
+</style>
