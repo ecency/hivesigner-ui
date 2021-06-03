@@ -1,12 +1,14 @@
 <template>
   <div class="apps-list">
-    <p class="mb-6 font-bold text-black-400 text-lg">{{ title }}</p>
+    <p class="mb-6 font-bold text-black-400 text-lg">
+      {{ title }}
+    </p>
     <Loader v-if="loading && apps.length === 0" class="mb-6 mx-auto" />
-    <div class="grid grid-cols-2 md:grid-cols-4 mb-6" v-else>
+    <div v-else class="grid grid-cols-2 md:grid-cols-4 mb-6">
       <AppItem
         v-for="app in apps.slice(0, 12)"
-        :username="app"
         :key="app"
+        :username="app"
         class="mb-6"
         @select="$emit('open-modal', app)"
       />
@@ -16,8 +18,8 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import AppItem from './AppItem.vue'
 import Loader from '../UI/Loader.vue'
+import AppItem from './AppItem.vue'
 
 @Component({
   components: { Loader, AppItem }
@@ -25,13 +27,13 @@ import Loader from '../UI/Loader.vue'
 export default class AppsList extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private title!: string
 
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private loading!: string
 

@@ -1,6 +1,6 @@
 <template>
   <div class="h-full">
-    <Nuxt/>
+    <Nuxt />
     <portal-target name="side-modal" />
     <portal-target name="modal" />
   </div>
@@ -11,7 +11,7 @@ import { SettingsModule } from '~/store'
 
 @Component
 export default class Default extends Vue {
-  private async created(): Promise<void> {
+  private async created (): Promise<void> {
     await SettingsModule.loadSettings()
     await SettingsModule.getDynamicGlobalProperties()
   }

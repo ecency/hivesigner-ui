@@ -4,7 +4,9 @@
       <Icon name="Logo" style="width: 16px; height: 16px;" class="text-primary" />
     </router-link>
     <slot>
-      <h5 class="ml-4 text-lg text-black-500">{{ title }}</h5>
+      <h5 class="ml-4 text-lg text-black-500">
+        {{ title }}
+      </h5>
     </slot>
   </div>
 </template>
@@ -18,7 +20,7 @@ import Icon from './UI/Icons/Icon.vue'
 export default class Header extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private title!: string
 }

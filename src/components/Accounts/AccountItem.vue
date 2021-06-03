@@ -25,15 +25,15 @@ import Avatar from '~/components/Avatar.vue'
 export default class AccountItem extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private user!: string
 
-  private get username(): string {
+  private get username (): string {
     return AuthModule.username
   }
 
-  private get isCurrentUser(): boolean {
+  private get isCurrentUser (): boolean {
     return this.user === this.username
   }
 }

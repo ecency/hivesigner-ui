@@ -9,7 +9,7 @@
       :success-message="successMessage"
       :failure-message="failureMessage"
     />
-    <div class="container-sm mx-auto" v-if="!failed && !transactionId">
+    <div v-if="!failed && !transactionId" class="container-sm mx-auto">
       <authorize-form
         v-if="!hasAuthority && !failed && !transactionId"
         :username="username"
@@ -27,20 +27,20 @@
         :authority="authority"
         :callback="callback"
       />
-      <Error v-if="!loading && failed" :error="error"/>
-      <Confirmation v-if="!loading && !!transactionId" :id="transactionId"/>
+      <Error v-if="!loading && failed" :error="error" />
+      <Confirmation v-if="!loading && !!transactionId" :id="transactionId" />
     </div>
   </single-page-layout>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { getAuthority } from '~/utils'
-import { AuthModule } from '~/store'
-import { Authority } from '~/enums'
 import { Account, TransactionConfirmation } from '@hiveio/dhive'
 import SinglePageLayout from '../../components/Layouts/SinglePageLayout.vue'
 import TransactionStatus from '../../components/TransactionStatus.vue'
+import { getAuthority } from '~/utils'
+import { AuthModule } from '~/store'
+import { Authority } from '~/enums'
 
 @Component({
   components: { TransactionStatus, SinglePageLayout },
@@ -54,49 +54,49 @@ export default class AuthorizeUsername extends Vue {
   private username = this.$route.params.username
   private authority = getAuthority(this.$route.query.authority as Authority, Authority.Posting)
 
-  private get account(): Account | null {
+  private get account (): Account | null {
     return AuthModule.account
   }
 
-  private get callback(): string {
+  private get callback (): string {
     return this.$route.query.redirect_uri as string
   }
 
-  private get scope(): string {
+  private get scope (): string {
     const scope = this.$route.query.scope as string
     return ['login', 'posting'].includes(scope) ? scope : 'login'
   }
 
-  private get responseType(): string {
+  private get responseType (): string {
     const responseType = this.$route.query.response_type as string
     return ['code', 'token'].includes(responseType) ? responseType : 'token'
   }
 
-  private get hasAuthority(): boolean {
+  private get hasAuthority (): boolean {
     if (this.account?.name) {
       const auths = this.account[this.authority].account_auths.map(auth => auth[0])
-      return auths.indexOf(this.username) !== -1
+      return auths.includes(this.username)
     }
     return false
   }
 
-  private get successMessage(): string {
+  private get successMessage (): string {
     return `<span class="text-gray">${this.$t('sign.transaction_id')}:</span> <a href="https://hiveblocks.com/tx/${this.transactionId}" target="_blank" class="text-black hover:underline cursor-pointer">${this.transactionId}</a>`
   }
 
-  private get failureMessage(): string {
+  private get failureMessage (): string {
     return `<span class="text-gray">${this.$t('sign.error_message')}:</span> ${this.error}`
   }
 
-  private updateAccount(data: any): Promise<TransactionConfirmation> {
+  private updateAccount (data: any): Promise<TransactionConfirmation> {
     return AuthModule.updateAccount(data)
   }
 
-  private loadAccount(): Promise<void> {
+  private loadAccount (): Promise<void> {
     return AuthModule.loadAccount()
   }
 
-  private async handleSubmit(data: Record<string, string>): Promise<void> {
+  private async handleSubmit (data: Record<string, string>): Promise<void> {
     try {
       const confirmation = await this.updateAccount(data)
       await this.loadAccount()
@@ -105,7 +105,7 @@ export default class AuthorizeUsername extends Vue {
         if (this.callback[0] === '/') {
           this.$router.push({
             name: 'login',
-            query: { redirect: this.callback },
+            query: { redirect: this.callback }
           })
         } else {
           await AuthModule.signAndRedirectToCallback({
@@ -116,7 +116,7 @@ export default class AuthorizeUsername extends Vue {
             responseType: this.responseType,
             app: this.$route.query.app as string,
             scope: this.scope,
-            callback: this.callback,
+            callback: this.callback
           })
         }
       } else {
@@ -132,14 +132,14 @@ export default class AuthorizeUsername extends Vue {
     }
   }
 
-  private handleReject(): void {
+  private handleReject (): void {
     this.failed = false
     this.loading = false
     this.transactionId = ''
     this.$router.push('/')
   }
 
-  private onLoadingChange(value: boolean): void {
+  private onLoadingChange (value: boolean): void {
     this.loading = value
   }
 }

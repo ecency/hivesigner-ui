@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="submitForm" method="post" class="text-left">
+  <form method="post" class="text-left" @submit.prevent="submitForm">
     <form-control
       v-model="username"
       name="username"
@@ -22,7 +22,9 @@
       @blur="handleBlur('key')"
     />
 
-    <div v-if="!!error" class="text-primary mb-6">{{ error }}</div>
+    <div v-if="!!error" class="text-primary mb-6">
+      {{ error }}
+    </div>
     <button
       :disabled="submitDisabled || loading"
       type="submit"
@@ -35,11 +37,11 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
+import Icon from '../UI/Icons/Icon.vue'
+import FormControl from '../UI/Form/FormControl.vue'
 import { ERROR_INVALID_ENCRYPTION_KEY, TOOLTIP_LOGIN_ENCRYPTION_KEY } from '~/consts'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 import { Authority, DecryptionExceptions } from '~/enums'
-import Icon from '../UI/Icons/Icon.vue'
-import FormControl from '../UI/Form/FormControl.vue'
 
 @Component({
   components: { FormControl, Icon }
@@ -47,36 +49,36 @@ import FormControl from '../UI/Form/FormControl.vue'
 export default class LoginForm extends Vue {
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private loading!: boolean
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private error!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private authority!: Authority
 
   private dirty = {
     username: false,
-    key: false,
+    key: false
   }
 
-  private get isSelectedAccountDecrypted(): boolean {
+  private get isSelectedAccountDecrypted (): boolean {
     return AccountsModule.isSelectedAccountDecrypted
   }
 
-  private get accountsList(): string[] {
+  private get accountsList (): string[] {
     return AccountsModule.accountsUsernamesList
   }
 
-  private get errors(): Record<string, string> {
+  private get errors (): Record<string, string> {
     const current: Record<string, string> = {}
     const { username, key } = this
     if (!username) {
@@ -88,47 +90,47 @@ export default class LoginForm extends Vue {
     return current
   }
 
-  private get username(): string {
+  private get username (): string {
     return AccountsModule.selectedAccount
   }
 
-  private set username(value: string) {
+  private set username (value: string) {
     AccountsModule.setSelectedAccount(value)
   }
 
-  private get loginKey(): string {
+  private get loginKey (): string {
     return PersistentFormsModule.login.key
   }
 
-  private set loginKey(value: string) {
+  private set loginKey (value: string) {
     return PersistentFormsModule.saveLoginKey(value)
   }
 
-  private get tooltipLoginEncryptionKey() {
+  private get tooltipLoginEncryptionKey () {
     return this.$t(TOOLTIP_LOGIN_ENCRYPTION_KEY)
   }
 
-  private get submitDisabled(): boolean {
+  private get submitDisabled (): boolean {
     return !!this.errors.username || (!!this.errors.key && !!this.dirty.key)
   }
 
-  private get redirect(): string {
+  private get redirect (): string {
     return this.$route.query.redirect as string
   }
 
-  public resetForm(): void {
+  public resetForm (): void {
     this.dirty = {
       username: false,
-      key: false,
+      key: false
     }
     this.loginKey = ''
   }
 
-  private async submitForm(): Promise<void> {
+  private async submitForm (): Promise<void> {
     try {
       const keys = await AccountsModule.getEncryptedKeys({
         username: this.username,
-        encryptionKey: this.loginKey,
+        encryptionKey: this.loginKey
       })
       this.$emit('submit', keys)
     } catch (e) {
@@ -143,12 +145,11 @@ export default class LoginForm extends Vue {
     }
   }
 
-  private handleBlur(name: string): void {
+  private handleBlur (name: string): void {
     this.dirty[name] = true
   }
 
-  private handleReject(): void {
-    const requestId = this.$route.query.requestId as string
+  private handleReject (): void {
     this.$emit('failed', false)
     this.$emit('loading', false)
     this.$emit('signature', '')

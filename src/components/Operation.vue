@@ -26,7 +26,7 @@ export default class Operation extends Vue {
   @Prop()
   private operation!: any
 
-  private get schema(): any {
+  private get schema (): any {
     return OPERATIONS[this.operation[0]]?.schema || {}
   }
 }

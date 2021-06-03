@@ -8,9 +8,10 @@
       <span class="text-lg uppercase">{{ currentLocale }}</span>
     </template>
     <a
+      v-for="locale of locales"
+      :key="locale.name"
       role="button"
       class="cursor-pointer py-1 hover:text-primary"
-      v-for="locale of locales"
       @click="onLocaleSelect(locale)"
     >
       {{ locale.name }}
@@ -20,6 +21,7 @@
 
 <script lang="ts">
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
+import { Locale } from 'vue-i18n'
 import Dropdown from './UI/Dropdown.vue'
 
 @Component({
@@ -29,15 +31,15 @@ export default class LocaleSelector extends Vue {
   @Ref('dropdown')
   private dropdownRef!: Dropdown
 
-  private get currentLocale(): string {
+  private get currentLocale (): string {
     return this.$i18n.locale
   }
 
-  private get locales(): string[] {
-    return this.$i18n.locales
+  private get locales (): Locale[] {
+    return this.$i18n.locales as Locale[]
   }
 
-  private onLocaleSelect({ code }): void {
+  private onLocaleSelect ({ code }): void {
     this.dropdownRef.hide()
     this.$i18n.setLocale(code)
   }

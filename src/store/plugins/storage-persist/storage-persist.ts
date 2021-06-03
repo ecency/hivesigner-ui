@@ -4,13 +4,13 @@ export abstract class StoragePersist<T extends Record<any, any>> {
   protected store: Store<T>
   protected forModules: string[] = []
 
-  constructor(store: Store<T>, forModules: string[] = []) {
+  constructor (store: Store<T>, forModules: string[] = []) {
     this.store = store
     this.forModules = forModules
     this.onStoreInit()
   }
 
-  public activate(): void {
+  public activate (): void {
     this.store.subscribe((mutation, state) => this.onMutationCall(mutation, state))
   }
 

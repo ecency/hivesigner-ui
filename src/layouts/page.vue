@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Nuxt/>
+    <Nuxt />
     <portal-target name="side-modal" />
     <portal-target name="modal" />
   </div>
@@ -11,17 +11,17 @@ import { SettingsModule } from '~/store'
 
 @Component
 export default class Page extends Vue {
-  private async created(): Promise<void> {
+  private async created (): Promise<void> {
     await SettingsModule.loadSettings()
     await SettingsModule.getDynamicGlobalProperties()
   }
 
-  private mounted(): void {
-    document.body.classList.add('block');
+  private mounted (): void {
+    document.body.classList.add('block')
   }
 
-  private destroyed(): void {
-    document.body.classList.remove('block');
+  private destroyed (): void {
+    document.body.classList.remove('block')
   }
 }
 </script>

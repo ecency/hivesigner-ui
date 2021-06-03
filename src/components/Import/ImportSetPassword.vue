@@ -37,60 +37,60 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import { TOOLTIP_IMPORT_ENCRYPTION_KEY } from '~/consts'
-import { PersistentFormsModule } from '~/store'
 import Icon from '../UI/Icons/Icon.vue'
 import FormControl from '../UI/Form/FormControl.vue'
+import { TOOLTIP_IMPORT_ENCRYPTION_KEY } from '~/consts'
+import { PersistentFormsModule } from '~/store'
 @Component({
   components: { FormControl, Icon }
 })
 export default class ImportSetPassword extends Vue {
   @Prop({
     type: Object,
-    default: () => ({}),
+    default: () => ({})
   })
   private errors!: Record<string, string>
 
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private loading!: boolean
 
   private TOOLTIP_IMPORT_ENCRYPTION_KEY = TOOLTIP_IMPORT_ENCRYPTION_KEY
   private dirty = {
     key: false,
-    keyConfirmation: false,
+    keyConfirmation: false
   }
 
-  private get importKey(): string {
+  private get importKey (): string {
     return PersistentFormsModule.import.key
   }
 
-  private set importKey(value: string) {
+  private set importKey (value: string) {
     return PersistentFormsModule.saveImportKey(value)
   }
 
-  private get keyConfirmation(): string {
+  private get keyConfirmation (): string {
     return PersistentFormsModule.import.keyConfirmation
   }
 
-  private set keyConfirmation(value: string) {
+  private set keyConfirmation (value: string) {
     return PersistentFormsModule.saveImportKeyConfirmation(value)
   }
 
-  private get submitDisabled(): boolean {
+  private get submitDisabled (): boolean {
     return !!this.errors.key || !!this.errors.keyConfirmation
   }
 
-  public reset(): void {
+  public reset (): void {
     this.dirty = {
       key: false,
-      keyConfirmation: false,
+      keyConfirmation: false
     }
   }
 
-  private handleBlur(fieldName: string): void {
+  private handleBlur (fieldName: string): void {
     this.dirty[fieldName] = true
   }
 }

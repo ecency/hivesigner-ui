@@ -4,13 +4,13 @@
     <input
       :value="value"
       :placeholder="placeholder"
-      @input="handleInput"
       type="text"
       autocorrect="off"
       autocapitalize="none"
       class="border-none"
       style="height: 56px"
-    />
+      @input="handleInput"
+    >
   </div>
 </template>
 
@@ -23,17 +23,17 @@ import Icon from './UI/Icons/Icon.vue'
 export default class Search extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private value!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private placeholder!: string
 
-  private handleInput(e: Event): void {
+  private handleInput (e: Event): void {
     this.$emit('input', (e.target as HTMLInputElement).value)
   }
 }
