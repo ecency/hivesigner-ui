@@ -7,7 +7,7 @@
   >
     <template v-if="value && Array.isArray(value)">
       <em v-if="value.length === 0">{{ $t('operations.empty') }}</em>
-      <OperationValue v-else v-for="(v, key) in value" :key="key" :value="v" />
+      <OperationValue v-for="(v, key) in value" v-else :key="key" :value="v" />
     </template>
     <template v-else-if="value && typeof value === 'object'">
       <div v-for="(v, key) in value" :key="key" class="mt-2">
@@ -35,7 +35,7 @@
         <template v-else-if="schema.type === 'time'">{{ value | dateHeader }}</template>
         <span v-else-if="schema.type">{{ value }}</span>
         <template v-else-if="!schema.type && responsiveShort">
-          <span class="block xl:hidden"></span>
+          <span class="block xl:hidden" />
           <span class="hidden xl:block">{{ value }}</span>
         </template>
       </template>
@@ -45,9 +45,9 @@
 
 <script lang="ts">
 import { Vue, Prop, Component } from 'nuxt-property-decorator'
+import { Operation } from '../../models'
 import { AuthModule } from '~/store'
 import { OPERATIONS } from '~/consts'
-import { Operation } from '../../models'
 
 @Component
 export default class OperationValue extends Vue {
@@ -62,15 +62,15 @@ export default class OperationValue extends Vue {
 
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private responsiveShort!: boolean
 
-  private get username(): string {
+  private get username (): string {
     return AuthModule.username
   }
 
-  private get schema(): Operation['schema'][0]['key'] {
+  private get schema (): Operation['schema'][0]['key'] {
     return OPERATIONS[this.path]?.schema[this.schemaKey] || {}
   }
 }

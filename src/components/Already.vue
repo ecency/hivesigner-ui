@@ -3,7 +3,7 @@
     <p
       class="text-black-400 text-lg"
       v-html="$t('already_action_account', { action, authority, username })"
-    ></p>
+    />
     <template v-if="callback">
       <router-link
         v-if="callback[0] === '/'"
@@ -27,29 +27,29 @@ import { parseURL } from '../plugins/filter-functions'
 export default class Already extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private username!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private authority!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private callback!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private action!: string
 
-  private parseURL(link: string): string {
+  private parseURL (link: string): string {
     return parseURL(link)
   }
 }

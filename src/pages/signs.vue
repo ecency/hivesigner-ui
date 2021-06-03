@@ -13,10 +13,10 @@
     </div>
     <div class="container-sm mx-auto">
       <sign-operation
-        class="mb-5"
         v-for="operation of operations"
-        :operation="operation"
         :key="operation.name"
+        class="mb-5"
+        :operation="operation"
       />
     </div>
   </single-page-layout>
@@ -25,10 +25,10 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
 import SinglePageLayout from '@/components/Layouts/SinglePageLayout'
-import { OPERATIONS } from '~/consts'
 import SignOperation from '../components/Signs/SignOperation.vue'
 import FormControl from '../components/UI/Form/FormControl.vue'
 import Icon from '../components/UI/Icons/Icon.vue'
+import { OPERATIONS } from '~/consts'
 import { Operation } from '~/models'
 
 @Component({
@@ -37,14 +37,14 @@ import { Operation } from '~/models'
 export default class Signs extends Vue {
   private search = ''
 
-  private get operations(): { name: string, details: Operation }[] {
+  private get operations (): { name: string, details: Operation }[] {
     return Object.keys(OPERATIONS)
-    .filter(key => OPERATIONS[key].name.toLowerCase().includes(this.search.toLowerCase()) ||
+      .filter(key => OPERATIONS[key].name.toLowerCase().includes(this.search.toLowerCase()) ||
       OPERATIONS[key].authority.toLowerCase().includes(this.search.toLowerCase()))
-    .map(name => ({
-      name,
-      details: OPERATIONS[name],
-    }))
+      .map(name => ({
+        name,
+        details: OPERATIONS[name]
+      }))
   }
 }
 </script>

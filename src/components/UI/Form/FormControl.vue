@@ -27,7 +27,7 @@ import TextareaFormControl from './TextareaFormControl.vue'
     CheckboxFormControl,
     BaseFormControl,
     SelectFormControl,
-    TextareaFormControl,
+    TextareaFormControl
   }
 })
 export default class FormControl extends Vue {
@@ -36,13 +36,13 @@ export default class FormControl extends Vue {
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private label!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private name!: string
 
@@ -50,40 +50,40 @@ export default class FormControl extends Vue {
     type: String,
     default: 'text',
     validator: value =>
-      ['text', 'password', 'select', 'checkbox', 'number', 'textarea'].includes(value),
+      ['text', 'password', 'select', 'checkbox', 'number', 'textarea'].includes(value)
   })
   private type!: string
 
   @Prop({
-    default: '',
+    default: ''
   })
   private error!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private autocomplete!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private tooltip!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private placeholder!: string
 
   @Prop({
     type: Array,
-    default: () => [],
+    default: () => []
   })
   private options!: any[]
 
-  private get controlComponent(): string {
+  private get controlComponent (): string {
     switch (this.type) {
       case 'checkbox':
         return 'checkbox-form-control'
@@ -97,12 +97,12 @@ export default class FormControl extends Vue {
   }
 
   @Emit('input')
-  private onInput(value: any): string {
+  private onInput (value: any): string {
     return value
   }
 
   @Emit('blur')
-  private onBlur(): void {
+  private onBlur (): void {
   }
 }
 </script>

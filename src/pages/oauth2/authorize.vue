@@ -1,5 +1,5 @@
 <template>
-  <div></div>
+  <div />
 </template>
 
 <script lang="ts">
@@ -8,7 +8,7 @@ import { Context } from '@nuxt/types'
 
 @Component
 export default class Authorize extends Vue {
-  public middleware({ redirect, query }: Context): void {
+  public middleware ({ redirect, query }: Context): void {
     let scope = 'posting'
     if (query.scope === 'login') {
       scope = 'login'

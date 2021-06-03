@@ -1,4 +1,4 @@
-export function isValidUrl(url: string): boolean {
+export function isValidUrl (url: string): boolean {
   try {
     // eslint-disable-next-line no-new
     new URL(url)

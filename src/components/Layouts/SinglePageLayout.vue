@@ -8,16 +8,16 @@
     <div v-if="!flat" class="navigation-container flex justify-end">
       <dropdown class="navigation-toggle sm:hidden" position="rightBottom">
         <template slot="trigger">
-          <Icon name="Menu" class="text-gray"/>
+          <Icon name="Menu" class="text-gray" />
         </template>
-        <navigation vertical/>
+        <navigation vertical />
       </dropdown>
     </div>
     <router-link v-if="!flat" to="/" class="flex flex-col items-center mb-12">
-      <icon class="logo text-primary" name="logo"/>
+      <icon class="logo text-primary" name="logo" />
       <span class="text-primary text-center text-3xl sm:text-5xl">{{ title }}</span>
     </router-link>
-    <slot></slot>
+    <slot />
     <div class="sticky bottom-0 bg-white w-full">
       <Navigation class="container-sm mx-auto w-full mt-20 hidden sm:flex py-8" />
     </div>
@@ -36,13 +36,13 @@ import Navigation from '../Navigation.vue'
 export default class SinglePageLayout extends Vue {
   @Prop({
     type: String,
-    required: true,
+    required: true
   })
   private title!: string
 
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private flat!: boolean
 }

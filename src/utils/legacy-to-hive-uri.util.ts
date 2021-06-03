@@ -4,7 +4,7 @@ import urlParse from 'url-parse'
 import { snakeCase } from 'lodash'
 import { OPERATIONS } from '~/consts'
 
-export function legacyToHiveUri(uri: string): DecodeResult | null {
+export function legacyToHiveUri (uri: string): DecodeResult | null {
   let parsed: DecodeResult | null = null
   try {
     const url = urlParse(uri)

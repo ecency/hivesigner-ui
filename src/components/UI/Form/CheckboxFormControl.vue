@@ -5,8 +5,8 @@
       :checked="value"
       type="checkbox"
       @change="(e) => $emit('input', e.target.checked)"
-    />
-    <span class="checkbox mr-2" :class="classes"></span>
+    >
+    <span class="checkbox mr-2" :class="classes" />
     {{ label }}
   </label>
 </template>
@@ -18,23 +18,23 @@ import { Component, Prop, Vue } from 'nuxt-property-decorator'
 export default class CheckboxFormControl extends Vue {
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private value!: boolean
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private label!: string
 
   @Prop({
     type: String,
-    required: true,
+    required: true
   })
   private name!: string
 
-  private get classes(): Record<string, boolean> {
+  private get classes (): Record<string, boolean> {
     return {
       '-checked': this.value
     }

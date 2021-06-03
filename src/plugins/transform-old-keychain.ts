@@ -13,9 +13,9 @@ export default function ({ store }: Context): void {
     }
     const oldSnapshot: Record<string, string> = JSON.parse(rawOldSnapshot)
     Object.keys(oldSnapshot).forEach(username => store.commit('accounts/saveAccount', {
-        username,
-        key: oldSnapshot[username],
-      })
+      username,
+      key: oldSnapshot[username]
+    })
     )
     localStorage.removeItem('keychain')
   } catch (_) {

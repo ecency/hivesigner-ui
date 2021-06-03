@@ -1,13 +1,13 @@
-import { StoragePersist } from './storage-persist'
 import { MutationPayload, Store } from 'vuex'
+import { StoragePersist } from './storage-persist'
 
 export class LocalStoragePersist<T extends Record<any, any>> extends StoragePersist<T> {
-  constructor(store: Store<T>, forModules: string[] = []) {
+  constructor (store: Store<T>, forModules: string[] = []) {
     super(store, forModules)
   }
 
-  protected onStoreInit(): void {
-    this.forModules.forEach(module => {
+  protected onStoreInit (): void {
+    this.forModules.forEach((module) => {
       try {
         const rawSnapshot = localStorage.getItem(`vuex__${module}`)
         if (!rawSnapshot) {
@@ -16,7 +16,7 @@ export class LocalStoragePersist<T extends Record<any, any>> extends StoragePers
         const snapshot = JSON.parse(rawSnapshot)
         this.store.replaceState({
           ...this.store.state,
-          [module]: snapshot,
+          [module]: snapshot
         })
       } catch (e) {
         console.error(`Failed to load persistent data from localstorage for ${module} Vuex module`)
@@ -24,7 +24,7 @@ export class LocalStoragePersist<T extends Record<any, any>> extends StoragePers
     })
   }
 
-  protected onMutationCall(mutation: MutationPayload, state: T) {
+  protected onMutationCall (mutation: MutationPayload, state: T) {
     const mutatedModule = this.forModules.find(module => mutation.type.includes(module))
     if (mutatedModule) {
       const moduleStateSnapshot = JSON.stringify(state[mutatedModule])

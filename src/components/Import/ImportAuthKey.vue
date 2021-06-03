@@ -11,7 +11,7 @@
       :label="$t('import.private_key')"
     />
 
-    <div class="errors text-primary pb-5" v-for="error of errors">
+    <div v-for="error of errors" :key="error" class="errors text-primary pb-5">
       <div>*{{ error }}</div>
     </div>
 
@@ -34,19 +34,19 @@ export default class ImportAuthKey extends Vue {
   private importKey = ''
   private errors = []
 
-  private get disabled(): boolean {
+  private get disabled (): boolean {
     return !this.importKey
   }
 
-  private get username(): string {
+  private get username (): string {
     return AuthModule.username
   }
 
-  private async submit(): Promise<void> {
+  private async submit (): Promise<void> {
     this.errors = []
     const valid = await AccountsModule.isValidCredentials({
       username: this.username,
-      password: this.importKey,
+      password: this.importKey
     })
 
     if (!valid) {
@@ -56,12 +56,12 @@ export default class ImportAuthKey extends Vue {
 
     const keys = await AccountsModule.getAuthoritiesKeys({
       username: this.username,
-      password: this.importKey,
+      password: this.importKey
     })
 
     AccountsModule.saveAccountKeys({
       username: this.username,
-      keys,
+      keys
     })
 
     this.$popupMessages.show('auths.successfully_imported', 5000)

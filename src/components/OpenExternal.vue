@@ -1,6 +1,6 @@
 <template>
   <div class="flash mb-4 overflow-hidden">
-    <div class="mb-3" v-html="$t('open_external', { homepage })"></div>
+    <div class="mb-3" v-html="$t('open_external', { homepage })" />
     <button class="btn btn-blue" @click="openURIScheme">
       {{ $t('open_desktop_app') }}
     </button>
@@ -18,15 +18,15 @@ export default class OpenExternal extends Vue {
 
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private withChrome!: boolean
 
-  private get homepage(): string {
+  private get homepage (): string {
     return PACKAGE.homepage
   }
 
-  private openURIScheme() {
+  private openURIScheme () {
     if (this.withChrome && this.$hivesigner) {
       this.$hivesigner.sign(this.uri)
     }

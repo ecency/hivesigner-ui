@@ -2,10 +2,10 @@
   <div class="select text-lg relative text-black-500 z-10" :class="{ '-opened': open }">
     <transition name="fade">
       <div
-        class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500"
         v-if="open"
+        class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500"
         @click="hide"
-      ></div>
+      />
     </transition>
     <div
       class="input cursor-pointer flex justify-between items-center relative bg-white"
@@ -13,7 +13,7 @@
       @click="toggle"
     >
       <span>{{ value }}</span>
-      <icon class="arrow duration-200 text-black-400" name="select-arrow"/>
+      <icon class="arrow duration-200 text-black-400" name="select-arrow" />
     </div>
     <transition>
       <div
@@ -21,9 +21,10 @@
         class="select-options border border-black-500 rounded-md mt-4 absolute z-10 w-full bg-white overflow-hidden"
       >
         <div
+          v-for="(option, index) of options"
+          :key="index"
           class="select-option cursor-pointer py-4 px-5 hover:bg-primary-100"
           :class="{ 'bg-gray-200': value === option }"
-          v-for="option of options"
           @click="onOptionSelect(option)"
         >
           {{ option.label || option }}
@@ -42,45 +43,45 @@ import Icon from '../Icons/Icon.vue'
 })
 export default class Select extends Vue {
   @Prop({
-    default: '',
+    default: ''
   })
   private value!: any
 
   @Prop({
     type: Array,
-    default: () => [],
+    default: () => []
   })
   private options!: any[]
 
   private open = false
 
-  public show(): void {
+  public show (): void {
     this.open = true
   }
 
-  public hide(): void {
+  public hide (): void {
     this.open = false
   }
 
-  private toggle(): void {
+  private toggle (): void {
     this.open = !this.open
   }
 
   @Emit('select')
-  private onOptionSelect(option: any): any {
+  private onOptionSelect (option: any): any {
     this.hide()
     return option.value || option
   }
 
   @Watch('open')
-  private openChanged(): void {
+  private openChanged (): void {
     if (!this.open) {
       this.onBlur()
     }
   }
 
   @Emit('blur')
-  private onBlur(): void {
+  private onBlur (): void {
   }
 }
 </script>

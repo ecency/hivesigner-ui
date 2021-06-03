@@ -2,7 +2,9 @@
   <div class="footer text-gray-400 mb-4">
     <ul class="flex justify-center flex-wrap my-1">
       <li class="inline mx-2">
-        <router-link to="/apps" class="hover:underline">{{ $t('footer.apps') }}</router-link>
+        <router-link to="/apps" class="hover:underline">
+          {{ $t('footer.apps') }}
+        </router-link>
       </li>
       <li class="inline mx-2">
         <router-link to="/accounts" class="hover:underline">
