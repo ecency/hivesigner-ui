@@ -1,5 +1,5 @@
 <template>
-  <div class="select text-lg relative text-black-500 z-10" :class="{ '-opened': open }">
+  <div class="select text-lg relative text-black-500 z-20" :class="{ '-opened': open }">
     <transition name="fade">
       <div
         v-if="open"
@@ -18,7 +18,7 @@
     <transition>
       <div
         v-if="open"
-        class="select-options border border-black-500 rounded-md mt-4 absolute z-10 w-full bg-white overflow-hidden"
+        class="select-options border border-black-500 rounded-md mt-4 absolute z-10 w-full bg-white overflow-x-hidden overflow-y-auto"
       >
         <div
           v-for="(option, index) of options"
@@ -90,6 +90,18 @@ export default class Select extends Vue {
   &.-opened {
     .arrow {
       transform: matrix(1, 0, 0, -1, 0, 0);
+    }
+  }
+
+  .select-options {
+    max-height: 180px;
+
+    @screen md {
+      max-height: 240px;
+    }
+
+    @screen xl {
+      max-height: 280px;
     }
   }
 }
