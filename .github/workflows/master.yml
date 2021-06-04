@@ -41,6 +41,7 @@ jobs:
         script: |
           cd ~/hivesigner-ui
           git pull origin main
+          git checkout main
           yarn
           yarn build
           export PORT=$PRODUCTION_PORT
