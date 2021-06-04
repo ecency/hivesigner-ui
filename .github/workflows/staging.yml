@@ -19,7 +19,7 @@ jobs:
       run: |
         yarn
         yarn lint
-        yarn build
+        yarn build --no-unsafe-inline
       env:
         CI: true
 
@@ -43,7 +43,7 @@ jobs:
           git pull origin development
           git checkout development
           yarn
-          yarn build
+          yarn build --no-unsafe-inline
           export PORT=$STAGING_PORT
           pm2 reload staging
           
@@ -67,7 +67,7 @@ jobs:
           git pull origin development
           git checkout development
           yarn
-          yarn build
+          yarn build --no-unsafe-inline
           export PORT=$TESTNET_PORT
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
           pm2 reload testnet

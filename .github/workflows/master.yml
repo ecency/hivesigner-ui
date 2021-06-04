@@ -19,7 +19,7 @@ jobs:
       run: |
         yarn
         yarn lint
-        yarn build
+        yarn build --no-unsafe-inline
       env:
         CI: true
 
@@ -43,6 +43,6 @@ jobs:
           git pull origin main
           git checkout main
           yarn
-          yarn build
+          yarn build --no-unsafe-inline
           export PORT=$PRODUCTION_PORT
           pm2 reload master
