@@ -17,9 +17,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: npm install, build, lint and test
       run: |
-        npm install
-        npm run lint --if-present
-        npm run build --if-present
+        yarn
+        yarn lint
+        yarn build
       env:
         CI: true
 
@@ -41,7 +41,7 @@ jobs:
         script: |
           cd ~/hivesigner-ui
           git pull origin main
-          npm install
-          npm run build
+          yarn
+          yarn build
           export PORT=$PRODUCTION_PORT
           pm2 reload master
