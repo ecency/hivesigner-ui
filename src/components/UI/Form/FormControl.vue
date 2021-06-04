@@ -13,7 +13,10 @@
     @input="onInput"
     @blur="onBlur"
   >
-    <slot></slot>
+    <slot />
+    <template #option="{option}">
+      <slot name="option" :option="option" />
+    </template>
   </component>
 </template>
 

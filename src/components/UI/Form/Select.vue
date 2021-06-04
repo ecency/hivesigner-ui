@@ -12,7 +12,7 @@
       :class="{ 'border border-black-500 z-10': open }"
       @click="toggle"
     >
-      <slot v-if="$slots.default"></slot>
+      <slot v-if="$slots.default" />
       <span v-else>{{ value }}</span>
       <icon class="arrow duration-200 text-black-400" name="select-arrow" />
     </div>
@@ -28,7 +28,9 @@
           :class="{ 'bg-gray-200': value === option }"
           @click="onOptionSelect(option)"
         >
-          {{ option.label || option }}
+          <slot name="option" :option="option">
+            {{ option.label || option }}
+          </slot>
         </div>
       </div>
     </transition>
