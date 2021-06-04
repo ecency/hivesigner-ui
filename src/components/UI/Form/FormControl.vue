@@ -12,7 +12,9 @@
     :placeholder="placeholder"
     @input="onInput"
     @blur="onBlur"
-  />
+  >
+    <slot></slot>
+  </component>
 </template>
 
 <script lang="ts">

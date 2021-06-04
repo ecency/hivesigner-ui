@@ -8,7 +8,12 @@
       :options="accountsList"
       type="select"
       @blur="handleBlur('username')"
-    />
+    >
+      <div class="flex items-center justify-start">
+        <avatar class="mr-4" :username="username"/>
+        {{ username }}
+      </div>
+    </form-control>
 
     <form-control
       v-if="!isSelectedAccountDecrypted"
@@ -42,9 +47,10 @@ import FormControl from '../UI/Form/FormControl.vue'
 import { ERROR_INVALID_ENCRYPTION_KEY, TOOLTIP_LOGIN_ENCRYPTION_KEY } from '~/consts'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 import { Authority, DecryptionExceptions } from '~/enums'
+import Avatar from '../Avatar.vue'
 
 @Component({
-  components: { FormControl, Icon }
+  components: { Avatar, FormControl, Icon }
 })
 export default class LoginForm extends Vue {
   @Prop({

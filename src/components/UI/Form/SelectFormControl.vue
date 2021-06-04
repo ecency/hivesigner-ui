@@ -5,7 +5,9 @@
       :options="options"
       @select="onInput"
       @blur="onBlur"
-    />
+    >
+      <slot></slot>
+    </custom-select>
   </base-form-control-container>
 </template>
 
