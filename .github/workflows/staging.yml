@@ -17,9 +17,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: npm install, build, lint and test
       run: |
-        npm install
-        npm run lint --if-present
-        npm run build --if-present
+        yarn
+        yarn lint --if-present
+        yarn build --if-present
       env:
         CI: true
 
@@ -41,8 +41,8 @@ jobs:
         script: |
           cd ~/hivesigner-ui
           git pull origin development
-          npm install
-          npm run build
+          yarn
+          yarn build
           export PORT=$STAGING_PORT
           pm2 reload staging
           
@@ -64,8 +64,8 @@ jobs:
         script: |
           cd ~/hivesigner-ui
           git pull origin development
-          npm install
-          npm run build
+          yarn
+          yarn build
           export PORT=$TESTNET_PORT
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
           pm2 reload testnet
