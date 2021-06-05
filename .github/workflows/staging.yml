@@ -63,6 +63,9 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         envs: STAGING_PORT,BROADCAST_NETWORK
         script: |
+          cd ~/hivesigner-ui
+          git pull origin development
+          git checkout development
           export PORT=$STAGING_PORT
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
           docker pull ecency/hivesigner:development
@@ -84,6 +87,9 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         envs: TESTNET_PORT,BROADCAST_NETWORK
         script: |
+          cd ~/hivesigner-ui
+          git pull origin development
+          git checkout development
           export PORT=$TESTNET_PORT
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
           docker pull ecency/hivesigner:development
