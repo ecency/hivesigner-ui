@@ -5,7 +5,12 @@
       :options="options"
       @select="onInput"
       @blur="onBlur"
-    />
+    >
+      <slot />
+      <template #option="{option}">
+        <slot name="option" :option="option" />
+      </template>
+    </custom-select>
   </base-form-control-container>
 </template>
 

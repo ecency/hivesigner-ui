@@ -8,7 +8,18 @@
       :options="accountsList"
       type="select"
       @blur="handleBlur('username')"
-    />
+    >
+      <div class="flex items-center justify-start">
+        <avatar class="mr-4" :username="username" />
+        {{ username }}
+      </div>
+      <template #option="{option}">
+        <div class="flex items-center justify-start">
+          <avatar class="mr-4" :username="option" />
+          {{ option }}
+        </div>
+      </template>
+    </form-control>
 
     <form-control
       v-if="!isSelectedAccountDecrypted"
@@ -39,12 +50,13 @@
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import Icon from '../UI/Icons/Icon.vue'
 import FormControl from '../UI/Form/FormControl.vue'
+import Avatar from '../Avatar.vue'
 import { ERROR_INVALID_ENCRYPTION_KEY, TOOLTIP_LOGIN_ENCRYPTION_KEY } from '~/consts'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 import { Authority, DecryptionExceptions } from '~/enums'
 
 @Component({
-  components: { FormControl, Icon }
+  components: { Avatar, FormControl, Icon }
 })
 export default class LoginForm extends Vue {
   @Prop({
