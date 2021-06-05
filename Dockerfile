@@ -1,17 +1,21 @@
-FROM node:14
+FROM node:14-alpine as base
 
-RUN mkdir -p /usr/src/nuxt-app
-WORKDIR /usr/src/nuxt-app
+WORKDIR /var/app
 
-COPY . /usr/src/nuxt-app/
+COPY . /var/app/
 
-RUN yarn --force
+RUN yarn --force --non-interactive --frozen-lockfile --ignore-optional
+
 RUN yarn build
 
-EXPOSE 3000
+# Add Tini
+ENV TINI_VERSION v0.18.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static /tini
+RUN chmod +x /tini
 
-ENV NUXT_HOST=0.0.0.0
-ENV NUXT_PORT=3000
+ENTRYPOINT ["/tini", "--"]
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD node /var/app/healthCheck.js
 
 # start the app
-CMD [ "yarn", "start" ]
+CMD [ "yarn", "run", "start" ]

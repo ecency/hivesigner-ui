@@ -4,7 +4,7 @@ on:
     branches:
       - development
 jobs:
-  build:
+  tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -22,6 +22,30 @@ jobs:
         yarn build --no-unsafe-inline
       env:
         CI: true
+  build:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile
+          push: true
+          tags: ecency/hivesigner:development
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
 
   deploy-staging:
     needs: build
@@ -39,13 +63,10 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         envs: STAGING_PORT,BROADCAST_NETWORK
         script: |
-          cd ~/hivesigner-ui
-          git pull origin development
-          git checkout development
-          yarn
-          yarn build --no-unsafe-inline
           export PORT=$STAGING_PORT
-          pm2 reload staging
+          export BROADCAST_NETWORK=$BROADCAST_NETWORK
+          docker pull ecency/hivesigner:development
+          docker stack deploy -c docker-compose.yml hivesigner-staging
           
   deploy-testnet:
     needs: build
@@ -63,11 +84,7 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         envs: TESTNET_PORT,BROADCAST_NETWORK
         script: |
-          cd ~/hivesigner-ui
-          git pull origin development
-          git checkout development
-          yarn
-          yarn build --no-unsafe-inline
           export PORT=$TESTNET_PORT
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
-          pm2 reload testnet
+          docker pull ecency/hivesigner:development
+          docker stack deploy -c docker-compose.yml -c docker-compose.testnet.yml hivesigner-testnet

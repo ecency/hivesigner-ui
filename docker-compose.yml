@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+  app:
+    image: ecency/hivesigner:development
+    environment:
+      - BROADCAST_NETWORK
+      - PORT
+    ports:
+      - ${PORT}:${PORT}
+    deploy:
+      replicas: 4
+      resources:
+        limits:
+          cpus: "0.9"
+          memory: 2048M
+      update_config:
+        parallelism: 2
+        order: start-first
+        failure_action: rollback
+        delay: 10s
+      rollback_config:
+        parallelism: 0
+        order: stop-first
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 5
+        window: 60s
