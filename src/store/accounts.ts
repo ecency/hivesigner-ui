@@ -4,6 +4,8 @@ import { decrypt, getUserKeysMap, isKey, jsonParse, privateKeyFrom } from '~/uti
 import { DecryptionExceptions } from '~/enums'
 import { AccountKeychain } from '~/models'
 
+const network: string = process.env.BROADCAST_NETWORK || 'mainnet'
+
 @Module({
   stateFactory: true,
   namespaced: true,
@@ -12,7 +14,6 @@ import { AccountKeychain } from '~/models'
 export default class Accounts extends VuexModule {
   public accountsKeychains: AccountKeychain = {}
   public selectedAccount: string = ''
-  public network: string = process.env.BROADCAST_NETWORK || 'mainnet'
 
   public get hasAccounts (): boolean {
     return !!this.accountsUsernamesList.length
@@ -116,7 +117,7 @@ export default class Accounts extends VuexModule {
     const keysMap = await getUserKeysMap(username)
 
     if (isKey(username, password)) {
-      const type = keysMap[privateKeyFrom(password).createPublic(this.network === 'testnet' ? 'TST' : 'SMT').toString()]
+      const type = keysMap[privateKeyFrom(password).createPublic(network === 'testnet' ? 'TST' : 'SMT').toString()]
       keys[type] = password
       return keys
     }
@@ -126,7 +127,7 @@ export default class Accounts extends VuexModule {
     keys.posting = PrivateKey.fromLogin(username, password, 'posting').toString()
 
     const memoKey = PrivateKey.fromLogin(username, password, 'memo')
-    if (keysMap[memoKey.createPublic(this.network === 'testnet' ? 'TST' : 'SMT').toString()] === 'memo') {
+    if (keysMap[memoKey.createPublic(network === 'testnet' ? 'TST' : 'SMT').toString()] === 'memo') {
       keys.memo = memoKey.toString()
     }
 
@@ -141,6 +142,6 @@ export default class Accounts extends VuexModule {
       ? privateKeyFrom(password)
       : PrivateKey.fromLogin(username, password, 'active')
 
-    return !!keysMap[key.createPublic(this.network === 'testnet' ? 'TST' : 'SMT').toString()]
+    return !!keysMap[key.createPublic(network === 'testnet' ? 'TST' : 'SMT').toString()]
   }
 }
