@@ -83,6 +83,7 @@ import Icon from '~/components/UI/Icons/Icon.vue'
 import Dropdown from '~/components/UI/Dropdown.vue'
 import Modal from '~/components/UI/Modal.vue'
 import ImportAuthKey from '~/components/Import/ImportAuthKey.vue'
+import { CLIENT_OPTIONS } from '~/consts'
 
 @Component({
   components: { AuthsActions, ImportAuthKey, Modal, Dropdown, SinglePageLayout, Icon },
@@ -115,14 +116,13 @@ export default class Auths extends Vue {
 
   private get publicKeys (): Record<string, string> {
     const { keys } = AuthModule
-    const network = process.env.BROADCAST_NETWORK || 'mainnet'
 
     return Object.keys(keys).reduce<Record<string, string>>((acc, b) => {
       if (!keys[b]) {
         return acc
       }
       acc[b] = privateKeyFrom(keys[b])
-        .createPublic(network === 'testnet' ? 'TST' : 'SMT')
+        .createPublic(CLIENT_OPTIONS.addressPrefix)
         .toString()
       return acc
     }, {})

@@ -6,7 +6,7 @@ import { Authority } from '~/enums'
 // TODO: Move it from utils
 
 function decodePrivate (encodedKey: string): Buffer {
-  const buffer = bs58.decode(encodedKey)
+  const buffer: Buffer = bs58.decode(encodedKey)
 
   if (buffer[0] !== 128) { throw new Error('private key network id mismatch') }
 

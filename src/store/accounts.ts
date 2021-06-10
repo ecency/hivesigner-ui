@@ -3,8 +3,7 @@ import { PrivateKey } from '@hiveio/dhive'
 import { decrypt, getUserKeysMap, isKey, jsonParse, privateKeyFrom } from '~/utils'
 import { DecryptionExceptions } from '~/enums'
 import { AccountKeychain } from '~/models'
-
-const network: string = process.env.BROADCAST_NETWORK || 'mainnet'
+import { CLIENT_OPTIONS } from '../consts/client/client-options.const'
 
 @Module({
   stateFactory: true,
@@ -113,11 +112,10 @@ export default class Accounts extends VuexModule {
       memo: null,
       posting: null
     }
-
     const keysMap = await getUserKeysMap(username)
 
     if (isKey(username, password)) {
-      const type = keysMap[privateKeyFrom(password).createPublic(network === 'testnet' ? 'TST' : 'SMT').toString()]
+      const type = keysMap[privateKeyFrom(password).createPublic(CLIENT_OPTIONS.addressPrefix).toString()]
       keys[type] = password
       return keys
     }
@@ -127,7 +125,8 @@ export default class Accounts extends VuexModule {
     keys.posting = PrivateKey.fromLogin(username, password, 'posting').toString()
 
     const memoKey = PrivateKey.fromLogin(username, password, 'memo')
-    if (keysMap[memoKey.createPublic(network === 'testnet' ? 'TST' : 'SMT').toString()] === 'memo') {
+
+    if (keysMap[memoKey.createPublic(CLIENT_OPTIONS.addressPrefix).toString()] === 'memo') {
       keys.memo = memoKey.toString()
     }
 
@@ -138,10 +137,10 @@ export default class Accounts extends VuexModule {
   public async isValidCredentials ({ username, password }: { username: string, password: string }): Promise<boolean> {
     const keysMap = await getUserKeysMap(username)
 
-    const key = isKey(username, password)
+    const key: PrivateKey = isKey(username, password)
       ? privateKeyFrom(password)
       : PrivateKey.fromLogin(username, password, 'active')
 
-    return !!keysMap[key.createPublic(network === 'testnet' ? 'TST' : 'SMT').toString()]
+    return !!keysMap[key.createPublic(CLIENT_OPTIONS.addressPrefix).toString()]
   }
 }

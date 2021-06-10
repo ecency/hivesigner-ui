@@ -3,8 +3,7 @@ import * as hiveuri from 'hive-uri'
 import { CLIENT_OPTIONS, DEFAULT_SERVER, DEFAULT_TESTNET_SERVER, EXPIRE_TIME } from '~/consts'
 
 // TODO: Move it from utils
-const network = process.env.BROADCAST_NETWORK || 'mainnet'
-const servers = network === 'testnet' ? DEFAULT_TESTNET_SERVER : DEFAULT_SERVER
+const servers = CLIENT_OPTIONS.addressPrefix === 'TST' ? DEFAULT_TESTNET_SERVER : DEFAULT_SERVER
 let rawClient = new Client(servers, CLIENT_OPTIONS)
 
 const handler = {
