@@ -1,9 +1,9 @@
 import { Module, Vue, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
 import { PrivateKey } from '@hiveio/dhive'
+import { CLIENT_OPTIONS } from '~/consts'
 import { decrypt, getUserKeysMap, isKey, jsonParse, privateKeyFrom } from '~/utils'
 import { DecryptionExceptions } from '~/enums'
 import { AccountKeychain } from '~/models'
-import { CLIENT_OPTIONS } from '../consts/client/client-options.const'
 
 @Module({
   stateFactory: true,
