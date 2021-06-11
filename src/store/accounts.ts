@@ -70,6 +70,10 @@ export default class Accounts extends VuexModule {
   @VuexMutation
   public removeAccount (username: string): void {
     Vue.delete(this.accountsKeychains, username)
+    if (this.selectedAccount === username) {
+      const accounts = Object.keys(this.accountsKeychains)
+      this.selectedAccount = accounts.length ? accounts[0] : ''
+    }
   }
 
   /**
