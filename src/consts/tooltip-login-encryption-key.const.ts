@@ -1,1 +1,1 @@
-export const TOOLTIP_LOGIN_ENCRYPTION_KEY = 'This is a custom password you\'ve set to unlock your account for usage. This is not your Hive private key. If you forgot your hivesigner password you can import your account again.'
+export const TOOLTIP_LOGIN_ENCRYPTION_KEY = 'login.encryption_key_message'

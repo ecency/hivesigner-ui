@@ -7,7 +7,7 @@ import { VuexModule } from '~/models'
 @Module({
   stateFactory: true,
   namespaced: true,
-  name: 'settings',
+  name: 'settings'
 })
 export default class Settings extends VuexModule {
   public properties: any = {}
@@ -19,18 +19,18 @@ export default class Settings extends VuexModule {
   public address: string = 'https://api.hive.blog'
 
   @VuexMutation
-  public saveProperties(properties: any): void {
+  public saveProperties (properties: any): void {
     this.properties = properties
   }
 
   @VuexMutation
-  public saveConfig(config: any): void {
+  public saveConfig (config: any): void {
     this.steemAddressPrefix = config.HIVE_ADDRESS_PREFIX
     this.chainId = config.HIVE_CHAIN_ID
   }
 
   @VuexMutation
-  public setSettings(settings: any): void {
+  public setSettings (settings: any): void {
     if (settings.language) {
       this.language = settings.language
     }
@@ -46,19 +46,19 @@ export default class Settings extends VuexModule {
   }
 
   @VuexAction
-  public async getDynamicGlobalProperties(): Promise<void> {
+  public async getDynamicGlobalProperties (): Promise<void> {
     const result = await client.database.call('get_dynamic_global_properties', [])
     this.saveProperties(result)
   }
 
   @VuexAction
-  public async getConfig(): Promise<void> {
+  public async getConfig (): Promise<void> {
     const config = await client.database.call('get_config', [])
     this.saveConfig(config)
   }
 
   @VuexAction
-  public async loadSettings(): Promise<void> {
+  public async loadSettings (): Promise<void> {
     const settingsContent = localStorage.getItem(SETTINGS_KEY)
     if (!settingsContent) {
       return await this.getConfig()
@@ -80,12 +80,12 @@ export default class Settings extends VuexModule {
     }
   }
 
-  @VuexAction( { rawError: true })
-  public async saveSettings(settings: any): Promise<void> {
+  @VuexAction({ rawError: true })
+  public async saveSettings (settings: any): Promise<void> {
     try {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
     } catch (err) {
-      console.error("Couldn't save settings", err);
+      console.error("Couldn't save settings", err)
     }
 
     await this.loadSettings()

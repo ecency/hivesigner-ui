@@ -1,4 +1,5 @@
 import operations from '~/assets/data/operations.json'
 import { Operations } from '~/models'
 
-export const OPERATIONS: Operations = operations as any
+// @ts-ignore
+export const OPERATIONS: Operations = operations

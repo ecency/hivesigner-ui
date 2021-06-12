@@ -9,12 +9,12 @@ export default class Ui extends VuexModule {
   public savedPath = null
 
   @VuexMutation
-  public setPath(path: any): void {
+  public setPath (path: any): void {
     this.savedPath = path
   }
 
   @VuexAction
-  public async savePath(path: any): Promise<void> {
+  public async savePath (path: any): Promise<void> {
     this.setPath(path)
   }
 }

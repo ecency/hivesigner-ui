@@ -1,64 +1,27 @@
 <template>
-  <div class="header border-bottom">
-    <router-link class="px-4 py-3 border-right" to="/">
-      <span class="iconfont icon-hivesigner primary-color"></span>
+  <div class="header border-b sticky bg-white top-0 left-0 w-full flex items-center">
+    <router-link class="px-6 py-5 block border-r" to="/">
+      <Icon name="Logo" style="width: 16px; height: 16px;" class="text-primary" />
     </router-link>
     <slot>
-      <h5>{{ title }}</h5>
+      <h5 class="ml-4 text-lg text-black-500">
+        {{ title }}
+      </h5>
     </slot>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop } from 'nuxt-property-decorator'
-
-@Component
+import Icon from './UI/Icons/Icon.vue'
+@Component({
+  components: { Icon }
+})
 export default class Header extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private title!: string
 }
 </script>
-
-<style lang="scss" scoped>
-  @import "../assets/scss/vars";
-  @import "../assets/scss/mixins";
-
-  .header {
-    position: fixed;
-    z-index: 100;
-    top: 0;
-    width: 100%;
-    height: $header-height;
-    background-color: $header-bg;
-    display: flex;
-    align-items: center;
-    transition: width 0.3s;
-
-    @include bpSmall {
-      position: relative;
-    }
-
-    & > button {
-      line-height: 22px;
-      background: none;
-      border: none;
-      outline: none;
-
-      @include bpSmall {
-        display: none;
-      }
-
-      & > .iconfont {
-        color: $border-color !important;
-        font-size: 20px;
-      }
-    }
-
-    & > h5 {
-      margin: 0 0 0 16px;
-    }
-  }
-</style>

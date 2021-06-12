@@ -5,19 +5,19 @@ import { Authority } from '~/enums'
 
 // TODO: Move it from utils
 
-function decodePrivate(encodedKey: string): Buffer {
-  const buffer = bs58.decode(encodedKey)
+function decodePrivate (encodedKey: string): Buffer {
+  const buffer: Buffer = bs58.decode(encodedKey)
 
-  if (buffer[0] !== 128) throw new Error('private key network id mismatch')
+  if (buffer[0] !== 128) { throw new Error('private key network id mismatch') }
 
   return buffer.slice(0, -4)
 }
 
-export function privateKeyFrom(password: string): PrivateKey {
+export function privateKeyFrom (password: string): PrivateKey {
   return new PrivateKey(decodePrivate(password).slice(1))
 }
 
-function isKey(username: string, password: string): boolean {
+export function isKey (_: string, password: string): boolean {
   try {
     privateKeyFrom(password)
     return true
@@ -26,7 +26,7 @@ function isKey(username: string, password: string): boolean {
   }
 }
 
-async function getUserKeysMap(username: string): Promise<Record<string, string>> {
+export async function getUserKeysMap (username: string): Promise<Record<string, string>> {
   const keys: Record<string, string> = {}
 
   let accounts = null
@@ -37,7 +37,7 @@ async function getUserKeysMap(username: string): Promise<Record<string, string>>
     return keys
   }
 
-  if (accounts.length !== 1) return keys
+  if (accounts.length !== 1) { return keys }
 
   const [account] = accounts
 
@@ -56,53 +56,6 @@ async function getUserKeysMap(username: string): Promise<Record<string, string>>
   return keys
 }
 
-export async function credentialsValid(username: string, password: string): Promise<boolean> {
-  const keysMap = await getUserKeysMap(username)
-
-  const key = isKey(username, password)
-    ? privateKeyFrom(password)
-    : PrivateKey.fromLogin(username, password, 'active')
-
-  return !!keysMap[key.createPublic().toString()]
-}
-
-export async function getKeys(username: string, password: string): Promise<Record<string, any>> {
-  const keys: Record<string, any> = {
-    active: null,
-    memo: null,
-    posting: null,
-  }
-
-  const keysMap = await getUserKeysMap(username)
-
-  if (isKey(username, password)) {
-    const type =
-      keysMap[
-        privateKeyFrom(password)
-          .createPublic()
-          .toString()
-        ]
-
-    keys[type] = password
-
-    return keys
-  }
-  const ownerKey = PrivateKey.fromLogin(username, password, 'owner')
-  const activeKey = PrivateKey.fromLogin(username, password, 'active')
-  const postingKey = PrivateKey.fromLogin(username, password, 'posting')
-  const memoKey = PrivateKey.fromLogin(username, password, 'memo')
-
-  keys.owner = ownerKey.toString()
-  keys.active = activeKey.toString()
-  keys.posting = postingKey.toString()
-
-  if (keysMap[memoKey.createPublic().toString()] === 'memo') {
-    keys.memo = memoKey.toString()
-  }
-
-  return keys
-}
-
-export function getAuthority(str: Authority, fallback?: Authority): Authority | undefined {
+export function getAuthority (str: Authority, fallback?: Authority): Authority | undefined {
   return Object.values(Authority).includes(str) ? str : fallback
 }

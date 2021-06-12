@@ -8,13 +8,13 @@ module.exports = {
     '@nuxtjs/eslint-config-typescript',
     'plugin:nuxt/recommended'
   ],
-  plugins: [
-  ],
+  plugins: [],
   // add your custom rules here
   rules: {
-    'space-before-function-paren': 'off',
-    'comma-dangle': 'off',
     'require-await': 'off',
-    'multiline-ternary': 'off'
+    'no-console': 'off',
+    'import/no-mutable-exports': 'off',
+    camelcase: 'off',
+    'vue/no-v-html': 'off'
   }
 }

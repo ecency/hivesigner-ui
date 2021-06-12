@@ -1,97 +1,102 @@
 <template>
-  <Center>
-    <router-link
-      to="/"
-      class="d-inline-block my-2 no-decoration"
-      v-if="isRedirected"
-    >
-      <span class="logo iconfont icon-hivesigner"/>
-      <h4 class="m-0">hivesigner</h4>
-    </router-link>
-    <div
-      v-if="!failed && !isRedirected"
-      class="p-4 after-header"
-    >
-      <div class="container-sm mx-auto">
-        <div v-if="!failed && !signature">
-          <div class="mb-4 text-center" v-if="app && appProfile">
-            <Avatar :username="app" :size="80"/>
-            <div class="mt-2">
-              <h4 v-if="appProfile.name" class="mb-0">{{ appProfile.name }}</h4>
-              <span v-if="appProfile.website">{{ appProfile.website | parseUrl }}</span>
+  <base-page-layout class="login">
+    <template slot="left">
+      <img class="block mx-auto image" :src="require('../assets/img/auth.svg')" alt="">
+    </template>
+    <template slot="right">
+      <div
+        v-if="!failed && !isRedirected"
+        class="p-6"
+      >
+        <div class="container-sm mx-auto">
+          <div v-if="!failed && !signature">
+            <div v-if="app && appProfile" class="mb-4 text-center">
+              <Avatar :username="app" :size="80" />
+              <div class="mt-2">
+                <h4 v-if="appProfile.name" class="mb-0">
+                  {{ appProfile.name }}
+                </h4>
+                <span v-if="appProfile.website">{{ appProfile.website | parseUrl }}</span>
+              </div>
             </div>
+            <p>
+              <span v-if="app">{{ $t('import.app') }}<b>{{ app }}</b></span>
+              <span v-else>{{ $t('import.site') }}</span>
+              {{ $t('import.request_access') }}
+            </p>
           </div>
-          <p>
-            <span v-if="app">The app <b>{{ app }}</b></span>
-            <span v-else>This site </span>
-            is requesting access to view your current account username.
-          </p>
         </div>
       </div>
-    </div>
-    <div class="width-full p-4 mb-2">
-      <login-form
-        ref="login-form"
-        :loading="isLoading"
-        :keychain="keychain"
-        :error="error"
-        :authority="authority"
-        @failed="value => this.failed = value"
-        @error="value => this.error = value"
-        @loading="value => this.loading = value"
-        @signature="value => this.signature = value"
-        @submit="loginMe"
-      />
-      <router-link
-        :to="{ name: 'import', query: $route.query }"
-        class="btn btn-large input-block text-center mb-2"
-      >
-        Import account
-      </router-link>
-    </div>
-    <VueLoadingIndicator v-if="loading" class="overlay fixed big"/>
-    <Footer/>
-  </Center>
+      <div class="mb-2">
+        <login-form
+          ref="login-form"
+          :loading="isLoading"
+          :error="error"
+          :authority="authority"
+          @failed="value => failed = value"
+          @error="value => error = value"
+          @loading="value => isLoading = value"
+          @signature="value => signature = value"
+          @submit="loginMe"
+        />
+        <router-link
+          :to="{ name: 'import', query: $route.query }"
+          class="button block text-center mb-2"
+        >
+          {{ $t('import.add_another_account') }}
+        </router-link>
+        <div class="text-gray text-lg pt-4">
+          {{ $t('import.dont_have_an_account') }}
+          <a
+            href="https://signup.hive.io"
+            target="_blank"
+            rel="noopener"
+            class="text-black-500 hover:underline"
+          >{{ $t('import.sign_up_here') }}</a>
+        </div>
+      </div>
+      <Loader v-if="isLoading" class="overlay fixed" />
+    </template>
+  </base-page-layout>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Ref } from 'nuxt-property-decorator'
+import { Account } from '@hiveio/dhive'
+import Icon from '../components/UI/Icons/Icon.vue'
+import Loader from '../components/UI/Loader.vue'
+import BasePageLayout from '../components/Layouts/BasePageLayout.vue'
 import {
-  ERROR_INVALID_CREDENTIALS,
+  ERROR_INVALID_CREDENTIALS
 } from '~/consts'
 import {
   buildSearchParams,
   client,
   getAuthority,
-  getKeychain,
-  isValidUrl,
-  jsonParse,
-  signComplete
+  isValidUrl
 } from '~/utils'
-import { AuthModule, PersistentFormsModule } from '~/store'
+import { AccountsModule, AuthModule } from '~/store'
 import { Authority } from '~/enums'
-import { Account } from '@hiveio/dhive'
 import LoginForm from '~/components/Login/LoginForm.vue'
 
 @Component({
-  middleware: ['before-login'],
+  components: { BasePageLayout, Loader, Icon },
+  middleware: ['before-login']
 })
 export default class Login extends Vue {
   @Ref('login-form')
   private loginFormRef!: LoginForm
 
-  private keychain = {}
   private error = ''
   private isLoading = false
   private redirected = ''
   private showLoading = false
-  private loading = false
   private failed = false
   private signature = null
   private app = null
-  private appProfile: Record<string, any> = {}
+  private appProfile: Record<string, string> = {}
 
-  private get isRedirected(): boolean {
+  private get isRedirected (): boolean {
     return this.redirected === '/auths' ||
       this.redirected === '/profile' ||
       this.redirected === '/import' ||
@@ -101,66 +106,54 @@ export default class Login extends Vue {
       this.redirected.includes('/revoke')
   }
 
-  private get callback(): string {
+  private get callback (): string {
     return this.$route.query.redirect_uri as string
   }
 
-  private get clientId(): string {
+  private get clientId (): string {
     return this.$route.params.clientId || this.$route.query.client_id as string
   }
 
-  private get scope(): string {
+  private get scope (): string {
     const scope = this.$route.query.scope as string
     return ['login', 'posting'].includes(scope) ? scope : 'login'
   }
 
-  private get state(): string {
+  private get state (): string {
     return this.$route.query.state as string
   }
 
-  private get responseType(): string {
+  private get responseType (): string {
     const responseType = this.$route.query.response_type as string
     return ['code', 'token'].includes(responseType) ? responseType : 'token'
   }
 
-  private get requestId(): string {
+  private get requestId (): string {
     return this.$route.query.requestId as string
   }
 
-  private get authority(): Authority {
+  private get authority (): Authority {
     return getAuthority(this.$route.query.authority as Authority)
   }
 
-  private get uri(): string {
+  private get uri (): string {
     return `hive://login-request/${this.$route.params.clientId}${buildSearchParams(this.$route)}`
   }
 
-  private get username(): string {
-    return PersistentFormsModule.login.username
-  }
-
-  private set username(value: string) {
-    PersistentFormsModule.saveLoginUsername(value)
-  }
-
-  private get currentAccountUsername(): string {
+  private get currentAccountUsername (): string {
     return AuthModule.username
   }
 
-  private get account(): Account | null {
+  private get account (): Account | null {
     return AuthModule.account
   }
 
-  private get hasAuthority(): boolean {
+  private get hasAuthority (): boolean {
     const auths = this.account.posting.account_auths.map(auth => auth[0])
-    return auths.indexOf(this.clientId) !== -1
+    return auths.includes(this.clientId)
   }
 
-  private created(): void {
-    this.loadKeychain()
-  }
-
-  private mounted(): void {
+  private mounted (): void {
     this.redirected = this.$route.query.redirect as string || ''
     if (this.$route.fullPath === '/login' || this.$route.fullPath === '/login?authority=posting') {
       this.redirected = '/login'
@@ -175,44 +168,29 @@ export default class Login extends Vue {
       this.$router.push({
         name: 'authorize',
         params: { username: this.clientId },
-        query: { redirect_uri: this.uri.replace('hive:/', '') },
+        query: { redirect_uri: this.uri.replace('hive:/', '') }
       })
     } else if (this.clientId) {
       this.loadAppProfile()
     }
   }
 
-  private login(data: any): Promise<void> {
-    return AuthModule.login(data)
-  }
-
-  private loadKeychain(): void {
-    this.keychain = getKeychain()
-    const usernames = Object.keys(this.keychain)
-    if (usernames.length > 0) {
-      [this.username] = usernames
-    }
-  }
-
-  private async loginMe(buff): Promise<void> {
+  private async loginMe (keys: Record<string, string>): Promise<void> {
     const { authority } = this
-    const keys = jsonParse(buff.toString())
     if (authority && !keys[authority]) {
       this.isLoading = false
-      this.error = `You need to import your account using your password or at least ${authority} key to do this request. Click "Import account" button to proceed.`
+      this.error = this.$t('login.need_import', { authority }) as string
       return
     }
-    this.loading = true
+    this.isLoading = true
     this.showLoading = true
     try {
-      await this.login({ username: this.username, keys })
+      await AuthModule.login({ username: AccountsModule.selectedAccount, keys })
       const redirect = this.$route.query.redirect as string
 
       if (this.redirected !== '' && !this.redirected.includes('/login-request')) {
-        this.$router.push(redirect || '/')
-        this.error = ''
-        this.isLoading = false
-        this.loginFormRef.reset()
+        await this.$router.push(redirect || '/')
+        this.loginFormRef.resetForm()
       } else {
         if (
           this.scope === 'posting' &&
@@ -227,49 +205,46 @@ export default class Login extends Vue {
               ...this.$route.query,
               redirect_uri: this.callback,
               app: this.app,
-              signature: this.signature,
-            },
+              signature: this.signature
+            }
           })
           return
         }
 
         try {
           await AuthModule.signAndRedirectToCallback({
-            username: this.username,
+            username: AccountsModule.selectedAccount,
             authority: this.authority,
             signature: this.signature,
             state: this.state,
             responseType: this.responseType,
             app: this.app,
             scope: this.scope,
-            callback: this.callback,
+            callback: this.callback
           })
         } catch (err) {
           console.error('Failed to login', err)
           this.signature = ''
           this.failed = true
-          if (this.requestId) {
-            signComplete(this.requestId, err, null)
-          }
-          this.loading = false
+          this.isLoading = false
           this.showLoading = false
         }
       }
     } catch (err) {
       console.log('Login failed', err)
       this.isLoading = false
-      this.error = ERROR_INVALID_CREDENTIALS
+      this.error = this.$t(ERROR_INVALID_CREDENTIALS) as string
     }
   }
 
-  private async loadAppProfile(): Promise<void> {
+  private async loadAppProfile (): Promise<void> {
     this.showLoading = true
     const app = this.clientId
     const accounts = await client.database.getAccounts([app])
     if (accounts[0]) {
       this.app = app
       try {
-        this.appProfile = JSON.parse(accounts[0].posting_json_metadata).profile
+        this.appProfile = JSON.parse(accounts[0].posting_json_metadata).profile as Record<string, string>
         if (!this.appProfile.redirect_uris.includes(this.callback) || !isValidUrl(this.callback)) {
           this.failed = true
         }
@@ -283,3 +258,28 @@ export default class Login extends Vue {
   }
 }
 </script>
+<style lang="scss">
+.login {
+  .image {
+    max-width: 144px;
+  }
+}
+
+@screen sm {
+  .login {
+
+    .image {
+      max-width: 222px;
+    }
+  }
+}
+
+@screen xl {
+  .login {
+
+    .image {
+      max-width: 411px;
+    }
+  }
+}
+</style>

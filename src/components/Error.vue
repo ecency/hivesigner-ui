@@ -1,11 +1,8 @@
 <template>
-  <div class="flash flash-error mb-4">
-    Oops, something went wrong.
-    <span v-if="message">
-      Here is the error message:
-      <br /><b>"{{ message }}"</b>
-    </span>
-    <span v-else>Please try again later.</span>
+  <div class="alert alert-error mb-4">
+    {{ $t('errors.something_wrong') }}
+    <span v-if="message" v-html="$t('errors.here_message', { message })" />
+    <span v-else>{{ $t('common.try_again') }}</span>
   </div>
 </template>
 <script lang="ts">
@@ -18,8 +15,8 @@ export default class Error extends Vue {
   @Prop()
   private error: Errors
 
-  private get message(): string {
-    return getErrorMessage(this.error);
+  private get message (): string {
+    return getErrorMessage(this.error)
   }
 }
 </script>

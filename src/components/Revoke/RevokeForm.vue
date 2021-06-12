@@ -1,41 +1,41 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="mb-4">
+  <form class="mb-4" @submit.prevent="handleSubmit">
     <div class="mb-4">
-      <div class="mb-4 text-center" v-if="username">
-        <Avatar :username="username" :size="80"/>
-        <h4 class="mb-0 mt-2">{{ username }}</h4>
+      <div v-if="username" class="mb-4 text-center">
+        <Avatar :username="username" :size="80" />
+        <h4 class="mt-2 text-xl font-bold text-black-500">
+          {{ username }}
+        </h4>
       </div>
-      <p>
-        By clicking "Continue" you are revoking <b>{{ authority }}</b> authority from
-        <b>{{ username }}</b>.
-        Going forward <b>{{ username }}</b> will not be able to perform actions on your
-        behalf.
-      </p>
-      <div class="flash flash-warn mt-4" v-if="account.name && hasRequiredKey === false">
-        This transaction requires your <b>active</b> key.
+      <p class="text-black-400 text-lg" v-html="$t('revoke.message', { authority, username })" />
+      <div
+        v-if="account && account.name && hasRequiredKey ===false"
+        class="alert alert-warning mt-4"
+      >
+        {{ $t('authorize.requires_active_key') }}
       </div>
     </div>
     <div class="mt-2">
       <router-link
+        v-if="!(account && account.name) || hasRequiredKey === false"
         :to="{
           name: 'login',
-          query: { redirect: this.$route.fullPath, authority: 'active' },
+          query: { redirect: $route.fullPath, authority: 'active' },
         }"
-        class="btn btn-large btn-blue mr-2 mb-2"
-        v-if="!account.name || hasRequiredKey === false"
+        class="button button-primary inline-block mr-2"
       >
-        Continue
+        {{ $t('common.continue') }}
       </router-link>
       <button
-        type="submit"
-        class="btn btn-large btn-success mb-2 mr-2"
-        :disabled="loading"
         v-else
+        type="submit"
+        class="button-success mr-2"
+        :disabled="loading"
       >
-        Revoke
+        {{ $t('revoke.revoke') }}
       </button>
-      <button class="revoke-cancel btn btn-large mb-2" @click.prevent="handleReject">
-        Cancel
+      <button @click.prevent="handleReject">
+        {{ $t('common.cancel') }}
       </button>
     </div>
   </form>
@@ -43,76 +43,65 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import { Account } from '@hiveio/dhive'
+import { Account, TransactionConfirmation } from '@hiveio/dhive'
 import { AuthModule } from '~/store'
 
 @Component
 export default class RevokeForm extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private username!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private authority!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private transactionId!: string
 
-  @Prop({
-    type: String,
-    default: '',
-  })
+  @Prop()
   private error!: string
 
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private loading!: boolean
 
-  @Prop({
-    type: String,
-    default: '',
-  })
-  private callback!: string
-
-  private get account(): Account {
+  private get account (): Account {
     return AuthModule.account
   }
 
-  private get hasRequiredKey(): boolean {
+  private get hasRequiredKey (): boolean {
     return !!(AuthModule.username && AuthModule.keys.active)
   }
 
-  private updateAccount(data: any): Promise<any> {
+  private updateAccount (data: any): Promise<TransactionConfirmation> {
     return AuthModule.updateAccount(data)
   }
 
-  private loadAccount(): Promise<void> {
+  private loadAccount (): Promise<void> {
     return AuthModule.loadAccount()
   }
 
-  private async handleSubmit(): Promise<void> {
+  private async handleSubmit (): Promise<void> {
     const { username, authority, callback, account } = this
     this.$emit('loading', true)
     const data = {
       account: account.name,
       memo_key: account.memo_key,
-      json_metadata: account.json_metadata,
+      json_metadata: account.json_metadata
     }
     data[authority] = JSON.parse(JSON.stringify(account[authority]))
     data[authority].account_auths.forEach((accountAuth, i) => {
-      if (accountAuth[0] === username) {
-        data[authority].account_auths.splice(i, 1)
-      }
+      if (accountAuth[0] === username) { data[authority].account_auths.splice(i, 1) }
     })
     try {
       const confirmation = await this.updateAccount(data)
@@ -136,7 +125,7 @@ export default class RevokeForm extends Vue {
     }
   }
 
-  private handleReject(): void {
+  private handleReject (): void {
     this.$emit('failed', false)
     this.$emit('loading', false)
     this.$emit('transactionId', '')

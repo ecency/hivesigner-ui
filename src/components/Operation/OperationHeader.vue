@@ -1,6 +1,8 @@
 <template>
-  <div class="Box-row">
-    <h4 class="mb-0">{{ model.name || operation }}</h4>
+  <div class="p-4">
+    <h4 class="text-xl font-bold text-black-500">
+      {{ model.name || operation }}
+    </h4>
   </div>
 </template>
 

@@ -11,16 +11,16 @@ import { VESTS_REGEX } from '~/consts'
 @Component
 export default class OperationValueAmount extends Vue {
   @Prop({
-    type: Number,
-    default: 0,
+    type: String,
+    required: true
   })
-  private value!: number
+  private value!: any
 
-  private get vestToSP(): number {
+  private get vestToSP (): number {
     return getVestsToSP(SettingsModule.properties)
   }
 
-  private formatValue(value: string): any {
+  private formatValue (value: string): any {
     if (VESTS_REGEX.test(value)) {
       return `${formatNumber(parseFloat(value) * this.vestToSP)} HP`
     }

@@ -1,19 +1,19 @@
 <template>
   <div>
-    <p class="mb-4">
-      You already {{ action }} the account <b>{{ username }}</b> to do
-      <b>{{ authority }}</b> operations on your behalf.
-    </p>
+    <p
+      class="text-black-400 text-lg"
+      v-html="$t('already_action_account', { action, authority, username })"
+    />
     <template v-if="callback">
       <router-link
         v-if="callback[0] === '/'"
         :to="callback"
-        class="btn btn-large btn-blue mb-2 mt-2"
+        class="button button-primary my-2"
       >
-        Continue
+        {{ $t('common.continue') }}
       </router-link>
-      <a v-else :href="callback" class="btn btn-large btn-blue mb-2 mt-2">
-        Continue to {{ callback | parseUrl }}
+      <a v-else :href="callback" class="button button-primary my-2">
+        {{ $t('common.continue_to', { item: parseURL(callback) }) }}
       </a>
     </template>
   </div>
@@ -21,31 +21,36 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
+import { parseURL } from '../plugins/filter-functions'
 
 @Component
 export default class Already extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private username!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private authority!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private callback!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private action!: string
+
+  private parseURL (link: string): string {
+    return parseURL(link)
+  }
 }
 </script>

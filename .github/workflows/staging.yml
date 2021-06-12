@@ -1,0 +1,96 @@
+name: Staging CI/CD
+on:
+  push:
+    branches:
+      - development
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: npm install, build, lint and test
+      run: |
+        yarn
+        yarn lint
+        yarn build --no-unsafe-inline
+      env:
+        CI: true
+  build:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile
+          push: true
+          tags: ecency/hivesigner:development
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: SSH and deploy node app
+      uses: appleboy/ssh-action@5711a203b3207eb1c6cebec6ac2152ab210ec3ae
+      env:
+        STAGING_PORT: ${{secrets.STAGING_PORT}}
+        BROADCAST_NETWORK: ${{secrets.BROADCAST_NETWORK}}
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        envs: STAGING_PORT,BROADCAST_NETWORK
+        script: |
+          cd ~/hivesigner-ui
+          git pull origin development
+          git checkout development
+          export PORT=$STAGING_PORT
+          export BROADCAST_NETWORK=$BROADCAST_NETWORK
+          docker pull ecency/hivesigner:development
+          docker stack deploy -c docker-compose.yml hivesigner-staging
+          
+  deploy-testnet:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: SSH and deploy node app
+      uses: appleboy/ssh-action@5711a203b3207eb1c6cebec6ac2152ab210ec3ae
+      env:
+        TESTNET_PORT: ${{secrets.TESTNET_PORT}}
+        BROADCAST_NETWORK: ${{secrets.BROADCAST_TESTNET_NETWORK}}
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        envs: TESTNET_PORT,BROADCAST_NETWORK
+        script: |
+          cd ~/hivesigner-ui
+          git pull origin development
+          git checkout development
+          export PORT=$TESTNET_PORT
+          export BROADCAST_NETWORK=$BROADCAST_NETWORK
+          docker pull ecency/hivesigner:development
+          docker stack deploy -c docker-compose.yml -c docker-compose.testnet.yml hivesigner-testnet

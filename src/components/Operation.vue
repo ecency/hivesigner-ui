@@ -1,10 +1,15 @@
 <template>
-  <div class="Box operation mb-4">
+  <div class="border-2 rounded-md mb-6">
     <OperationHeader :operation="operation[0]" />
-    <div class="Box-row">
+    <div class="border-t p-4">
       <div v-for="(value, key) in operation[1]" :key="key">
-        <p>
-          <b class="form-label v-align-top">{{ schema[key].name || key }}</b>
+        <p class="mb-2 text-lg block">
+          <span
+            class="align-top inline-block text-black-400 font-bold"
+            style="min-width: 160px;"
+          >
+            {{ schema[key].name || key }}
+          </span>
           <OperationValue :value="value" :path="operation[0]" :schema-key="key" />
         </p>
       </div>
@@ -24,7 +29,7 @@ export default class Operation extends Vue {
   })
   private operation!: any[]
 
-  private get schema(): any {
+  private get schema (): any {
     return OPERATIONS[this.operation[0]]?.schema || {}
   }
 }
