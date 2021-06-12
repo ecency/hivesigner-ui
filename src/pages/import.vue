@@ -231,6 +231,7 @@ export default class Import extends Vue {
     this.showLoading = true
     const app = this.clientId
     const accounts = await client.database.getAccounts([app])
+    console.log(accounts)
     if (accounts[0]) {
       this.app = app
       try {
