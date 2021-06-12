@@ -2,10 +2,10 @@
   <div class="account-details h-full flex flex-col justify-center">
     <account-item :user="account" />
     <div class="accounts-details-menu flex flex-col text-center text-black-400 mt-12">
-      <router-link to="/auths" class="p-4 hover:bg-gray-100">
+      <router-link v-if="isLoggedIn" to="/auths" class="p-4 hover:bg-gray-100">
         {{ $t('accounts.auths') }}
       </router-link>
-      <router-link to="/signs" class="p-4 hover:bg-gray-100">
+      <router-link v-if="isLoggedIn" to="/signs" class="p-4 hover:bg-gray-100">
         {{ $t('accounts.sign_transactions') }}
       </router-link>
       <a
@@ -41,6 +41,8 @@ export default class AccountDetails extends Vue {
   })
   private account!: string
 
+  private isLoggedIn = false
+
   @Ref('confirm-modal')
   private confirmModalRef!: ConfirmModal
 
@@ -51,6 +53,7 @@ export default class AccountDetails extends Vue {
         keys: await AccountsModule.getEncryptedKeys({ username: this.account })
       })
       await AccountsModule.setSelectedAccount(this.account)
+      this.isLoggedIn = true
     } catch (_) {
     }
   }
