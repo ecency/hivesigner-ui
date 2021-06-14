@@ -32,7 +32,10 @@
       </div>
     </div>
     <div class="flex justify-center mt-6 md:mt-20 xl:pt-10">
-      <router-link to="/import" class="button button-md block text-center w-full">
+      <router-link
+        :to="{ path: '/import', query: { redirect: 'accounts' } }"
+        class="button button-md block text-center w-full"
+      >
         {{ $t('accounts.add_another') }}
       </router-link>
     </div>
