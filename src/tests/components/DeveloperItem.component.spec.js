@@ -28,7 +28,7 @@ describe('DeveloperItemComponent', function () {
     wrapper = shallowMount(DeveloperItem, {
       localVue,
       router,
-      store,
+      store
     })
   })
 
@@ -44,7 +44,7 @@ describe('DeveloperItemComponent', function () {
       propsData: {
         title: 'current',
         value: 'another'
-      },
+      }
     })
     expect(wrapper.findAll('.developer-item > div').length).toBe(0)
 
@@ -69,7 +69,7 @@ describe('DeveloperItemComponent', function () {
       propsData: {
         title: 'current',
         value: 'another'
-      },
+      }
     })
 
     await wrapper.find('a').trigger('click')

@@ -8,8 +8,11 @@ describe('AlreadyComponent', function () {
   let router
   let wrapper
   let store
+  let tMock
 
   beforeEach(() => {
+    tMock = (v) => v
+
     localVue = createLocalVue()
     localVue.use(VueRouter)
     localVue.use(Vuex)
@@ -22,7 +25,7 @@ describe('AlreadyComponent', function () {
       },
       getters: {
         username: jest.fn()
-      },
+      }
     })
 
     wrapper = shallowMount(Already, {
@@ -30,8 +33,11 @@ describe('AlreadyComponent', function () {
       router,
       store,
       filters: {
-        parseUrl: (value) => value,
+        parseUrl: value => value
       },
+      mocks: {
+        $t: tMock
+      }
     })
   })
 
@@ -43,10 +49,10 @@ describe('AlreadyComponent', function () {
     await wrapper.setProps({
       action: 'actionTest',
       username: 'usernameTest',
-      authority: 'authorityTest',
+      authority: 'authorityTest'
     })
     expect(wrapper.find('p').element.innerHTML.trim())
-      .toBe('You already actionTest the account <b>usernameTest</b> to do\n    <b>authorityTest</b> operations on your behalf.')
+      .toBe('already_action_account')
   })
 
   it('should render continue if callback is relative', async function () {

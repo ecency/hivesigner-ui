@@ -4,7 +4,7 @@ import { Store } from 'vuex'
 export class VuexModule extends Module {
   public readonly store!: Store<any>
 
-  constructor(...args: any) {
+  constructor (...args: any) {
     super(args)
   }
 }

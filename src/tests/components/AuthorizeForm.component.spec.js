@@ -9,8 +9,11 @@ describe('AuthorizeComponent', function () {
   let router
   let wrapper
   let store
+  let tMock
 
   beforeEach(() => {
+    tMock = v => v
+
     localVue = createLocalVue()
     localVue.use(VueRouter)
     localVue.use(Vuex)
@@ -23,7 +26,7 @@ describe('AuthorizeComponent', function () {
       },
       getters: {
         username: jest.fn()
-      },
+      }
     })
 
     wrapper = shallowMount(AuthorizeForm, {
@@ -31,8 +34,11 @@ describe('AuthorizeComponent', function () {
       router,
       store,
       components: {
-        Avatar,
+        Avatar
       },
+      mocks: {
+        $t: tMock
+      }
     })
   })
 
@@ -58,11 +64,14 @@ describe('AuthorizeComponent', function () {
           authority2: {
             weight_threshold: 2,
             account_auths: []
-          },
-        },
+          }
+        }
       },
       computed: {
         hasRequiredKey: jest.fn().mockReturnValue(true)
+      },
+      mocks: {
+        $t: tMock
       }
     })
 
@@ -93,6 +102,9 @@ describe('AuthorizeComponent', function () {
       store,
       computed: {
         accountUsername: jest.fn().mockReturnValue(null)
+      },
+      mocks: {
+        $t: tMock
       }
     })
     expect(wrapper.find('a')).toBeTruthy()

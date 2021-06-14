@@ -8,8 +8,11 @@ describe('ConfirmationComponent', function () {
   let router
   let wrapper
   let store
+  let tMock
 
   beforeEach(() => {
+    tMock = v => v
+
     localVue = createLocalVue()
     localVue.use(VueRouter)
     localVue.use(Vuex)
@@ -29,6 +32,9 @@ describe('ConfirmationComponent', function () {
       localVue,
       router,
       store,
+      mocks: {
+        $t: tMock
+      }
     })
   })
 
@@ -47,6 +53,6 @@ describe('ConfirmationComponent', function () {
     await wrapper.setProps({
       id: 'test'
     })
-    expect(wrapper.find('a').element.innerHTML).toBe('test')
+    expect(wrapper.find('a').element.innerHTML.trim()).toBe('test')
   })
 })

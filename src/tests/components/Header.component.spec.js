@@ -28,7 +28,7 @@ describe('HeaderComponent', function () {
     wrapper = shallowMount(Header, {
       localVue,
       router,
-      store,
+      store
     })
   })
 
@@ -40,6 +40,6 @@ describe('HeaderComponent', function () {
     await wrapper.setProps({
       title: 'test'
     })
-    expect(wrapper.find('h5').element.innerHTML).toBe('test')
+    expect(wrapper.find('h5').element.innerHTML.trim()).toBe('test')
   })
 })

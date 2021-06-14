@@ -1,27 +1,22 @@
 import auth from '@/middleware/auth'
 
-jest.mock('@/utils')
-import * as utils from '@/utils'
-
 describe('AuthMiddleware', function () {
   let redirectMock
 
   beforeEach(() => {
-    utils.hasAccounts = jest.fn()
     redirectMock = jest.fn()
   })
 
   it('should redirect to login if current account doesn\'t exists', function () {
-    utils.hasAccounts.mockReturnValue(true)
     auth({
       redirect: redirectMock,
       params: {},
       store: {
         getters: {
-          'auth/username': undefined,
-        },
+          'auth/username': undefined
+        }
       },
-      route: {},
+      route: {}
     })
     expect(redirectMock).toHaveBeenCalledWith('/login', { redirect: [] })
   })
@@ -32,10 +27,10 @@ describe('AuthMiddleware', function () {
       params: {},
       store: {
         getters: {
-          'auth/username': undefined,
-        },
+          'auth/username': undefined
+        }
       },
-      route: {},
+      route: {}
     })
     expect(redirectMock).toHaveBeenCalledWith('/import', { redirect: [] })
   })
@@ -49,10 +44,10 @@ describe('AuthMiddleware', function () {
       },
       store: {
         getters: {
-          'auth/username': undefined,
-        },
+          'auth/username': undefined
+        }
       },
-      route: {},
+      route: {}
     })
     expect(redirectMock).toHaveBeenCalledWith('/login', { redirect: [], authority: 'myAuthority' })
   })
@@ -64,12 +59,12 @@ describe('AuthMiddleware', function () {
       params: {},
       store: {
         getters: {
-          'auth/username': undefined,
-        },
+          'auth/username': undefined
+        }
       },
       route: {
         fullPath: 'https://testing.com'
-      },
+      }
     })
     expect(redirectMock).toHaveBeenCalledWith('/login', { redirect: 'https://testing.com' })
   })
@@ -80,10 +75,10 @@ describe('AuthMiddleware', function () {
       params: {},
       store: {
         getters: {
-          'auth/username': 'authorized',
-        },
+          'auth/username': 'authorized'
+        }
       },
-      route: {},
+      route: {}
     })
     expect(redirectMock).not.toBeCalled()
   })

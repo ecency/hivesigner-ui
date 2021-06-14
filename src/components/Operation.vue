@@ -25,7 +25,7 @@ import { OPERATIONS } from '~/consts'
 export default class Operation extends Vue {
   @Prop({
     type: Array,
-    default: () => [],
+    default: () => []
   })
   private operation!: any[]
 

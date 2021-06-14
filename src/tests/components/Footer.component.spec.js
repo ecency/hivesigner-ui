@@ -29,6 +29,9 @@ describe('FooterComponent', function () {
       localVue,
       router,
       store,
+      mocks: {
+        $t: v => v
+      }
     })
   })
 

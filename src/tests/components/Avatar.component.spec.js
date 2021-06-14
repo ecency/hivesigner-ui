@@ -30,8 +30,8 @@ describe('AvatarComponent', function () {
       router,
       store,
       propsData: {
-        username: 'test1',
-      },
+        username: 'test1'
+      }
     })
   })
 

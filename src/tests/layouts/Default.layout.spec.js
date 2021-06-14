@@ -3,9 +3,9 @@ import Vuex from 'vuex'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Default from '@/layouts/default'
+import * as storeModules from '@/store'
 
 jest.mock('@/store')
-import * as storeModules from '@/store'
 
 describe('DefaultLayout', function () {
   let localVue
@@ -22,7 +22,7 @@ describe('DefaultLayout', function () {
 
     storeModules.SettingsModule = {
       loadSettings: () => Promise.resolve(),
-      getDynamicGlobalProperties: () => Promise.resolve(),
+      getDynamicGlobalProperties: () => Promise.resolve()
     }
 
     wrapper = shallowMount(Default, {
@@ -30,8 +30,8 @@ describe('DefaultLayout', function () {
       router,
       store,
       components: {
-        Nuxt: new Vue(),
-      },
+        Nuxt: new Vue()
+      }
     })
   })
 

@@ -46,7 +46,7 @@ export async function getUserKeysMap (username: string): Promise<Record<string, 
   const types = ['owner', 'active', 'posting']
 
   for (let i = 0; i < types.length; i += 1) {
-    const keysOfType = account[types[i]].key_auths
+    const keysOfType = (account as any)[types[i]].key_auths
 
     for (let j = 0; j < keysOfType.length; j += 1) {
       keys[keysOfType[j][0]] = types[i]

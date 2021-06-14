@@ -3,9 +3,6 @@ import VueRouter from 'vue-router'
 import Vuex from 'vuex'
 import ImportUserForm from '@/components/Import/ImportUserForm'
 
-jest.mock('@/utils')
-import * as utils from '@/utils'
-
 describe('ImportUserFormComponent', function () {
   let localVue
   let router
@@ -28,8 +25,6 @@ describe('ImportUserFormComponent', function () {
       }
     })
 
-    utils.hasAccounts.mockReturnValue(true)
-
     wrapper = shallowMount(ImportUserForm, {
       localVue,
       router,
@@ -37,13 +32,13 @@ describe('ImportUserFormComponent', function () {
       computed: {
         username: {
           get: jest.fn(),
-          set: jest.fn(),
+          set: jest.fn()
         },
         password: {
           get: jest.fn(),
-          set: jest.fn(),
-        },
-      },
+          set: jest.fn()
+        }
+      }
     })
   })
 
@@ -105,7 +100,7 @@ describe('ImportUserFormComponent', function () {
     wrapper.vm.reset()
     expect(wrapper.vm.dirty).toEqual({
       username: false,
-      password: false,
+      password: false
     })
   })
 })

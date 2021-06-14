@@ -1,7 +1,7 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils'
 import Vuex from 'vuex'
 import VueRouter from 'vue-router'
-import App from '@/components/App'
+import App from '@/components/Apps/AppItem'
 import Avatar from '@/components/Avatar'
 
 describe('AppComponent', function () {

@@ -20,20 +20,23 @@ describe('ImportSetPasswordComponent', function () {
       localVue,
       router,
       store,
+      mocks: {
+        $t: v => v
+      },
       computed: {
         importKey: {
-          get() {
+          get () {
             return jest.fn()
           },
-          set() {
+          set () {
             return jest.fn()
           }
         },
         keyConfirmation: {
-          get() {
+          get () {
             return jest.fn()
           },
-          set() {
+          set () {
             return jest.fn()
           }
         }
@@ -51,14 +54,14 @@ describe('ImportSetPasswordComponent', function () {
 
     expect(wrapper.vm.dirty).toEqual({
       key: true,
-      keyConfirmation: true,
+      keyConfirmation: true
     })
 
     wrapper.vm.reset()
 
     expect(wrapper.vm.dirty).toEqual({
       key: false,
-      keyConfirmation: false,
+      keyConfirmation: false
     })
   })
 
@@ -73,7 +76,7 @@ describe('ImportSetPasswordComponent', function () {
     await wrapper.setProps({
       errors: {
         key: 'Key error',
-        keyConfirmation: 'Key confirmation error',
+        keyConfirmation: 'Key confirmation error'
       }
     })
     expect(wrapper.findAll('button[disabled]').length).toBe(1)
@@ -88,7 +91,7 @@ describe('ImportSetPasswordComponent', function () {
     await wrapper.setProps({
       errors: {
         key: 'Key error',
-        keyConfirmation: 'Key confirmation error',
+        keyConfirmation: 'Key confirmation error'
       }
     })
 

@@ -52,11 +52,11 @@ export default class AuthorizeUsername extends Vue {
   private error = false
   private transactionId = ''
 
-  private get username(): string {
+  private get username (): string {
     return this.$route.params.username
   }
 
-  private get authority(): Authority {
+  private get authority (): Authority {
     return getAuthority(this.$route.query.authority as Authority, Authority.Posting)
   }
 

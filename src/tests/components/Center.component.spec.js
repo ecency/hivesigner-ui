@@ -28,7 +28,7 @@ describe('CenterComponent', function () {
     wrapper = shallowMount(Center, {
       localVue,
       router,
-      store,
+      store
     })
   })
 

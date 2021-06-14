@@ -65,8 +65,8 @@ export default class Settings extends VuexModule {
     }
 
     try {
-      const settings = JSON.parse(settingsContent)
-      client.updateClient(settings.address)
+      const settings = JSON.parse(settingsContent);
+      (client as any).updateClient(settings.address)
       await this.getConfig()
 
       this.store.app.$idleDetector.start(settings.timeout * 60 * 1000, () => {
