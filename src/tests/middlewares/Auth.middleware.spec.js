@@ -13,7 +13,8 @@ describe('AuthMiddleware', function () {
       params: {},
       store: {
         getters: {
-          'auth/username': undefined
+          'auth/username': undefined,
+          'accounts/hasAccounts': true
         }
       },
       route: {}
@@ -36,7 +37,6 @@ describe('AuthMiddleware', function () {
   })
 
   it('should have authority parameter in redirect call', function () {
-    utils.hasAccounts.mockReturnValue(true)
     auth({
       redirect: redirectMock,
       params: {
@@ -44,7 +44,8 @@ describe('AuthMiddleware', function () {
       },
       store: {
         getters: {
-          'auth/username': undefined
+          'auth/username': undefined,
+          'accounts/hasAccounts': true
         }
       },
       route: {}
@@ -53,13 +54,13 @@ describe('AuthMiddleware', function () {
   })
 
   it('should have redirect parameter in redirect call', function () {
-    utils.hasAccounts.mockReturnValue(true)
     auth({
       redirect: redirectMock,
       params: {},
       store: {
         getters: {
-          'auth/username': undefined
+          'auth/username': undefined,
+          'accounts/hasAccounts': true
         }
       },
       route: {

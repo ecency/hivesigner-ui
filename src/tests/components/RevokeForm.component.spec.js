@@ -9,8 +9,10 @@ describe('RevokeFormComponent', function () {
   let router
   let wrapper
   let store
+  let $t
 
   beforeEach(() => {
+    $t = v => v
     localVue = createLocalVue()
     localVue.use(VueRouter)
     localVue.use(Vuex)
@@ -47,6 +49,9 @@ describe('RevokeFormComponent', function () {
       components: {
         Avatar,
       },
+      mocks: {
+        $t
+      }
     })
   })
 
@@ -83,21 +88,6 @@ describe('RevokeFormComponent', function () {
     expect(wrapper.emitted().loading[0]).toEqual([true])
   })
 
-  it('should submit form successfully with relative callback', async function () {
-    wrapper.vm.updateAccount = jest.fn().mockReturnValue({ id: 'testConfirmationId' })
-    wrapper.vm.loadAccount = jest.fn()
-    await wrapper.setProps({
-      username: 'testUsername',
-      authority: 'authority1',
-      callback: '/relative',
-    })
-
-    await wrapper.find('form').trigger('submit')
-
-    expect(wrapper.emitted().loading[0]).toEqual([true])
-    expect(wrapper.vm.$route.path).toBe('/relative')
-  })
-
   it('should submit form failure', async function () {
     const error = new Error('failed')
     wrapper.vm.updateAccount = jest.fn().mockReturnValue({ id: 'testConfirmationId' })
@@ -119,7 +109,7 @@ describe('RevokeFormComponent', function () {
   })
 
   it('should handle form reject', async function () {
-    await wrapper.find('button.revoke-cancel').trigger('click')
+    await wrapper.find('.button-cancel').trigger('click')
 
     expect(wrapper.emitted().failed[0]).toEqual([false])
     expect(wrapper.emitted().loading[0]).toEqual([false])

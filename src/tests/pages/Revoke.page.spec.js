@@ -15,6 +15,7 @@ describe('RevokeUsernamePage', function () {
   let wrapper
   let redirectMock
   let $route
+  let $t
 
   function initWrapper() {
     localVue = createLocalVue()
@@ -31,11 +32,14 @@ describe('RevokeUsernamePage', function () {
       },
       mocks: {
         $route,
+        $t,
       },
     })
   }
 
   beforeEach(() => {
+    utils.getAuthority = jest.fn().mockReturnValue('posting')
+    $t = v => v
     $route = {
       params: {},
       query: {},
@@ -100,7 +104,6 @@ describe('RevokeUsernamePage', function () {
     const element = wrapper.find('revoke-form-stub').element
     expect(element.getAttribute('username')).toBe('tester')
     expect(element.getAttribute('authority')).toBe('posting')
-    expect(element.getAttribute('callback')).toBe('callback')
   })
 
   it('should show already if hasn\'t authority and hasn\'t transaction id', function () {
@@ -122,13 +125,13 @@ describe('RevokeUsernamePage', function () {
     wrapper.vm.failed = true
     wrapper.vm.error = 'my error'
     await wrapper.vm.$nextTick()
-    expect(wrapper.find('error-stub').element.getAttribute('error')).toBe('my error')
+    expect(wrapper.find('transaction-status-stub').element.getAttribute('status')).toBe('failure')
   })
 
   it('should show confirmation if has transaction id', async function () {
     initWrapper()
     wrapper.vm.transactionId = 'id'
     await wrapper.vm.$nextTick()
-    expect(wrapper.find('confirmation-stub').element.getAttribute('id')).toBe('id')
+    expect(wrapper.find('transaction-status-stub').element.getAttribute('status')).toBe('success')
   })
 })

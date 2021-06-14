@@ -15,6 +15,7 @@ describe('AuthorizePage', function () {
   let $router
   let wrapper
   let store
+  let $t
 
   function initWrapper() {
     wrapper = shallowMount(Authorize, {
@@ -29,11 +30,13 @@ describe('AuthorizePage', function () {
       mocks: {
         $route,
         $router,
+        $t,
       },
     })
   }
 
   beforeEach(() => {
+    $t = v => v
     localVue = createLocalVue()
     localVue.use(Vuex)
     store = new Vuex.Store({})
@@ -85,14 +88,14 @@ describe('AuthorizePage', function () {
     wrapper.vm.error = 'my error'
     wrapper.vm.failed = true
     await wrapper.vm.$nextTick()
-    expect(wrapper.find('error-stub').element.getAttribute('error')).toBe('my error')
+    expect(wrapper.find('transaction-status-stub').element.getAttribute('status')).toBe('failure')
   })
 
   it('should render confirmation if not loading and has transactionId', async function () {
     initWrapper()
     wrapper.vm.transactionId = 'my id'
     await wrapper.vm.$nextTick()
-    expect(wrapper.find('confirmation-stub').element.getAttribute('id')).toBe('my id')
+    expect(wrapper.find('transaction-status-stub').element.getAttribute('status')).toBe('success')
   })
 
   it('should handle submit successfully with relative callback', async function () {

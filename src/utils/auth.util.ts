@@ -1,12 +1,10 @@
 import { PrivateKey } from '@hiveio/dhive'
-import * as bs58 from 'bs58'
+import { decode } from 'bs58'
 import { client } from './client.util'
 import { Authority } from '~/enums'
 
-// TODO: Move it from utils
-
 function decodePrivate (encodedKey: string): Buffer {
-  const buffer: Buffer = bs58.decode(encodedKey)
+  const buffer: Buffer = decode(encodedKey)
 
   if (buffer[0] !== 128) { throw new Error('private key network id mismatch') }
 

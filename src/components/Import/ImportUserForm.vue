@@ -43,7 +43,7 @@
         href="https://signup.hive.io"
         target="_blank"
         rel="noopener"
-        class="text-black-500 hover:underline"
+        class="text-black-500 hover:underline sign-up"
       >{{ $t('import.sign_up_here') }}</a>
     </div>
   </div>

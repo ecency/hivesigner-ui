@@ -16,6 +16,7 @@ describe('SignPage', function () {
   let wrapper
   let $router
   let $route
+  let $t
 
   function initWrapper() {
     localVue = createLocalVue()
@@ -35,12 +36,14 @@ describe('SignPage', function () {
       mocks: {
         $router,
         $route,
+        $t,
       },
     })
     wrapper.vm.uriIsValid = true
   }
 
   beforeEach(() => {
+    $t = v => v
     $router = {}
     $route = {
       query: {
@@ -62,11 +65,6 @@ describe('SignPage', function () {
     expect(wrapper).toBeTruthy()
   })
 
-  it('should show header with title', async function () {
-    initWrapper()
-    expect(wrapper.find('header-stub').element.getAttribute('title')).toBe('Confirm transaction')
-  })
-
   it('should show error component if failed', async function () {
     initWrapper()
     wrapper.vm.parsed = {}
@@ -75,7 +73,7 @@ describe('SignPage', function () {
 
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('error-stub').element.getAttribute('error')).toBe('my error')
+    expect(wrapper.find('transaction-status-stub').element.getAttribute('status')).toBe('failure')
   })
 
   it('should show confirmation if has transaction id', async function () {
@@ -85,7 +83,7 @@ describe('SignPage', function () {
 
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('confirmation-stub').element.getAttribute('id')).toBe('id')
+    expect(wrapper.find('transaction-status-stub').element.getAttribute('status')).toBe('success')
   })
 
   it('should show operations from parsed tx', async function () {
@@ -162,7 +160,7 @@ describe('SignPage', function () {
     await wrapper.vm.$nextTick()
 
     expect(wrapper.find('router-link-stub').element.innerHTML.trim())
-      .toBe('Continue')
+      .toBe('common.continue')
   })
 
   it('should show submit button and handleSubmit', async function () {
@@ -202,7 +200,7 @@ describe('SignPage', function () {
     }
 
     await wrapper.vm.$nextTick()
-    await wrapper.find('.btn-cancel').trigger('click')
+    await wrapper.find('.button-cancel').trigger('click')
 
     expect(wrapper.vm.handleReject).toHaveBeenCalled()
   })
@@ -212,7 +210,7 @@ describe('SignPage', function () {
     wrapper.vm.parsed = null
 
     await wrapper.vm.$nextTick()
-    expect(wrapper.find('.after-header > div').element.innerHTML.trim())
-      .toBe('Oops, something went wrong. The signing URL provided is invalid.')
+    expect(wrapper.find('.alert-error').element.innerHTML.trim())
+      .toBe('errors.unknown')
   })
 })

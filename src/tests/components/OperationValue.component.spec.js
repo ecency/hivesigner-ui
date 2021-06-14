@@ -15,8 +15,10 @@ describe('OperationValueComponent', function () {
   let router
   let wrapper
   let store
+  let $t
 
   beforeEach(async () => {
+    $t = v => v
     localVue = createLocalVue()
     localVue.use(VueRouter)
     localVue.use(Vuex)
@@ -39,6 +41,9 @@ describe('OperationValueComponent', function () {
       },
       filters: {
         dateHeader: () => 'tested',
+      },
+      mocks: {
+        $t,
       },
     })
 
@@ -110,11 +115,14 @@ describe('OperationValueComponent', function () {
       components: {
         OperationValueAccount,
       },
+      mocks: {
+        $t,
+      },
     })
     await wrapper.setProps({
       value: '__signer',
     })
-    expect(wrapper.find('em').element.innerHTML).toBe('you')
+    expect(wrapper.find('em').element.innerHTML).toBe('operations.you')
   })
 
   it('should render ValueAccount if schema is account', async function () {
@@ -228,6 +236,6 @@ describe('OperationValueComponent', function () {
       value: '_another_',
     })
     expect(wrapper.find('span').element.innerHTML)
-      .toBe('_another_')
+      .toBe('<span>_another_</span>')
   })
 })

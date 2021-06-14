@@ -2,14 +2,21 @@ import { createLocalVue, shallowMount } from '@vue/test-utils'
 import VueRouter from 'vue-router'
 import Vuex from 'vuex'
 import ImportUserForm from '@/components/Import/ImportUserForm'
+import * as storeModules from '@/store'
 
 describe('ImportUserFormComponent', function () {
   let localVue
   let router
   let wrapper
   let store
+  let $t
 
   beforeEach(() => {
+    $t = v => v
+    storeModules.AccountsModule = {
+      saveAccount: jest.fn()
+    }
+
     localVue = createLocalVue()
     localVue.use(VueRouter)
     localVue.use(Vuex)
@@ -38,6 +45,9 @@ describe('ImportUserFormComponent', function () {
           get: jest.fn(),
           set: jest.fn()
         }
+      },
+      mocks: {
+        $t
       }
     })
   })
@@ -46,23 +56,14 @@ describe('ImportUserFormComponent', function () {
     expect(wrapper).toBeTruthy()
   })
 
-  it('should handle blur', async function () {
-    wrapper.vm.handleBlur = jest.fn()
-
-    await wrapper.find('input[id="username"]').trigger('blur')
-    expect(wrapper.vm.handleBlur).toHaveBeenCalledWith('username')
-  })
-
   it('should call submitNext on button click', async function () {
     wrapper.vm.submitNext = jest.fn()
-    await wrapper.find('button.btn-blue').trigger('click')
+    await wrapper.find('.button-primary').trigger('click')
     expect(wrapper.vm.submitNext).toBeCalled()
   })
 
   it('should submit and change state', async function () {
-    utils.credentialsValid.mockReturnValue(Promise.resolve(true))
-    utils.getKeys.mockReturnValue(Promise.resolve(true))
-    utils.addToKeychain.mockReturnValue(Promise.resolve(true))
+    storeModules.AccountsModule.isValidCredentials = jest.fn().mockReturnValue(true)
 
     await wrapper.vm.submitNext()
 
@@ -73,9 +74,10 @@ describe('ImportUserFormComponent', function () {
   })
 
   it('should submit form if step is next', async function () {
-    utils.credentialsValid.mockReturnValue(Promise.resolve(true))
-    utils.getKeys.mockReturnValue(Promise.resolve({ k: 1 }))
-    utils.addToKeychain.mockReturnValue(true)
+    storeModules.AccountsModule.isValidCredentials = jest.fn().mockReturnValue(true)
+    storeModules.AccountsModule.getAuthoritiesKeys = jest.fn().mockReturnValue({
+      posting: 'key'
+    })
 
     wrapper.vm.storeAccount = false
     await wrapper.vm.submitNext()
@@ -83,17 +85,7 @@ describe('ImportUserFormComponent', function () {
     expect(wrapper.emitted().loading[0]).toEqual([true])
     expect(wrapper.emitted().loading[1]).toEqual([false])
     expect(wrapper.emitted().error[0]).toEqual([''])
-  })
-
-  it('should show select account has accounts', function () {
-    expect(wrapper.findAll('.select-account').length).toBe(1)
-  })
-
-  it('should call signup on signup button click', async function () {
-    wrapper.vm.signUp = jest.fn()
-    await wrapper.find('.sign-up').trigger('click')
-
-    expect(wrapper.vm.signUp).toHaveBeenCalled()
+    expect(storeModules.AccountsModule.saveAccount).toHaveBeenCalled()
   })
 
   it('should reset form', function () {

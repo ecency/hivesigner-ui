@@ -39,7 +39,7 @@ describe('OperationHeaderComponent', function () {
       operation: 'myOperation'
     })
 
-    expect(wrapper.find('h4').element.innerHTML).toBe('myOperation')
+    expect(wrapper.find('h4').element.innerHTML.trim()).toBe('myOperation')
   })
 
   it('should render operation w/o model name', async function () {
@@ -52,6 +52,6 @@ describe('OperationHeaderComponent', function () {
       operation: 'myOperation'
     })
 
-    expect(wrapper.find('h4').element.innerHTML).toBe('model name')
+    expect(wrapper.find('h4').element.innerHTML.trim()).toBe('model name')
   })
 })

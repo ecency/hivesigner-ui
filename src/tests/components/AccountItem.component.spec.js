@@ -1,17 +1,19 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils'
-import VueRouter from 'vue-router'
 import Vuex from 'vuex'
-import Home from '@/components/Index/Home'
+import VueRouter from 'vue-router'
+import AccountItem from '@/components/Accounts/AccountItem'
 import * as storeModules from '@/store'
 
-describe('HomeComponent', function () {
+describe('AccountItemComponent', function () {
   let localVue
   let router
   let wrapper
   let store
+  let tMock
 
   beforeEach(() => {
-    storeModules.AccountsModule = {}
+    tMock = (v) => v
+    storeModules.AuthModule = {}
     localVue = createLocalVue()
     localVue.use(VueRouter)
     localVue.use(Vuex)
@@ -26,18 +28,32 @@ describe('HomeComponent', function () {
         username: jest.fn()
       }
     })
+  })
 
-    wrapper = shallowMount(Home, {
+  function initWrapper() {
+    wrapper = shallowMount(AccountItem, {
+      propsData: {
+        user: 'test'
+      },
       localVue,
       router,
       store,
+      filters: {
+        parseUrl: value => value
+      },
       mocks: {
-        $t: v => v
+        $t: tMock
       }
     })
-  })
+  }
 
   it('should create', function () {
+    initWrapper()
     expect(wrapper).toBeTruthy()
+  })
+
+  it('should pass user to avatar', function () {
+    initWrapper()
+    expect(wrapper.find('avatar-stub').element.getAttribute('username')).toEqual('test')
   })
 })

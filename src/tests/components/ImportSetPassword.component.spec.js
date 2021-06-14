@@ -8,8 +8,10 @@ describe('ImportSetPasswordComponent', function () {
   let router
   let wrapper
   let store
+  let $t
 
   beforeEach(() => {
+    $t = v => v
     localVue = createLocalVue()
     localVue.use(VueRouter)
     localVue.use(Vuex)
@@ -21,7 +23,7 @@ describe('ImportSetPasswordComponent', function () {
       router,
       store,
       mocks: {
-        $t: v => v
+        $t,
       },
       computed: {
         importKey: {
@@ -65,13 +67,6 @@ describe('ImportSetPasswordComponent', function () {
     })
   })
 
-  it('should handle blur', async function () {
-    wrapper.vm.handleBlur = jest.fn()
-
-    await wrapper.find('input[id="key"]').trigger('blur')
-    expect(wrapper.vm.handleBlur).toHaveBeenCalledWith('key')
-  })
-
   it('should disable submit button if has errors', async function () {
     await wrapper.setProps({
       errors: {
@@ -86,8 +81,6 @@ describe('ImportSetPasswordComponent', function () {
     wrapper.vm.handleBlur('key')
     wrapper.vm.handleBlur('keyConfirmation')
 
-    expect(wrapper.findAll('.error').length).toBe(0)
-
     await wrapper.setProps({
       errors: {
         key: 'Key error',
@@ -95,7 +88,8 @@ describe('ImportSetPasswordComponent', function () {
       }
     })
 
-    expect(wrapper.findAll('.error').at(0).text()).toBe('Key error')
-    expect(wrapper.findAll('.error').at(1).text()).toBe('Key confirmation error')
+    expect(wrapper.find('form-control-stub[name=key]').element.getAttribute('error')).toBe('Key' +
+      ' error')
+    expect(wrapper.find('form-control-stub[name=keyConfirmation]').element.getAttribute('error')).toBe('Key confirmation error')
   })
 })

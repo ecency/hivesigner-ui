@@ -43,8 +43,8 @@ describe('AvatarComponent', function () {
     await wrapper.setProps({
       username: 'test'
     })
-    expect(wrapper.find('.avatar').element.style.backgroundImage)
-      .toBe('url(https://images.ecency.com/u/test/avatar/small)')
+    expect(wrapper.vm.styles['background-image'])
+      .toBe('url(https://images.ecency.com/u/test/avatar)')
   })
 
   it('should set avatar dimensions by size', async function () {

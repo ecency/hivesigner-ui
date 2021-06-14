@@ -2,18 +2,25 @@ import { createLocalVue, shallowMount } from '@vue/test-utils'
 import VueRouter from 'vue-router'
 import Vuex from 'vuex'
 import LoginForm from '@/components/Login/LoginForm'
+import { ERROR_INVALID_ENCRYPTION_KEY } from '@/consts'
 
-jest.mock('triplesec')
-import triplesec from 'triplesec'
-import { ERROR_INVALID_ENCRYPTION_KEY } from '@/consts';
+jest.mock('@/store')
+import * as storeModules from '@/store'
+import { DecryptionExceptions } from '@/enums'
 
 describe('LoginFormComponent', function () {
   let localVue
   let router
   let wrapper
   let store
+  let $t
 
   beforeEach(() => {
+    storeModules.AccountsModule = {
+      isSelectedAccountDecrypted: false,
+      accountsUsernamesList: []
+    }
+    $t = v => v
     localVue = createLocalVue()
     localVue.use(VueRouter)
     localVue.use(Vuex)
@@ -27,6 +34,9 @@ describe('LoginFormComponent', function () {
       computed: {
         username: jest.fn().mockReturnValue('testUsername'),
         loginKey: jest.fn(),
+      },
+      mocks: {
+        $t,
       }
     })
   })
@@ -41,77 +51,36 @@ describe('LoginFormComponent', function () {
     expect(wrapper.vm.submitForm).toBeCalled()
   })
 
-  it('should submit form successfully with decrypted', async function () {
-    await wrapper.setProps({
-      keychain: {
-        testUsername: 'decrypted',
-      },
+  it('should submit form successfully', async function () {
+    storeModules.AccountsModule.getEncryptedKeys = () => ({
+      posting: 'key'
     })
     await wrapper.vm.handleBlur('username')
     await wrapper.vm.submitForm()
 
-    expect(wrapper.emitted().loading[0]).toEqual([true])
-    expect(wrapper.emitted().loading[1]).toEqual([false])
     expect(wrapper.emitted().submit[0].length).toBe(1)
   })
 
-  it('should submit form successfully if not decrypted', async function () {
-    await wrapper.setProps({
-      keychain: {
-        testUsernameDecrypted: ['decrypted'],
-        testUsername: ['key'],
-      },
-    })
-    triplesec.decrypt.mockImplementation((_, success) => success(false, 'buff'))
+  it('should submit form failure if not decrypted and buffer failed', async function () {
+    storeModules.AccountsModule.getEncryptedKeys = () => (throw DecryptionExceptions.BuiltInBufferError)
     await wrapper.vm.submitForm()
 
-    expect(wrapper.emitted().loading[0]).toEqual([true])
-    expect(wrapper.emitted().submit[0]).toEqual(['buff'])
+    expect(wrapper.emitted().failed[0]).toEqual([false])
+    expect(wrapper.emitted().loading[0]).toEqual([false])
+    expect(wrapper.emitted().signature[0]).toEqual([''])
   })
 
   it('should submit form failure if not decrypted and triplesec failed', async function () {
-    await wrapper.setProps({
-      keychain: {
-        testUsernameDecrypted: ['decrypted'],
-        testUsername: ['key'],
-      },
-    })
-    triplesec.decrypt.mockImplementation((_, success) => success('error'))
+    storeModules.AccountsModule.getEncryptedKeys = () => {
+      throw DecryptionExceptions.TriplesecError
+    }
     await wrapper.vm.submitForm()
 
-    expect(wrapper.emitted().loading[0]).toEqual([true])
-    expect(wrapper.emitted().loading[1]).toEqual([false])
     expect(wrapper.emitted().error[0]).toEqual([ERROR_INVALID_ENCRYPTION_KEY])
   })
 
-  it('should handle username input blur and mark as dirty', async function () {
-    await wrapper.setProps({
-      keychain: {
-        testUsernameDecrypted: ['decrypted'],
-        testUsername: ['key'],
-      },
-    })
-    await wrapper.vm.handleBlur('username')
-
-    expect(wrapper.vm.dirty.username).toBe(true)
-    expect(wrapper.vm.dirty.key).toBe(true)
-  })
-
-  it('should handle another input blur and mark as dirty', async function () {
-    await wrapper.setProps({
-      keychain: {
-        testUsernameDecrypted: ['decrypted'],
-        testUsername: ['key'],
-      },
-    })
-    await wrapper.vm.handleBlur('usernames')
-
-    expect(wrapper.vm.dirty.usernames).toBe(true)
-    expect(wrapper.vm.dirty.key).toBe(true)
-  })
-
   it('should reset form', function () {
-    wrapper.vm.reset()
+    wrapper.vm.resetForm()
     expect(wrapper.vm.dirty).toEqual({
       username: false,
       key: false,
@@ -127,6 +96,9 @@ describe('LoginFormComponent', function () {
         username: jest.fn().mockReturnValue(''),
         loginKey: jest.fn().mockReturnValue(''),
       },
+      mocks: {
+        $t,
+      }
     })
     expect(wrapper.vm.submitDisabled).toBeTruthy()
     expect(wrapper.find('button').element.getAttribute('disabled')).toBe('disabled')
@@ -141,6 +113,9 @@ describe('LoginFormComponent', function () {
         username: jest.fn().mockReturnValue(''),
         loginKey: jest.fn().mockReturnValue(''),
       },
+      mocks: {
+        $t,
+      }
     })
     await wrapper.setProps({
       loading: true,

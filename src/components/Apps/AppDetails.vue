@@ -77,8 +77,8 @@ export default class AppDetails extends Vue {
   private failed = false
   private profile: Record<string, string> = {}
 
-  private mounted (): void {
-    this.loadProfile()
+  private async mounted (): Promise<void> {
+    await this.loadProfile()
   }
 
   private async loadProfile (): Promise<void> {

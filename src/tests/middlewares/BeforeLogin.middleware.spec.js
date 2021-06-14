@@ -1,19 +1,21 @@
 import beforeLogin from '@/middleware/before-login'
 
-jest.mock('@/utils')
-import * as utils from '@/utils'
-
 describe('BeforeLoginMiddleware', function () {
   let redirectMock
+  let store
 
   beforeEach(() => {
+    store = {
+      getters: {
+        'accounts/hasAccounts': false
+      }
+    }
     redirectMock = jest.fn()
-    utils.hasAccounts = jest.fn()
   })
 
   it('should redirect to import if has not accounts', function () {
-    utils.hasAccounts.mockReturnValue(false)
     beforeLogin({
+      store,
       redirect: redirectMock,
       query: { param: 'param1' },
     })
@@ -21,8 +23,9 @@ describe('BeforeLoginMiddleware', function () {
   })
 
   it('should not redirect if has accounts', function () {
-    utils.hasAccounts.mockReturnValue(true)
+    store.getters['accounts/hasAccounts'] = true
     beforeLogin({
+      store,
       redirect: redirectMock,
       query: { param: 'param1' },
     })

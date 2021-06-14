@@ -58,7 +58,7 @@ export default {
   errors: {
     something_wrong: 'Oops, something went wrong.',
     here_message: `Here is the error message: <br /><b>"{message}"</b>`,
-    unknown: 'Oops, something went wrong. The username provided is invalid.'
+    unknown: 'Oops, something went wrong. The provided data is invalid.'
   },
   authorize: {
     authorize: 'Authorize',
