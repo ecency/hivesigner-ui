@@ -262,9 +262,12 @@ export default class Import extends Vue {
     const { username, password, authority } = this
     const keys = await AccountsModule.getAuthoritiesKeys({ username, password })
     if (authority && !(
-      (authority === 'active' && (keys['owner'] || keys['active'])) ||
-      (authority === 'owner' && keys['owner']) ||
-      (authority === 'posting' && (keys['owner'] || keys['active'] || keys['posting']))))
+          (authority === 'owner' && keys['owner']) ||
+          (authority === 'active' && (keys['owner'] || keys['active'])) ||
+          (authority === 'posting' && (keys['owner'] || keys['active'] || keys['posting'])) || 
+          keys[authority]
+        )
+      )
     {
       this.isLoading = false
       this.error = this.$t('import.master_key', { authority }) as string
