@@ -126,9 +126,9 @@ export default class Sign extends Vue {
       this.authority = getLowestAuthorityRequired(this.parsed.tx)
       this.hasRequiredKey = !!(
         AuthModule.username && (
-          (this.authority === 'owner' && AuthModule.keys['owner']) ||
-          (this.authority === 'active' && (AuthModule.keys['owner'] || AuthModule.keys['active'])) ||
-          (this.authority === 'posting' && (AuthModule.keys['owner'] || AuthModule.keys['active'] || AuthModule.keys['posting'])) ||
+          (this.authority === 'owner' && AuthModule.keys.owner) ||
+          (this.authority === 'active' && (AuthModule.keys.owner || AuthModule.keys.active)) ||
+          (this.authority === 'posting' && (AuthModule.keys.owner || AuthModule.keys.active || AuthModule.keys.posting)) ||
           AuthModule.keys[this.authority]
         )
       )
