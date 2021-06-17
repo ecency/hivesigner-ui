@@ -141,7 +141,6 @@ export default class Accounts extends VuexModule {
   @VuexAction({ rawError: true })
   public async isValidCredentials ({ username, password }: { username: string, password: string }): Promise<boolean> {
     const keysMap = await getUserKeysMap(username)
-
     const key: PrivateKey = isKey(username, password)
       ? privateKeyFrom(password)
       : PrivateKey.fromLogin(username, password, 'active')
