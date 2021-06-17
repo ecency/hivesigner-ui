@@ -80,7 +80,7 @@ export default class RevokeForm extends Vue {
   }
 
   private get hasRequiredKey (): boolean {
-    return !!(AuthModule.username && AuthModule.keys.active)
+    return !!(AuthModule.username && (AuthModule.keys.active || AuthModule.keys.owner))
   }
 
   private updateAccount (data: any): Promise<TransactionConfirmation> {

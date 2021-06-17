@@ -79,7 +79,7 @@ export default class AuthorizeForm extends Vue {
   }
 
   private get hasRequiredKey (): boolean {
-    return !!(AuthModule.username && AuthModule.keys.active)
+    return !!(AuthModule.username && (AuthModule.keys.active || AuthModule.keys.owner))
   }
 
   private async handleSubmit (): Promise<void> {
