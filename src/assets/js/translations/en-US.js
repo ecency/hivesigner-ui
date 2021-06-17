@@ -25,12 +25,12 @@ export default {
   accounts: {
     accounts: 'Accounts',
     empty: ` There isn't any account stored on this device, <a href="/import" target="_blank" class="text-black hover:underline">click here</a> if you want to import an account.`,
-    delete: 'Delete account',
+    delete: 'Remove from Hivesigner',
     unlock: 'Unlock',
     auths: 'Authorities',
     add_another: 'Add another account',
     sign_transactions: 'Sign transactions',
-    delete_account: 'Delete account',
+    delete_account: 'Remove',
     delete_account_confirm: `<div>Do you want to delete account?</div><div>This will remove account from local storage.</div>`
   },
   apps: {
@@ -79,7 +79,7 @@ export default {
     import_encryption_key: `This is a new custom password to encrypt your credentials. This is not your Hive private key.`,
     master_password: 'Private key',
     master_key: 'You need to use master or at least {authority} key to login.',
-    encrypt_keys: 'Encrypt your keys',
+    encrypt_keys: 'Encrypt your keys with extra password',
     select_account: 'Select account',
     signup: 'Sign Up',
     app: 'The app ',
@@ -96,8 +96,8 @@ export default {
   },
   login: {
     switch_an_account: 'Switch an account',
-    username_required: 'Username is required',
-    password_required: 'Password is required',
+    username_required: 'Hive username is required',
+    password_required: 'Hive private key is required',
     hs_password_required: 'Encryption password is required',
     hs_password_confirmation_required: 'Encryption password confirmation is required',
     hs_password_not_match: 'Encryption passwords do not match',
