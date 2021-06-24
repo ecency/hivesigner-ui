@@ -68,7 +68,7 @@ export default {
         {authority} access. This can be withdrawn by you at any time by clicking
         <a class="text-black hover:underline uppercase cursor-pointer" href="/revoke/{username}" target="_blank">here</a>.`,
     authority_active: `Giving active authority enables the authorized account to do fund transfers from your account, this should be used with utmost care.`,
-    requires_active_key: `This transaction requires your <b>active</b> key.`
+    requires_active_key: `This transaction requires your <b>{authority}</b> key.`
   },
   import: {
     hs_password: 'Encryption password',
