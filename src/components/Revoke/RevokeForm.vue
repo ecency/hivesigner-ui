@@ -20,7 +20,7 @@
         v-if="!(account && account.name) || !hasRequiredKey"
         :to="{
           name: 'login',
-          query: { redirect: $route.fullPath, authority },
+          query: { redirect: $route.fullPath, authority: 'active' },
         }"
         class="button button-primary inline-block mr-2"
       >
