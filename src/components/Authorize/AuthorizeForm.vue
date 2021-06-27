@@ -12,14 +12,14 @@
         {{ $t('authorize.authority_active') }}
       </div>
       <div
-        v-if="accountName && hasRequiredKey === false"
+        v-if="accountName && !hasRequiredKey"
         class="alert alert-warning mt-4"
-        v-html="$t('authorize.requires_active_key')"
+        v-html="$t('authorize.requires_active_key', { authority })"
       />
     </div>
     <div class="mt-2">
       <router-link
-        v-if="!accountName || hasRequiredKey === false"
+        v-if="!accountName || !hasRequiredKey"
         :to="{
           name: 'login',
           query: { redirect: $route.fullPath, authority: 'active' },
@@ -46,7 +46,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
-import { AuthModule } from '~/store'
+import { AccountsModule, AuthModule } from '~/store'
 
 @Component
 export default class AuthorizeForm extends Vue {
@@ -79,7 +79,7 @@ export default class AuthorizeForm extends Vue {
   }
 
   private get hasRequiredKey (): boolean {
-    return !!(AuthModule.username && (AuthModule.keys.active || AuthModule.keys.owner))
+    return !!(AuthModule.username && AccountsModule.isValidKeysForAuthority(this.authority, AuthModule.keys))
   }
 
   private async handleSubmit (): Promise<void> {
