@@ -6,7 +6,8 @@ export default {
     try_again: 'Please try again later.',
     save: 'Save',
     yes: 'Yes',
-    no: 'No'
+    no: 'No',
+    invalid_integrity: 'This website most likely phishing attempt. Please make sure to use <a class="underline" href="https://hivesigner.com" target="_blank" rel="noopener">hivesigner.com</a> only.'
   },
   index: {
     title: 'Hivesigner',
