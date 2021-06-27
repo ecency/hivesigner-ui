@@ -1,14 +1,17 @@
 <template>
-  <label class="checkbox-form-control text-lg text-black-500 flex items-center mb-4 cursor-pointer">
-    <input
-      :key="name"
-      :checked="value"
-      type="checkbox"
-      @change="(e) => $emit('input', e.target.checked)"
-    >
-    <span class="checkbox mr-2" :class="classes" />
-    {{ label }}
-  </label>
+  <div class="flex align-center justify-start">
+    <label class="checkbox-form-control text-lg text-black-500 flex items-center mb-4 cursor-pointer">
+      <input
+        :key="name"
+        :checked="value"
+        type="checkbox"
+        @change="(e) => $emit('input', e.target.checked)"
+      >
+      <span class="checkbox mr-2" :class="classes" />
+      {{ label }}
+    </label>
+    <slot name="label-suffix" />
+  </div>
 </template>
 
 <script lang="ts">

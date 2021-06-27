@@ -1,6 +1,39 @@
 <template>
   <div>
     <form-control
+      v-if="hasEncryptedAccount"
+      v-model="useSameEncryptionKey"
+      :label="hasMultipleEncryptedAccounts ? $t('import.same_encryption_key_account') : $t('import.same_encryption_key')"
+      class="mb-7"
+      autocomplete="current-password"
+      name="storeAccount"
+      type="checkbox"
+    >
+      <template slot="label-suffix">
+        <dropdown
+          v-if="hasMultipleEncryptedAccounts"
+          ref="dropdown"
+          with-chevron
+          trigger-class="text-black-light hover:text-primary ml-1 font-bold"
+        >
+          <template slot="trigger">
+            <span class="text-lg">{{ currentSelectedAccount }}</span>
+          </template>
+          <a
+            v-for="account of accountsList"
+            :key="account"
+            role="button"
+            class="cursor-pointer py-1 hover:text-primary"
+            @click="onAccountSelect(account)"
+          >
+            {{ account }}
+          </a>
+        </dropdown>
+      </template>
+    </form-control>
+
+    <form-control
+      v-if="!useSameEncryptionKey"
       v-model="importKey"
       name="key"
       :label="$t('import.hs_password')"
@@ -36,13 +69,15 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'nuxt-property-decorator'
+import { Component, Prop, Ref, Vue } from 'nuxt-property-decorator'
 import Icon from '../UI/Icons/Icon.vue'
 import FormControl from '../UI/Form/FormControl.vue'
+import Dropdown from '../UI/Dropdown.vue'
 import { TOOLTIP_IMPORT_ENCRYPTION_KEY } from '~/consts'
-import { PersistentFormsModule } from '~/store'
+import { AccountsModule, PersistentFormsModule } from '~/store'
+
 @Component({
-  components: { FormControl, Icon }
+  components: { Dropdown, FormControl, Icon }
 })
 export default class ImportSetPassword extends Vue {
   @Prop({
@@ -57,10 +92,25 @@ export default class ImportSetPassword extends Vue {
   })
   private loading!: boolean
 
+  @Ref('dropdown')
+  private dropdownRef!: Dropdown
+
   private TOOLTIP_IMPORT_ENCRYPTION_KEY = TOOLTIP_IMPORT_ENCRYPTION_KEY
   private dirty = {
     key: false,
     keyConfirmation: false
+  }
+
+  public get hasEncryptedAccount (): boolean {
+    return AccountsModule.hasEncryptedAccount
+  }
+
+  public get hasMultipleEncryptedAccounts (): boolean {
+    return AccountsModule.hasMultipleEncryptedAccounts
+  }
+
+  public get accountsList (): string[] {
+    return AccountsModule.encryptedAccountsList
   }
 
   private get importKey (): string {
@@ -79,8 +129,24 @@ export default class ImportSetPassword extends Vue {
     return PersistentFormsModule.saveImportKeyConfirmation(value)
   }
 
+  private get useSameEncryptionKey (): boolean {
+    return PersistentFormsModule.import.useSameEncryptionKey
+  }
+
+  private set useSameEncryptionKey (value: boolean) {
+    return PersistentFormsModule.saveUseSameEncryptionKey(value)
+  }
+
+  private get currentSelectedAccount (): string {
+    return PersistentFormsModule.import.currentSelectedAccount
+  }
+
   private get submitDisabled (): boolean {
     return !!this.errors.key || !!this.errors.keyConfirmation
+  }
+
+  private mounted (): void {
+    PersistentFormsModule.saveCurrentSelectedAccount(this.accountsList[0])
   }
 
   public reset (): void {
@@ -92,6 +158,11 @@ export default class ImportSetPassword extends Vue {
 
   private handleBlur (fieldName: string): void {
     this.dirty[fieldName] = true
+  }
+
+  private onAccountSelect (account: string) {
+    this.dropdownRef.hide()
+    PersistentFormsModule.saveCurrentSelectedAccount(account)
   }
 }
 </script>

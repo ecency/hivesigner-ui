@@ -10,7 +10,7 @@
     <div
       class="dropdown-trigger cursor-pointer"
       :class="triggerClasses"
-      @click="() => open ? hide() : show()"
+      @click.prevent.stop="() => open ? hide() : show()"
     >
       <slot name="trigger" />
       <div v-if="withChevron" class="icon ml-1">

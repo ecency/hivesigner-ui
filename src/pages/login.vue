@@ -61,20 +61,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Ref } from 'nuxt-property-decorator'
+import { Component, Ref, Vue } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
 import Icon from '../components/UI/Icons/Icon.vue'
 import Loader from '../components/UI/Loader.vue'
 import BasePageLayout from '../components/Layouts/BasePageLayout.vue'
-import {
-  ERROR_INVALID_CREDENTIALS
-} from '~/consts'
-import {
-  buildSearchParams,
-  client,
-  getAuthority,
-  isValidUrl
-} from '~/utils'
+import { ERROR_INVALID_CREDENTIALS } from '~/consts'
+import { buildSearchParams, client, getAuthority, isValidUrl } from '~/utils'
 import { AccountsModule, AuthModule } from '~/store'
 import { Authority } from '~/enums'
 import LoginForm from '~/components/Login/LoginForm.vue'
@@ -133,7 +126,7 @@ export default class Login extends Vue {
   }
 
   private get authority (): Authority {
-    return getAuthority(this.$route.query.authority as Authority)
+    return getAuthority(this.$route.query.authority as Authority || Authority.Posting)
   }
 
   private get uri (): string {
