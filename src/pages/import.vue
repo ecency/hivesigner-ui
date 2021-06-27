@@ -93,8 +93,11 @@ export default class Import extends Vue {
   private clientId = this.$route.params.clientId || this.$route.query.client_id as string
   private app = null
   private appProfile: Record<string, string> = {}
-  private callback = this.$route.query.redirect_uri as string
   private uri = `hive =//login-request/${this.$route.params.clientId}${buildSearchParams(this.$route)}`
+
+  private get callback (): string {
+    return this.$route.query.redirect_uri as string
+  }
 
   private get state (): string {
     return this.$route.query.state as string
@@ -111,7 +114,7 @@ export default class Import extends Vue {
   }
 
   private get authority (): Authority {
-    return getAuthority(this.$route.query.authority as Authority)
+    return getAuthority((this.$route.query.authority as Authority) || Authority.Posting)
   }
 
   private get step (): number {
