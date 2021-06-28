@@ -41,7 +41,8 @@ export default {
     '~/plugins/filters.ts',
     '~/plugins/vue-carousel.ts',
     '~/plugins/popup-messages.ts',
-    '~/plugins/modals-manager.ts'
+    '~/plugins/modals-manager.ts',
+    '~/plugins/check-app-integrity.ts'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
