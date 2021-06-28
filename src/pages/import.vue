@@ -365,6 +365,7 @@ export default class Import extends Vue {
   }
 }
 </script>
+
 <style lang="scss">
 .import {
   .image {

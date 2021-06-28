@@ -1,6 +1,6 @@
 <template>
-  <portal to="modal">
-    <div ref="container" class="modal">
+  <portal to="modal" :order="order">
+    <div ref="container" :class="open ? baseClassList : 'modal'">
       <transition name="fade">
         <div
           v-if="open"
@@ -69,6 +69,7 @@ export default class Modal extends Vue {
   private containerRef!: HTMLElement
 
   private open = false
+  private order = 0
 
   private beforeDestroy (): void {
     this.hide()
@@ -81,16 +82,18 @@ export default class Modal extends Vue {
     ]
   }
 
+  private mounted (): void {
+    this.order = this.$modalsManager.nextId
+  }
+
   public show (): void {
     this.open = true
     this.$modalsManager.expose()
-    this.containerRef?.className = this.baseClassList.join(' ')
   }
 
   public hide (): void {
     this.open = false
     this.$modalsManager.release()
-    setTimeout(() => (this.containerRef?.className = 'modal'), 300)
   }
 }
 </script>

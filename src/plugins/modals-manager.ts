@@ -2,9 +2,15 @@ import { Context } from '@nuxt/types'
 
 class ModalsManager {
   private stack: number[] = []
+  private uniqueId = 0
 
   private get shouldBodyBeenBlocked (): boolean {
     return !!this.stack.length
+  }
+
+  public get nextId (): number {
+    this.uniqueId++
+    return this.uniqueId
   }
 
   public expose (): void {
