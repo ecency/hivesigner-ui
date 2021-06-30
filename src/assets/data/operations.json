@@ -46,6 +46,10 @@
       },
       "executions": {
         "type": "int"
+      },
+      "extensions": {
+        "type": "array",
+        "defaultValue": []
       }
     }
   },
