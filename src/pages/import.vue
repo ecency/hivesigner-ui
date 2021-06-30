@@ -93,7 +93,8 @@ export default class Import extends Vue {
   private extraErrors: Record<string, any> = {}
 
   private get clientId (): string {
-    return this.$route.params.clientId || this.$route.query.clientId as string
+    return this.$route.params.clientId || this.$route.query.clientId as string ||
+      this.$route.query.client_id as string
   }
 
   private get callback (): string {
