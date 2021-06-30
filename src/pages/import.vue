@@ -92,7 +92,7 @@ export default class Import extends Vue {
   private uri = `hive =//login-request/${this.$route.params.clientId}${buildSearchParams(this.$route)}`
   private extraErrors: Record<string, any> = {}
 
-  private get clientId(): string {
+  private get clientId (): string {
     return this.$route.params.clientId || this.$route.query.clientId as string
   }
 
