@@ -15,12 +15,14 @@ export default class PersistentForms extends VuexModule {
     key: ''
   }
 
-  public import: Record<string, string | number> = {
+  public import: Record<string, any> = {
     step: 1,
     username: '',
     password: '',
     key: '',
-    keyConfirmation: ''
+    keyConfirmation: '',
+    useSameEncryptionKey: false,
+    currentSelectedAccount: ''
   }
 
   @VuexMutation
@@ -56,5 +58,15 @@ export default class PersistentForms extends VuexModule {
   @VuexMutation
   public saveImportKeyConfirmation (keyConfirmation: string): void {
     Vue.set(this.import, 'keyConfirmation', keyConfirmation)
+  }
+
+  @VuexMutation
+  public saveUseSameEncryptionKey (value: boolean): void {
+    Vue.set(this.import, 'useSameEncryptionKey', value)
+  }
+
+  @VuexMutation
+  public saveCurrentSelectedAccount (value: string): void {
+    Vue.set(this.import, 'currentSelectedAccount', value)
   }
 }

@@ -9,9 +9,17 @@
         {{ $t('accounts.sign_transactions') }}
       </router-link>
       <a
+        v-if="!isLoggedIn"
         role="button"
         class="p-4 hover:bg-gray-100"
-        @click="confirmModalRef.show()"
+        @click="showLoginModal"
+      >
+        {{ $t('import.login') }}
+      </a>
+      <a
+        role="button"
+        class="p-4 hover:bg-gray-100"
+        @click="showConfirmModal"
       >
         {{ $t('accounts.delete') }}
       </a>
@@ -22,17 +30,23 @@
       positive-label="accounts.delete_account"
       @positive="removeAccount"
     />
+
+    <modal ref="encryption-modal" mobile-full animation="slide-right">
+      <confirm-encryption-key :account="account" @loggedin="onLoggedIn" />
+    </modal>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Emit, Prop, Vue, Ref } from 'nuxt-property-decorator'
 import ConfirmModal from '../UI/ConfirmModal.vue'
+import Modal from '../UI/Modal.vue'
+import ConfirmEncryptionKey from '../Login/ConfirmEncryptionKey.vue'
 import AccountItem from './AccountItem.vue'
 import { AccountsModule, AuthModule } from '~/store'
 
 @Component({
-  components: { ConfirmModal, AccountItem }
+  components: { Modal, ConfirmModal, AccountItem, ConfirmEncryptionKey }
 })
 export default class AccountDetails extends Vue {
   @Prop({
@@ -41,26 +55,49 @@ export default class AccountDetails extends Vue {
   })
   private account!: string
 
+  @Ref('encryption-modal')
+  private encryptionConfirmationModal!: Modal
+
   private isLoggedIn = false
 
   @Ref('confirm-modal')
   private confirmModalRef!: ConfirmModal
 
   private async mounted (): Promise<void> {
-    try {
-      await AuthModule.login({
-        username: this.account,
-        keys: await AccountsModule.getEncryptedKeys({ username: this.account })
-      })
-      await AccountsModule.setSelectedAccount(this.account)
-      this.isLoggedIn = true
-    } catch (_) {
+    if (!this.isLoggedIn) {
+      const isDecrypted = AccountsModule.isDecrypted(this.account)
+      if (isDecrypted) {
+        try {
+          await AuthModule.login({
+            username: this.account,
+            keys: await AccountsModule.getEncryptedKeys({ username: this.account })
+          })
+          await AccountsModule.setSelectedAccount(this.account)
+          this.isLoggedIn = true
+        } catch (_) {
+        }
+      } else {
+        setTimeout(() => (this.encryptionConfirmationModal.show()), 300)
+      }
     }
   }
 
   @Emit('removed')
   private removeAccount (): void {
     AccountsModule.removeAccount(this.account)
+  }
+
+  private onLoggedIn (): void {
+    this.isLoggedIn = true
+    this.encryptionConfirmationModal.hide()
+  }
+
+  private showLoginModal (): void {
+    this.encryptionConfirmationModal.show()
+  }
+
+  private showConfirmModal (): void {
+    this.confirmModalRef.show()
   }
 }
 </script>

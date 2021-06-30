@@ -43,6 +43,7 @@
             ref="set-password"
             :loading="loading"
             :errors="errors"
+            @submit="submitForm"
           />
         </form>
       </div>
@@ -53,15 +54,10 @@
 
 <script lang="ts">
 import PasswordValidator from 'password-validator'
-import { Component, Ref, Vue } from 'nuxt-property-decorator'
+import { Component, Ref, Vue, Watch } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
 import BasePageLayout from '../components/Layouts/BasePageLayout.vue'
-import {
-  buildSearchParams,
-  client, encrypt,
-  getAuthority,
-  isValidUrl
-} from '~/utils'
+import { buildSearchParams, client, encrypt, getAuthority, isValidUrl } from '~/utils'
 import { AccountsModule, AuthModule, PersistentFormsModule } from '~/store'
 import { ERROR_INVALID_CREDENTIALS } from '~/consts'
 import { Authority } from '~/enums'
@@ -72,6 +68,7 @@ import Loader from '~/components/UI/Loader.vue'
 
 const passphraseSchema = new PasswordValidator()
 passphraseSchema.is().min(8).is().max(50).has().uppercase().has().lowercase()
+
 @Component({
   components: { BasePageLayout, Loader, Icon }
 })
@@ -94,6 +91,7 @@ export default class Import extends Vue {
   private app = null
   private appProfile: Record<string, string> = {}
   private uri = `hive =//login-request/${this.$route.params.clientId}${buildSearchParams(this.$route)}`
+  private extraErrors: Record<string, any> = {}
 
   private get callback (): string {
     return this.$route.query.redirect_uri as string
@@ -180,17 +178,19 @@ export default class Import extends Vue {
     if (!password) {
       current.password = this.$t('login.password_required') as string
     }
-    if (!importKey) {
-      current.key = this.$t('login.hs_password_required') as string
-    } else if (!passphraseSchema.validate(importKey as string)) {
-      current.key = this.$t('login.hs_password_length') as string
+    if (!PersistentFormsModule.import.useSameEncryptionKey) {
+      if (!importKey) {
+        current.key = this.$t('login.hs_password_required') as string
+      } else if (!passphraseSchema.validate(importKey as string)) {
+        current.key = this.$t('login.hs_password_length') as string
+      }
     }
     if (!keyConfirmation) {
       current.keyConfirmation = this.$t('login.hs_password_confirmation_required') as string
-    } else if (keyConfirmation !== importKey) {
+    } else if (keyConfirmation !== importKey && !PersistentFormsModule.import.useSameEncryptionKey) {
       current.keyConfirmation = this.$t('login.hs_password_not_match') as string
     }
-    return current
+    return { ...current, ...this.extraErrors }
   }
 
   private get account (): Account | null {
@@ -200,6 +200,11 @@ export default class Import extends Vue {
   private get hasAuthority (): boolean {
     const auths = this.account.posting.account_auths.map(auth => auth[0])
     return auths.includes(this.clientId)
+  }
+
+  @Watch('keyConfirmation')
+  private keyConfirmationChanged () {
+    this.extraErrors = {}
   }
 
   private mounted (): void {
@@ -329,6 +334,21 @@ export default class Import extends Vue {
 
   private async submitForm (): Promise<void> {
     this.isLoading = true
+
+    if (PersistentFormsModule.import.useSameEncryptionKey) {
+      const isValidEncryptionPassword = await AccountsModule.isValidEncryptionKey({
+        username: PersistentFormsModule.import.currentSelectedAccount,
+        password: this.keyConfirmation
+      })
+
+      if (isValidEncryptionPassword) {
+        this.importKey = this.keyConfirmation
+      } else {
+        this.$set(this.extraErrors, 'keyConfirmation', this.$t('import.same_key_not_match'))
+        return
+      }
+    }
+
     const keys = await AccountsModule.getAuthoritiesKeys({
       username: this.username,
       password: this.password
@@ -348,6 +368,7 @@ export default class Import extends Vue {
   }
 }
 </script>
+
 <style lang="scss">
 .import {
   .image {

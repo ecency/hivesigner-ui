@@ -18,8 +18,20 @@ export default class Accounts extends VuexModule {
     return !!this.accountsUsernamesList.length
   }
 
+  public get hasEncryptedAccount (): boolean {
+    return !!this.accountsUsernamesList.find(account => !this.isDecrypted(account))
+  }
+
+  public get hasMultipleEncryptedAccounts (): boolean {
+    return this.accountsUsernamesList.filter(account => !this.isDecrypted(account)).length > 1
+  }
+
   public get accountsUsernamesList (): string[] {
     return Object.keys(this.accountsKeychains)
+  }
+
+  public get encryptedAccountsList (): string[] {
+    return this.accountsUsernamesList.filter(account => !this.isDecrypted(account))
   }
 
   public get isDecrypted (): (username: string) => boolean {
@@ -154,5 +166,15 @@ export default class Accounts extends VuexModule {
       : PrivateKey.fromLogin(username, password, 'active')
 
     return !!keysMap[key.createPublic(CLIENT_OPTIONS.addressPrefix).toString()]
+  }
+
+  @VuexAction({ rawError: true })
+  public async isValidEncryptionKey ({ username, password }: { username: string, password: string }): Promise<boolean> {
+    try {
+      await this.getEncryptedKeys({ username, encryptionKey: password })
+      return true
+    } catch (e) {
+      return false
+    }
   }
 }

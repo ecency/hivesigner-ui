@@ -32,7 +32,8 @@ export default {
     add_another: 'Add another account',
     sign_transactions: 'Sign transactions',
     delete_account: 'Remove',
-    delete_account_confirm: `<div>Do you want to delete account?</div><div>This will remove account from local storage.</div>`
+    delete_account_confirm: `<div>Do you want to delete account?</div><div>This will remove account from local storage.</div>`,
+    successfully_logged_in: 'Logged in successfully!'
   },
   apps: {
     store: 'App store',
@@ -93,7 +94,11 @@ export default {
     login: 'Login',
     private_key: 'Private key',
     import_private_key: 'Import private key',
-    incorrect_private_key: 'Private key is not correct'
+    incorrect_private_key: 'Private key is not correct',
+    same_encryption_key: 'Use same encryption password?',
+    same_encryption_key_account: 'Use same encryption password as in',
+    same_key_not_match: 'Don\'t match with existing account password',
+    incorrect_encryption_key: 'Incorrect encryption password'
   },
   login: {
     switch_an_account: 'Switch an account',

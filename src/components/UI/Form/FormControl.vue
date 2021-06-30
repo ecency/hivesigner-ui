@@ -13,6 +13,9 @@
     @input="onInput"
     @blur="onBlur"
   >
+    <template #label-suffix>
+      <slot name="label-suffix" />
+    </template>
     <slot />
     <template #option="{option}">
       <slot name="option" :option="option" />
