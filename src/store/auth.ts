@@ -136,6 +136,7 @@ export default class Auth extends VuexModule {
 
     const additionalCallbackQuery = new URLSearchParams({
       ...(payload.responseType === 'code' ? { code: token } : {}),
+      ...(payload.state ? { state: encodeURIComponent(payload.state) } : {}),
       ...(payload.responseType !== 'code'
         ? {
             access_token: token,
@@ -143,7 +144,6 @@ export default class Auth extends VuexModule {
           }
         : {}),
       username: payload.username,
-      state: encodeURIComponent(payload.state)
     })
     // @ts-ignore
     window.location = payload.callback + `?${additionalCallbackQuery.toString()}`
