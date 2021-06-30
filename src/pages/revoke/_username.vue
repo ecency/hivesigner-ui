@@ -50,7 +50,7 @@ export default class RevokeUsername extends Vue {
   private transactionId = ''
 
   private get username (): string {
-    return this.$route.params.username
+    return this.$route.params.username.replace('@', '')
   }
 
   private get authority (): Authority {

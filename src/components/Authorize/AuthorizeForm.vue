@@ -69,8 +69,7 @@ export default class AuthorizeForm extends Vue {
   private loading!: string
 
   @Prop({
-    type: Object,
-    default: () => {}
+    default: () => ({})
   })
   private account!: Account
 
