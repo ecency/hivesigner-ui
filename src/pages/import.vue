@@ -87,11 +87,14 @@ export default class Import extends Vue {
   private failed = false
   private signature = null
   private requestId = this.$route.query.requestId as string
-  private clientId = this.$route.params.clientId || this.$route.query.client_id as string
   private app = null
   private appProfile: Record<string, string> = {}
   private uri = `hive =//login-request/${this.$route.params.clientId}${buildSearchParams(this.$route)}`
   private extraErrors: Record<string, any> = {}
+
+  private get clientId(): string {
+    return this.$route.params.clientId || this.$route.query.clientId as string
+  }
 
   private get callback (): string {
     return this.$route.query.redirect_uri as string
@@ -226,7 +229,8 @@ export default class Import extends Vue {
         params: { username: this.clientId },
         query: { redirect_uri: this.uri.replace('hive:/', '') }
       })
-    } else if (this.clientId) {
+    }
+    if (this.clientId) {
       this.loadAppProfile()
     }
   }
