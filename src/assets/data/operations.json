@@ -21,6 +21,34 @@
       }
     }
   },
+  "recurrent_transfer": {
+    "name": "Recurring Transfers",
+    "authority": "active",
+    "description": "Recurring transfers of asset from one account to another.",
+    "schema": {
+      "from": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "to": {
+        "type": "account"
+      },
+      "amount": {
+        "type": "amount"
+      },
+      "memo": {
+        "type": "string",
+        "defaultValue": "",
+        "maxLength": 2048
+      },
+      "recurrency": {
+        "type": "int"
+      },
+      "executions": {
+        "type": "int"
+      }
+    }
+  },
   "delegate_vesting_shares": {
     "name": "Delegate Hive Power",
     "authority": "active",
