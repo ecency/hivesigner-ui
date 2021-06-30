@@ -126,7 +126,7 @@ export default class Login extends Vue {
   }
 
   private get authority (): Authority {
-    return getAuthority(this.$route.query.authority as Authority || Authority.Posting)
+    return getAuthority((this.$route.query.authority as Authority) || Authority.Posting)
   }
 
   private get uri (): string {
