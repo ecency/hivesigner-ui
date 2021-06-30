@@ -929,10 +929,10 @@
   dependencies:
     purgecss "^3.1.3"
 
-"@hiveio/dhive@^0.14.14":
-  version "0.14.14"
-  resolved "https://registry.yarnpkg.com/@hiveio/dhive/-/dhive-0.14.14.tgz#c6ba3eec4189479b1011098a6c13d482e39de9af"
-  integrity sha512-KImfWCJ1QO8puI15AqmXUv3IzdQHt4c/IAUHliaKGLOjICF1eR72dtslgzSZXwttHA1AB/wkj7CbGo7TWhAJPg==
+"@hiveio/dhive@^0.14.15":
+  version "0.14.15"
+  resolved "https://registry.yarnpkg.com/@hiveio/dhive/-/dhive-0.14.15.tgz#af5fe26c664bff7dbec396767e9dca20c2f8b83d"
+  integrity sha512-98gpcOnuAN/M57FL8k0SI25zMr4P7VcyFIzCYLqBu+5dn7q7d3hyQwY/RKEa+n/fJMF+2hyvtKUOkwQ5pTiCwg==
   dependencies:
     bs58 "^4.0.1"
     bytebuffer "^5.0.1"
