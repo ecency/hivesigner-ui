@@ -3,6 +3,7 @@ const theme = require('tailwindcss/defaultTheme')
 module.exports = {
   purge: [
     './**/*.vue',
+    './**/*.ts'
   ],
   darkMode: false, // or 'media' or 'class'
   theme: {
