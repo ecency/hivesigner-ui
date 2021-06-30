@@ -83,6 +83,10 @@ export default class RevokeForm extends Vue {
     return !!(AuthModule.username && AccountsModule.isValidKeysForAuthority(this.authority, AuthModule.keys))
   }
 
+  private get callback (): string {
+    return this.$route.query.redirect_uri as string
+  }
+
   private updateAccount (data: any): Promise<TransactionConfirmation> {
     return AuthModule.updateAccount(data)
   }

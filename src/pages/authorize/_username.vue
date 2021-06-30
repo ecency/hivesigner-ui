@@ -51,8 +51,14 @@ export default class AuthorizeUsername extends Vue {
   private failed = false
   private error = false
   private transactionId = ''
-  private username = this.$route.params.username
-  private authority = getAuthority(this.$route.query.authority as Authority, Authority.Posting)
+
+  private get username (): string {
+    return this.$route.params.username.replace('@', '')
+  }
+
+  private get authority (): Authority {
+    return getAuthority(this.$route.query.authority as Authority, Authority.Posting)
+  }
 
   private get account (): Account | null {
     return AuthModule.account
