@@ -80,7 +80,7 @@ export default {
     import_encryption_key: `This is a new custom password to encrypt your credentials. This is not your Hive private key.`,
     master_password: 'Private key',
     master_key: 'You need to use master or at least {authority} key to login.',
-    encrypt_keys: 'Encrypt your keys with extra password',
+    encrypt_keys: 'Encrypt your keys with extra password?',
     select_account: 'Select account',
     signup: 'Sign Up',
     app: 'The app ',
