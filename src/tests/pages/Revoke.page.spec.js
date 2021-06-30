@@ -41,7 +41,9 @@ describe('RevokeUsernamePage', function () {
     utils.getAuthority = jest.fn().mockReturnValue('posting')
     $t = v => v
     $route = {
-      params: {},
+      params: {
+        username: ''
+      },
       query: {},
     }
     store.AuthModule = {

@@ -2,6 +2,8 @@ import { createLocalVue, shallowMount } from '@vue/test-utils'
 import VueRouter from 'vue-router'
 import Vuex from 'vuex'
 import ImportSetPassword from '@/components/Import/ImportSetPassword'
+import * as modules from '~/store'
+import { PersistentFormsModule } from '~/store'
 
 describe('ImportSetPasswordComponent', function () {
   let localVue
@@ -17,6 +19,21 @@ describe('ImportSetPasswordComponent', function () {
     localVue.use(Vuex)
     router = new VueRouter()
     store = new Vuex.Store()
+    modules.AccountsModule = {
+      hasEncryptedAccount: false,
+      hasMultipleEncryptedAccounts: false,
+      encryptedAccountsList: []
+    }
+    modules.PersistentFormsModule = {
+      import: {
+        key: '',
+        keyConfirmation: '',
+      },
+      saveCurrentSelectedAccount: jest.fn(),
+      saveImportKey: jest.fn(),
+      saveImportKeyConfirmation: jest.fn(),
+      saveUseSameEncryptionKey: jest.fn(),
+    }
 
     wrapper = shallowMount(ImportSetPassword, {
       localVue,
