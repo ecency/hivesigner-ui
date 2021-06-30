@@ -94,7 +94,7 @@ export default {
     private_key: 'Private key',
     import_private_key: 'Import private key',
     incorrect_private_key: 'Private key is not correct',
-    same_encryption_key: 'Use same encryption password',
+    same_encryption_key: 'Use same encryption password?',
     same_encryption_key_account: 'Use same encryption password as in',
     same_key_not_match: 'Don\'t match with existing account password',
     incorrect_encryption_key: 'Incorrect encryption password'
