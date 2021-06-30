@@ -613,5 +613,31 @@
         "defaultValue": []
       }
     }
+  },
+  "update_proposal": {
+    "name": "Update proposal",
+    "authority": "active",
+    "schema": {
+      "creator": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "proposal_id": {
+        "type": "int"
+      },
+      "daily_pay": {
+        "type": "amount"
+      },
+      "subject": {
+        "type": "string"
+      },
+      "permlink": {
+        "type": "string"
+      },
+      "extensions": {
+        "type": "array",
+        "defaultValue": []
+      }
+    }
   }
 }
