@@ -191,6 +191,22 @@
       }
     }
   },
+  "collateralized_convert": {
+    "name": "Collateralized Convert",
+    "authority": "active",
+    "schema": {
+      "owner": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "requestid": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "amount"
+      }
+    }
+  },
   "account_witness_vote": {
     "name": "Witness vote",
     "authority": "active",
