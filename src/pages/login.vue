@@ -104,7 +104,8 @@ export default class Login extends Vue {
   }
 
   private get clientId (): string {
-    return this.$route.params.clientId || this.$route.query.clientId as string
+    return this.$route.params.clientId || this.$route.query.clientId as string ||
+      this.$route.query.client_id as string
   }
 
   private get scope (): string {
