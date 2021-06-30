@@ -143,7 +143,7 @@ export default class Auth extends VuexModule {
             expires_in: '604800'
           }
         : {}),
-      username: payload.username,
+      username: payload.username
     })
     // @ts-ignore
     window.location = payload.callback + `?${additionalCallbackQuery.toString()}`
