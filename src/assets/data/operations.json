@@ -41,7 +41,7 @@
         "defaultValue": "",
         "maxLength": 2048
       },
-      "recurrency": {
+      "recurrence": {
         "type": "int"
       },
       "executions": {
