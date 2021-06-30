@@ -4,7 +4,7 @@
       class="text-black-400 text-lg"
       v-html="$t('already_action_account', { action, authority, username })"
     />
-    <div class="flex justify-center mt-4" v-if="callback">
+    <div v-if="callback" class="flex justify-center mt-4">
       <router-link
         v-if="callback[0] === '/'"
         :to="callback"
