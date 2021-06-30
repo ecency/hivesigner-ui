@@ -61,20 +61,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Ref } from 'nuxt-property-decorator'
+import { Component, Ref, Vue } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
 import Icon from '../components/UI/Icons/Icon.vue'
 import Loader from '../components/UI/Loader.vue'
 import BasePageLayout from '../components/Layouts/BasePageLayout.vue'
-import {
-  ERROR_INVALID_CREDENTIALS
-} from '~/consts'
-import {
-  buildSearchParams,
-  client,
-  getAuthority,
-  isValidUrl
-} from '~/utils'
+import { ERROR_INVALID_CREDENTIALS } from '~/consts'
+import { buildSearchParams, client, getAuthority, isValidUrl } from '~/utils'
 import { AccountsModule, AuthModule } from '~/store'
 import { Authority } from '~/enums'
 import LoginForm from '~/components/Login/LoginForm.vue'
@@ -111,7 +104,8 @@ export default class Login extends Vue {
   }
 
   private get clientId (): string {
-    return this.$route.params.clientId || this.$route.query.client_id as string
+    return this.$route.params.clientId || this.$route.query.clientId as string ||
+      this.$route.query.client_id as string
   }
 
   private get scope (): string {
@@ -133,7 +127,7 @@ export default class Login extends Vue {
   }
 
   private get authority (): Authority {
-    return getAuthority(this.$route.query.authority as Authority)
+    return getAuthority((this.$route.query.authority as Authority) || Authority.Posting)
   }
 
   private get uri (): string {
@@ -177,7 +171,7 @@ export default class Login extends Vue {
 
   private async loginMe (keys: Record<string, string>): Promise<void> {
     const { authority } = this
-    if (authority && !keys[authority]) {
+    if (!AccountsModule.isValidKeysForAuthority(authority, keys)) {
       this.isLoading = false
       this.error = this.$t('login.need_import', { authority }) as string
       return

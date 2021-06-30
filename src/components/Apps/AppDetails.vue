@@ -14,7 +14,7 @@
         </div>
         <a
           v-if="profile.website"
-          class="button mb-6 inline-flex items-center text-lg"
+          class="button button-sm mb-6 inline-flex items-center text-lg"
           :href="profile.website"
           target="_blank"
         >

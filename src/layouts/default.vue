@@ -1,8 +1,8 @@
 <template>
   <div class="h-full">
     <Nuxt />
-    <portal-target name="side-modal" />
-    <portal-target name="modal" />
+    <portal-target name="side-modal" multiple />
+    <portal-target name="modal" multiple />
   </div>
 </template>
 <script lang="ts">

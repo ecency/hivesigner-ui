@@ -21,6 +21,38 @@
       }
     }
   },
+  "recurrent_transfer": {
+    "name": "Recurring Transfers",
+    "authority": "active",
+    "description": "Recurring transfers of asset from one account to another.",
+    "schema": {
+      "from": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "to": {
+        "type": "account"
+      },
+      "amount": {
+        "type": "amount"
+      },
+      "memo": {
+        "type": "string",
+        "defaultValue": "",
+        "maxLength": 2048
+      },
+      "recurrence": {
+        "type": "int"
+      },
+      "executions": {
+        "type": "int"
+      },
+      "extensions": {
+        "type": "array",
+        "defaultValue": []
+      }
+    }
+  },
   "delegate_vesting_shares": {
     "name": "Delegate Hive Power",
     "authority": "active",
@@ -149,6 +181,22 @@
   },
   "convert": {
     "name": "Convert",
+    "authority": "active",
+    "schema": {
+      "owner": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "requestid": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "amount"
+      }
+    }
+  },
+  "collateralized_convert": {
+    "name": "Collateralized Convert",
     "authority": "active",
     "schema": {
       "owner": {
@@ -563,6 +611,32 @@
       "approve": {
         "type": "bool",
         "defaultValue": true
+      },
+      "extensions": {
+        "type": "array",
+        "defaultValue": []
+      }
+    }
+  },
+  "update_proposal": {
+    "name": "Update proposal",
+    "authority": "active",
+    "schema": {
+      "creator": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "proposal_id": {
+        "type": "int"
+      },
+      "daily_pay": {
+        "type": "amount"
+      },
+      "subject": {
+        "type": "string"
+      },
+      "permlink": {
+        "type": "string"
       },
       "extensions": {
         "type": "array",

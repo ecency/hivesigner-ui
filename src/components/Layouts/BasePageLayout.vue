@@ -23,7 +23,7 @@
           <span class="font-bold text-3xl sm:text-4xl">Hivesigner</span>
         </router-link>
       </div>
-      <div class="grid gap-2.5 xl:gap-40 grid-cols-2 items-center justify-center">
+      <div class="grid gap-2.5 xl:gap-40 grid-cols-2 items-center justify-center sm:mb-10 xl:mb-20">
         <div class="col-span-2 xl:col-span-1 sm:mb-6 xl:mb-0">
           <slot name="left" />
         </div>

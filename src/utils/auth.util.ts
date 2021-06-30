@@ -41,7 +41,7 @@ export async function getUserKeysMap (username: string): Promise<Record<string, 
 
   keys[account.memo_key] = 'memo'
 
-  const types = ['owner', 'active', 'posting']
+  const types = ['posting', 'active', 'owner']
 
   for (let i = 0; i < types.length; i += 1) {
     const keysOfType = (account as any)[types[i]].key_auths

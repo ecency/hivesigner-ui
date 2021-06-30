@@ -27,7 +27,7 @@ import { AuthModule } from '../../store'
 @Component({
   middleware: ['auth']
 })
-export default class Dashobard extends Vue {
+export default class Dashboard extends Vue {
   private get username (): string {
     return AuthModule.username
   }

@@ -9,15 +9,15 @@
       </div>
       <p class="text-black-400 text-lg" v-html="$t('revoke.message', { authority, username })" />
       <div
-        v-if="account && account.name && hasRequiredKey ===false"
+        v-if="account && account.name && !hasRequiredKey"
         class="alert alert-warning mt-4"
       >
-        {{ $t('authorize.requires_active_key') }}
+        {{ $t('authorize.requires_active_key', { authority }) }}
       </div>
     </div>
     <div class="mt-2">
       <router-link
-        v-if="!(account && account.name) || hasRequiredKey === false"
+        v-if="!(account && account.name) || !hasRequiredKey"
         :to="{
           name: 'login',
           query: { redirect: $route.fullPath, authority: 'active' },
@@ -44,7 +44,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { Account, TransactionConfirmation } from '@hiveio/dhive'
-import { AuthModule } from '~/store'
+import { AccountsModule, AuthModule } from '~/store'
 
 @Component
 export default class RevokeForm extends Vue {
@@ -80,7 +80,11 @@ export default class RevokeForm extends Vue {
   }
 
   private get hasRequiredKey (): boolean {
-    return !!(AuthModule.username && AuthModule.keys.active)
+    return !!(AuthModule.username && AccountsModule.isValidKeysForAuthority(this.authority, AuthModule.keys))
+  }
+
+  private get callback (): string {
+    return this.$route.query.redirect_uri as string
   }
 
   private updateAccount (data: any): Promise<TransactionConfirmation> {
