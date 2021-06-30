@@ -1,10 +1,10 @@
 <template>
-  <div class="tooltip flex" v-if="tooltip">
+  <div v-if="tooltip" class="tooltip flex">
     <transition name="fade">
       <div
-        class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500"
         v-if="open"
-      ></div>
+        class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500"
+      />
     </transition>
     <span
       class="inline-block tooltip-popup cursor-pointer hover:text-black relative"
@@ -13,8 +13,8 @@
       @mouseover="open = true"
       @mouseleave="open = false"
     >
-      <icon name="Info" class="input-block" style="width: 20px; height: 20px;"/>
-     </span>
+      <icon name="Info" class="input-block" style="width: 20px; height: 20px;" />
+    </span>
   </div>
 </template>
 
@@ -28,7 +28,7 @@ import Icon from './Icons/Icon.vue'
 export default class Tooltip extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private tooltip!: string
 

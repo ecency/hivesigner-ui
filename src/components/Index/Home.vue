@@ -7,7 +7,8 @@
         alt=""
       >
       <p
-        class="text-3xl sm:text-5xl xl:text-6xl font-light text-center text-black-500 sm:text-gray-550">
+        class="text-3xl sm:text-5xl xl:text-6xl font-light text-center text-black-500 sm:text-gray-550"
+      >
         <span class="hidden sm:block">{{ $t('index.secure_way_sign_in') }}</span>
       </p>
     </template>
@@ -20,7 +21,7 @@
           :to="hasAccounts ? '/login?redirect=accounts' : '/import?redirect=accounts'"
           class="button button-primary inline-flex items-center mb-12 sm:mb-0"
         >
-          <Icon name="Keychain" class="mr-2"/>
+          <Icon name="Keychain" class="mr-2" />
           {{ $t('index.get_started') }}
         </router-link>
       </div>
@@ -41,7 +42,7 @@ import { AccountsModule } from '~/store'
   middleware: ['isWeb']
 })
 export default class Home extends Vue {
-  private get hasAccounts(): boolean {
+  private get hasAccounts (): boolean {
     return AccountsModule.hasAccounts
   }
 }

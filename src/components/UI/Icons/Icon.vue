@@ -44,13 +44,13 @@ import BackArrow from './BackArrow.vue'
     Check,
     TransactionSuccess,
     TransactionFailure,
-    BackArrow,
-  },
+    BackArrow
+  }
 })
 export default class Icon extends Vue {
   @Prop({
     type: String,
-    required: true,
+    required: true
   })
   private name!: string
 }

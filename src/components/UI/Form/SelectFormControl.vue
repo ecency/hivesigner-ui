@@ -5,7 +5,12 @@
       :options="options"
       @select="onInput"
       @blur="onBlur"
-    />
+    >
+      <slot />
+      <template #option="{option}">
+        <slot name="option" :option="option" />
+      </template>
+    </custom-select>
   </base-form-control-container>
 </template>
 
@@ -24,53 +29,53 @@ export default class BaseFormControl extends Vue {
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private label!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private name!: string
 
   @Prop({
     type: String,
     default: 'text',
-    validator: value => ['text', 'password', 'select'].includes(value),
+    validator: value => ['text', 'password', 'select'].includes(value)
   })
   private type!: string
 
   @Prop({
-    default: '',
+    default: ''
   })
   private error!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private autocomplete!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private tooltip!: string
 
   @Prop({
     type: Array,
-    default: () => [],
+    default: () => []
   })
   private options!: any[]
 
   @Emit('input')
-  private onInput(value: any): any {
+  private onInput (value: any): any {
     return value
   }
 
   @Emit('blur')
-  private onBlur(): void {
+  private onBlur (): void {
   }
 }
 </script>

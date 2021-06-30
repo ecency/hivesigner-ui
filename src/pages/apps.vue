@@ -3,10 +3,12 @@
     <div class="apps-hero text-center">
       <div class="mx-auto py-8 container-sm">
         <router-link to="/" class="text-white">
-          <Icon name="Logo" style="width: 32px;height: 32px" class="mx-auto"/>
+          <Icon name="Logo" style="width: 32px;height: 32px" class="mx-auto" />
         </router-link>
         <div class="mt-9 mb-16">
-          <h1 class="text-5xl font-bold">{{ $t('apps.store') }}</h1>
+          <h1 class="text-5xl font-bold">
+            {{ $t('apps.store') }}
+          </h1>
         </div>
       </div>
     </div>
@@ -20,7 +22,9 @@
     <div class="container-sm mx-auto p-6 text-center">
       <template v-if="search">
         <div class="mb-6">
-          <p class="font-bold mb-2">{{ $t('apps.search_for', { search }) }}</p>
+          <p class="font-bold mb-2">
+            {{ $t('apps.search_for', { search }) }}
+          </p>
           {{ filteredApps.length }} {{ $t('apps.apps') }}
         </div>
         <apps-list
@@ -29,7 +33,9 @@
           :loading="isLoading"
           @open-modal="openModal"
         />
-        <p v-else>{{ $t('apps.empty_search', { search }) }}</p>
+        <p v-else>
+          {{ $t('apps.empty_search', { search }) }}
+        </p>
       </template>
       <template v-else>
         <apps-list
@@ -66,7 +72,7 @@ import SideModal from '~/components/UI/SideModal.vue'
 
 @Component({
   components: { SideModal, AppDetails, AppsList, Icon },
-  layout: 'page',
+  layout: 'page'
 })
 export default class Apps extends Vue {
   @Ref('modal')
@@ -78,21 +84,21 @@ export default class Apps extends Vue {
   private apps = []
   private selectedApp = null
 
-  private get filteredApps(): Record<string, string>[] {
+  private get filteredApps (): Record<string, string>[] {
     const apps = JSON.parse(JSON.stringify(this.apps))
     return apps
       .sort((a, b) => a.length - b.length)
       .filter(app => app.toLowerCase().includes(this.search.toLowerCase()))
   }
 
-  private async mounted(): Promise<void> {
+  private async mounted (): Promise<void> {
     this.isLoading = true
     await this.loadTopApps()
     await this.loadApps()
     this.isLoading = false
   }
 
-  private async loadApps(): Promise<void> {
+  private async loadApps (): Promise<void> {
     const step = 100
     let follows = await client.call('follow_api', 'get_following', [ORACLE_USERNAME, '', 'blog', step])
     this.apps = follows.map(follow => follow.following)
@@ -105,18 +111,18 @@ export default class Apps extends Vue {
     }
   }
 
-  private async loadTopApps(): Promise<void> {
+  private async loadTopApps (): Promise<void> {
     const response = await client.database.call('get_content', [ORACLE_USERNAME, ORACLE_PERMLINK])
     const metadata = jsonParse(response.json_metadata)
-    if (metadata.data) this.topApps = metadata.data
+    if (metadata.data) { this.topApps = metadata.data }
   }
 
-  private openModal(username: string): void {
+  private openModal (username: string): void {
     this.selectedApp = username
     this.modalRef.show()
   }
 
-  private closeModal(): void {
+  private closeModal (): void {
     this.modalRef.hide()
   }
 }

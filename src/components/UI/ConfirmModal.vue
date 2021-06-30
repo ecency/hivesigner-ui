@@ -1,7 +1,7 @@
 <template>
   <Modal ref="modal">
     <div class="flex flex-col items-center text-center">
-      <div class="mb-10 text-black-400 text-lg" v-html="$t(message)"></div>
+      <div class="mb-10 text-black-400 text-lg" v-html="$t(message)" />
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 w-full">
         <a
           role="button"
@@ -10,12 +10,12 @@
         >
           {{ $t(positiveLabel) }}
         </a><a
-        role="button"
-        class="p-4 hover:bg-gray-300 duration-300 text-black-400 bg-gray-100"
-        @click="negative"
-      >
-        {{ $t(negativeLabel) }}
-      </a>
+          role="button"
+          class="p-4 hover:bg-gray-300 duration-300 text-black-400 bg-gray-100"
+          @click="negative"
+        >
+          {{ $t(negativeLabel) }}
+        </a>
       </div>
     </div>
   </Modal>
@@ -31,19 +31,19 @@ import Modal from './Modal.vue'
 export default class ConfirmModal extends Vue {
   @Prop({
     type: String,
-    default: 'common.yes',
+    default: 'common.yes'
   })
   private positiveLabel!: string
 
   @Prop({
     type: String,
-    default: 'common.no',
+    default: 'common.no'
   })
   private negativeLabel!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private message!: string
 
@@ -51,16 +51,16 @@ export default class ConfirmModal extends Vue {
   private modalRef!: Modal
 
   @Emit('positive')
-  private positive(): void {
+  private positive (): void {
     this.modalRef.hide()
   }
 
   @Emit('negative')
-  private negative(): void {
+  private negative (): void {
     this.modalRef.hide()
   }
 
-  public show(): void {
+  public show (): void {
     this.modalRef.show()
   }
 }

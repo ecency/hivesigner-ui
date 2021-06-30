@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a @click="toggle" class="p-4 block border rounded overflow-hidden mb-3 cursor-pointer hover:underline">
+    <a class="p-4 block border rounded overflow-hidden mb-3 cursor-pointer hover:underline" @click="toggle">
       <h4 class="text-xl text-black-500 font-bold">{{ title }}</h4>
     </a>
     <div v-if="open" class="mb-6 text-black-400 text-lg">
@@ -16,7 +16,7 @@ import { Component, Prop, Vue } from 'nuxt-property-decorator'
 export default class DeveloperItem extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private title!: string
 
@@ -25,11 +25,11 @@ export default class DeveloperItem extends Vue {
   })
   private value!: string | null
 
-  private get open(): boolean {
+  private get open (): boolean {
     return this.title === this.value
   }
 
-  private toggle(): void {
+  private toggle (): void {
     this.$emit('input', this.open ? null : this.title)
   }
 }

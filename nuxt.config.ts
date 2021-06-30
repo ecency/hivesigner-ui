@@ -6,6 +6,10 @@ export default {
   ssr: false,
   srcDir: 'src',
 
+  server: {
+    host: '0.0.0.0'
+  },
+
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     title: 'hivesigner',
@@ -19,14 +23,14 @@ export default {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.png' },
-      { rel: 'preload', type: 'image/png', sizes: '32x32', href: '/favicon.png', as: 'image' },
+      { rel: 'preload', type: 'image/png', sizes: '32x32', href: '/favicon.png', as: 'image' }
     ]
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
     '@/assets/scss/tailwind.scss',
-    '@/assets/scss/styles.scss',
+    '@/assets/scss/styles.scss'
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
@@ -38,6 +42,7 @@ export default {
     '~/plugins/vue-carousel.ts',
     '~/plugins/popup-messages.ts',
     '~/plugins/modals-manager.ts',
+    '~/plugins/check-app-integrity.ts'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -73,7 +78,7 @@ export default {
 
   // router
   router: {
-    extendRoutes(routes: any[]) {
+    extendRoutes (routes: any[]) {
       ADDITIONAL_ROUTES.forEach(route => routes.push(route))
     }
   }

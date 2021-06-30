@@ -11,8 +11,8 @@
     <locale-selector
       class="py-1.5"
       :class="{
-          'px-2': wrappable
-        }"
+        'px-2': wrappable
+      }"
     />
 
     <template v-for="item of menu">
@@ -28,10 +28,11 @@
         {{ item.label }}
       </router-link>
       <a
-        v-else-if="item.href" :href="item.href"
+        v-else-if="item.href"
+        :key="item.to"
+        :href="item.href"
         target="_blank"
         rel="noopener"
-        :key="item.to"
         class="text-gray py-1.5 text-lg hover:text-primary cursor-pointer"
         :class="{
           'px-2': wrappable
@@ -47,24 +48,24 @@ import { Component, Prop, Vue } from 'nuxt-property-decorator'
 export default class Navigation extends Vue {
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private vertical!: string
 
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private wrappable!: string
 
-  private get menu() {
+  private get menu () {
     return [
       { label: this.$t('footer.apps'), to: '/apps' },
       { label: this.$t('footer.accounts'), to: '/accounts' },
       { label: this.$t('footer.signs'), to: '/signs' },
       { label: this.$t('footer.documentation'), href: 'https://docs.hivesigner.com/' },
-      { label: this.$t('footer.about'), to: '/about' },
-      //{ label: this.$t('footer.network', {network: process.env.BROADCAST_NETWORK === 'testnet' ? 'T' : '' }), to: '/about' },
+      { label: this.$t('footer.about'), to: '/about' }
+      // { label: this.$t('footer.network', {network: process.env.BROADCAST_NETWORK === 'testnet' ? 'T' : '' }), to: '/about' },
     ]
   }
 }

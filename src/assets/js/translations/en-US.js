@@ -6,7 +6,8 @@ export default {
     try_again: 'Please try again later.',
     save: 'Save',
     yes: 'Yes',
-    no: 'No'
+    no: 'No',
+    invalid_integrity: 'This website most likely phishing attempt. Please make sure to use <a class="underline" href="https://hivesigner.com" target="_blank" rel="noopener">hivesigner.com</a> only.'
   },
   index: {
     title: 'Hivesigner',
@@ -25,13 +26,14 @@ export default {
   accounts: {
     accounts: 'Accounts',
     empty: ` There isn't any account stored on this device, <a href="/import" target="_blank" class="text-black hover:underline">click here</a> if you want to import an account.`,
-    delete: 'Delete account',
+    delete: 'Remove from Hivesigner',
     unlock: 'Unlock',
     auths: 'Authorities',
     add_another: 'Add another account',
     sign_transactions: 'Sign transactions',
-    delete_account: 'Delete account',
-    delete_account_confirm: `<div>Do you want to delete account?</div><div>This will remove account from local storage.</div>`
+    delete_account: 'Remove',
+    delete_account_confirm: `<div>Do you want to delete account?</div><div>This will remove account from local storage.</div>`,
+    successfully_logged_in: 'Logged in successfully!'
   },
   apps: {
     store: 'App store',
@@ -68,7 +70,7 @@ export default {
         {authority} access. This can be withdrawn by you at any time by clicking
         <a class="text-black hover:underline uppercase cursor-pointer" href="/revoke/{username}" target="_blank">here</a>.`,
     authority_active: `Giving active authority enables the authorized account to do fund transfers from your account, this should be used with utmost care.`,
-    requires_active_key: `This transaction requires your <b>active</b> key.`
+    requires_active_key: `This transaction requires your <b>{authority}</b> key.`
   },
   import: {
     hs_password: 'Encryption password',
@@ -79,7 +81,7 @@ export default {
     import_encryption_key: `This is a new custom password to encrypt your credentials. This is not your Hive private key.`,
     master_password: 'Private key',
     master_key: 'You need to use master or at least {authority} key to login.',
-    encrypt_keys: 'Encrypt your keys',
+    encrypt_keys: 'Encrypt your keys with extra password?',
     select_account: 'Select account',
     signup: 'Sign Up',
     app: 'The app ',
@@ -92,12 +94,16 @@ export default {
     login: 'Login',
     private_key: 'Private key',
     import_private_key: 'Import private key',
-    incorrect_private_key: 'Private key is not correct'
+    incorrect_private_key: 'Private key is not correct',
+    same_encryption_key: 'Use same encryption password?',
+    same_encryption_key_account: 'Use same encryption password as in',
+    same_key_not_match: 'Doesn`t match with existing encryption password',
+    incorrect_encryption_key: 'Incorrect encryption password'
   },
   login: {
     switch_an_account: 'Switch an account',
-    username_required: 'Username is required',
-    password_required: 'Password is required',
+    username_required: 'Hive username is required',
+    password_required: 'Hive private key is required',
     hs_password_required: 'Encryption password is required',
     hs_password_confirmation_required: 'Encryption password confirmation is required',
     hs_password_not_match: 'Encryption passwords do not match',

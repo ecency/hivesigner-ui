@@ -8,22 +8,22 @@
         }"
       >
         <account-item
-          class="cursor-pointer"
           v-for="account of accountsList"
-          :user="account"
           :key="account"
+          class="cursor-pointer"
+          :user="account"
           @click.native="selectAccount(account)"
         />
       </div>
-      <div class="hidden xl:flex" v-if="slides.length > 1">
+      <div v-if="slides.length > 1" class="hidden xl:flex">
         <carousel per-page="1">
           <slide v-for="(slide, key) of slides" :key="key">
             <div class="grid grid-cols-3 sm:grid-cols-4 gap-6 pt-8">
               <account-item
-                class="cursor-pointer"
                 v-for="account of slide"
-                :user="account"
                 :key="account"
+                class="cursor-pointer"
+                :user="account"
                 @click.native="selectAccount(account)"
               />
             </div>
@@ -32,7 +32,10 @@
       </div>
     </div>
     <div class="flex justify-center mt-6 md:mt-20 xl:pt-10">
-      <router-link to="/import" class="button button-md block text-center w-full">
+      <router-link
+        :to="{ path: '/import', query: { redirect: 'accounts' } }"
+        class="button button-md block text-center w-full"
+      >
         {{ $t('accounts.add_another') }}
       </router-link>
     </div>
@@ -45,15 +48,15 @@
 
 <script lang="ts">
 import { Component, Vue, Ref } from 'nuxt-property-decorator'
-import AccountItem from '~/components/Accounts/AccountItem.vue'
-import { AccountsModule } from '~/store'
 import SinglePageLayout from '../components/Layouts/SinglePageLayout.vue'
 import SideModal from '../components/UI/SideModal.vue'
 import AccountDetails from '../components/Accounts/AccountDetails.vue'
+import { AccountsModule } from '~/store'
+import AccountItem from '~/components/Accounts/AccountItem.vue'
 
 @Component({
   components: { AccountDetails, SideModal, SinglePageLayout, AccountItem },
-  layout: 'page',
+  layout: 'page'
 })
 export default class Accounts extends Vue {
   @Ref('modal')
@@ -61,11 +64,11 @@ export default class Accounts extends Vue {
 
   private selectedAccount: string | null = null
 
-  private get accountsList(): string[] {
+  private get accountsList (): string[] {
     return AccountsModule.accountsUsernamesList
   }
 
-  private get slides(): string[][] {
+  private get slides (): string[][] {
     const results = []
     this.accountsList.forEach((user, key) => {
       if (key % 8 === 0) {
@@ -77,7 +80,7 @@ export default class Accounts extends Vue {
     return results
   }
 
-  private selectAccount(account: string): void {
+  private selectAccount (account: string): void {
     this.selectedAccount = account
     account ? this.sideModalRef.show() : this.sideModalRef.hide()
   }

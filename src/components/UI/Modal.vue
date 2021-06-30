@@ -1,20 +1,20 @@
 <template>
-  <portal to="modal">
-    <div ref="container" class="modal">
+  <portal to="modal" :order="order">
+    <div ref="container" :class="open ? baseClassList : 'modal'">
       <transition name="fade">
         <div
-          class="duration-300 cursor-pointer bg-black opacity-70 fixed top-0 left-0 right-0 bottom-0"
           v-if="open"
+          class="duration-300 cursor-pointer bg-black opacity-70 fixed top-0 left-0 right-0 bottom-0"
           @click="hide"
-        ></div>
+        />
       </transition>
       <transition :name="animation">
         <div
+          v-if="open"
           class="modal-content overflow-y-auto w-full relative bg-white duration-300"
           :class="{
             'h-full xl:h-auto flex flex-col justify-center': mobileFull
           }"
-          v-if="open"
         >
           <div
             class="modal-title py-3 pl-6 pr-4 flex items-center justify-end"
@@ -24,10 +24,10 @@
           >
             <a
               role="button"
-              @click="hide"
               class="cursor-pointer text-gray hover:text-black-500 rounded-full"
+              @click="hide"
             >
-              <Icon name="close" style="width: 23px; height: 23px"/>
+              <Icon name="close" style="width: 23px; height: 23px" />
             </a>
           </div>
           <div
@@ -37,7 +37,7 @@
               'px-14 h-full': !mobileFull,
             }"
           >
-            <slot></slot>
+            <slot />
           </div>
         </div>
       </transition>
@@ -55,13 +55,13 @@ import Icon from './Icons/Icon.vue'
 export default class Modal extends Vue {
   @Prop({
     type: String,
-    default: 'slide-bottom',
+    default: 'slide-bottom'
   })
   private animation!: string
 
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private mobileFull!: boolean
 
@@ -69,28 +69,31 @@ export default class Modal extends Vue {
   private containerRef!: HTMLElement
 
   private open = false
+  private order = 0
 
-  private beforeDestroy(): void {
+  private beforeDestroy (): void {
     this.hide()
   }
 
-  private get baseClassList(): string[] {
+  private get baseClassList (): string[] {
     return [
       'modal flex items-center justify-center top-0 left-0 bottom-0 right-0 fixed',
-      this.mobileFull ? 'mobile-full' : '',
+      this.mobileFull ? 'mobile-full' : ''
     ]
   }
 
-  public show(): void {
-    this.open = true
-    this.$modalsManager.expose()
-    this.containerRef?.className = this.baseClassList.join(' ')
+  private mounted (): void {
+    this.order = this.$modalsManager.nextId
   }
 
-  public hide(): void {
+  public show (): void {
+    this.open = true
+    this.$modalsManager.expose()
+  }
+
+  public hide (): void {
     this.open = false
     this.$modalsManager.release()
-    setTimeout(() => this.containerRef?.className = 'modal', 300)
   }
 }
 </script>

@@ -3,31 +3,35 @@
     <div class="flex flex-col w-full text-black-400 w-full pt-12 px-3">
       <div class="auths-table">
         <div class="auths-cell auths-cell-header flex items-end auths-cell-type pb-2 sm:pb-0">
-          {{ this.$t('auths.type') }}
+          {{ $t('auths.type') }}
         </div>
         <div class="auths-cell auths-cell-header flex items-end auths-cell-key pb-2 sm:pb-0">
-          {{ this.$t('auths.key') }}
+          {{ $t('auths.key') }}
         </div>
         <div
-          class="auths-cell auths-cell-header flex items-end pb-2 sm:pb-0 auths-cell-actions"></div>
+          class="auths-cell auths-cell-header flex items-end pb-2 sm:pb-0 auths-cell-actions"
+        />
         <div
-          class="auths-cell auths-cell-header items-end pb-2 sm:pb-0 hidden xl:flex auths-cell-weight">
-          {{ this.$t('auths.weight') }}
+          class="auths-cell auths-cell-header items-end pb-2 sm:pb-0 hidden xl:flex auths-cell-weight"
+        >
+          {{ $t('auths.weight') }}
         </div>
-        <template v-for="value of tableValues">
-          <div class="auths-cell auths-cell-type flex items-center text-gray">{{ value.Type }}</div>
-          <div class="auths-cell auths-cell-key flex items-center">
+        <template v-for="(value, index) of tableValues">
+          <div :key="index" class="auths-cell auths-cell-type flex items-center text-gray">
+            {{ value.Type }}
+          </div>
+          <div :key="index" class="auths-cell auths-cell-key flex items-center">
             <operation-value-account
               v-if="value.Key.type === 'account'"
               :value="value.Key.public"
             />
             <operation-value
-              responsive-short
               v-else
+              responsive-short
               :value="privateKeysShowing[value.Type] ? value.Key.private : value.Key.public"
             />
           </div>
-          <div class="auths-cell auths-cell-actions flex justify-end sm:justify-start items-center">
+          <div :key="index" class="auths-cell auths-cell-actions flex justify-end sm:justify-start items-center">
             <auths-actions
               classes="cursor-pointer button button-sm mr-8 last:mr-0 hidden sm:block"
               :account="account"
@@ -40,7 +44,7 @@
             <Dropdown ref="dropdown" position="rightBottom" flat width="213px" class="sm:hidden">
               <template slot="trigger">
                 <a role="button" class="cursor-pointer hover:text-black">
-                  <Icon name="options"/>
+                  <Icon name="options" />
                 </a>
               </template>
               <auths-actions
@@ -53,13 +57,15 @@
               />
             </Dropdown>
           </div>
-          <div class="auths-cell auths-cell-weight hidden xl:block">{{ value.Weight }}</div>
+          <div :key="index" class="auths-cell auths-cell-weight hidden xl:block">
+            {{ value.Weight }}
+          </div>
         </template>
       </div>
     </div>
 
-    <modal mobile-full animation="slide-right" ref="import-modal">
-      <import-auth-key @import:success="importModalRef.hide()"/>
+    <modal ref="import-modal" mobile-full animation="slide-right">
+      <import-auth-key @import:success="importModalRef.hide()" />
     </modal>
   </single-page-layout>
 </template>
@@ -68,6 +74,7 @@
 import _ from 'lodash'
 import { Account } from '@hiveio/dhive'
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
+import AuthsActions from '../components/Auths/AuthsActions.vue'
 import { AccountsModule, AuthModule } from '~/store'
 import { privateKeyFrom } from '~/utils'
 import { Authority } from '~/enums'
@@ -76,12 +83,12 @@ import Icon from '~/components/UI/Icons/Icon.vue'
 import Dropdown from '~/components/UI/Dropdown.vue'
 import Modal from '~/components/UI/Modal.vue'
 import ImportAuthKey from '~/components/Import/ImportAuthKey.vue'
-import AuthsActions from '../components/Auths/AuthsActions.vue'
+import { CLIENT_OPTIONS } from '~/consts'
 
 @Component({
   components: { AuthsActions, ImportAuthKey, Modal, Dropdown, SinglePageLayout, Icon },
   middleware: ['auth'],
-  layout: 'page',
+  layout: 'page'
 })
 export default class Auths extends Vue {
   @Ref('import-modal')
@@ -89,66 +96,65 @@ export default class Auths extends Vue {
 
   private privateKeysShowing: Record<string, boolean> = {}
 
-  private get account(): Account | null {
+  private get account (): Account | null {
     return AuthModule.account
   }
 
-  private get auths(): { type: string, authority: Authority, auth: string, weight: number }[] {
+  private get auths (): { type: string, authority: Authority, auth: string, weight: number }[] {
     const auths = []
 
-    Object.values(Authority).forEach(authority => {
-      this.account[authority]?.key_auths.forEach(auth => {
+    Object.values(Authority).forEach((authority) => {
+      this.account[authority]?.key_auths.forEach((auth) => {
         auths.push({ type: 'key', authority, auth: auth[0], weight: auth[1] })
       })
-      this.account[authority]?.account_auths.forEach(auth => {
+      this.account[authority]?.account_auths.forEach((auth) => {
         auths.push({ type: 'account', authority, auth: auth[0], weight: auth[1] })
       })
     })
     return auths
   }
 
-  private get publicKeys(): Record<string, string> {
+  private get publicKeys (): Record<string, string> {
     const { keys } = AuthModule
-    const network = process.env.BROADCAST_NETWORK || 'mainnet'
 
     return Object.keys(keys).reduce<Record<string, string>>((acc, b) => {
       if (!keys[b]) {
         return acc
       }
       acc[b] = privateKeyFrom(keys[b])
-        .createPublic(network==='testnet'?'TST':'SMT')
+        .createPublic(CLIENT_OPTIONS.addressPrefix)
         .toString()
       return acc
     }, {})
   }
 
-  private get tableValues(): object[] {
+  private get tableValues (): object[] {
     const values = _.orderBy(this.auths, 'type')
       .map(({ type, authority, auth, weight }) => ({
         Type: authority,
         Key: {
           public: auth,
           private: AccountsModule.accountsKeychains[this.account.name][authority],
-          type,
+          type
         },
-        Weight: weight,
+        Weight: weight
       }))
     const memo = {
       Type: 'memo',
       Key: {
         public: this.account.memo_key,
         private: AccountsModule.accountsKeychains[this.account.name].memo,
-        type: 'memo',
+        type: 'memo'
       },
-      Weight: '',
+      Weight: ''
     }
     return [
       ...values,
-      ...(this.publicKeys.memo === this.account.memo_key ? [memo] : []),
+      ...(this.publicKeys.memo === this.account.memo_key ? [memo] : [])
     ]
   }
 
-  private setPrivateKeyShowing(authority: string, value: boolean): void {
+  private setPrivateKeyShowing (authority: string, value: boolean): void {
     Vue.set(this.privateKeysShowing, authority, value)
   }
 }

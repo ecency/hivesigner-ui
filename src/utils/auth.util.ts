@@ -5,19 +5,19 @@ import { Authority } from '~/enums'
 
 // TODO: Move it from utils
 
-function decodePrivate(encodedKey: string): Buffer {
-  const buffer = bs58.decode(encodedKey)
+function decodePrivate (encodedKey: string): Buffer {
+  const buffer: Buffer = bs58.decode(encodedKey)
 
-  if (buffer[0] !== 128) throw new Error('private key network id mismatch')
+  if (buffer[0] !== 128) { throw new Error('private key network id mismatch') }
 
   return buffer.slice(0, -4)
 }
 
-export function privateKeyFrom(password: string): PrivateKey {
+export function privateKeyFrom (password: string): PrivateKey {
   return new PrivateKey(decodePrivate(password).slice(1))
 }
 
-export function isKey(username: string, password: string): boolean {
+export function isKey (_: string, password: string): boolean {
   try {
     privateKeyFrom(password)
     return true
@@ -26,7 +26,7 @@ export function isKey(username: string, password: string): boolean {
   }
 }
 
-export async function getUserKeysMap(username: string): Promise<Record<string, string>> {
+export async function getUserKeysMap (username: string): Promise<Record<string, string>> {
   const keys: Record<string, string> = {}
 
   let accounts = null
@@ -37,13 +37,13 @@ export async function getUserKeysMap(username: string): Promise<Record<string, s
     return keys
   }
 
-  if (accounts.length !== 1) return keys
+  if (accounts.length !== 1) { return keys }
 
   const [account] = accounts
 
   keys[account.memo_key] = 'memo'
 
-  const types = ['owner', 'active', 'posting']
+  const types = ['posting', 'active', 'owner']
 
   for (let i = 0; i < types.length; i += 1) {
     const keysOfType = account[types[i]].key_auths
@@ -56,6 +56,6 @@ export async function getUserKeysMap(username: string): Promise<Record<string, s
   return keys
 }
 
-export function getAuthority(str: Authority, fallback?: Authority): Authority | undefined {
+export function getAuthority (str: Authority, fallback?: Authority): Authority | undefined {
   return Object.values(Authority).includes(str) ? str : fallback
 }

@@ -1,9 +1,7 @@
-import createIdleDetector from '~/utils/idle-detector.util'
-import Vue from 'vue'
+import { Context } from '@nuxt/types'
 import { IdleDetector } from '../models'
+import createIdleDetector from '~/utils/idle-detector.util'
 
-export default function ({ app }: { app: Vue }, inject: (key: string, value: IdleDetector) => void) {
-  inject('idleDetector', createIdleDetector({
-    autostop: true,
-  }))
+export default function (_: Context, inject: (key: string, value: IdleDetector) => void) {
+  inject('idleDetector', createIdleDetector())
 }

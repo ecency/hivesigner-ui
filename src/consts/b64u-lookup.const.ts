@@ -1,4 +1,4 @@
-export const B64u_LOOKUP: Record<string, string> = {
+export const b64uLookup: Record<string, string> = {
   '/': '_',
   _: '/',
   '+': '-',

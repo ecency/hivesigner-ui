@@ -1,11 +1,11 @@
 import { Store } from 'vuex'
-import Auth from '~/store/auth'
 import { getModule } from 'nuxt-property-decorator'
-import Settings from '~/store/settings'
-import Ui from '~/store/ui'
 import PersistentForms from './persistentForms'
 import Accounts from './accounts'
 import { registerStoragePersistPlugins } from './plugins'
+import Ui from '~/store/ui'
+import Settings from '~/store/settings'
+import Auth from '~/store/auth'
 
 let AuthModule: Auth
 let SettingsModule: Settings
@@ -27,5 +27,5 @@ export {
   SettingsModule,
   UiModule,
   PersistentFormsModule,
-  AccountsModule,
+  AccountsModule
 }

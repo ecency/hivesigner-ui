@@ -1,5 +1,5 @@
 <template>
-  <component :is="component"/>
+  <component :is="component" />
 </template>
 
 <script lang="ts">
@@ -8,7 +8,7 @@ import Home from '~/components/Index/Home'
 
 @Component
 export default class Index extends Vue {
-  private get component(): any {
+  private get component (): any {
     return Home
   }
 }

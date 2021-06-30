@@ -7,39 +7,39 @@
         :success-message="successMessage"
         :failure-message="failureMessage"
       />
-      <div class="container-sm mx-auto" v-if="!failed && !transactionId">
+      <div v-if="!failed && !transactionId" class="container-sm mx-auto">
         <Operation
           v-for="(operation, key) in parsed.tx.operations"
-          :operation="operation"
           :key="key"
+          :operation="operation"
         />
-        <div class="alert alert-warning mb-6" v-if="parsed.params.callback">
+        <div v-if="parsed.params.callback" class="alert alert-warning mb-6">
           {{ $t('sign.going_redirect_to') }}
           <span class="text-black">
-              {{ parsed.params.callback | parseUrl }}
-            </span>.
+            {{ parsed.params.callback | parseUrl }}
+          </span>.
         </div>
         <div
-          class="alert alert-warning mb-6"
           v-if="username && hasRequiredKey === false"
+          class="alert alert-warning mb-6"
           v-html="$t('authorize.requires_active_key')"
-        ></div>
+        />
         <div class="mb-6">
           <router-link
-            :to="{ name: 'login', query: { redirect: this.$route.fullPath, authority } }"
-            class="button button-primary mr-2 mb-2 inline-block"
             v-if="!username || hasRequiredKey === false"
+            :to="{ name: 'login', query: { redirect: $route.fullPath, authority } }"
+            class="button button-primary mr-2 mb-2 inline-block"
           >
             {{ $t('common.continue') }}
           </router-link>
           <button
+            v-else
             type="submit"
             class="button-success mr-2 mb-2"
             :disabled="loading"
             @click="handleSubmit"
-            v-else
           >
-            {{ this.$t(parsed.params.no_broadcast ? 'sign.sign' : 'sign.approve') }}
+            {{ $t(parsed.params.no_broadcast ? 'sign.sign' : 'sign.approve') }}
           </button>
           <button class="mb-2" @click.prevent="handleReject">
             {{ $t('common.cancel') }}
@@ -47,7 +47,7 @@
         </div>
       </div>
     </div>
-    <div class="sm:p-6" v-else>
+    <div v-else class="sm:p-6">
       <div class="container-sm mx-auto alert alert-error mb-6">
         {{ $t('errors.unknown') }}
       </div>
@@ -58,6 +58,8 @@
 <script lang="ts">
 import * as hiveuri from 'hive-uri'
 import { Component, Vue } from 'nuxt-property-decorator'
+import { DecodeResult } from 'hive-uri'
+import TransactionStatus from '../../components/TransactionStatus.vue'
 import {
   buildSearchParams,
   getAuthority,
@@ -65,16 +67,14 @@ import {
   getVestsToSP,
   legacyToHiveUri,
   processTransaction,
-  resolveTransaction,
+  resolveTransaction
 } from '~/utils'
 import { AuthModule, SettingsModule } from '~/store'
 import { Authority } from '~/enums'
 import SinglePageLayout from '~/components/Layouts/SinglePageLayout.vue'
-import TransactionStatus from '../../components/TransactionStatus.vue'
-import { DecodeResult } from 'hive-uri'
 
 @Component({
-  components: { TransactionStatus, SinglePageLayout },
+  components: { TransactionStatus, SinglePageLayout }
 })
 export default class Sign extends Vue {
   private parsed: DecodeResult | null = null
@@ -86,15 +86,15 @@ export default class Sign extends Vue {
   private hasRequiredKey = null
   private authority = getAuthority(this.$route.query.authority as Authority)
 
-  private get uri(): string {
+  private get uri (): string {
     return `hive://sign/${this.$route.params.pathMatch}${buildSearchParams(this.$route)}`
   }
 
-  private get requestId(): string {
+  private get requestId (): string {
     return this.$route.query.requestId as string
   }
 
-  private get title() {
+  private get title () {
     let title = this.$t('sign.confirm_transaction')
     if (this.authority) {
       title += ` (${this.authority})`
@@ -102,35 +102,40 @@ export default class Sign extends Vue {
     return title
   }
 
-  private get username(): string {
+  private get username (): string {
     return AuthModule.username
   }
 
-  private get config(): any {
+  private get config (): any {
     return {
-      vestsToSP: getVestsToSP(SettingsModule.properties),
+      vestsToSP: getVestsToSP(SettingsModule.properties)
     }
   }
 
-  private get successMessage(): string {
+  private get successMessage (): string {
     return `<span class="text-gray">${this.$t('sign.transaction_id')}:</span> <a href="https://hiveblocks.com/tx/${this.transactionId}" target="_blank" class="text-black hover:underline cursor-pointer">${this.transactionId}</a>`
   }
 
-  private get failureMessage(): string {
+  private get failureMessage (): string {
     return `<span class="text-gray">${this.$t('sign.error_message')}:</span> ${this.error}`
   }
 
-  private mounted(): void {
+  private mounted (): void {
     this.parseUri(this.uri)
     if (!this.authority && this.parsed && this.parsed.tx) {
       this.authority = getLowestAuthorityRequired(this.parsed.tx)
       this.hasRequiredKey = !!(
-        AuthModule.username && AuthModule.keys[this.authority]
+        AuthModule.username && (
+          (this.authority === 'owner' && AuthModule.keys.owner) ||
+          (this.authority === 'active' && (AuthModule.keys.owner || AuthModule.keys.active)) ||
+          (this.authority === 'posting' && (AuthModule.keys.owner || AuthModule.keys.active || AuthModule.keys.posting)) ||
+          AuthModule.keys[this.authority]
+        )
       )
     }
   }
 
-  private parseUri(uri): void {
+  private parseUri (uri): void {
     let parsed: DecodeResult
     try {
       parsed = hiveuri.decode(uri)
@@ -143,7 +148,7 @@ export default class Sign extends Vue {
     this.parsed = processTransaction(parsed, this.config)
   }
 
-  private async handleSubmit(): Promise<void> {
+  private async handleSubmit (): Promise<void> {
     this.loading = true
     let sig = null
     let tx = null
@@ -184,14 +189,14 @@ export default class Sign extends Vue {
         sig,
         id: confirmation.id || undefined,
         block: confirmation.block_num || undefined,
-        txn: confirmation.txn_num || undefined,
+        txn: confirmation.txn_num || undefined
       })
     } else {
       this.loading = false
     }
   }
 
-  private handleReject(): void {
+  private handleReject (): void {
     this.failed = false
     this.loading = false
     this.transactionId = ''

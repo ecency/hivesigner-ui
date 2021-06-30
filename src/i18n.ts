@@ -11,7 +11,7 @@ export const i18n = {
       code: 'ru',
       name: 'Русский',
       file: 'ru-RU.js'
-    },
+    }
   ],
   defaultLocale: 'en',
   lazy: true,
@@ -19,7 +19,7 @@ export const i18n = {
   detectBrowserLanguage: {
     useCookie: true,
     cookieKey: 'i18n_redirected',
-    onlyOnRoot: true,  // recommended
+    onlyOnRoot: true // recommended
   },
   vuex: false,
   strategy: 'no_prefix',

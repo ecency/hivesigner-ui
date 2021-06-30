@@ -4,12 +4,14 @@
       <label :for="name" class="flex items-center">
         {{ label }}
 
-       <tooltip class="ml-1" :tooltip="tooltip" />
+        <tooltip class="ml-1" :tooltip="tooltip" />
       </label>
       <span v-if="error" class="mx-1">/</span>
-      <div v-if="error" class="text-primary">{{ error }}</div>
+      <div v-if="error" class="text-primary">
+        {{ error }}
+      </div>
     </div>
-    <slot></slot>
+    <slot />
   </div>
 </template>
 
@@ -24,24 +26,24 @@ import Tooltip from '../Tooltip.vue'
 export default class BaseFormControlContainer extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private name!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private label!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private tooltip!: string
 
   @Prop({
-    default: '',
+    default: ''
   })
   private error!: string
 }

@@ -2,17 +2,19 @@
   <div class="apps-details">
     <Loader v-if="isLoading" />
     <template v-else>
-      <div class="mb-6 text-center" v-if="!failed">
+      <div v-if="!failed" class="mb-6 text-center">
         <div class="mb-6">
-          <Avatar :username="username" :size="80" class="mb-2"/>
-          <h4 v-if="profile.name" class="text-xl font-bold text-black-500">{{ profile.name }}</h4>
+          <Avatar :username="username" :size="80" class="mb-2" />
+          <h4 v-if="profile.name" class="text-xl font-bold text-black-500">
+            {{ profile.name }}
+          </h4>
           <div v-if="profile.website" class="text-black-400 text-lg">
             {{ profile.website | parseUrl }}
           </div>
         </div>
         <a
           v-if="profile.website"
-          class="button mb-6 inline-flex items-center text-lg"
+          class="button button-sm mb-6 inline-flex items-center text-lg"
           :href="profile.website"
           target="_blank"
         >
@@ -21,11 +23,17 @@
         </a>
         <div class="text-left">
           <div v-if="profile.about" class="mb-6">
-            <p class="font-medium mb-2 text-black-400 text-lg">{{ $t('apps.about') }}</p>
-            <p class="mb-2">{{ profile.about }}</p>
+            <p class="font-medium mb-2 text-black-400 text-lg">
+              {{ $t('apps.about') }}
+            </p>
+            <p class="mb-2">
+              {{ profile.about }}
+            </p>
           </div>
           <div v-if="profile.creator" class="mb-6">
-            <p class="font-medium mb-2 text-black-400 text-lg">{{ $t('apps.creator') }}</p>
+            <p class="font-medium mb-2 text-black-400 text-lg">
+              {{ $t('apps.creator') }}
+            </p>
             <p class="mb-2">
               <a
                 :href="'https://ecency.com/@' + profile.creator"
@@ -51,9 +59,9 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import { client, isValidUrl } from '~/utils'
 import Icon from '../UI/Icons/Icon.vue'
 import Loader from '../UI/Loader.vue'
+import { client, isValidUrl } from '~/utils'
 
 @Component({
   components: { Loader, Icon }
@@ -61,7 +69,7 @@ import Loader from '../UI/Loader.vue'
 export default class AppDetails extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private username!: string
 
@@ -69,11 +77,11 @@ export default class AppDetails extends Vue {
   private failed = false
   private profile: Record<string, string> = {}
 
-  private mounted(): void {
+  private mounted (): void {
     this.loadProfile()
   }
 
-  private async loadProfile(): Promise<void> {
+  private async loadProfile (): Promise<void> {
     this.isLoading = true
 
     const accounts = await client.database.getAccounts([this.username])

@@ -27,7 +27,9 @@
       type="checkbox"
     />
 
-    <div v-if="!!error" class="text-primary text-lg mb-6">{{ error }}</div>
+    <div v-if="!!error" class="text-primary text-lg mb-6">
+      {{ error }}
+    </div>
     <button
       :disabled="nextDisabled || loading"
       class="button-primary w-full block mb-2"
@@ -49,10 +51,10 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
+import FormControl from '../UI/Form/FormControl.vue'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 import { ERROR_INVALID_CREDENTIALS } from '~/consts'
 import { Authority } from '~/enums'
-import FormControl from '../UI/Form/FormControl.vue'
 
 @Component({
   components: { FormControl }
@@ -60,70 +62,71 @@ import FormControl from '../UI/Form/FormControl.vue'
 export default class ImportUserForm extends Vue {
   @Prop({
     type: Object,
-    default: () => ({}),
+    default: () => ({})
   })
   private errors!: Record<string, string>
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private error!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private authority!: Authority
 
   @Prop({
     type: Boolean,
-    default: false,
+    default: false
   })
   private loading!: boolean
 
   private dirty = {
     username: false,
-    password: false,
+    password: false
   }
+
   private storeAccount = true
 
-  private get username(): string {
+  private get username (): string {
     return PersistentFormsModule.import.username
   }
 
-  private set username(value: string) {
+  private set username (value: string) {
     return PersistentFormsModule.saveImportUsername(value)
   }
 
-  private get password(): string {
+  private get password (): string {
     return PersistentFormsModule.import.password
   }
 
-  private set password(value: string) {
+  private set password (value: string) {
     return PersistentFormsModule.saveImportPassword(value)
   }
 
-  private get nextText() {
+  private get nextText () {
     return this.storeAccount ? this.$t('common.continue') : this.$t('import.login')
   }
 
-  private get nextDisabled(): boolean {
+  private get nextDisabled (): boolean {
     return !!this.errors.username || !!this.errors.password
   }
 
-  public reset(): void {
+  public reset (): void {
     this.dirty = {
       username: false,
-      password: false,
+      password: false
     }
   }
 
-  private async submitNext(): Promise<void> {
+  private async submitNext (): Promise<void> {
     this.$emit('loading', true)
     const invalidCredentials = !(await AccountsModule.isValidCredentials({
       username: this.username,
-      password: this.password,
+      password: this.password
     }))
     this.$emit('loading', false)
     if (invalidCredentials) {
@@ -136,21 +139,21 @@ export default class ImportUserForm extends Vue {
     } else {
       const keys = await AccountsModule.getAuthoritiesKeys({
         username: this.username,
-        password: this.password,
+        password: this.password
       })
       const k = Buffer.from(JSON.stringify(keys))
       AccountsModule.saveAccount({
         username: this.username,
         keys: {
           password: `${k.toString('hex')}decrypted`,
-          ...keys,
+          ...keys
         }
       })
       this.$emit('submit')
     }
   }
 
-  private handleBlur(name: string): void {
+  private handleBlur (name: string): void {
     this.dirty[name] = true
   }
 }

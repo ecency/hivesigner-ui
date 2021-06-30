@@ -1,4 +1,4 @@
-export function pretty(value: string): string {
+export function pretty (value: string): string {
   let json
   try {
     json = JSON.stringify(JSON.parse(value), null, 2)

@@ -1,15 +1,15 @@
 <template>
   <single-page-layout :title="$t('developers.developers')">
     <div class="container-sm mx-auto mb-4">
-      <p class="mb-6 text-black-400 text-lg" v-html="$t('developers.description')"></p>
-      <p class="mb-2 text-black-400" v-html="$t('developers.7.message')"></p>
+      <p class="mb-6 text-black-400 text-lg" v-html="$t('developers.description')" />
+      <p class="mb-2 text-black-400" v-html="$t('developers.7.message')" />
       <p v-if="pkg.bugs" class="mb-2">
         <a
           class="text-black hover:underline flex items-center"
           :href="pkg.bugs.url"
           target="_blank"
         >
-          <Icon name="github" class="mr-1"/>
+          <Icon name="github" class="mr-1" />
           {{ $t('about.report_bug') }}
         </a>
       </p>
@@ -19,7 +19,7 @@
           href="https://hive.hivesigner.com"
           target="_blank"
         >
-          <Icon name="bookmark" class="mr-1"/>
+          <Icon name="bookmark" class="mr-1" />
           {{ $t('developers.7.try_interactive') }}
         </a>
       </p>
@@ -29,7 +29,7 @@
           href="https://discord.gg/pNJn7wh"
           target="_blank"
         >
-          <Icon name="discord" class="mr-1"/>
+          <Icon name="discord" class="mr-1" />
           {{ $t('developers.7.join_discord') }}
         </a>
       </p>
@@ -46,12 +46,12 @@ import SinglePageLayout from '../components/Layouts/SinglePageLayout.vue'
 
 @Component({
   components: { SinglePageLayout, Icon, DeveloperItem },
-  layout: 'page',
+  layout: 'page'
 })
 export default class Developers extends Vue {
   private currentItem: string | null = null
 
-  private get pkg() {
+  private get pkg () {
     return PACKAGE
   }
 }

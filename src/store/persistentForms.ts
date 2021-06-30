@@ -7,53 +7,66 @@ import { Module, VuexModule, VuexMutation, Vue } from 'nuxt-property-decorator'
 @Module({
   stateFactory: true,
   namespaced: true,
-  name: 'persistentForms',
+  name: 'persistentForms'
 })
 export default class PersistentForms extends VuexModule {
   public login: Record<string, string> = {
     username: '',
-    key: '',
+    key: ''
   }
-  public import: Record<string, string | number> = {
+
+  public import: Record<string, any> = {
     step: 1,
     username: '',
     password: '',
     key: '',
     keyConfirmation: '',
+    useSameEncryptionKey: false,
+    currentSelectedAccount: ''
   }
 
   @VuexMutation
-  public saveLoginUsername(username: string): void {
+  public saveLoginUsername (username: string): void {
     Vue.set(this.login, 'username', username)
   }
 
   @VuexMutation
-  public saveLoginKey(key: string): void {
+  public saveLoginKey (key: string): void {
     Vue.set(this.login, 'key', key)
   }
 
   @VuexMutation
-  public saveImportStep(step: number): void {
+  public saveImportStep (step: number): void {
     Vue.set(this.import, 'step', step)
   }
 
   @VuexMutation
-  public saveImportUsername(username: string): void {
+  public saveImportUsername (username: string): void {
     Vue.set(this.import, 'username', username)
   }
 
   @VuexMutation
-  public saveImportPassword(password: string): void {
+  public saveImportPassword (password: string): void {
     Vue.set(this.import, 'password', password)
   }
 
   @VuexMutation
-  public saveImportKey(key: string): void {
+  public saveImportKey (key: string): void {
     Vue.set(this.import, 'key', key)
   }
 
   @VuexMutation
-  public saveImportKeyConfirmation(keyConfirmation: string): void {
+  public saveImportKeyConfirmation (keyConfirmation: string): void {
     Vue.set(this.import, 'keyConfirmation', keyConfirmation)
+  }
+
+  @VuexMutation
+  public saveUseSameEncryptionKey (value: boolean): void {
+    Vue.set(this.import, 'useSameEncryptionKey', value)
+  }
+
+  @VuexMutation
+  public saveCurrentSelectedAccount (value: string): void {
+    Vue.set(this.import, 'currentSelectedAccount', value)
   }
 }

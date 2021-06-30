@@ -1,9 +1,9 @@
 <template>
   <base-form-control-container :name="name" :label="label" :tooltip="tooltip" :error="error">
     <input
+      :id="name"
       :key="name"
       :value="value"
-      :id="name"
       :name="name"
       :type="type"
       :placeholder="placeholder"
@@ -13,7 +13,7 @@
       :autocomplete="autocomplete || name"
       @input="onInput"
       @blur="() => $emit('blur')"
-    />
+    >
   </base-form-control-container>
 </template>
 
@@ -31,48 +31,48 @@ export default class BaseFormControl extends Vue {
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private label!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private name!: string
 
   @Prop({
     type: String,
     default: 'text',
-    validator: value => ['text', 'password', 'select', 'number'].includes(value),
+    validator: value => ['text', 'password', 'select', 'number'].includes(value)
   })
   private type!: string
 
   @Prop({
-    default: '',
+    default: ''
   })
   private error!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private autocomplete!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private placeholder!: string
 
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private tooltip!: string
 
   @Emit('input')
-  private onInput(event: InputEvent): string {
+  private onInput (event: InputEvent): string {
     return (event.target as HTMLInputElement).value
   }
 }

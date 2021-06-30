@@ -14,7 +14,7 @@ import { Component, Vue, Prop } from 'nuxt-property-decorator'
 export default class Confirmation extends Vue {
   @Prop({
     type: String,
-    default: '',
+    default: ''
   })
   private id!: string
 }

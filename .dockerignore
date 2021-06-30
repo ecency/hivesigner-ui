@@ -1,0 +1,11 @@
+**/.git
+**/.github
+**/.vscode
+**/.idea
+**/.nyc_output
+**/dist
+**/.nuxt
+**/node_modules
+**/docker-compose.yml
+**/docker-compose.production.yml
+**/docker-compose.testnet.yml

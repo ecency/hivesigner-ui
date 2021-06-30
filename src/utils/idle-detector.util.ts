@@ -2,11 +2,11 @@ import { debounce } from 'lodash'
 import { IdleDetector } from '~/models'
 
 // TODO: Rewrite to class
-export default function createIdleDetector(options: any): IdleDetector {
+export default function createIdleDetector (): IdleDetector {
   let triggerIdle: any | null = null
 
   return {
-    start(treshold, callback) {
+    start (treshold, callback) {
       this.stop()
 
       triggerIdle = debounce(callback, treshold)
@@ -20,7 +20,7 @@ export default function createIdleDetector(options: any): IdleDetector {
 
       triggerIdle()
     },
-    stop() {
+    stop () {
       if (!triggerIdle) {
         return
       }
@@ -34,6 +34,6 @@ export default function createIdleDetector(options: any): IdleDetector {
 
       triggerIdle.cancel()
       triggerIdle = null
-    },
+    }
   }
 }

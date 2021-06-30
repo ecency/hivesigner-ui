@@ -4,7 +4,7 @@
       <div class="width-full p-4 mb-4">
         <div v-if="username" class="text-center">
           <div class="mb-3">
-            <Avatar :username="username" :size="80"/>
+            <Avatar :username="username" :size="80" />
             <h4>{{ username }}</h4>
           </div>
           <p>Your account is unlocked, ready to sign transaction(s).</p>
@@ -15,7 +15,7 @@
           </p>
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </Center>
   </div>
 </template>
@@ -25,10 +25,10 @@ import { Component, Vue } from 'nuxt-property-decorator'
 import { AuthModule } from '../../store'
 
 @Component({
-  middleware: ['auth'],
+  middleware: ['auth']
 })
-export default class Dashobard extends Vue {
-  private get username(): string {
+export default class Dashboard extends Vue {
+  private get username (): string {
     return AuthModule.username
   }
 }

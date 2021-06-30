@@ -17,7 +17,7 @@
       />
       {{ title }}
     </div>
-    <slot v-if="open"></slot>
+    <slot v-if="open" />
   </div>
 </template>
 
@@ -30,21 +30,21 @@ import Icon from './Icons/Icon.vue'
 export default class Accordion extends Vue {
   @Prop({
     type: String,
-    required: true,
+    required: true
   })
   private title!: string
 
   private open = false
 
-  public show(): void {
+  public show (): void {
     this.open = true
   }
 
-  public hide(): void {
+  public hide (): void {
     this.open = false
   }
 
-  public toggle(): void {
+  public toggle (): void {
     this.open = !this.open
   }
 }

@@ -13,27 +13,27 @@ import { Component, Vue, Prop } from 'nuxt-property-decorator'
 export default class Avatar extends Vue {
   @Prop({
     type: String,
-    required: true,
+    required: true
   })
   private username!: string
 
   @Prop({
     type: Number,
-    default: 32,
+    default: 32
   })
   private size!: number
 
   @Prop({
     type: String,
-    default: 'inline-block',
+    default: 'inline-block'
   })
   private display!: string
 
-  private get styles(): Record<string, string> {
+  private get styles (): Record<string, string> {
     return {
-      'background-image': `url(https://images.ecency.com/u/${this.username}/avatar/small`,
+      'background-image': `url(https://images.ecency.com/u/${this.username}/avatar`,
       width: `${this.size}px`,
-      height: `${this.size}px`,
+      height: `${this.size}px`
     }
   }
 }
