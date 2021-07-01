@@ -110,7 +110,7 @@ export default {
     hs_password_length: `Encryption password has to be at least 8 characters long, contain lowercase letter and uppercase letter`,
     invalid_hs_password: 'Invalid Encryption password',
     encryption_key_message: `This is a custom password you\'ve set to unlock your account for usage. This is not your Hive private key. If you forgot your Encryption password you can import your account again.`,
-    need_import: `You need to import your account using your password or at least {authority} key to do this request. Click "Import account" button to proceed.`
+    need_import: `You need to import your account using your password or at least {authority} key to do this request. Click "Add another account" button to proceed.`
   },
   operations: {
     empty: 'Empty',
