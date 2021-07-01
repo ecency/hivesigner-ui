@@ -100,7 +100,7 @@ export default class Login extends Vue {
   }
 
   private get callback (): string {
-    return this.$route.query.redirect_uri as string
+    return this.$route.query.redirect_uri as string || this.$route.query.redirect as string
   }
 
   private get clientId (): string {
