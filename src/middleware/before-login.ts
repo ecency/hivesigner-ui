@@ -1,10 +1,6 @@
 import { Context } from '@nuxt/types'
 
 export default function ({ redirect, query, store }: Context): void {
-  if (!store.getters['accounts/hasAccounts']) {
-    redirect('/import', query)
-  }
-
   let redirectParam = query.redirect as string || ''
 
   if (redirectParam.startsWith('/login-request')) {
@@ -25,6 +21,12 @@ export default function ({ redirect, query, store }: Context): void {
       ...parsedParams,
       clientId: appName
     }
-    redirect('/login', query)
+    if (store.getters['accounts/hasAccounts']) {
+      redirect('/login', query)
+    }
+  }
+
+  if (!store.getters['accounts/hasAccounts']) {
+    redirect('/import', query)
   }
 }
