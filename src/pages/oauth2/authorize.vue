@@ -4,21 +4,26 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { Context } from '@nuxt/types'
 
 @Component
 export default class Authorize extends Vue {
-  public middleware ({ redirect, query }: Context): void {
+  public mounted (): void {
+    const query: any = {
+      ...this.$route.query,
+    }
     let scope = 'posting'
-    if (query.scope === 'login') {
+    if (this.$route.query.scope === 'login') {
       scope = 'login'
     }
-    if (query.scope?.includes('offline')) {
+    if (this.$route.query.scope?.includes('offline')) {
       scope = 'posting'
       query.response_type = 'code'
     }
     query.scope = scope
-    redirect('/login', query)
+    this.$router.push({
+      path: '/login',
+      query,
+    })
   }
 }
 </script>
