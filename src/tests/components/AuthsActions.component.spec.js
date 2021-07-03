@@ -47,7 +47,10 @@ describe('AuthsActionsComponent', function () {
       localVue,
       store,
       mocks: {
-        $t: tMock
+        $t: tMock,
+        $popupMessages: {
+          show: jest.fn()
+        }
       }
     })
   }
@@ -89,11 +92,50 @@ describe('AuthsActionsComponent', function () {
     expect(router.push).toHaveBeenCalledWith('/revoke/mykey')
   })
 
-  it('should copy if type is not account', function () {
+  it('should copy if type is not account', async function () {
+    navigator.clipboard = {
+      writeText: jest.fn()
+    }
 
+    initWrapper()
+    await wrapper.setProps({
+      value: {
+        Key: {
+          public: 'mykey',
+          private: 'myprivatekey'
+        },
+        Type: 'authority'
+      },
+      isPrivateKey: false,
+    })
+    await wrapper.vm.copy()
+
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('mykey')
+    expect(wrapper.vm.$popupMessages.show).toHaveBeenCalledWith('auths.successfully_copied', 5000)
+
+    await wrapper.setProps({
+      isPrivateKey: true,
+    })
+    await wrapper.vm.copy()
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('myprivatekey')
+    expect(wrapper.vm.$popupMessages.show).toHaveBeenCalledWith('auths.successfully_copied', 5000)
   })
 
-  it('should reveal or import if type is not account', function () {
+  it('should reveal or import private if type is not account', function () {
+    storeModules.AccountsModule.hasAuthorityPrivateKey = jest.fn()
+    storeModules.AccountsModule.hasAuthorityPrivateKey.mockReturnValue(true)
+    initWrapper()
 
+    wrapper.vm.revealOrImport()
+    expect(wrapper.emitted()['private:show'][0]).toEqual([true])
+  })
+
+  it('should import if type is not account', function () {
+    storeModules.AccountsModule.hasAuthorityPrivateKey = jest.fn()
+    storeModules.AccountsModule.hasAuthorityPrivateKey.mockReturnValue(false)
+    initWrapper()
+
+    wrapper.vm.revealOrImport()
+    expect(wrapper.emitted()['import:show'][0]).toBeTruthy()
   })
 })

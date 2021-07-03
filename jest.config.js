@@ -17,5 +17,6 @@ module.exports = {
     '<rootDir>/src/**/*.vue',
     '<rootDir>/src/**/*.ts',
     '<rootDir>/src/**/*.js'
-  ]
+  ],
+  setupFilesAfterEnv: ["<rootDir>/src/tests/setup.js"],
 }

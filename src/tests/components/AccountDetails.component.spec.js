@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import VueRouter from 'vue-router'
 import AccountDetails from '@/components/Accounts/AccountDetails'
 import * as storeModules from '@/store'
+import flushPromises from 'flush-promises'
 
 describe('AccountDetailsComponent', function () {
   let localVue
@@ -67,5 +68,21 @@ describe('AccountDetailsComponent', function () {
     wrapper.vm.removeAccount()
     expect(storeModules.AccountsModule.removeAccount).toHaveBeenCalled()
     expect(wrapper.emitted().removed[0]).toEqual([])
+  })
+
+  it('should autologin with decrypted password', async function () {
+    storeModules.AccountsModule.isDecrypted = jest.fn()
+    storeModules.AccountsModule.isDecrypted.mockReturnValue(true)
+    storeModules.AuthModule.login = jest.fn()
+    storeModules.AccountsModule.setSelectedAccount = jest.fn()
+    storeModules.AccountsModule.getEncryptedKeys = jest.fn()
+    storeModules.AccountsModule.getEncryptedKeys.mockReturnValue({})
+
+    initWrapper()
+    await flushPromises()
+
+    expect(storeModules.AuthModule.login).toHaveBeenCalledWith({ username: 'test', keys: {} })
+    expect(storeModules.AccountsModule.setSelectedAccount).toHaveBeenCalledWith('test')
+    expect(wrapper.vm.isLoggedIn).toBeTruthy()
   })
 })
