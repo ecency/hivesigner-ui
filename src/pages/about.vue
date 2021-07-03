@@ -81,9 +81,9 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { PACKAGE } from '../consts'
-import Icon from '../components/UI/Icons/Icon.vue'
-import SinglePageLayout from '../components/Layouts/SinglePageLayout.vue'
+import { PACKAGE } from '~/consts'
+import Icon from '~/components/UI/Icons/Icon.vue'
+import SinglePageLayout from '~/components/Layouts/SinglePageLayout.vue'
 
 @Component({
   components: { SinglePageLayout, Icon },
