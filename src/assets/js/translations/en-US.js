@@ -98,7 +98,10 @@ export default {
     same_encryption_key: 'Use same encryption password?',
     same_encryption_key_account: 'Use same encryption password as in',
     same_key_not_match: 'Doesn`t match with existing encryption password',
-    incorrect_encryption_key: 'Incorrect encryption password'
+    incorrect_encryption_key: 'Incorrect encryption password',
+    username_placeholder: 'Hive username, e.g. ecency',
+    password_placeholder: 'Hive private key, e.g. Owner, Active, Posting, Memo keys',
+    hs_placeholder: 'Your hive password'
   },
   login: {
     switch_an_account: 'Switch an account',
