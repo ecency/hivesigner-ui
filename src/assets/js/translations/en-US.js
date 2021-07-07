@@ -75,7 +75,7 @@ export default {
   import: {
     hs_password: 'Hivesigner password',
     confirm_password: 'Confirm password',
-    require_hs_password: `The Encryption password will be required to unlock your account for usage.`,
+    require_hs_password: `The Hivesigner password will be required to unlock your account for usage.`,
     import_account: 'Import account',
     username: 'Username',
     import_encryption_key: `This is a new custom password to encrypt your credentials. This is not your Hive private key.`,
@@ -95,21 +95,24 @@ export default {
     private_key: 'Private key',
     import_private_key: 'Import private key',
     incorrect_private_key: 'Private key is not correct',
-    same_encryption_key: 'Use same encryption password?',
-    same_encryption_key_account: 'Use same encryption password as in',
-    same_key_not_match: 'Doesn`t match with existing encryption password',
-    incorrect_encryption_key: 'Incorrect encryption password'
+    same_encryption_key: 'Use same Hivesigner password?',
+    same_encryption_key_account: 'Use same Hivesigner password as in',
+    same_key_not_match: 'Doesn`t match with existing Hivesigner password',
+    incorrect_encryption_key: 'Incorrect Hivesigner password',
+    username_placeholder: 'Hive username, e.g. ecency',
+    password_placeholder: 'Hive private key, e.g. Owner, Active, Posting, Memo keys',
+    hs_placeholder: 'Your Hivesigner password'
   },
   login: {
     switch_an_account: 'Switch an account',
     username_required: 'Hive username is required',
     password_required: 'Hive private key is required',
-    hs_password_required: 'Encryption password is required',
-    hs_password_confirmation_required: 'Encryption password confirmation is required',
-    hs_password_not_match: 'Encryption passwords do not match',
-    hs_password_length: `Encryption password has to be at least 8 characters long, contain lowercase letter and uppercase letter`,
-    invalid_hs_password: 'Invalid Encryption password',
-    encryption_key_message: `This is a custom password you\'ve set to unlock your account for usage. This is not your Hive private key. If you forgot your Encryption password you can import your account again.`,
+    hs_password_required: 'Hivesigner password is required',
+    hs_password_confirmation_required: 'Hivesigner password confirmation is required',
+    hs_password_not_match: 'Hivesigner passwords do not match',
+    hs_password_length: `Hivesigner password has to be at least 8 characters long, contain lowercase letter and uppercase letter`,
+    invalid_hs_password: 'Invalid Hivesigner password',
+    encryption_key_message: `This is a custom password you\'ve set to unlock your account for usage. This is not your Hive private key. If you forgot your Hivesigner password you can import your account again.`,
     need_import: `You need to import your account using your password or at least {authority} key to do this request. Click "Add another account" button to proceed.`
   },
   operations: {

@@ -47,7 +47,7 @@
           />
         </form>
       </div>
-      <Loader v-if="loading" class="overlay fixed" />
+      <Loader v-if="loading" class="overlay fixed z-40" />
     </template>
   </base-page-layout>
 </template>
