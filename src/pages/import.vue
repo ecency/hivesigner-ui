@@ -6,7 +6,7 @@
     <template slot="right">
       <div v-if="!failed && !isRedirected">
         <div class="container-sm mx-auto">
-          <div v-if="!failed && !signature">
+          <div v-if="!failed && !signature && step === 1">
             <div v-if="app && appProfile" class="mb-4 text-center">
               <Avatar :username="app" :size="80" />
               <div class="mt-2">
