@@ -68,9 +68,9 @@ import { Component, Prop, Ref, Vue } from 'nuxt-property-decorator'
 import Icon from '../UI/Icons/Icon.vue'
 import FormControl from '../UI/Form/FormControl.vue'
 import Dropdown from '../UI/Dropdown.vue'
+import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 import { TOOLTIP_IMPORT_ENCRYPTION_KEY } from '~/consts'
 import { AccountsModule, PersistentFormsModule } from '~/store'
-import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 
 @Component({
   components: { PasswordFormControl, Dropdown, FormControl, Icon }
