@@ -54,10 +54,10 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import FormControl from '../UI/Form/FormControl.vue'
+import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 import { ERROR_INVALID_CREDENTIALS } from '~/consts'
 import { Authority } from '~/enums'
-import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 
 @Component({
   components: { PasswordFormControl, FormControl }

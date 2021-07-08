@@ -53,10 +53,10 @@ import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import Icon from '../UI/Icons/Icon.vue'
 import FormControl from '../UI/Form/FormControl.vue'
 import Avatar from '../Avatar.vue'
+import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 import { ERROR_INVALID_ENCRYPTION_KEY, TOOLTIP_LOGIN_ENCRYPTION_KEY } from '~/consts'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 import { Authority, DecryptionExceptions } from '~/enums'
-import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 
 @Component({
   components: { PasswordFormControl, Avatar, FormControl, Icon }

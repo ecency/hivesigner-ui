@@ -16,7 +16,7 @@
         @blur="() => $emit('blur')"
       >
       <div class="input-suffix-icon flex items-center justify-center absolute top-0 right-0">
-        <slot name="input-suffix-icon"></slot>
+        <slot name="input-suffix-icon" />
       </div>
     </div>
   </base-form-control-container>
@@ -77,7 +77,7 @@ export default class BaseFormControl extends Vue {
   private tooltip!: string
 
   @Emit('input')
-  private onInput(event: InputEvent): string {
+  private onInput (event: InputEvent): string {
     return (event.target as HTMLInputElement).value
   }
 }

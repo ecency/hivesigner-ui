@@ -29,8 +29,8 @@
 
 <script lang="ts">
 import { Component, Emit, Prop, Vue } from 'nuxt-property-decorator'
-import BaseFormControl from './BaseFormControl.vue'
 import Icon from '../Icons/Icon.vue'
+import BaseFormControl from './BaseFormControl.vue'
 
 @Component({
   components: { Icon, BaseFormControl }
@@ -77,11 +77,11 @@ export default class PasswordFormControl extends Vue {
   private type = 'password'
 
   @Emit('input')
-  private onInput(value: string): string {
+  private onInput (value: string): string {
     return value
   }
 
-  private onToggleType(): void {
+  private onToggleType (): void {
     if (this.type === 'password') {
       this.type = 'text'
     } else {

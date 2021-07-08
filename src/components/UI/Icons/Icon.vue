@@ -48,7 +48,7 @@ import HidePassword from './HidePassword.vue'
     TransactionFailure,
     BackArrow,
     ShowPassword,
-    HidePassword,
+    HidePassword
   }
 })
 export default class Icon extends Vue {
