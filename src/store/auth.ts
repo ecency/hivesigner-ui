@@ -136,7 +136,7 @@ export default class Auth extends VuexModule {
 
     const additionalCallbackQuery = new URLSearchParams({
       ...(payload.responseType === 'code' ? { code: token } : {}),
-      ...(payload.state ? { state: encodeURIComponent(payload.state) } : {}),
+      ...(payload.state ? { state: typeof payload.state === 'string' ? payload.state : encodeURIComponent(payload.state) } : {}),
       ...(payload.responseType !== 'code'
         ? {
             access_token: token,

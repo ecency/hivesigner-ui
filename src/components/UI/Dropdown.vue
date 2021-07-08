@@ -1,9 +1,9 @@
 <template>
-  <div class="dropdown relative z-10">
+  <div class="dropdown relative">
     <transition name="fade">
       <div
         v-if="open"
-        class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500"
+        class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500 z-30"
         @click="hide"
       />
     </transition>
@@ -21,7 +21,7 @@
       <div
         v-if="open"
         ref="dropdown-menu"
-        class="dropdown-menu flex flex-col bg-white absolute m-2 duration-500 z-10"
+        class="dropdown-menu flex flex-col bg-white absolute m-2 duration-500 z-30"
         :style="{ 'width': width }"
         :class="menuClasses"
         @click="flat && hide()"

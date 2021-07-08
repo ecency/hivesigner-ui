@@ -4,6 +4,7 @@
       v-model="username"
       name="username"
       :label="$t('login.switch_an_account')"
+      :placeholder="$t('import.username_placeholder')"
       :error="dirty.username && errors.username"
       :options="accountsList"
       type="select"
@@ -21,11 +22,12 @@
       </template>
     </form-control>
 
-    <form-control
+    <password-form-control
       v-if="!isSelectedAccountDecrypted"
       v-model="loginKey"
       name="key"
       :label="$t('import.hs_password')"
+      :placeholder="$t('import.hs_placeholder')"
       :error="dirty.key && errors.key"
       :tooltip="tooltipLoginEncryptionKey"
       autocomplete="password"
@@ -51,12 +53,13 @@ import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import Icon from '../UI/Icons/Icon.vue'
 import FormControl from '../UI/Form/FormControl.vue'
 import Avatar from '../Avatar.vue'
+import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 import { ERROR_INVALID_ENCRYPTION_KEY, TOOLTIP_LOGIN_ENCRYPTION_KEY } from '~/consts'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 import { Authority, DecryptionExceptions } from '~/enums'
 
 @Component({
-  components: { Avatar, FormControl, Icon }
+  components: { PasswordFormControl, Avatar, FormControl, Icon }
 })
 export default class LoginForm extends Vue {
   @Prop({

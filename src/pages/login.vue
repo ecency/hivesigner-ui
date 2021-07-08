@@ -55,7 +55,7 @@
           >{{ $t('import.sign_up_here') }}</a>
         </div>
       </div>
-      <Loader v-if="isLoading" class="overlay fixed" />
+      <Loader v-if="isLoading" class="overlay fixed z-40" />
     </template>
   </base-page-layout>
 </template>

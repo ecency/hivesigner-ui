@@ -24,6 +24,8 @@ import Check from './Check.vue'
 import TransactionSuccess from './TransactionSuccess.vue'
 import TransactionFailure from './TransactionFailure.vue'
 import BackArrow from './BackArrow.vue'
+import ShowPassword from './ShowPassword.vue'
+import HidePassword from './HidePassword.vue'
 
 @Component({
   components: {
@@ -44,7 +46,9 @@ import BackArrow from './BackArrow.vue'
     Check,
     TransactionSuccess,
     TransactionFailure,
-    BackArrow
+    BackArrow,
+    ShowPassword,
+    HidePassword
   }
 })
 export default class Icon extends Vue {

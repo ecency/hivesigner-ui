@@ -3,12 +3,12 @@
     <transition name="fade">
       <div
         v-if="open"
-        class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500"
+        class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500 z-30"
       />
     </transition>
     <span
       class="inline-block tooltip-popup cursor-pointer hover:text-black relative"
-      :class="{ 'z-20': open }"
+      :class="{ 'z-30': open }"
       :aria-label="tooltip"
       @mouseover="open = true"
       @mouseleave="open = false"

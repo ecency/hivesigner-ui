@@ -3,14 +3,16 @@
     <form-control
       v-model="username"
       :error="dirty.username ? errors.username : ''"
+      :placeholder="$t('import.username_placeholder')"
       :label="$t('import.username')"
       name="username"
       @blur="handleBlur('username')"
     />
 
-    <form-control
+    <password-form-control
       v-model="password"
       :error="dirty.password ? errors.password : ''"
+      :placeholder="$t('import.password_placeholder')"
       :label="$t('import.master_password', { authority: authority || 'private' })"
       autocomplete="current-password"
       name="password"
@@ -52,12 +54,13 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import FormControl from '../UI/Form/FormControl.vue'
+import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 import { ERROR_INVALID_CREDENTIALS } from '~/consts'
 import { Authority } from '~/enums'
 
 @Component({
-  components: { FormControl }
+  components: { PasswordFormControl, FormControl }
 })
 export default class ImportUserForm extends Vue {
   @Prop({

@@ -32,13 +32,13 @@
       </template>
     </form-control>
 
-    <form-control
+    <password-form-control
       v-if="!useSameEncryptionKey"
       v-model="importKey"
       name="key"
       :label="$t('import.hs_password')"
       :error="dirty.key && errors.key"
-      :tooltip="$t(TOOLTIP_IMPORT_ENCRYPTION_KEY)"
+      :tooltip="tooltipText"
       type="password"
       autocomplete="new-password"
       @blur="handleBlur('key')"
@@ -53,15 +53,10 @@
       autocomplete="new-password"
       @blur="handleBlur('keyConfirmation')"
     />
-
-    <legend class="mb-6 block text-gray-600 text-lg">
-      {{ $t('import.require_hs_password') }}
-      {{ $t(TOOLTIP_IMPORT_ENCRYPTION_KEY) }}
-    </legend>
     <button
       :disabled="submitDisabled || loading"
       type="submit"
-      class="button-primary w-full mb-2"
+      class="button-primary w-full mb-2 mt-5"
     >
       {{ $t('common.continue') }}
     </button>
@@ -73,11 +68,12 @@ import { Component, Prop, Ref, Vue } from 'nuxt-property-decorator'
 import Icon from '../UI/Icons/Icon.vue'
 import FormControl from '../UI/Form/FormControl.vue'
 import Dropdown from '../UI/Dropdown.vue'
+import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 import { TOOLTIP_IMPORT_ENCRYPTION_KEY } from '~/consts'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 
 @Component({
-  components: { Dropdown, FormControl, Icon }
+  components: { PasswordFormControl, Dropdown, FormControl, Icon }
 })
 export default class ImportSetPassword extends Vue {
   @Prop({
@@ -143,6 +139,10 @@ export default class ImportSetPassword extends Vue {
 
   private get submitDisabled (): boolean {
     return !!this.errors.key || !!this.errors.keyConfirmation
+  }
+
+  private get tooltipText (): string {
+    return `${this.$t(TOOLTIP_IMPORT_ENCRYPTION_KEY)}\n${this.$t('import.require_hs_password')}`
   }
 
   private mounted (): void {
