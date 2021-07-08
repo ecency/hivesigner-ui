@@ -9,7 +9,7 @@
       @blur="handleBlur('username')"
     />
 
-    <form-control
+    <password-form-control
       v-model="password"
       :error="dirty.password ? errors.password : ''"
       :placeholder="$t('import.password_placeholder')"
@@ -57,9 +57,10 @@ import FormControl from '../UI/Form/FormControl.vue'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 import { ERROR_INVALID_CREDENTIALS } from '~/consts'
 import { Authority } from '~/enums'
+import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 
 @Component({
-  components: { FormControl }
+  components: { PasswordFormControl, FormControl }
 })
 export default class ImportUserForm extends Vue {
   @Prop({

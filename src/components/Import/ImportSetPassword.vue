@@ -32,7 +32,7 @@
       </template>
     </form-control>
 
-    <form-control
+    <password-form-control
       v-if="!useSameEncryptionKey"
       v-model="importKey"
       name="key"
@@ -70,9 +70,10 @@ import FormControl from '../UI/Form/FormControl.vue'
 import Dropdown from '../UI/Dropdown.vue'
 import { TOOLTIP_IMPORT_ENCRYPTION_KEY } from '~/consts'
 import { AccountsModule, PersistentFormsModule } from '~/store'
+import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 
 @Component({
-  components: { Dropdown, FormControl, Icon }
+  components: { PasswordFormControl, Dropdown, FormControl, Icon }
 })
 export default class ImportSetPassword extends Vue {
   @Prop({

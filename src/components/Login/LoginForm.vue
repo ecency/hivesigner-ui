@@ -22,7 +22,7 @@
       </template>
     </form-control>
 
-    <form-control
+    <password-form-control
       v-if="!isSelectedAccountDecrypted"
       v-model="loginKey"
       name="key"
@@ -56,9 +56,10 @@ import Avatar from '../Avatar.vue'
 import { ERROR_INVALID_ENCRYPTION_KEY, TOOLTIP_LOGIN_ENCRYPTION_KEY } from '~/consts'
 import { AccountsModule, PersistentFormsModule } from '~/store'
 import { Authority, DecryptionExceptions } from '~/enums'
+import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 
 @Component({
-  components: { Avatar, FormControl, Icon }
+  components: { PasswordFormControl, Avatar, FormControl, Icon }
 })
 export default class LoginForm extends Vue {
   @Prop({
