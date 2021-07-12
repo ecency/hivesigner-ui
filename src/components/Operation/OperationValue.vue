@@ -38,6 +38,7 @@
           <span class="block xl:hidden" />
           <span class="hidden xl:block">{{ value }}</span>
         </template>
+        <span v-else>{{ value }}</span>
       </template>
     </template>
   </span>
