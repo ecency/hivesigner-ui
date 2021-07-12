@@ -85,7 +85,7 @@ export default class Sign extends Vue {
   private error = ''
   private hasRequiredKey = null
 
-  private get authority(): string {
+  private get authority (): string {
     return getLowestAuthorityRequired(this.parsed.tx) || getAuthority(this.$route.query.authority as
       Authority)
   }
@@ -110,7 +110,7 @@ export default class Sign extends Vue {
     return AuthModule.username
   }
 
-  private get properties(): any {
+  private get properties (): any {
     return SettingsModule.properties
   }
 
@@ -129,7 +129,7 @@ export default class Sign extends Vue {
   }
 
   @Watch('properties', { immediate: true })
-  private propertiesChanged() {
+  private propertiesChanged () {
     this.parseUri(this.uri)
   }
 
