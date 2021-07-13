@@ -1,5 +1,6 @@
 <template>
   <base-form-control
+    class="password-form-control"
     :value="value"
     :label="label"
     :name="name"
@@ -91,6 +92,10 @@ export default class PasswordFormControl extends Vue {
 }
 </script>
 
-<style scoped>
-
+<style lang="scss">
+.password-form-control {
+  input {
+    @apply pr-16;
+  }
+}
 </style>
