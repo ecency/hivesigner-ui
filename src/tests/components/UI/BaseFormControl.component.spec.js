@@ -1,9 +1,9 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils'
 import Vuex from 'vuex'
 import VueRouter from 'vue-router'
-import Center from '@/components/Center'
+import BaseFormControl from '@/components/UI/Form/BaseFormControl'
 
-describe('CenterComponent', function () {
+describe('BaseFormControlComponent', function () {
   let localVue
   let router
   let wrapper
@@ -24,15 +24,27 @@ describe('CenterComponent', function () {
         username: jest.fn()
       }
     })
-
-    wrapper = shallowMount(Center, {
-      localVue,
-      router,
-      store
-    })
   })
 
+  function initWrapper() {
+    wrapper = shallowMount(BaseFormControl, {
+      propsData: {
+        account: 'test',
+      },
+      localVue,
+      router,
+      store,
+    })
+  }
+
   it('should create', function () {
+    initWrapper()
     expect(wrapper).toBeTruthy()
+  })
+
+  it('should emit input value', function () {
+    initWrapper()
+    wrapper.vm.onInput({ target: { value: 'new value' } })
+    expect(wrapper.emitted().input[0]).toEqual(['new value', { target: { value: 'new value' } }])
   })
 })

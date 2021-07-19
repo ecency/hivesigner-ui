@@ -9,7 +9,7 @@ import { Component, Vue } from 'nuxt-property-decorator'
 export default class Authorize extends Vue {
   public mounted (): void {
     const query: any = {
-      ...this.$route.query,
+      ...this.$route.query
     }
     let scope = 'posting'
     if (this.$route.query.scope === 'login') {
@@ -22,7 +22,7 @@ export default class Authorize extends Vue {
     query.scope = scope
     this.$router.push({
       path: '/login',
-      query,
+      query
     })
   }
 }

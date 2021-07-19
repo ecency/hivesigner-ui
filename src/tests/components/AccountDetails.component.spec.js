@@ -5,6 +5,8 @@ import AccountDetails from '@/components/Accounts/AccountDetails'
 import * as storeModules from '@/store'
 import flushPromises from 'flush-promises'
 
+jest.useFakeTimers()
+
 describe('AccountDetailsComponent', function () {
   let localVue
   let router
@@ -84,5 +86,30 @@ describe('AccountDetailsComponent', function () {
     expect(storeModules.AuthModule.login).toHaveBeenCalledWith({ username: 'test', keys: {} })
     expect(storeModules.AccountsModule.setSelectedAccount).toHaveBeenCalledWith('test')
     expect(wrapper.vm.isLoggedIn).toBeTruthy()
+  })
+
+  it('should show confirm modal if encrypted account', async function () {
+    storeModules.AccountsModule.isDecrypted = jest.fn()
+    storeModules.AccountsModule.isDecrypted.mockReturnValue(false)
+    initWrapper()
+    wrapper.vm.$refs['encryption-modal'].show = jest.fn()
+    wrapper.vm.$refs['encryption-modal'].hide = jest.fn()
+
+    jest.runAllTimers()
+    await flushPromises()
+
+    expect(wrapper.vm.$refs['encryption-modal'].show).toHaveBeenCalled()
+  })
+
+  it('should hide confirm modal', async function () {
+    initWrapper()
+    wrapper.vm.$refs['encryption-modal'].show = jest.fn()
+    wrapper.vm.$refs['encryption-modal'].hide = jest.fn()
+
+    await flushPromises()
+
+    wrapper.vm.onLoggedIn()
+    expect(wrapper.vm.isLoggedIn).toBeTruthy()
+    expect(wrapper.vm.$refs['encryption-modal'].hide).toHaveBeenCalled()
   })
 })

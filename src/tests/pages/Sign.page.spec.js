@@ -43,6 +43,7 @@ describe('SignPage', function () {
   }
 
   beforeEach(() => {
+    utils.getLowestAuthorityRequired = jest.fn()
     $t = v => v
     $router = {}
     $route = {

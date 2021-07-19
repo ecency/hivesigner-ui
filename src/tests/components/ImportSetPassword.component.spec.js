@@ -3,7 +3,6 @@ import VueRouter from 'vue-router'
 import Vuex from 'vuex'
 import ImportSetPassword from '@/components/Import/ImportSetPassword'
 import * as modules from '~/store'
-import { PersistentFormsModule } from '~/store'
 
 describe('ImportSetPasswordComponent', function () {
   let localVue
@@ -105,7 +104,7 @@ describe('ImportSetPasswordComponent', function () {
       }
     })
 
-    expect(wrapper.find('form-control-stub[name=key]').element.getAttribute('error')).toBe('Key' +
+    expect(wrapper.find('password-form-control-stub[name=key]').element.getAttribute('error')).toBe('Key' +
       ' error')
     expect(wrapper.find('form-control-stub[name=keyConfirmation]').element.getAttribute('error')).toBe('Key confirmation error')
   })
