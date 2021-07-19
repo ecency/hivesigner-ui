@@ -7,6 +7,10 @@
 @import 'ui/forms';
 @import "ui/alerts";
 
+* {
+  -webkit-backface-visibility: hidden;
+}
+
 html {
   -webkit-font-smoothing: antialiased;
   height: 100%;

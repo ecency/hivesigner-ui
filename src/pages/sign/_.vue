@@ -57,7 +57,7 @@
 
 <script lang="ts">
 import * as hiveuri from 'hive-uri'
-import { Component, Vue } from 'nuxt-property-decorator'
+import { Component, Vue, Watch } from 'nuxt-property-decorator'
 import { DecodeResult } from 'hive-uri'
 import TransactionStatus from '../../components/TransactionStatus.vue'
 import {
@@ -85,8 +85,9 @@ export default class Sign extends Vue {
   private error = ''
   private hasRequiredKey = null
 
-  private get authority(): Authority {
-    return getAuthority(this.$route.query.authority as Authority)
+  private get authority (): string {
+    return getLowestAuthorityRequired(this.parsed.tx) || getAuthority(this.$route.query.authority as
+      Authority)
   }
 
   private get uri (): string {
@@ -105,9 +106,13 @@ export default class Sign extends Vue {
     return AuthModule.username
   }
 
+  private get properties (): any {
+    return SettingsModule.properties
+  }
+
   private get config (): any {
     return {
-      vestsToSP: getVestsToSP(SettingsModule.properties)
+      vestsToSP: getVestsToSP(this.properties)
     }
   }
 
@@ -119,10 +124,13 @@ export default class Sign extends Vue {
     return `<span class="text-gray">${this.$t('sign.error_message')}:</span> ${this.error}`
   }
 
-  private mounted (): void {
+  @Watch('properties', { immediate: true })
+  private propertiesChanged () {
     this.parseUri(this.uri)
+  }
+
+  private mounted (): void {
     if (!this.authority && this.parsed && this.parsed.tx) {
-      this.authority = getLowestAuthorityRequired(this.parsed.tx)
       this.hasRequiredKey = !!(
         AuthModule.username && (
           (this.authority === 'owner' && AuthModule.keys.owner) ||

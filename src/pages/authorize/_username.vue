@@ -116,11 +116,11 @@ export default class AuthorizeUsername extends Vue {
         } else {
           await AuthModule.signAndRedirectToCallback({
             username: this.username,
-            authority: this.$route.query.authority as string,
-            signature: this.$route.query.signature as string,
-            state: this.$route.query.state as string,
+            authority: this.authority as string,
+            signature: this.$route.query.signature as string || '',
+            state: this.$route.query.state as string || '',
             responseType: this.responseType,
-            app: this.$route.query.app as string,
+            app: this.$route.query.app as string || '',
             scope: this.scope,
             callback: this.callback
           })

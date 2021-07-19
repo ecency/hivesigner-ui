@@ -55,7 +55,7 @@
           >{{ $t('import.sign_up_here') }}</a>
         </div>
       </div>
-      <Loader v-if="isLoading" class="overlay fixed" />
+      <Loader v-if="isLoading" class="overlay fixed z-40" />
     </template>
   </base-page-layout>
 </template>
@@ -100,7 +100,7 @@ export default class Login extends Vue {
   }
 
   private get callback (): string {
-    return this.$route.query.redirect_uri as string
+    return this.$route.query.redirect_uri as string || this.$route.query.redirect as string
   }
 
   private get clientId (): string {
