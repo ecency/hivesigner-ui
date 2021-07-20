@@ -12,8 +12,7 @@
         v-if="account && account.name && !hasRequiredKey"
         class="alert alert-warning mt-4"
         v-html="$t('authorize.requires_active_key', { authority: 'active' })"
-      >
-      </div>
+      />
     </div>
     <div class="mt-2">
       <router-link
@@ -100,11 +99,8 @@ export default class RevokeForm extends Vue {
       if (accountAuth[0] === username) { data[authority].account_auths.splice(i, 1) }
     })
     try {
-      debugger
       const confirmation = await AuthModule.updateAccount(data)
-      debugger
       await AuthModule.loadAccount()
-      debugger
 
       if (callback) {
         if (callback[0] === '/') {

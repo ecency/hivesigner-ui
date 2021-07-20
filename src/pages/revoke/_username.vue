@@ -58,7 +58,7 @@ export default class RevokeUsername extends Vue {
   }
 
   private get lowestRequiredAuthority (): Authority {
-    return ['active', 'owner'].includes(this.authority) ? this.authority : Authority.Active;
+    return ['active', 'owner'].includes(this.authority) ? this.authority : Authority.Active
   }
 
   private get callback (): any {

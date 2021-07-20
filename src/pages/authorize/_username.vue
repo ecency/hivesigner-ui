@@ -14,7 +14,7 @@
         v-if="!hasAuthority && !failed && !transactionId"
         :username="username"
         :account="account"
-        :authority="authority"
+        :authority="lowestRequiredAuthority"
         :loading="loading"
         @submit="handleSubmit"
         @loading="onLoadingChange"
@@ -58,6 +58,10 @@ export default class AuthorizeUsername extends Vue {
 
   private get authority (): Authority {
     return getAuthority(this.$route.query.authority as Authority, Authority.Posting)
+  }
+
+  private get lowestRequiredAuthority (): Authority {
+    return ['active', 'owner'].includes(this.authority) ? this.authority : Authority.Active
   }
 
   private get account (): Account | null {
