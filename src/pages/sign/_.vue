@@ -86,8 +86,7 @@ export default class Sign extends Vue {
   private hasRequiredKey = null
 
   private get authority (): string {
-    return getLowestAuthorityRequired(this.parsed?.tx) ||
-      getAuthority(this.$route.query.authority as Authority)
+    return getAuthority(this.$route.query.authority as Authority) || getLowestAuthorityRequired(this.parsed.tx)
   }
 
   private get uri (): string {
