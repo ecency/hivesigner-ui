@@ -10,7 +10,7 @@
       <revoke-form
         v-if="hasAuthority && !failed && !transactionId"
         :username="username"
-        :authority="authority"
+        :authority="lowestRequiredAuthority"
         :loading="loading"
         :transaction-id="transactionId"
         :error="error"
@@ -55,6 +55,10 @@ export default class RevokeUsername extends Vue {
 
   private get authority (): Authority {
     return getAuthority(this.$route.query.authority as Authority, Authority.Posting)
+  }
+
+  private get lowestRequiredAuthority (): Authority {
+    return ['active', 'owner'].includes(this.authority) ? this.authority : Authority.Active;
   }
 
   private get callback (): any {

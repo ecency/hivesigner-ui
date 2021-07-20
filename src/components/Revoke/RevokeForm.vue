@@ -11,8 +11,8 @@
       <div
         v-if="account && account.name && !hasRequiredKey"
         class="alert alert-warning mt-4"
+        v-html="$t('authorize.requires_active_key', { authority: 'active' })"
       >
-        {{ $t('authorize.requires_active_key', { authority }) }}
       </div>
     </div>
     <div class="mt-2">
@@ -43,7 +43,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import { Account, TransactionConfirmation } from '@hiveio/dhive'
+import { Account } from '@hiveio/dhive'
 import { AccountsModule, AuthModule } from '~/store'
 
 @Component
@@ -87,14 +87,6 @@ export default class RevokeForm extends Vue {
     return this.$route.query.redirect_uri as string
   }
 
-  private updateAccount (data: any): Promise<TransactionConfirmation> {
-    return AuthModule.updateAccount(data)
-  }
-
-  private loadAccount (): Promise<void> {
-    return AuthModule.loadAccount()
-  }
-
   private async handleSubmit (): Promise<void> {
     const { username, authority, callback, account } = this
     this.$emit('loading', true)
@@ -108,8 +100,11 @@ export default class RevokeForm extends Vue {
       if (accountAuth[0] === username) { data[authority].account_auths.splice(i, 1) }
     })
     try {
-      const confirmation = await this.updateAccount(data)
-      await this.loadAccount()
+      debugger
+      const confirmation = await AuthModule.updateAccount(data)
+      debugger
+      await AuthModule.loadAccount()
+      debugger
 
       if (callback) {
         if (callback[0] === '/') {
