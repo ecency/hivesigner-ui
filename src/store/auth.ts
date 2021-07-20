@@ -117,7 +117,7 @@ export default class Auth extends VuexModule {
     rawError: true
   })
   public async updateAccount (data: AccountUpdateOperation[1]): Promise<TransactionConfirmation> {
-    const privateKey = privateKeyFrom(this.keys.owner || this.keys.active)
+    const privateKey = privateKeyFrom(this.keys.owner || this.keys.active || this.keys.posting)
     return client.broadcast.updateAccount(data, privateKey)
   }
 
