@@ -6,12 +6,15 @@
     }"
   >
     <div v-if="!flat" class="navigation-container flex justify-end">
-      <dropdown class="navigation-toggle sm:hidden" position="rightBottom">
-        <template slot="trigger">
-          <Icon name="Menu" class="text-gray" />
-        </template>
-        <navigation vertical />
-      </dropdown>
+      <div class="flex items-center navigation-area sm:hidden">
+        <Dropdown class="navigation-toggle" position="rightBottom">
+          <template slot="trigger">
+            <Icon name="Menu" class="text-gray" />
+          </template>
+          <Navigation vertical />
+        </Dropdown>
+        <AccountSelection v-if="hasAuthorizedAccount" class="pl-4" />
+      </div>
     </div>
     <router-link v-if="!flat" to="/" class="flex flex-col items-center mb-12">
       <icon class="logo text-primary" name="logo" />
@@ -29,9 +32,11 @@ import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import Icon from '../UI/Icons/Icon.vue'
 import Dropdown from '../UI/Dropdown.vue'
 import Navigation from '../Navigation.vue'
+import AccountSelection from '../AccountSelection.vue'
+import { AuthModule } from '~/store'
 
 @Component({
-  components: { Navigation, Dropdown, Icon }
+  components: { AccountSelection, Navigation, Dropdown, Icon }
 })
 export default class SinglePageLayout extends Vue {
   @Prop({
@@ -45,6 +50,10 @@ export default class SinglePageLayout extends Vue {
     default: false
   })
   private flat!: boolean
+
+  private get hasAuthorizedAccount (): boolean {
+    return !!AuthModule.username
+  }
 }
 </script>
 

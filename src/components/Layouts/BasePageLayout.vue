@@ -7,12 +7,15 @@
         class="navigation-container grid items-center mb-7"
         :class="{ 'primary': primaryPage }"
       >
-        <Dropdown class="navigation-toggle sm:hidden" position="rightBottom">
-          <template slot="trigger">
-            <Icon name="Menu" class="text-gray" />
-          </template>
-          <Navigation vertical />
-        </Dropdown>
+        <div class="flex items-center navigation-area sm:hidden">
+          <Dropdown class="navigation-toggle" position="rightBottom">
+            <template slot="trigger">
+              <Icon name="Menu" class="text-gray" />
+            </template>
+            <Navigation vertical />
+          </Dropdown>
+          <AccountSelection v-if="hasAuthorizedAccount" class="pl-4" />
+        </div>
 
         <router-link
           to="/"
@@ -45,9 +48,11 @@ import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import Dropdown from '../UI/Dropdown.vue'
 import Icon from '../UI/Icons/Icon.vue'
 import Navigation from '../Navigation.vue'
+import { AuthModule } from '../../store'
+import AccountSelection from '../AccountSelection.vue'
 
 @Component({
-  components: { Navigation, Icon, Dropdown }
+  components: { AccountSelection, Navigation, Icon, Dropdown }
 })
 export default class BasePageLayout extends Vue {
   @Prop({
@@ -55,6 +60,10 @@ export default class BasePageLayout extends Vue {
     default: false
   })
   private primaryPage!: boolean
+
+  private get hasAuthorizedAccount (): boolean {
+    return !!AuthModule.username
+  }
 }
 </script>
 
@@ -74,7 +83,7 @@ export default class BasePageLayout extends Vue {
       grid-area: title;
     }
 
-    .navigation-toggle {
+    .navigation-area {
       grid-area: navigation;
     }
   }
