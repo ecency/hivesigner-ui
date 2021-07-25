@@ -55,7 +55,8 @@ export default {
     import_private_key: 'Import private key',
     copy: 'Copy',
     successfully_copied: 'The key copied to clipboard',
-    successfully_imported: 'Authorities keys imported successfully!'
+    successfully_imported: 'Authorities keys imported successfully!',
+    username: 'Username'
   },
   errors: {
     something_wrong: 'Oops, something went wrong.',
