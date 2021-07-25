@@ -7,7 +7,7 @@
   >
     <div v-if="!flat" class="navigation-container flex justify-end">
       <div class="flex items-center navigation-area sm:hidden">
-        <Dropdown class="navigation-toggle" position="rightBottom">
+        <Dropdown width="250px" class="navigation-toggle" position="rightBottom">
           <template slot="trigger">
             <Icon name="Menu" class="text-gray" />
           </template>

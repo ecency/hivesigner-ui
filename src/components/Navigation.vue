@@ -5,7 +5,7 @@
       'items-center': !vertical,
       'items-start flex-col': vertical,
       'justify-between': !wrappable,
-      'justify-center md:justify-between flex-wrap': wrappable
+      'justify-center md:justify-center flex-wrap': wrappable
     }"
   >
     <template v-for="item of menu">

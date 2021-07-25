@@ -140,7 +140,7 @@ export default {
     settings: 'Settings',
     developers: 'Developers',
     about: 'About',
-    documentation: 'Documentation',
+    documentation: 'Docs',
     signs: 'Signer',
     network: `{network}`,
     login: 'Login'
