@@ -4,7 +4,7 @@
       class="logo text-primary mx-auto mb-16"
       name="logo"
     />
-    <form-control
+    <password-form-control
       v-model="importKey"
       class="mb-6"
       name="importKey"
@@ -23,12 +23,12 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import FormControl from '../UI/Form/FormControl.vue'
 import Icon from '../UI/Icons/Icon.vue'
 import { AccountsModule, AuthModule } from '~/store'
+import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 
 @Component({
-  components: { Icon, FormControl }
+  components: { PasswordFormControl, Icon }
 })
 export default class ImportAuthKey extends Vue {
   private importKey = ''
