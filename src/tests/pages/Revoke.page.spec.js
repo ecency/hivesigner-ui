@@ -105,7 +105,7 @@ describe('RevokeUsernamePage', function () {
 
     const element = wrapper.find('revoke-form-stub').element
     expect(element.getAttribute('username')).toBe('tester')
-    expect(element.getAttribute('authority')).toBe('posting')
+    expect(element.getAttribute('authority')).toBe('active')
   })
 
   it('should show already if hasn\'t authority and hasn\'t transaction id', function () {

@@ -20,6 +20,7 @@ import { VuexModule } from '~/models'
 export default class Auth extends VuexModule {
   public keys: Record<string, string> = {}
   public account: Account | null = null
+  public encryptedUserAccess: Date | null = null
 
   public get username (): string {
     return this.account?.name || ''
