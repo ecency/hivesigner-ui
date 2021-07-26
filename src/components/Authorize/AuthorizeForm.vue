@@ -7,7 +7,7 @@
           {{ username }}
         </h4>
       </div>
-      <p class="text-black-400 text-lg" v-html="$t('authorize.authority_require', { username, authority })" />
+      <p class="text-black-400 text-lg" v-html="$t('authorize.authority_require', { username, authority: 'posting' })" />
       <div v-if="authority === 'active'" class="alert alert-error mt-4">
         {{ $t('authorize.authority_active') }}
       </div>
@@ -47,6 +47,7 @@
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
 import { AccountsModule, AuthModule } from '~/store'
+import {Authority} from "../../enums";
 
 @Component
 export default class AuthorizeForm extends Vue {
@@ -82,16 +83,16 @@ export default class AuthorizeForm extends Vue {
   }
 
   private async handleSubmit (): Promise<void> {
-    const { username, authority, account } = this
+    const { username, account } = this
     this.$emit('loading', true)
     const data = {
       account: account.name,
       memo_key: account.memo_key,
       json_metadata: account.json_metadata
     }
-    data[authority] = JSON.parse(JSON.stringify(account[authority]))
-    data[authority].account_auths.push([username, account[authority].weight_threshold])
-    data[authority].account_auths.sort((a, b) => (a[0] > b[0] ? 1 : -1))
+    data[Authority.Posting] = JSON.parse(JSON.stringify(account[Authority.Posting]))
+    data[Authority.Posting].account_auths.push([username, account[Authority.Posting].weight_threshold])
+    data[Authority.Posting].account_auths.sort((a, b) => (a[0] > b[0] ? 1 : -1))
 
     this.$emit('submit', data)
   }
