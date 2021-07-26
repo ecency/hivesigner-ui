@@ -28,6 +28,7 @@
     "types": [
       "@nuxt/types",
       "@nuxtjs/axios",
+      "@types/jest",
       "@types/node",
       "nuxt-i18n"
     ]

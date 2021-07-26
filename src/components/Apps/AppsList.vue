@@ -1,6 +1,6 @@
 <template>
   <div class="apps-list">
-    <p class="mb-6 font-bold text-black-400 text-lg">
+    <p class="mb-6 font-bold text-black-400 text-lg apps-list-title">
       {{ title }}
     </p>
     <Loader v-if="loading && apps.length === 0" class="mb-6 mx-auto" />
@@ -37,7 +37,9 @@ export default class AppsList extends Vue {
   })
   private loading!: string
 
-  @Prop()
+  @Prop({
+    default: () => []
+  })
   private apps!: any[]
 }
 </script>

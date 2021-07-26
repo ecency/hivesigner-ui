@@ -3,18 +3,21 @@
     <a
       v-if="value.Key.type === 'account'"
       role="button"
+      data-e2e="revoke"
       :class="classes"
       @click="() => $router.push(revokeLink)"
     >{{ $t('revoke.revoke') }}</a>
     <a
       v-if="value.Key.type !== 'account'"
       role="button"
+      data-e2e="copy"
       :class="classes"
       @click="copy"
     >{{ $t('auths.copy') }}</a>
     <a
       v-if="value.Key.type !== 'account'"
       role="button"
+      data-e2e="revealOrImport"
       :class="classes"
       @click="revealOrImport"
     >{{ revealOrImportLabel }}</a>
