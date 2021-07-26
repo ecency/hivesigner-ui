@@ -44,6 +44,7 @@
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
 import { AccountsModule, AuthModule } from '~/store'
+import {Authority} from "../../enums";
 
 @Component
 export default class RevokeForm extends Vue {
@@ -87,16 +88,16 @@ export default class RevokeForm extends Vue {
   }
 
   private async handleSubmit (): Promise<void> {
-    const { username, authority, callback, account } = this
+    const { username, callback, account } = this
     this.$emit('loading', true)
     const data = {
       account: account.name,
       memo_key: account.memo_key,
       json_metadata: account.json_metadata
     }
-    data[authority] = JSON.parse(JSON.stringify(account[authority]))
-    data[authority].account_auths.forEach((accountAuth, i) => {
-      if (accountAuth[0] === username) { data[authority].account_auths.splice(i, 1) }
+    data[Authority.Posting] = JSON.parse(JSON.stringify(account[Authority.Posting]))
+    data[Authority.Posting].account_auths.forEach((accountAuth, i) => {
+      if (accountAuth[0] === username) { data[Authority.Posting].account_auths.splice(i, 1) }
     })
     try {
       const confirmation = await AuthModule.updateAccount(data)
