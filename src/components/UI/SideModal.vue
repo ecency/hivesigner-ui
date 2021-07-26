@@ -14,7 +14,7 @@
           class="modal-content overflow-y-auto w-full fixed h-full top-0 right-0 bg-white duration-300"
         >
           <div
-            class="modal-title py-5 pl-6 pr-4 flex items-center"
+            class="modal-title py-5 pl-6 pr-4 flex items-center relative"
             :class="{
               'border-b justify-between': !flat,
               'justify-end': flat,

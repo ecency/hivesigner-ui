@@ -43,8 +43,8 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
+import { Authority } from '../../enums'
 import { AccountsModule, AuthModule } from '~/store'
-import {Authority} from "../../enums";
 
 @Component
 export default class RevokeForm extends Vue {
