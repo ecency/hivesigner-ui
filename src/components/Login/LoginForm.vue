@@ -129,6 +129,10 @@ export default class LoginForm extends Vue {
     return !!this.errors.username || (!!this.errors.key && !!this.dirty.key)
   }
 
+  private get redirect (): string {
+    return this.$route.query.redirect as string
+  }
+
   public resetForm (): void {
     this.dirty = {
       username: false,

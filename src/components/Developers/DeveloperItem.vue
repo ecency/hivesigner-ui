@@ -1,5 +1,5 @@
 <template>
-  <div class="developer-item">
+  <div>
     <a class="p-4 block border rounded overflow-hidden mb-3 cursor-pointer hover:underline" @click="toggle">
       <h4 class="text-xl text-black-500 font-bold">{{ title }}</h4>
     </a>

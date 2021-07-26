@@ -13,7 +13,7 @@
           :key="key"
           :operation="operation"
         />
-        <div v-if="parsed.params.callback" class="alert alert-callback alert-warning mb-6">
+        <div v-if="parsed.params.callback" class="alert alert-warning mb-6">
           {{ $t('sign.going_redirect_to') }}
           <span class="text-black">
             {{ parsed.params.callback | parseUrl }}
@@ -21,7 +21,7 @@
         </div>
         <div
           v-if="username && hasRequiredKey === false"
-          class="alert alert-required-transaction-key alert-warning mb-6"
+          class="alert alert-warning mb-6"
           v-html="$t('authorize.requires_active_key')"
         />
         <div class="mb-6">
@@ -41,7 +41,7 @@
           >
             {{ $t(parsed.params.no_broadcast ? 'sign.sign' : 'sign.approve') }}
           </button>
-          <button class="mb-2 button-cancel" @click.prevent="handleReject">
+          <button class="mb-2" @click.prevent="handleReject">
             {{ $t('common.cancel') }}
           </button>
         </div>
@@ -91,6 +91,10 @@ export default class Sign extends Vue {
 
   private get uri (): string {
     return `hive://sign/${this.$route.params.pathMatch}${buildSearchParams(this.$route)}`
+  }
+
+  private get requestId (): string {
+    return this.$route.query.requestId as string
   }
 
   private get title () {

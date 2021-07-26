@@ -1,4 +1,4 @@
-import { Module, VuexAction, VuexMutation } from 'nuxt-property-decorator'
+import { Module, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
 import {
   Account, AccountUpdateOperation,
   cryptoUtils,
@@ -8,7 +8,6 @@ import {
 } from '@hiveio/dhive'
 import { AccountsModule } from './index'
 import { b64uEnc, client, privateKeyFrom } from '~/utils'
-import { VuexModule } from '~/models'
 
 @Module({
   stateFactory: true,
@@ -71,7 +70,7 @@ export default class Auth extends VuexModule {
   @VuexAction
   public async logout (): Promise<void> {
     this.clearUser()
-    this.store.app.router?.push('/')
+    this.store.app.router.push('/')
   }
 
   @VuexAction

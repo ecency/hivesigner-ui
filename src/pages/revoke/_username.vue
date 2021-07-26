@@ -67,8 +67,8 @@ export default class RevokeUsername extends Vue {
 
   private get hasAuthority (): boolean {
     if (this.account?.name) {
-      const auths = this.account[this.authority]?.account_auths.map(auth => auth[0])
-      return auths?.includes(this.username)
+      const auths = this.account[this.authority].account_auths.map(auth => auth[0])
+      return auths.includes(this.username)
     }
     return true
   }

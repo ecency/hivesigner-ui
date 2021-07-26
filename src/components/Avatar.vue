@@ -31,7 +31,7 @@ export default class Avatar extends Vue {
 
   private get styles (): Record<string, string> {
     return {
-      'background-image': `url(https://images.ecency.com/u/${this.username}/avatar)`,
+      'background-image': `url(https://images.ecency.com/u/${this.username}/avatar`,
       width: `${this.size}px`,
       height: `${this.size}px`
     }

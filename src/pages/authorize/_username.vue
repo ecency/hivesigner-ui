@@ -109,7 +109,7 @@ export default class AuthorizeUsername extends Vue {
 
       if (this.callback) {
         if (this.callback[0] === '/') {
-          await this.$router.push({
+          this.$router.push({
             name: 'login',
             query: { redirect: this.callback }
           })

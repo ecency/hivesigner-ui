@@ -2,8 +2,8 @@
   <span
     class="operation-value inline-block text-gray-600"
     :class="{ 'responsive-short overflow-hidden w-full': responsiveShort && !schema.type }"
-    :responsive-key-start="value && value.length > 8 && value.slice(0, 3)"
-    :responsive-key-end="value && value.length > 8 && value.slice(value.length - 4, value.length - 1)"
+    :responsive-key-start="value.length > 8 && value.slice(0, 3)"
+    :responsive-key-end="value.length > 8 && value.slice(value.length - 4, value.length - 1)"
   >
     <template v-if="value && Array.isArray(value)">
       <em v-if="value.length === 0">{{ $t('operations.empty') }}</em>

@@ -1,8 +1,7 @@
-import { Module, VuexAction, VuexMutation } from 'nuxt-property-decorator'
+import { Module, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
 import { client } from '~/utils'
 import { SETTINGS_KEY } from '~/consts'
 import { AuthModule } from '~/store'
-import { VuexModule } from '~/models'
 
 @Module({
   stateFactory: true,
@@ -65,8 +64,8 @@ export default class Settings extends VuexModule {
     }
 
     try {
-      const settings = JSON.parse(settingsContent);
-      (client as any).updateClient(settings.address)
+      const settings = JSON.parse(settingsContent)
+      client.updateClient(settings.address)
       await this.getConfig()
 
       this.store.app.$idleDetector.start(settings.timeout * 60 * 1000, () => {

@@ -5,6 +5,7 @@
     <span v-else>{{ $t('common.try_again') }}</span>
   </div>
 </template>
+
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { getErrorMessage } from '~/utils'

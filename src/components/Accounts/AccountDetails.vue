@@ -77,7 +77,7 @@ export default class AccountDetails extends Vue {
         } catch (_) {
         }
       } else {
-        setTimeout(() => (this.showLoginModal()), 300)
+        setTimeout(() => (this.encryptionConfirmationModal.show()), 300)
       }
     }
   }

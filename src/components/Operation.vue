@@ -23,11 +23,8 @@ import { OPERATIONS } from '~/consts'
 
 @Component
 export default class Operation extends Vue {
-  @Prop({
-    type: Array,
-    default: () => []
-  })
-  private operation!: any[]
+  @Prop()
+  private operation!: any
 
   private get schema (): any {
     return OPERATIONS[this.operation[0]]?.schema || {}
