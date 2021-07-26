@@ -131,7 +131,7 @@ export default {
         Going forward <b>{username}</b> will not be able to perform actions on your
         behalf.`
   },
-  already_action_account: `You already {action} the account <b>{username}</b> to do
+  already_action_account: `You {action} the account <b>{username}</b> to do
       <b>{authority}</b> operations on your behalf.`,
   confirmation: 'Your transaction is on the way! Here is the ID of the transaction:',
   footer: {
