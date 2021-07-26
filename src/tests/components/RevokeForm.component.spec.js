@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import VueRouter from 'vue-router'
 import RevokeForm from '@/components/Revoke/RevokeForm'
 import Avatar from '@/components/Avatar'
+import * as modules from '@/store'
 
 describe('RevokeFormComponent', function () {
   let localVue
@@ -12,6 +13,7 @@ describe('RevokeFormComponent', function () {
   let $t
 
   beforeEach(() => {
+    modules.AuthModule = {}
     $t = v => v
     localVue = createLocalVue()
     localVue.use(VueRouter)
@@ -60,8 +62,8 @@ describe('RevokeFormComponent', function () {
   })
 
   it('should submit form successfully w/o callback', async function () {
-    wrapper.vm.updateAccount = jest.fn().mockReturnValue({ id: 'testConfirmationId' })
-    wrapper.vm.loadAccount = jest.fn()
+    modules.AuthModule.updateAccount = jest.fn().mockReturnValue({ id: 'testConfirmationId' })
+    modules.AuthModule.loadAccount = jest.fn()
     await wrapper.setProps({
       username: 'testUsername',
       authority: 'authority1',
@@ -75,8 +77,8 @@ describe('RevokeFormComponent', function () {
   })
 
   it('should submit form successfully with absolute callback', async function () {
-    wrapper.vm.updateAccount = jest.fn().mockReturnValue({ id: 'testConfirmationId' })
-    wrapper.vm.loadAccount = jest.fn()
+    modules.AuthModule.updateAccount = jest.fn().mockReturnValue({ id: 'testConfirmationId' })
+    modules.AuthModule.loadAccount = jest.fn()
     await wrapper.setProps({
       username: 'testUsername',
       authority: 'authority1',
@@ -90,8 +92,8 @@ describe('RevokeFormComponent', function () {
 
   it('should submit form failure', async function () {
     const error = new Error('failed')
-    wrapper.vm.updateAccount = jest.fn().mockReturnValue({ id: 'testConfirmationId' })
-    wrapper.vm.loadAccount = jest.fn().mockImplementation(() => {
+    modules.AuthModule.updateAccount = jest.fn().mockReturnValue({ id: 'testConfirmationId' })
+    modules.AuthModule.loadAccount = jest.fn().mockImplementation(() => {
       throw error
     })
     await wrapper.setProps({
