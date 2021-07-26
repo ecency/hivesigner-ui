@@ -7,13 +7,14 @@
 </template>
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
-import { SettingsModule } from '~/store'
+import { AuthModule, SettingsModule } from '~/store'
 
 @Component
 export default class Page extends Vue {
   private async created (): Promise<void> {
     await SettingsModule.loadSettings()
     await SettingsModule.getDynamicGlobalProperties()
+    await AuthModule.loginSession()
   }
 
   private mounted (): void {
