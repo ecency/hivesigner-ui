@@ -24,8 +24,8 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
 import Icon from '../UI/Icons/Icon.vue'
-import { AccountsModule, AuthModule } from '~/store'
 import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
+import { AccountsModule, AuthModule } from '~/store'
 
 @Component({
   components: { PasswordFormControl, Icon }
