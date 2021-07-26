@@ -1,23 +1,22 @@
 module.exports = {
+  rootDir: __dirname,
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1',
-    '^~/(.*)$': '<rootDir>/$1',
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^~/(.*)$': '<rootDir>/src/$1',
     '^vue$': 'vue/dist/vue.common.js'
   },
-  moduleFileExtensions: [
-    'ts',
-    'js',
-    'vue',
-    'json'
-  ],
+  moduleFileExtensions: ['js', 'vue', 'json', 'ts', 'svg'],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
     '^.+\\.js$': 'babel-jest',
-    '.*\\.(vue)$': 'vue-jest'
+    '^.+\\.ts$': 'ts-jest',
+    '.*\\.(vue)$': 'vue-jest',
+    '^.+\\.svg$': '<rootDir>src/tests/core/svgTransform.js'
   },
   collectCoverage: true,
   collectCoverageFrom: [
-    '<rootDir>/components/**/*.vue',
-    '<rootDir>/pages/**/*.vue'
-  ]
+    '<rootDir>/src/**/*.vue',
+    '<rootDir>/src/**/*.ts',
+    '<rootDir>/src/**/*.js'
+  ],
+  setupFilesAfterEnv: ["<rootDir>/src/tests/setup.js"],
 }

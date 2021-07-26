@@ -33,7 +33,7 @@
       >
         {{ $t('revoke.revoke') }}
       </button>
-      <button @click.prevent="handleReject">
+      <button class="button-cancel" @click.prevent="handleReject">
         {{ $t('common.cancel') }}
       </button>
     </div>

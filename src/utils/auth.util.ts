@@ -1,12 +1,10 @@
 import { PrivateKey } from '@hiveio/dhive'
-import * as bs58 from 'bs58'
+import { decode } from 'bs58'
 import { client } from './client.util'
 import { Authority } from '~/enums'
 
-// TODO: Move it from utils
-
 function decodePrivate (encodedKey: string): Buffer {
-  const buffer: Buffer = bs58.decode(encodedKey)
+  const buffer: Buffer = decode(encodedKey)
 
   if (buffer[0] !== 128) { throw new Error('private key network id mismatch') }
 
@@ -46,7 +44,7 @@ export async function getUserKeysMap (username: string): Promise<Record<string, 
   const types = ['posting', 'active', 'owner']
 
   for (let i = 0; i < types.length; i += 1) {
-    const keysOfType = account[types[i]].key_auths
+    const keysOfType = (account as any)[types[i]].key_auths
 
     for (let j = 0; j < keysOfType.length; j += 1) {
       keys[keysOfType[j][0]] = types[i]

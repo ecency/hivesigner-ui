@@ -4,8 +4,8 @@ import { DecryptionExceptions } from '~/enums'
 export function decrypt (key: string, encryptionKey?: string): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     triplesec.decrypt({
-      data: new triplesec.Buffer(key, 'hex'),
-      key: new triplesec.Buffer(encryptionKey as string, 'utf-8')
+      data: new (triplesec as any).Buffer(key, 'hex'),
+      key: new (triplesec as any).Buffer(encryptionKey as string, 'utf-8')
     }, (decryptError, buff) => {
       if (decryptError) {
         reject(DecryptionExceptions.TriplesecError)
@@ -19,8 +19,8 @@ export function encrypt (key: Record<string, string>, encryptionKey?: string): P
   return new Promise((resolve, reject) => {
     triplesec.encrypt(
       {
-        data: new triplesec.Buffer(JSON.stringify(key)),
-        key: new triplesec.Buffer(encryptionKey)
+        data: new (triplesec as any).Buffer(JSON.stringify(key)),
+        key: new (triplesec as any).Buffer(encryptionKey)
       },
       (encryptError, buff) => {
         if (encryptError) {
