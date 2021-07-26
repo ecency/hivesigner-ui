@@ -42,6 +42,10 @@ export default class ImportAuthKey extends Vue {
     return AuthModule.username
   }
 
+  private get keys (): Record<string, string> {
+    return AuthModule.keys
+  }
+
   private async submit (): Promise<void> {
     this.errors = []
     const valid = await AccountsModule.isValidCredentials({
@@ -61,7 +65,10 @@ export default class ImportAuthKey extends Vue {
 
     AccountsModule.saveAccountKeys({
       username: this.username,
-      keys
+      keys: {
+        ...this.keys,
+        ...keys
+      }
     })
 
     this.$popupMessages.show('auths.successfully_imported', 5000)

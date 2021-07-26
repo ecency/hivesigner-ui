@@ -7,7 +7,10 @@ export default {
     save: 'Save',
     yes: 'Yes',
     no: 'No',
-    invalid_integrity: 'This website most likely phishing attempt. Please make sure to use <a class="underline" href="https://hivesigner.com" target="_blank" rel="noopener">hivesigner.com</a> only.'
+    invalid_integrity: 'This website most likely phishing attempt. Please make sure to use <a class="underline" href="https://hivesigner.com" target="_blank" rel="noopener">hivesigner.com</a> only.',
+    logged_in: 'Logged In',
+    decrypted: 'Decrypted',
+    encrypted: 'Encrypted'
   },
   index: {
     title: 'Hivesigner',
@@ -55,7 +58,8 @@ export default {
     import_private_key: 'Import private key',
     copy: 'Copy',
     successfully_copied: 'The key copied to clipboard',
-    successfully_imported: 'Authorities keys imported successfully!'
+    successfully_imported: 'Authorities keys imported successfully!',
+    username: 'Username'
   },
   errors: {
     something_wrong: 'Oops, something went wrong.',
@@ -136,9 +140,10 @@ export default {
     settings: 'Settings',
     developers: 'Developers',
     about: 'About',
-    documentation: 'Documentation',
+    documentation: 'Docs',
     signs: 'Signer',
-    network: `{network}`
+    network: `{network}`,
+    login: 'Login'
   },
   open_external: `We recommend you to use the HiveSigner desktop app. If you don't have this, you can download it from the <a href="{homepage}" target="_blank">official site</a>.`,
   open_desktop_app: 'Open desktop app',

@@ -1,6 +1,8 @@
+import { add, isAfter } from 'date-fns'
 import { Module, VuexAction, VuexMutation } from 'nuxt-property-decorator'
 import {
-  Account, AccountUpdateOperation,
+  Account,
+  AccountUpdateOperation,
   cryptoUtils,
   SignedTransaction,
   Transaction,
@@ -44,6 +46,18 @@ export default class Auth extends VuexModule {
     this.account = account
   }
 
+  @VuexMutation
+  public setEncryptedAccountAsAccessible (value: Date): void {
+    this.encryptedUserAccess = value
+  }
+
+  @VuexAction
+  public async loginSession (): Promise<void> {
+    if (this.encryptedUserAccess && this.account && isAfter(new Date(), new Date(this.encryptedUserAccess))) {
+      await this.logout()
+    }
+  }
+
   @VuexAction({
     rawError: true
   })
@@ -61,6 +75,11 @@ export default class Auth extends VuexModule {
     const result = await client.database.getAccounts([username])
 
     this.setUser({ result: result[0], keys })
+
+    if (!AccountsModule.isDecrypted(username)) {
+      const now = new Date()
+      this.setEncryptedAccountAsAccessible(add(now, { days: 1 }))
+    }
 
     this.store.app.$idleDetector.start(this.context.rootState.settings.timeout * 60 * 1000, () => {
       this.store.app.$idleDetector.stop()

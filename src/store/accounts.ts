@@ -131,12 +131,7 @@ export default class Accounts extends VuexModule {
 
   @VuexAction({ rawError: true })
   public async getAuthoritiesKeys ({ username, password }: { username: string, password: string }): Promise<Record<string, string | null>> {
-    const keys: Record<string, string | null> = {
-      owner: null,
-      active: null,
-      memo: null,
-      posting: null
-    }
+    const keys: Record<string, string> = {}
     const keysMap = await getUserKeysMap(username)
 
     if (isKey(username, password)) {

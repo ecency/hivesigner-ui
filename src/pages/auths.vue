@@ -1,5 +1,16 @@
 <template>
   <single-page-layout :title="$t('auths.auths')" class="auths-page">
+    <div class="user-info border p-6 flex items-center justify-start my-6">
+      <Avatar :username="account.name" style="width: 96px; height: 96px" class="mr-5" />
+      <div>
+        <div class="text-xs tracking-wider uppercase text-gray">
+          {{ $t('auths.username') }}
+        </div>
+        <div class="text-3xl">
+          {{ account.name }}
+        </div>
+      </div>
+    </div>
     <div class="flex flex-col w-full text-black-400 w-full pt-12 px-3">
       <div class="auths-table">
         <div class="auths-cell auths-cell-header flex items-end auths-cell-type pb-2 sm:pb-0">
@@ -75,6 +86,7 @@ import _ from 'lodash'
 import { Account } from '@hiveio/dhive'
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
 import AuthsActions from '../components/Auths/AuthsActions.vue'
+import Avatar from '../components/Avatar.vue'
 import { AccountsModule, AuthModule } from '~/store'
 import { privateKeyFrom } from '~/utils'
 import { Authority } from '~/enums'
@@ -86,7 +98,7 @@ import ImportAuthKey from '~/components/Import/ImportAuthKey.vue'
 import { CLIENT_OPTIONS } from '~/consts'
 
 @Component({
-  components: { AuthsActions, ImportAuthKey, Modal, Dropdown, SinglePageLayout, Icon },
+  components: { Avatar, AuthsActions, ImportAuthKey, Modal, Dropdown, SinglePageLayout, Icon },
   middleware: ['auth'],
   layout: 'page'
 })
@@ -161,6 +173,16 @@ export default class Auths extends Vue {
 </script>
 <style lang="scss">
 .auths-page {
+
+  .user-info {
+    margin-left: 0;
+    margin-right: 0;
+
+    @screen md {
+      margin-left: -1.15rem;
+      margin-right: -1.15rem;
+    }
+  }
 
   .auths-table {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 1fr;
