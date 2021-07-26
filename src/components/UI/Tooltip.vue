@@ -6,15 +6,17 @@
         class="overlay inset-0 fixed bg-black-400 opacity-40 duration-500 z-30"
       />
     </transition>
-    <span
+    <div
       class="inline-block tooltip-popup cursor-pointer hover:text-black relative"
       :class="{ 'z-30': open }"
       :aria-label="tooltip"
       @mouseover="open = true"
       @mouseleave="open = false"
     >
-      <icon name="Info" class="input-block" style="width: 20px; height: 20px;" />
-    </span>
+      <slot>
+        <icon name="Info" class="input-block" style="width: 20px; height: 20px;" />
+      </slot>
+    </div>
   </div>
 </template>
 

@@ -26,8 +26,12 @@
         :class="menuClasses"
         @click="flat && hide()"
       >
-        <div v-if="!flat" class="icon absolute right-4 top-4 cursor-pointer" @click="hide">
-          <Icon name="close" class="text-gray" />
+        <div
+          v-if="!flat"
+          class="icon absolute right-4 top-4 cursor-pointer text-gray hover:text-black"
+          @click="hide"
+        >
+          <Icon name="close" />
         </div>
         <slot />
       </div>
