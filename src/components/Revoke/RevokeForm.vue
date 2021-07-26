@@ -7,7 +7,7 @@
           {{ username }}
         </h4>
       </div>
-      <p class="text-black-400 text-lg" v-html="$t('revoke.message', { authority, username })" />
+      <p class="text-black-400 text-lg" v-html="$t('revoke.message', { authority: 'posting', username })" />
       <div
         v-if="account && account.name && !hasRequiredKey"
         class="alert alert-warning mt-4"

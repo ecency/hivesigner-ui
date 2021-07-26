@@ -7,7 +7,7 @@
           {{ username }}
         </h4>
       </div>
-      <p class="text-black-400 text-lg" v-html="$t('authorize.authority_require', { username, authority })" />
+      <p class="text-black-400 text-lg" v-html="$t('authorize.authority_require', { username, authority: 'posting' })" />
       <div v-if="authority === 'active'" class="alert alert-error mt-4">
         {{ $t('authorize.authority_active') }}
       </div>
