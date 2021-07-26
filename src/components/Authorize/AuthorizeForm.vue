@@ -8,7 +8,7 @@
         </h4>
       </div>
       <p class="text-black-400 text-lg" v-html="$t('authorize.authority_require', { username, authority: 'posting' })" />
-      <div v-if="authority === 'active'" class="alert alert-error mt-4">
+      <div v-if="authority_type === 'active'" class="alert alert-error mt-4">
         {{ $t('authorize.authority_active') }}
       </div>
       <div
@@ -62,6 +62,12 @@ export default class AuthorizeForm extends Vue {
     default: ''
   })
   private authority!: string
+
+  @Prop({
+    type: String,
+    default: 'posting'
+  })
+  private authority_type!: string
 
   @Prop({
     type: Boolean,
