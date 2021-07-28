@@ -49,7 +49,7 @@ export default class BaseFormControl extends Vue {
   @Prop({
     type: String,
     default: 'text',
-    validator: value => ['text', 'number'].includes(value)
+    validator: value => ['text', 'number', 'password'].includes(value)
   })
   private type!: string
 

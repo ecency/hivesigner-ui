@@ -64,6 +64,10 @@ export default class AccountDetails extends Vue {
   private confirmModalRef!: ConfirmModal
 
   private async mounted (): Promise<void> {
+    if (this.account === AuthModule.account?.name) {
+      this.isLoggedIn = true
+    }
+
     if (!this.isLoggedIn) {
       const isDecrypted = AccountsModule.isDecrypted(this.account)
       if (isDecrypted) {
