@@ -4,7 +4,7 @@
       class="logo text-primary mx-auto mb-16"
       name="logo"
     />
-    <form-control
+    <password-form-control
       v-model="encryptionKey"
       class="mb-6"
       name="importKey"
@@ -26,10 +26,10 @@
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { AccountsModule, AuthModule } from '../../store'
 import Icon from '../UI/Icons/Icon.vue'
-import FormControl from '../UI/Form/FormControl.vue'
+import PasswordFormControl from '../UI/Form/PasswordFormControl.vue'
 
 @Component({
-  components: { FormControl, Icon }
+  components: { PasswordFormControl, Icon }
 })
 export default class ConfirmEncryptionKey extends Vue {
   @Prop()
