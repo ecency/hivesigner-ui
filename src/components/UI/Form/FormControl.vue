@@ -13,6 +13,9 @@
     @input="onInput"
     @blur="onBlur"
   >
+    <template #input-prefix-icon>
+      <slot name="input-prefix-icon" />
+    </template>
     <template #label-suffix>
       <slot name="label-suffix" />
     </template>
