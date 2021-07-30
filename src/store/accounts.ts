@@ -1,5 +1,6 @@
 import { Module, Vue, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
 import { PrivateKey } from '@hiveio/dhive'
+import { AuthModule } from './auth'
 import { CLIENT_OPTIONS } from '~/consts'
 import { decrypt, getUserKeysMap, isKey, jsonParse, privateKeyFrom } from '~/utils'
 import { DecryptionExceptions } from '~/enums'
@@ -88,11 +89,14 @@ export default class Accounts extends VuexModule {
   }
 
   @VuexMutation
-  public removeAccount (username: string): void {
+  public async removeAccount (username: string): Promise<void> {
     Vue.delete(this.accountsKeychains, username)
     if (this.selectedAccount === username) {
       const accounts = Object.keys(this.accountsKeychains)
       this.selectedAccount = accounts.length ? accounts[0] : ''
+      if (AuthModule.account?.name === username) {
+        await AuthModule.logout()
+      }
     }
   }
 
