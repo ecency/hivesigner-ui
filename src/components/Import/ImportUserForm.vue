@@ -7,7 +7,9 @@
       :label="$t('import.username')"
       name="username"
       @blur="handleBlur('username')"
-    />
+    >
+      <span slot="input-prefix-icon" class="text-xl text-gray mb-0.5">@</span>
+    </form-control>
 
     <password-form-control
       v-model="password"
