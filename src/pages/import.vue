@@ -226,8 +226,7 @@ export default class Import extends Vue {
       !this.hasAuthority
     ) {
       this.$router.push({
-        name: 'authorize',
-        params: { username: this.clientId },
+        path: `/authorize/${this.clientId}`,
         query: { redirect_uri: this.uri.replace('hive:/', '') }
       })
     }
