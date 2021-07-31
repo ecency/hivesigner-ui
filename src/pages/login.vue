@@ -160,8 +160,7 @@ export default class Login extends Vue {
       !this.hasAuthority
     ) {
       this.$router.push({
-        name: 'authorize',
-        params: { username: this.clientId },
+        path: `/authorize/${this.clientId}`,
         query: { redirect_uri: this.uri.replace('hive:/', '') }
       })
     } else if (this.clientId) {
