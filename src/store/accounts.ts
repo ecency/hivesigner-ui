@@ -1,6 +1,6 @@
 import { Module, Vue, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
 import { PrivateKey } from '@hiveio/dhive'
-import { AuthModule } from './auth'
+import { AuthModule } from './index'
 import { CLIENT_OPTIONS } from '~/consts'
 import { decrypt, getUserKeysMap, isKey, jsonParse, privateKeyFrom } from '~/utils'
 import { DecryptionExceptions } from '~/enums'
