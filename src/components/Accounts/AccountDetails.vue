@@ -39,6 +39,7 @@
 
 <script lang="ts">
 import { Component, Emit, Prop, Vue, Ref } from 'nuxt-property-decorator'
+import Bugsnag from '@bugsnag/js'
 import ConfirmModal from '../UI/ConfirmModal.vue'
 import Modal from '../UI/Modal.vue'
 import ConfirmEncryptionKey from '../Login/ConfirmEncryptionKey.vue'
@@ -78,7 +79,8 @@ export default class AccountDetails extends Vue {
           })
           await AccountsModule.setSelectedAccount(this.account)
           this.isLoggedIn = true
-        } catch (_) {
+        } catch (err) {
+          Bugsnag.notify(err)
         }
       } else {
         setTimeout(() => (this.showLoginModal()), 300)

@@ -1,4 +1,5 @@
 import { Module, VuexAction, VuexMutation } from 'nuxt-property-decorator'
+import Bugsnag from '@bugsnag/js'
 import { client } from '~/utils'
 import { SETTINGS_KEY } from '~/consts'
 import { AuthModule } from '~/store'
@@ -77,6 +78,7 @@ export default class Settings extends VuexModule {
       this.setSettings(settings)
     } catch (err) {
       console.error('Couldn`t load settings', err)
+      Bugsnag.notify(err)
     }
   }
 
@@ -86,6 +88,7 @@ export default class Settings extends VuexModule {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
     } catch (err) {
       console.error("Couldn't save settings", err)
+      Bugsnag.notify(err)
     }
 
     await this.loadSettings()
