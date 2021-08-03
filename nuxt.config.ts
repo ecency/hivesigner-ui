@@ -74,7 +74,8 @@ export default {
   i18n,
 
   env: {
-    BROADCAST_NETWORK: process.env.BROADCAST_NETWORK || 'mainnet'
+    BROADCAST_NETWORK: process.env.BROADCAST_NETWORK || 'mainnet',
+    BUGSNAG_API_KEY: process.env.BUGSNAG_API_KEY || ''
   },
 
   // router
