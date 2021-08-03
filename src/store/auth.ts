@@ -41,6 +41,7 @@ export default class Auth extends VuexModule {
   public clearUser (): void {
     this.keys = {}
     this.account = null
+    this.encryptedUserAccess = null
   }
 
   @VuexMutation
@@ -82,11 +83,6 @@ export default class Auth extends VuexModule {
       const now = new Date()
       this.setEncryptedAccountAsAccessible(add(now, { days: 1 }))
     }
-
-    this.store.app.$idleDetector.start(this.context.rootState.settings.timeout * 60 * 1000, () => {
-      this.store.app.$idleDetector.stop()
-      this.logout()
-    })
   }
 
   @VuexAction
