@@ -8,7 +8,7 @@ import {
   Transaction,
   TransactionConfirmation
 } from '@hiveio/dhive'
-//import bugsnag from './../plugins/bugsnag'
+// import bugsnag from './../plugins/bugsnag'
 import { AccountsModule } from './index'
 import { b64uEnc, client, privateKeyFrom } from '~/utils'
 import { VuexModule } from '~/models'
