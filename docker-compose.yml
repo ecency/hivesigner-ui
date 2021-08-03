@@ -6,6 +6,7 @@ services:
     environment:
       - BROADCAST_NETWORK
       - PORT
+      - BUGSNAG_API_KEY
     ports:
       - ${PORT}:${PORT}
     deploy:
