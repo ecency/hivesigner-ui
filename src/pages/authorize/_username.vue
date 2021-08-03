@@ -40,7 +40,7 @@ import Bugsnag from '../../plugins/bugsnag'
 import SinglePageLayout from '../../components/Layouts/SinglePageLayout.vue'
 import TransactionStatus from '../../components/TransactionStatus.vue'
 import { getAuthority } from '~/utils'
-import { AuthModule } from '~/store'
+import { AccountsModule, AuthModule } from '~/store'
 import { Authority } from '~/enums'
 
 @Component({
@@ -120,7 +120,7 @@ export default class AuthorizeUsername extends Vue {
           })
         } else {
           await AuthModule.signAndRedirectToCallback({
-            username: this.username,
+            username: AccountsModule.selectedAccount,
             authority: Authority.Posting,
             signature: this.$route.query.signature as string || '',
             state: this.$route.query.state as string || '',
