@@ -56,18 +56,20 @@ jobs:
       env:
         STAGING_PORT: ${{secrets.STAGING_PORT}}
         BROADCAST_NETWORK: ${{secrets.BROADCAST_NETWORK}}
+        BUGSNAG_API_KEY: ${{secrets.BUGSNAG_API_KEY}}
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT }}
-        envs: STAGING_PORT,BROADCAST_NETWORK
+        envs: STAGING_PORT,BROADCAST_NETWORK,BUGSNAG_API_KEY
         script: |
           cd ~/hivesigner-ui
           git pull origin development
           git checkout development
           export PORT=$STAGING_PORT
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
+          export BUGSNAG_API_KEY=$BUGSNAG_API_KEY
           docker pull ecency/hivesigner:development
           docker stack deploy -c docker-compose.yml hivesigner-staging
           
@@ -80,17 +82,19 @@ jobs:
       env:
         TESTNET_PORT: ${{secrets.TESTNET_PORT}}
         BROADCAST_NETWORK: ${{secrets.BROADCAST_TESTNET_NETWORK}}
+        BUGSNAG_API_KEY: ${{secrets.BUGSNAG_API_KEY}}
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT }}
-        envs: TESTNET_PORT,BROADCAST_NETWORK
+        envs: TESTNET_PORT,BROADCAST_NETWORK,BUGSNAG_API_KEY
         script: |
           cd ~/hivesigner-ui
           git pull origin development
           git checkout development
           export PORT=$TESTNET_PORT
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
+          export BUGSNAG_API_KEY=$BUGSNAG_API_KEY
           docker pull ecency/hivesigner:development
           docker stack deploy -c docker-compose.yml -c docker-compose.testnet.yml hivesigner-testnet

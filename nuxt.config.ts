@@ -35,6 +35,7 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
+    '~/plugins/bugsnag.ts',
     '~/plugins/transform-old-keychain.ts',
     '~/plugins/idle-detector.ts',
     '~/plugins/hivesigner.ts',

@@ -56,17 +56,19 @@ jobs:
       env:
         STAGING_PORT: ${{secrets.PRODUCTION_PORT}}
         BROADCAST_NETWORK: ${{secrets.BROADCAST_NETWORK}}
+        BUGSNAG_API_KEY: ${{secrets.BUGSNAG_API_KEY}}
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT }}
-        envs: STAGING_PORT,BROADCAST_NETWORK
+        envs: STAGING_PORT,BROADCAST_NETWORK,BUGSNAG_API_KEY
         script: |
           cd ~/hivesigner-ui
           git pull origin main
           git checkout main
           export PORT=$STAGING_PORT
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
+          export BUGSNAG_API_KEY=$BUGSNAG_API_KEY
           docker pull ecency/hivesigner:latest
           docker stack deploy -c docker-compose.yml -c docker-compose.production.yml hivesigner-production

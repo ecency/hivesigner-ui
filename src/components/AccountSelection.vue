@@ -47,6 +47,7 @@
 
 <script lang="ts">
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
+import Bugsnag from '@bugsnag/js'
 import Dropdown from './UI/Dropdown.vue'
 import Avatar from './Avatar.vue'
 import Icon from './UI/Icons/Icon.vue'
@@ -91,7 +92,8 @@ export default class AccountSelection extends Vue {
           keys: await AccountsModule.getEncryptedKeys({ username: account })
         })
         await AccountsModule.setSelectedAccount(account)
-      } catch (_) {
+      } catch (err) {
+        Bugsnag.notify(err)
       }
     } else {
       this.dropdown.hide()
