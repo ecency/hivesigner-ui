@@ -132,7 +132,7 @@ export default class Login extends Vue {
   }
 
   private get uri (): string {
-    return `hive://login-request/${this.$route.params.clientId}${buildSearchParams(this.$route)}`
+    return `hive://login-request/${this.clientId}${buildSearchParams(this.$route)}`
   }
 
   private get currentAccountUsername (): string {

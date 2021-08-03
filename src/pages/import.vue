@@ -90,12 +90,15 @@ export default class Import extends Vue {
   private requestId = this.$route.query.requestId as string
   private app = null
   private appProfile: Record<string, string> = {}
-  private uri = `hive://login-request/${this.$route.params.clientId}${buildSearchParams(this.$route)}`
   private extraErrors: Record<string, any> = {}
 
   private get clientId (): string {
     return this.$route.params.clientId || this.$route.query.clientId as string ||
       this.$route.query.client_id as string
+  }
+
+  private get uri (): string {
+    return `hive://login-request/${this.clientId}${buildSearchParams(this.$route)}`
   }
 
   private get callback (): string {
