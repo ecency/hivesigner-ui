@@ -63,7 +63,7 @@
 <script lang="ts">
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
-import Bugsnag from '@bugsnag/js'
+import Bugsnag from '../plugins/bugsnag'
 import Icon from '../components/UI/Icons/Icon.vue'
 import Loader from '../components/UI/Loader.vue'
 import BasePageLayout from '../components/Layouts/BasePageLayout.vue'

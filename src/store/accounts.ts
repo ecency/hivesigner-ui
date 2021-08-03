@@ -1,6 +1,6 @@
 import { Module, Vue, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
 import { PrivateKey } from '@hiveio/dhive'
-import Bugsnag from '@bugsnag/js'
+import Bugsnag from '../plugins/bugsnag'
 import { AuthModule } from './index'
 import { CLIENT_OPTIONS } from '~/consts'
 import { decrypt, getUserKeysMap, isKey, jsonParse, privateKeyFrom } from '~/utils'

@@ -56,7 +56,7 @@
 import PasswordValidator from 'password-validator'
 import { Component, Ref, Vue, Watch } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
-import Bugsnag from '@bugsnag/js'
+import Bugsnag from '../plugins/bugsnag'
 import BasePageLayout from '../components/Layouts/BasePageLayout.vue'
 import { buildSearchParams, client, encrypt, getAuthority, isValidUrl } from '~/utils'
 import { AccountsModule, AuthModule, PersistentFormsModule } from '~/store'

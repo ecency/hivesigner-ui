@@ -59,7 +59,7 @@
 import * as hiveuri from 'hive-uri'
 import { Component, Vue, Watch } from 'nuxt-property-decorator'
 import { DecodeResult } from 'hive-uri'
-import Bugsnag from '@bugsnag/js'
+import Bugsnag from '../../plugins/bugsnag'
 import TransactionStatus from '../../components/TransactionStatus.vue'
 import {
   buildSearchParams,

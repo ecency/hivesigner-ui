@@ -47,7 +47,7 @@
 
 <script lang="ts">
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
-import Bugsnag from '@bugsnag/js'
+import Bugsnag from './../plugins/bugsnag'
 import Dropdown from './UI/Dropdown.vue'
 import Avatar from './Avatar.vue'
 import Icon from './UI/Icons/Icon.vue'

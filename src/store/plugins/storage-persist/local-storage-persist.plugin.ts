@@ -1,5 +1,5 @@
 import { MutationPayload, Store } from 'vuex'
-import Bugsnag from '@bugsnag/js'
+import Bugsnag from '../../../plugins/bugsnag'
 import { StoragePersist } from './storage-persist'
 
 export class LocalStoragePersist<T extends Record<any, any>> extends StoragePersist<T> {

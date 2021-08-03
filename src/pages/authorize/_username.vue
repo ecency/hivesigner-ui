@@ -36,7 +36,7 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
 import { Account, TransactionConfirmation } from '@hiveio/dhive'
-import Bugsnag from '@bugsnag/js'
+import Bugsnag from '../../plugins/bugsnag'
 import SinglePageLayout from '../../components/Layouts/SinglePageLayout.vue'
 import TransactionStatus from '../../components/TransactionStatus.vue'
 import { getAuthority } from '~/utils'

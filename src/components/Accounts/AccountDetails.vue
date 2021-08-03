@@ -39,7 +39,7 @@
 
 <script lang="ts">
 import { Component, Emit, Prop, Vue, Ref } from 'nuxt-property-decorator'
-import Bugsnag from '@bugsnag/js'
+import Bugsnag from '../../plugins/bugsnag'
 import ConfirmModal from '../UI/ConfirmModal.vue'
 import Modal from '../UI/Modal.vue'
 import ConfirmEncryptionKey from '../Login/ConfirmEncryptionKey.vue'

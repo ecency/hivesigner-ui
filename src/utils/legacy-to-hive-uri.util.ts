@@ -2,7 +2,7 @@ import { decode, DecodeResult, encodeOps } from 'hive-uri'
 import qs from 'query-string'
 import urlParse from 'url-parse'
 import { snakeCase } from 'lodash'
-import Bugsnag from '@bugsnag/js'
+import Bugsnag from '../plugins/bugsnag'
 import { OPERATIONS } from '~/consts'
 
 export function legacyToHiveUri (uri: string): DecodeResult | null {

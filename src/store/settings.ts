@@ -1,5 +1,5 @@
 import { Module, VuexAction, VuexMutation } from 'nuxt-property-decorator'
-import Bugsnag from '@bugsnag/js'
+import Bugsnag from '../plugins/bugsnag'
 import { client } from '~/utils'
 import { SETTINGS_KEY } from '~/consts'
 import { AuthModule } from '~/store'

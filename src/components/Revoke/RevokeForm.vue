@@ -43,7 +43,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
-import Bugsnag from '@bugsnag/js'
+import Bugsnag from '../../plugins/bugsnag'
 import { Authority } from '../../enums'
 import { AccountsModule, AuthModule } from '~/store'
 

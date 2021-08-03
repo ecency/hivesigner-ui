@@ -11,6 +11,7 @@ import {
 import { AccountsModule } from './index'
 import { b64uEnc, client, privateKeyFrom } from '~/utils'
 import { VuexModule } from '~/models'
+import bugsnag from './../plugins/bugsnag'
 
 @Module({
   stateFactory: true,
