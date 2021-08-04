@@ -2,7 +2,6 @@ import { Module, VuexAction, VuexMutation } from 'nuxt-property-decorator'
 import Bugsnag from '../plugins/bugsnag'
 import { client } from '~/utils'
 import { SETTINGS_KEY } from '~/consts'
-import { AuthModule } from '~/store'
 import { VuexModule } from '~/models'
 
 @Module({
@@ -69,11 +68,6 @@ export default class Settings extends VuexModule {
       const settings = JSON.parse(settingsContent);
       (client as any).updateClient(settings.address)
       await this.getConfig()
-
-      this.store.app.$idleDetector.start(settings.timeout * 60 * 1000, () => {
-        this.store.app.$idleDetector.stop()
-        AuthModule.logout()
-      })
 
       this.setSettings(settings)
     } catch (err) {
