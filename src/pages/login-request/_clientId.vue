@@ -12,7 +12,8 @@ export default class LoginRequestByClientID extends Vue {
       path: '/login',
       query: {
         ...this.$route.query,
-        clientId: this.$route.params.clientId
+        clientId: this.$route.params.clientId || this.$route.query.clientId as string ||
+      this.$route.query.client_id as string
       }
     })
   }
