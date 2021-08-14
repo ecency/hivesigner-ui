@@ -22,7 +22,7 @@
         v-if="!accountName || !hasRequiredKey"
         :to="{
           name: 'login',
-          query: { redirect: $route.fullPath, authority: 'active', import_higher_key: 'true' },
+          query: { redirect: $route.fullPath, authority: 'active', import_higher_key: 'true', client_id: username },
         }"
         class="button button-primary inline-block mr-2"
       >
