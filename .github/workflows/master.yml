@@ -67,6 +67,7 @@ jobs:
           cd ~/hivesigner-ui
           git pull origin main
           git checkout main
+          docker system prune -a -f
           export PORT=$STAGING_PORT
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
           export BUGSNAG_API_KEY=$BUGSNAG_API_KEY

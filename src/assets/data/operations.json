@@ -501,6 +501,15 @@
         "type": "account",
         "defaultValue": "__signer"
       },
+      "owner": {
+        "type": "object"
+      },
+      "active": {
+        "type": "object"
+      },
+      "posting": {
+        "type": "object"
+      },
       "memo_key": {
         "type": "string"
       },
