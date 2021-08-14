@@ -93,7 +93,7 @@ import Modal from '../components/UI/Modal.vue'
 import ImportAuthKey from '../components/Import/ImportAuthKey.vue'
 import { ERROR_INVALID_CREDENTIALS, ERROR_INVALID_ENCRYPTION_KEY } from '~/consts'
 import { buildSearchParams, client, getAuthority, isValidUrl } from '~/utils'
-import { AccountsModule, AuthModule, PersistentFormsModule } from '~/store'
+import { AccountsModule, AuthModule } from '~/store'
 import { Authority } from '~/enums'
 import LoginForm from '~/components/Login/LoginForm.vue'
 
@@ -288,36 +288,28 @@ export default class Login extends Vue {
 
   private async onLoggedIn (): Promise<void> {
     this.importModalRef.hide()
-    await this.loginMe(await AccountsModule.getEncryptedKeys({
-      username: AccountsModule.selectedAccount,
-      encryptionKey: PersistentFormsModule.login.key
-    }))
+    await this.loginFormRef.submitForm()
   }
 
   private async showImportModal (): Promise<void> {
-    const { authority } = this
     const keys = await this.loginFormRef.submitForm(true)
 
     if (!keys) {
       this.error = this.$t(ERROR_INVALID_ENCRYPTION_KEY) as string
       return
     }
-
-    if (!AccountsModule.isValidKeysForAuthority(authority, keys)) {
-      this.isLoading = false
-      this.error = this.$t('login.need_import', { authority }) as string
-      return
-    }
     this.isLoading = true
     this.showLoading = true
+
     try {
       await AuthModule.login({ username: AccountsModule.selectedAccount, keys })
       this.importModalRef.show()
-      this.isLoading = false
     } catch (e) {
-      this.isLoading = false
       Bugsnag.notify(e)
     }
+
+    this.isLoading = false
+    this.showLoading = false
   }
 }
 </script>
