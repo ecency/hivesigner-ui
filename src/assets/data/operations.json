@@ -494,7 +494,7 @@
     }
   },
   "account_update": {
-    "name": "Update account",
+    "name": "Update account (active)",
     "authority": "active",
     "schema": {
       "account": {
@@ -519,7 +519,7 @@
     }
   },
   "account_update2": {
-    "name": "Update account",
+    "name": "Update account (posting)",
     "authority": "posting",
     "schema": {
       "account": {
