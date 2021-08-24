@@ -77,7 +77,7 @@ export default class Modal extends Vue {
 
   private get baseClassList (): string[] {
     return [
-      'modal flex items-center justify-center top-0 left-0 bottom-0 right-0 fixed',
+      'modal flex items-center justify-center top-0 left-0 bottom-0 right-0 fixed z-20',
       this.mobileFull ? 'mobile-full' : ''
     ]
   }

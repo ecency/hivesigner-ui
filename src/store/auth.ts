@@ -32,6 +32,11 @@ export default class Auth extends VuexModule {
   }
 
   @VuexMutation
+  public setKeys (keys: Record<string, string>): void {
+    this.keys = keys
+  }
+
+  @VuexMutation
   public setUser ({ result, keys }: { result: Account, keys: Record<string, string> }): void {
     this.keys = keys
     this.account = result

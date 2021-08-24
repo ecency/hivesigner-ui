@@ -137,13 +137,16 @@ export default class LoginForm extends Vue {
     this.loginKey = ''
   }
 
-  private async submitForm (): Promise<void> {
+  public async submitForm (ignoreEvents?: boolean): Promise<Record<string, string>> {
     try {
       const keys = await AccountsModule.getEncryptedKeys({
         username: this.username,
         encryptionKey: this.loginKey
       })
-      this.$emit('submit', keys)
+      if (!ignoreEvents) {
+        this.$emit('submit', keys)
+      }
+      return keys
     } catch (e) {
       switch (e) {
         case DecryptionExceptions.TriplesecError:

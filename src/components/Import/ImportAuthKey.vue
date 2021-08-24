@@ -63,12 +63,19 @@ export default class ImportAuthKey extends Vue {
       password: this.importKey
     })
 
-    AccountsModule.saveAccountKeys({
+    const k = Buffer.from(JSON.stringify(keys))
+    AccountsModule.saveAccount({
       username: this.username,
       keys: {
+        password: `${k.toString('hex')}decrypted`,
         ...this.keys,
         ...keys
       }
+    })
+
+    AuthModule.setKeys({
+      ...this.keys,
+      ...keys
     })
 
     this.$popupMessages.show('auths.successfully_imported', 5000)
