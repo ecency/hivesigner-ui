@@ -108,8 +108,6 @@ export default {
     hs_placeholder: 'Your Hivesigner password'
   },
   login: {
-    authorization: 'Authorization',
-    import_key_description: 'You have to import the active or the owner key for continue authorization to the {app} or try to change account and authorize.',
     switch_an_account: 'Switch an account',
     username_required: 'Hive username is required',
     password_required: 'Hive private key is required',

@@ -4,18 +4,8 @@
       <img class="block mx-auto image" :src="require('../assets/img/auth.svg')" alt="">
     </template>
     <template slot="right">
-      <div v-if="isImportKeyFlow" class="py-6">
-        <div>
-          <h1 class="text-3xl mb-3">
-            {{ $t('login.authorization') }}
-          </h1>
-          <div class="text-gray text-lg">
-            {{ $t('login.import_key_description', { app: clientId }) }}
-          </div>
-        </div>
-      </div>
       <div
-        v-else-if="!failed && !isRedirected"
+        v-if="!failed && !isRedirected"
         class="p-6"
       >
         <div class="container-sm mx-auto">
@@ -50,20 +40,12 @@
           @submit="loginMe"
         />
         <router-link
-          v-if="!isImportKeyFlow"
           :to="{ name: 'import', query: $route.query }"
           class="button block text-center mb-2"
         >
           {{ $t('import.add_another_account') }}
         </router-link>
-        <button
-          v-if="isImportKeyFlow"
-          class="button block text-center mb-2 w-full"
-          @click="showImportModal"
-        >
-          {{ $t('import.import_private_key') }}
-        </button>
-        <div v-if="!isImportKeyFlow" class="text-gray text-lg pt-4">
+        <div class="text-gray text-lg pt-4">
           {{ $t('import.dont_have_an_account') }}
           <a
             href="https://signup.hive.io"
@@ -74,10 +56,6 @@
         </div>
       </div>
       <Loader v-if="isLoading" class="overlay fixed z-40" />
-
-      <modal ref="import-modal" mobile-full animation="slide-right">
-        <import-auth-key @import:success="onLoggedIn" />
-      </modal>
     </template>
   </base-page-layout>
 </template>
@@ -89,24 +67,19 @@ import Bugsnag from '../plugins/bugsnag'
 import Icon from '../components/UI/Icons/Icon.vue'
 import Loader from '../components/UI/Loader.vue'
 import BasePageLayout from '../components/Layouts/BasePageLayout.vue'
-import Modal from '../components/UI/Modal.vue'
-import ImportAuthKey from '../components/Import/ImportAuthKey.vue'
-import { ERROR_INVALID_CREDENTIALS, ERROR_INVALID_ENCRYPTION_KEY } from '~/consts'
+import { ERROR_INVALID_CREDENTIALS } from '~/consts'
 import { buildSearchParams, client, getAuthority, isValidUrl } from '~/utils'
 import { AccountsModule, AuthModule } from '~/store'
 import { Authority } from '~/enums'
 import LoginForm from '~/components/Login/LoginForm.vue'
 
 @Component({
-  components: { ImportAuthKey, Modal, BasePageLayout, Loader, Icon },
+  components: { BasePageLayout, Loader, Icon },
   middleware: ['before-login']
 })
 export default class Login extends Vue {
   @Ref('login-form')
   private loginFormRef!: LoginForm
-
-  @Ref('import-modal')
-  private importModalRef!: Modal
 
   private error = ''
   private isLoading = false
@@ -116,10 +89,6 @@ export default class Login extends Vue {
   private signature = null
   private app = null
   private appProfile: Record<string, string> = {}
-
-  private get isImportKeyFlow (): boolean {
-    return !!this.$route.query.import_higher_key
-  }
 
   private get isRedirected (): boolean {
     return this.redirected === '/auths' ||
@@ -283,32 +252,6 @@ export default class Login extends Vue {
     } else {
       this.failed = true
     }
-    this.showLoading = false
-  }
-
-  private async onLoggedIn (): Promise<void> {
-    this.importModalRef.hide()
-    await this.loginFormRef.submitForm()
-  }
-
-  private async showImportModal (): Promise<void> {
-    const keys = await this.loginFormRef.submitForm(true)
-
-    if (!keys) {
-      this.error = this.$t(ERROR_INVALID_ENCRYPTION_KEY) as string
-      return
-    }
-    this.isLoading = true
-    this.showLoading = true
-
-    try {
-      await AuthModule.login({ username: AccountsModule.selectedAccount, keys })
-      this.importModalRef.show()
-    } catch (e) {
-      Bugsnag.notify(e)
-    }
-
-    this.isLoading = false
     this.showLoading = false
   }
 }
