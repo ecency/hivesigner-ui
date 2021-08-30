@@ -8,14 +8,15 @@
       v-model="importKey"
       class="mb-6"
       name="importKey"
+      data-e2e="import-auth-key-password"
       :label="$t('import.private_key')"
     />
 
-    <div v-for="error of errors" :key="error" class="errors text-primary pb-5">
+    <div v-for="error of errors" :key="error" class="errors text-primary pb-5" data-e2e="import-auth-key-error">
       <div>*{{ error }}</div>
     </div>
 
-    <button :disabled="disabled" class="button button-primary w-full block">
+    <button :disabled="disabled" class="button button-primary w-full block" data-e2e="import-auth-key-import-button">
       {{ $t('import.import_private_key') }}
     </button>
   </form>

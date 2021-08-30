@@ -8,6 +8,7 @@
       autocomplete="current-password"
       name="storeAccount"
       type="checkbox"
+      data-e2e="import-set-password-account"
     >
       <template slot="label-suffix">
         <dropdown
@@ -41,6 +42,7 @@
       :tooltip="tooltipText"
       type="password"
       autocomplete="new-password"
+      data-e2e="import-set-password-field"
       @blur="handleBlur('key')"
     />
 
@@ -51,12 +53,14 @@
       :error="dirty.keyConfirmation && errors.keyConfirmation"
       type="password"
       autocomplete="new-password"
+      data-e2e="import-set-password-new-field"
       @blur="handleBlur('keyConfirmation')"
     />
     <button
       :disabled="submitDisabled || loading"
       type="submit"
       class="button-primary w-full mb-2 mt-5"
+      data-e2e="import-set-password-continue"
     >
       {{ $t('common.continue') }}
     </button>

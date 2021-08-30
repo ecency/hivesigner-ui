@@ -8,6 +8,7 @@
       :error="dirty.username && errors.username"
       :options="accountsList"
       type="select"
+      data-e2e="login-switch-account"
       @blur="handleBlur('username')"
     >
       <div class="flex items-center justify-start">
@@ -30,18 +31,20 @@
       :placeholder="$t('import.hs_placeholder')"
       :error="dirty.key && errors.key"
       :tooltip="tooltipLoginEncryptionKey"
+      data-e2e="login-password"
       autocomplete="password"
       type="password"
       @blur="handleBlur('key')"
     />
 
-    <div v-if="!!error" class="text-primary mb-6">
+    <div v-if="!!error" class="text-primary mb-6" data-e2e="login-error">
       {{ error }}
     </div>
     <button
       :disabled="submitDisabled || loading"
       type="submit"
       class="button-primary w-full block mb-2"
+      data-e2e="login-continue"
     >
       {{ $t('common.continue') }}
     </button>
