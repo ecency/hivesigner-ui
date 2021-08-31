@@ -42,6 +42,7 @@
         <router-link
           :to="{ name: 'import', query: $route.query }"
           class="button block text-center mb-2"
+          data-e2e="add-another-account"
         >
           {{ $t('import.add_another_account') }}
         </router-link>
@@ -52,6 +53,7 @@
             target="_blank"
             rel="noopener"
             class="text-black-500 hover:underline"
+            data-e2e="sign-up-here"
           >{{ $t('import.sign_up_here') }}</a>
         </div>
       </div>

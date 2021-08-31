@@ -10,13 +10,14 @@
       name="importKey"
       :label="$t('import.hs_password')"
       type="password"
+      data-e2e="confirm-encryption-key-password"
     />
 
-    <div v-for="error of errors" :key="error" class="errors text-primary pb-5">
+    <div v-for="error of errors" :key="error" class="errors text-primary pb-5" data-e2e="confirm-encryption-key-error">
       <div>*{{ error }}</div>
     </div>
 
-    <button :disabled="disabled" class="button button-primary w-full block">
+    <button :disabled="disabled" class="button button-primary w-full block" data-e2e="confirm-encryption-key-login">
       {{ $t('import.login') }}
     </button>
   </form>

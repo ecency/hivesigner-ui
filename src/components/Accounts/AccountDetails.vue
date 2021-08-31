@@ -2,16 +2,27 @@
   <div class="account-details h-full flex flex-col justify-center">
     <account-item :user="account" />
     <div class="accounts-details-menu flex flex-col text-center text-black-400 mt-12">
-      <router-link v-if="isLoggedIn" to="/auths" class="p-4 hover:bg-gray-100">
+      <router-link
+        v-if="isLoggedIn"
+        to="/auths"
+        class="p-4 hover:bg-gray-100"
+        data-e2e="account-details-auths"
+      >
         {{ $t('accounts.auths') }}
       </router-link>
-      <router-link v-if="isLoggedIn" to="/signs" class="p-4 hover:bg-gray-100">
+      <router-link
+        v-if="isLoggedIn"
+        to="/signs"
+        class="p-4 hover:bg-gray-100"
+        data-e2e="account-details-sign-transactions"
+      >
         {{ $t('accounts.sign_transactions') }}
       </router-link>
       <a
         v-if="!isLoggedIn"
         role="button"
         class="p-4 hover:bg-gray-100"
+        data-e2e="account-details-login"
         @click="showLoginModal"
       >
         {{ $t('import.login') }}
@@ -19,6 +30,7 @@
       <a
         role="button"
         class="p-4 hover:bg-gray-100"
+        data-e2e="account-details-delete"
         @click="showConfirmModal"
       >
         {{ $t('accounts.delete') }}

@@ -6,6 +6,7 @@
       :placeholder="$t('import.username_placeholder')"
       :label="$t('import.username')"
       name="username"
+      data-e2e="import-user-form-username"
       @blur="handleBlur('username')"
     >
       <span slot="input-prefix-icon" class="text-xl text-gray mb-0.5">@</span>
@@ -19,6 +20,7 @@
       autocomplete="current-password"
       name="password"
       type="password"
+      data-e2e="import-user-form-password"
       @blur="handleBlur('password')"
     />
 
@@ -29,14 +31,16 @@
       autocomplete="current-password"
       name="storeAccount"
       type="checkbox"
+      data-e2e="import-user-form-encrypted"
     />
 
-    <div v-if="!!error" class="text-primary text-lg mb-6">
+    <div v-if="!!error" class="text-primary text-lg mb-6" data-e2e="import-user-form-error">
       {{ error }}
     </div>
     <button
       :disabled="nextDisabled || loading"
       class="button-primary w-full block mb-2"
+      data-e2e="import-user-form-submit-next"
       @click.prevent="submitNext"
     >
       {{ nextText }}
@@ -48,6 +52,7 @@
         target="_blank"
         rel="noopener"
         class="text-black-500 hover:underline sign-up"
+        data-e2e="import-user-form-signup-here"
       >{{ $t('import.sign_up_here') }}</a>
     </div>
   </div>

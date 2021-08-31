@@ -25,6 +25,7 @@
           query: { redirect: $route.fullPath, authority: 'active' },
         }"
         class="button button-primary inline-block mr-2"
+        data-e2e="authorize-continue"
       >
         {{ $t('common.continue') }}
       </router-link>
@@ -33,10 +34,11 @@
         type="submit"
         class="button-success mr-2"
         :disabled="loading"
+        data-e2e="authorize-submit"
       >
         {{ $t('authorize.authorize') }}
       </button>
-      <button class="mb-2" @click.prevent="handleReject">
+      <button class="mb-2" data-e2e="authorize-cancel" @click.prevent="handleReject">
         {{ $t('common.cancel') }}
       </button>
     </div>

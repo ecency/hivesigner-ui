@@ -31,7 +31,11 @@
           <div :key="index" class="auths-cell auths-cell-type flex items-center text-gray">
             {{ value.Type }}
           </div>
-          <div :key="index" class="auths-cell auths-cell-key flex items-center">
+          <div
+            :key="index"
+            class="auths-cell auths-cell-key flex items-center"
+            :data-e2e="value.Type + '-key'"
+          >
             <operation-value-account
               v-if="value.Key.type === 'account'"
               :value="value.Key.public"
@@ -68,7 +72,10 @@
               />
             </Dropdown>
           </div>
-          <div :key="index" class="auths-cell auths-cell-weight hidden xl:block">
+          <div
+            :key="index"
+            class="auths-cell auths-cell-weight hidden xl:block"
+          >
             {{ value.Weight }}
           </div>
         </template>
