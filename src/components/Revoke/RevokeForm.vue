@@ -97,8 +97,12 @@ export default class RevokeForm extends Vue {
       json_metadata: account.json_metadata
     }
     data[Authority.Posting] = JSON.parse(JSON.stringify(account[Authority.Posting]))
+    data[Authority.Active] = JSON.parse(JSON.stringify(account[Authority.Active]))
     data[Authority.Posting].account_auths.forEach((accountAuth, i) => {
       if (accountAuth[0] === username) { data[Authority.Posting].account_auths.splice(i, 1) }
+    })
+    data[Authority.Active].account_auths.forEach((accountAuth, i) => {
+      if (accountAuth[0] === username) { data[Authority.Active].account_auths.splice(i, 1) }
     })
     try {
       const confirmation = await AuthModule.updateAccount(data)
