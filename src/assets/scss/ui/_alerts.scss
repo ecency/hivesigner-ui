@@ -1,0 +1,17 @@
+.alert {
+  border-color: rgba(27,31,35,.15);
+
+  @apply p-4 border rounded;
+
+  &.alert-success {
+    @apply bg-success-200 text-success-500;
+  }
+
+  &.alert-error {
+    @apply bg-error-200 text-error-500;
+  }
+
+  &.alert-warning {
+    @apply bg-warning-200 text-warning-500;
+  }
+}

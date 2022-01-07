@@ -1,0 +1,164 @@
+.ShapeContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  position: relative;
+}
+.ShapeHeader {
+  background-image: url("../../assets/img/shapes.svg");
+  background-position: auto auto;
+  background-repeat: no-repeat;
+  background-attachment: local;
+  height: 40vh;
+  background-color: red;
+  width: 100vw;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  @media screen and (max-width: 630px) {
+    position: relative;
+  }
+}
+.StoreTitle {
+  font-size: 3rem;
+  font-weight: 600;
+  color: #fff;
+}
+.SearchContent {
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid grey;
+  height: 50px;
+  padding: 5px 0;
+  width: 100%;
+
+  .icon {
+    margin-top: 14px;
+    margin-right: -25px;
+    z-index: 999;
+  }
+  input {
+    height: 40px;
+    border: 1px solid black;
+    border-radius: 15px;
+    border-style: solid !important;
+    max-width: 400px;
+    padding: 0 25px;
+  }
+}
+.ResultContent {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.ResultText {
+  font-size: 1.25rem;
+  color: black;
+}
+.ProductContainer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  grid-gap: 50px;
+  max-width: 600px;
+  margin-top: 50px;
+  justify-content: center;
+  align-items: center;
+}
+.ProductItem {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 5px;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.AppMenubar {
+  font-size: 2rem;
+  color: black;
+  position: absolute;
+  right: 30px;
+  top: 50px;
+  display: block;
+  @media screen and (min-width: 630px) {
+    display: none;
+  }
+}
+.slider {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  width: 30vw;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 50px;
+  transition: all 0.75s ease-in;
+  border-left: 2px solid #fff;
+  animation-duration: 2.5s;
+  animation-name: anim;
+  @keyframes anim {
+    from {
+      right: -30vw;
+    }
+    to {
+      right: 0;
+    }
+  }
+  .slider_header {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    color: #fff;
+    font-size: 20px;
+    align-items: center;
+  }
+  img {
+    border-radius: 50%;
+  }
+  .slider_Logo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    margin-top: 10px;
+    * {
+      margin-top: 5px;
+    }
+    a {
+      max-width: 100px;
+      padding: 5px 20px;
+      border: 1px solid #fff;
+      border-radius: 3px;
+    }
+  }
+  .slider_container {
+    display: flex;
+    flex-direction: column;
+    color: #fff;
+    margin-top: 50px;
+  }
+  .close {
+    cursor: pointer;
+  }
+  .person {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    * {
+      margin-right: 10px;
+      color: #fff;
+    }
+  }
+}
+.fix {
+  * {
+    top: 30px !important;
+  }
+}

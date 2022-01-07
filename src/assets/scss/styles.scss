@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
+
+@import 'vars';
+@import "animations";
+@import "fonts";
+@import 'mixins';
+@import 'ui/forms';
+@import "ui/alerts";
+
+* {
+  -webkit-backface-visibility: hidden;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  height: 100%;
+}
+
+body {
+  font-family: Lato, Helvetica, Arial, sans-serif;
+  height: 100%;
+}
+
+#__nuxt, #__layout {
+  @apply w-full h-full;
+}
+
+.container-xs {
+  max-width: 380px;
+}
+
+.container-sm {
+  max-width: 544px;
+}
+
+.container-md {
+  max-width: 689px;
+}
+
+
+b {
+  @apply font-bold;
+}
