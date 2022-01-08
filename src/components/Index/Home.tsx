@@ -52,7 +52,7 @@ const Home = () => {
             width="500px"
             height="auto"
           />
-          <div className="HomeTitle">{t("Secure way to sign")}</div>
+          <div className="HomeTitle">{t("index.secure_way_sign_in")}</div>
         </div>
         <div className="HomeDetail">
           <div className="Header">
@@ -66,18 +66,18 @@ const Home = () => {
             Hivesigner
           </div>
 
-          <div className="DetailContent">
-            Secure way to sign with Hivesigner. Best security for users and
-            developers to integrate industry standard OAuth2 for their
-            Blockchain applications. Transform web 2.0 apps into web 3.0
-            decentralized apps.
-          </div>
+          <div className="DetailContent">{t("index.description")}</div>
           <Link to="/import">
             <div className="Button">
-              <img src={Lock} alt="get button"></img>Get started
+              <img src={Lock} alt="get button"></img>
+              {t("index.get_started")}
             </div>
           </Link>
-          {showNavbar && <Navbar />}
+          {showNavbar && (
+            <div className="fix">
+              <Navbar />
+            </div>
+          )}
         </div>
       </div>
     </Content>

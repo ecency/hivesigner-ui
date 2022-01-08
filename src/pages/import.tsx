@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { ImMenu } from "react-icons/im";
 import { BsFillEyeSlashFill } from "react-icons/bs";
@@ -12,9 +13,9 @@ import Navbar from "../components/Index/Navbar";
 import "./import.scss";
 import AuthSvg from "../assets/img/auth.svg";
 import HomeLogo from "../assets/img/logo.svg";
-import Lock from "../assets/img/lock.svg";
 
 const Import = () => {
+  const { t, i18n } = useTranslation();
   const [showNavbar, setshowNavbar] = useState(true);
   const [flag, setFlag] = useState(true);
   const [init_username, setinit_username] = useState("");
@@ -70,7 +71,7 @@ const Import = () => {
         </div>
         <img src={AuthSvg} alt="import_logo" />
         <div className="HomeDetail">
-          <div className="Header">
+          <div className="ImportHeader">
             <img
               src={HomeLogo}
               draggable="false"
@@ -78,7 +79,7 @@ const Import = () => {
               height="auto"
               alt="LOGO"
             />
-            Hivesigner
+            <p>Hivesigner</p>
           </div>
 
           <div className="DetailContent">
@@ -139,7 +140,7 @@ const Import = () => {
               className="Button"
               // state={init_password == "" || init_username == "" ? 0.75 : 1}
             >
-              {flag ? "Continue" : "Login"}
+              {flag ? t("common.continue") : "Login"}
             </div>
             <div className="Signuplink">
               Don`t have an account? <Link to="/signup">Signup here</Link>
