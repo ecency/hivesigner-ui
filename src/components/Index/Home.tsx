@@ -26,7 +26,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    let window_width = window.matchMedia("(min-width:630px)");
+    let window_width = window.matchMedia("(min-width:631px)");
     window_width.addListener(handleScreenChange);
     handleScreenChange(window_width);
     return () => {
@@ -74,7 +74,7 @@ const Home = () => {
             </div>
           </Link>
           {showNavbar && (
-            <div className="fix">
+            <div className="homefix">
               <Navbar />
             </div>
           )}

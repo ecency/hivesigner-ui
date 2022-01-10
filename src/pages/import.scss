@@ -8,10 +8,19 @@
   align-items: center;
   position: relative;
   margin-top: 10vh;
-  @media screen and (max-width: 1000px) {
+  @media screen and (max-width: 1122px) {
+    grid-gap: 5rem;
+  }
+  @media screen and (max-width: 1040px) {
     flex-direction: column;
     margin-top: 10vh;
     grid-gap: 5rem !important;
+  }
+}
+.auth_Image {
+  @media sreen and (max-width: 420px) {
+    width: 100%;
+    margin: 0 10px;
   }
 }
 .ImportMenubar {
@@ -104,6 +113,10 @@
     @media screen and (max-width: 600px) {
       font-size: 1rem;
     }
+    @media screen and (max-width: 455px) {
+      align-items: flex-start !important;
+      justify-content: flex-start;
+    }
   }
   input {
     cursor: pointer;
@@ -189,6 +202,7 @@
 }
 .importfix {
   * {
+    margin-top: 10px !important;
     right: 35px !important;
   }
 }

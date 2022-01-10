@@ -48,9 +48,11 @@
   }
   .HomeTitle {
     font-size: 3rem;
+    font-weight: 300;
     color: rgb(189, 189, 189);
     @media screen and (max-width: 1280px) {
       text-align: center;
+      margin-bottom: 25px;
     }
     @media screen and (max-width: 630px) {
       display: none;
@@ -136,7 +138,7 @@
     margin: auto;
   }
 }
-.fix {
+.homefix {
   margin-top: 1rem;
   @media screen and (max-width: 1280px) {
     margin-top: 0;

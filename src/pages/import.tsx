@@ -69,7 +69,7 @@ const Import = () => {
         <div className="ImportMenubar" onClick={() => handleChange()}>
           {showNavbar ? <AiOutlineClose /> : <ImMenu />}
         </div>
-        <img src={AuthSvg} alt="import_logo" />
+        <img src={AuthSvg} alt="import_logo" className="auth_Image" />
         <div className="HomeDetail">
           <div className="ImportHeader">
             <img
@@ -131,7 +131,6 @@ const Import = () => {
 
             <div className="CheckDiv">
               <input type="checkbox" onChange={() => handleCheck()} />
-              <b></b>
               <span>
                 Save and encrypt your login information with a password
               </span>
