@@ -1,10 +1,11 @@
 import React from "react";
-import renderer from "react-test-renderer";
-import { Login } from "../../pages/import";
-describe("Login Test", () => {
-  test("snapshot renders", () => {
-    const components = renderer.create(<Login />);
-    let tree = components.toJSON();
-    expect(tree).toMatchSnapshot();
+import { shallow } from "enzyme";
+import Login from "../../components/Sign";
+describe("Home component Test", () => {
+  test("UI Test", () => {
+    const home = shallow(<Login />);
+    expect(home.find("DetailContent").text()).toBe(
+      "Secure way to sign with Hivesigner. Best security for users and developers to integrate industry standard OAuth2 for their Blockchain applications. Transform web 2.0 apps into web 3.0 decentralized apps."
+    );
   });
 });
