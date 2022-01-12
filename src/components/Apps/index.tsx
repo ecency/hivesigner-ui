@@ -63,6 +63,7 @@ const Index = () => {
                 width="50px"
                 height="auto"
                 alt="logo"
+                draggable="false"
               />
               <h3>Ecency</h3>
               <h4>ecency.com</h4>
@@ -76,6 +77,7 @@ const Index = () => {
                   width="50px"
                   height="auto"
                   alt="logo"
+                  draggable="false"
                 />
                 <h4>good-karma</h4>
                 <AiOutlineSelect />
