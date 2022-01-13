@@ -32,18 +32,21 @@
     max-width: 500px;
     margin: 0 auto;
     padding-left: 20px;
-    img {
-      max-width: 492px;
-    }
+    // img {
+    //   max-width: 492px;
+    // }
     @media screen and (max-width: 1280px) {
       margin-top: 50px;
       padding-left: 0px !important;
     }
     @media screen and (max-width: 630px) {
       padding: 0 10px;
-      img {
-        max-width: 242px;
+      * {
+        width: 100%;
       }
+      // img {
+      //   max-width: 242px;
+      // }
     }
   }
   .HomeTitle {

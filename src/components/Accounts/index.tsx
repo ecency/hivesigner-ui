@@ -5,7 +5,7 @@ import { AiOutlineClose } from "react-icons/ai";
 import "./index.scss";
 import Content from "../../layouts/content";
 import Navbar from "../Index/Navbar";
-import HomeLogo from "../../assets/img/logo.svg";
+import HomeLogo from "../../assets/img/logo";
 
 const Index = () => {
   const [showNavbar, setshowNavbar] = useState(true);
@@ -35,7 +35,10 @@ const Index = () => {
           {showNavbar ? <AiOutlineClose /> : <ImMenu />}
         </div>
         <div className="Header">
-          <img width="70px" src={HomeLogo} alt="logo" />
+          {/* <img width="70px" src={HomeLogo} alt="logo" /> */}
+          <div className="account_logo">
+            <HomeLogo />
+          </div>
           <span>Accounts</span>
         </div>
         <div className="AddButton">

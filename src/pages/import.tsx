@@ -11,10 +11,11 @@ import Content from "../layouts/content";
 import Navbar from "../components/Index/Navbar";
 
 import "./import.scss";
-import AuthSvg from "../assets/img/auth.svg";
-import HomeLogo from "../assets/img/logo.svg";
+import Auth from "../assets/img/auth";
+import Logo from "../assets/img/logo";
 
 const Import = () => {
+  // const { t } = jest ? { t: (s: any) => s } : useTranslation();
   const { t, i18n } = useTranslation();
   const [showNavbar, setshowNavbar] = useState(true);
   const [flag, setFlag] = useState(true);
@@ -69,16 +70,22 @@ const Import = () => {
         <div className="ImportMenubar" onClick={() => handleChange()}>
           {showNavbar ? <AiOutlineClose /> : <ImMenu />}
         </div>
-        <img src={AuthSvg} alt="import_logo" className="auth_Image" />
+        <div className="auth_Image">
+          <Auth />
+        </div>
+        {/* <img src={AuthSvg} alt="import_logo" className="auth_Image" /> */}
         <div className="HomeDetail">
           <div className="ImportHeader">
-            <img
+            {/* <img
               src={HomeLogo}
               draggable="false"
               width="auto"
               height="auto"
               alt="LOGO"
-            />
+            /> */}
+            <div className="logo_image">
+              <Logo />
+            </div>
             <p>Hivesigner</p>
           </div>
 

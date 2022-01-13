@@ -6,7 +6,7 @@ import Data from "./data.json";
 import Navbar from "../Index/Navbar";
 import Content from "../../layouts/content";
 import "./index.scss";
-import HomeLogo from "../../assets/img/logo-white.svg";
+import HomeLogo from "../../assets/img/logo-white";
 import { AiOutlineSelect } from "react-icons/ai";
 const Index = () => {
   const [init_value, setInit_value] = useState("");
@@ -87,7 +87,10 @@ const Index = () => {
         )}
 
         <div className="ShapeHeader">
-          <img src={HomeLogo} width="70px" height="auto" alt="logo" />
+          {/* <img src={HomeLogo} width="70px" height="auto" alt="logo" /> */}
+          <div className="logo_image">
+            <HomeLogo />
+          </div>
           <div className="StoreTitle">App store</div>
           <div className="AppMenubar" onClick={() => handleChange()}>
             {showNavbar ? <AiOutlineClose /> : <ImMenu />}

@@ -8,7 +8,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-
+  .about_logo {
+    width: 70px;
+  }
   span {
     color: red;
     font-size: 2.8rem;

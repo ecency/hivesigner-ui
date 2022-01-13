@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { AiOutlineSelect, AiFillGithub } from "react-icons/ai";
 import Content from "../../layouts/content";
 import "./index.scss";
-import HomeLogo from "../../assets/img/logo.svg";
+import HomeLogo from "../../assets/img/logo";
 import { ImMenu } from "react-icons/im";
 import { AiOutlineClose } from "react-icons/ai";
 import Navbar from "../Index/Navbar";
@@ -34,13 +34,16 @@ const Index = () => {
           {showNavbar ? <AiOutlineClose /> : <ImMenu />}
         </div>
         <div className="Logo">
-          <img
+          {/* <img
             draggable="false"
             width="70px"
             height="auto"
             src={HomeLogo}
             alt="logo"
-          />
+          /> */}
+          <div className="about_logo">
+            <HomeLogo />
+          </div>
           <span>About</span>
         </div>
         <div className="AboutContent">

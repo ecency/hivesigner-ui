@@ -18,9 +18,9 @@
   }
 }
 .auth_Image {
-  @media sreen and (max-width: 420px) {
-    width: 100%;
-    margin: 0 10px;
+  @media screen and (max-width: 430px) {
+    max-width: 420px;
+    padding: auto;
   }
 }
 .ImportMenubar {

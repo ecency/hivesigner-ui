@@ -5,7 +5,7 @@ import { BiSearch } from "react-icons/bi";
 import Content from "../../layouts/content";
 import Navbar from "../Index/Navbar";
 import "./index.scss";
-import HomeLogo from "../../assets/img/logo.svg";
+import HomeLogo from "../../assets/img/logo";
 import { Link } from "react-router-dom";
 import Transfer from "./items/transfer";
 import Recurring from "./items/recurring";
@@ -65,7 +65,10 @@ const Index = () => {
     <Content>
       <div className="SignContainer">
         <div className="SignHeader">
-          <img src={HomeLogo} width="auto" height="auto" alt="logo" />
+          {/* <img src={HomeLogo} width="auto" height="auto" alt="logo" /> */}
+          <div className="homelogo">
+            <HomeLogo />
+          </div>
           <div className="Title">
             <Link to="/">Sign transaction</Link>
           </div>

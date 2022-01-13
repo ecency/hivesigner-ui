@@ -1,11 +1,10 @@
 import React from "react";
-import { shallow } from "enzyme";
 import App from "../../components/Apps";
-describe("Home component Test", () => {
+import renderer from "react-test-renderer";
+describe("App component Test", () => {
   test("UI Test", () => {
-    const home = shallow(<App />);
-    expect(home.find("DetailContent").text()).toBe(
-      "Secure way to sign with Hivesigner. Best security for users and developers to integrate industry standard OAuth2 for their Blockchain applications. Transform web 2.0 apps into web 3.0 decentralized apps."
-    );
+    const app = renderer.create(<App />);
+    let tree = app.toJSON();
+    expect(tree).toMatchSnapshot();
   });
 });

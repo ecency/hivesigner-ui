@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import "./Navbar.scss";
 const Navbar = () => {
+  // const { t } = jest ? { t: (s: any) => s } : useTranslation();
   const { t, i18n } = useTranslation();
   const [ShowSetting, setShowSettings] = useState(false);
   const [language, setLanguage] = useState("en");
   const handlechange = (val: any) => {
-    i18n.changeLanguage(val);
     setLanguage(val);
     setShowSettings(false);
   };
