@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Sign component Test 1 Snapshot testing 1`] = `
+<div
+  className="SignHeader"
+/>
+`;
+
+exports[`Sign component Test 2 Snapshot testing 1`] = `
+<div
+  className="TransSearch"
+/>
+`;
+
+exports[`Sign component Test 3 Snapshot testing 1`] = `
+<div
+  className="ResultContent"
+/>
+`;
+
+exports[`Sign component Test 4 Snapshot testing 1`] = `
+<div
+  className="Signfix"
+/>
+`;

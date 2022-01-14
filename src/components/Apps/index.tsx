@@ -13,7 +13,7 @@ const Index = () => {
   const [count, setCount] = useState(0);
   const [showNavbar, setshowNavbar] = useState(true);
   const [showSlider, setShowSlider] = useState(false);
-  const [data, setData] = useState({});
+  // const [data, setData] = useState({});
   const handleScreenChange = (mediaQuery: any) => {
     if (mediaQuery.matches) {
       setshowNavbar(true);
@@ -22,7 +22,7 @@ const Index = () => {
     }
   };
   useEffect(() => {
-    let window_width = window.matchMedia("(min-width:630px)");
+    let window_width = window.matchMedia("(min-width:632px)");
     window_width.addListener(handleScreenChange);
     handleScreenChange(window_width);
     return () => {
@@ -41,7 +41,7 @@ const Index = () => {
   }, []);
   const handleProcess = (item: any) => {
     setShowSlider(!showSlider);
-    setData(item);
+    // setData(item);
   };
   return (
     <Content>
@@ -87,7 +87,6 @@ const Index = () => {
         )}
 
         <div className="ShapeHeader">
-          {/* <img src={HomeLogo} width="70px" height="auto" alt="logo" /> */}
           <div className="logo_image">
             <HomeLogo />
           </div>
@@ -105,7 +104,7 @@ const Index = () => {
             placeholder="Search for apps"
           />
         </div>
-        {len != 0 && (
+        {len !== 0 && (
           <div className="ResultContent">
             <div className="ResultText">
               {"Search for '" + init_value + "'"}

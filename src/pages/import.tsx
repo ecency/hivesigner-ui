@@ -16,13 +16,12 @@ import Logo from "../assets/img/logo";
 
 const Import = () => {
   // const { t } = jest ? { t: (s: any) => s } : useTranslation();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [showNavbar, setshowNavbar] = useState(true);
   const [flag, setFlag] = useState(true);
   const [init_username, setinit_username] = useState("");
   const [init_password, setinit_password] = useState("");
   const username_ref = useRef(null);
-  const password_ref = useRef(null);
   const [passwordShown, setPasswordShown] = useState(false);
 
   const handleScreenChange = (mediaQuery: any) => {
@@ -34,7 +33,7 @@ const Import = () => {
   };
 
   useEffect(() => {
-    let window_width = window.matchMedia("(min-width:630px)");
+    let window_width = window.matchMedia("(min-width:632px)");
     window_width.addListener(handleScreenChange);
     handleScreenChange(window_width);
     return () => {
@@ -60,8 +59,8 @@ const Import = () => {
   };
 
   const handleInputChange = (e: any) => {
-    if (e.target.name == "username") setinit_username(e.target.value);
-    if (e.target.name == "password") setinit_password(e.target.value);
+    if (e.target.name === "username") setinit_username(e.target.value);
+    if (e.target.name === "password") setinit_password(e.target.value);
   };
 
   return (
@@ -73,16 +72,8 @@ const Import = () => {
         <div className="auth_Image">
           <Auth />
         </div>
-        {/* <img src={AuthSvg} alt="import_logo" className="auth_Image" /> */}
         <div className="HomeDetail">
           <div className="ImportHeader">
-            {/* <img
-              src={HomeLogo}
-              draggable="false"
-              width="auto"
-              height="auto"
-              alt="LOGO"
-            /> */}
             <div className="logo_image">
               <Logo />
             </div>
@@ -91,14 +82,7 @@ const Import = () => {
 
           <div className="DetailContent">
             <div className="InputContainer">
-              <div className="Label">
-                Username/
-                {/* <span>
-                  {!username_ref || !init_username
-                    ? "Hive username is required"
-                    : null}
-                </span> */}
-              </div>
+              <div className="Label">Username/</div>
               <div className="InputGroup">
                 <input
                   className="CustomInput"
@@ -113,14 +97,7 @@ const Import = () => {
               </div>
             </div>
             <div className="InputContainer">
-              <div className="Label">
-                Private key/
-                {/* <span>
-                  {!password_ref || !init_password
-                    ? "Hive private key is required"
-                    : null}
-                </span> */}
-              </div>
+              <div className="Label">Private key/</div>
               <div className="InputGroup">
                 <div className="PasswordDiv">
                   <input
@@ -142,10 +119,7 @@ const Import = () => {
                 Save and encrypt your login information with a password
               </span>
             </div>
-            <div
-              className="Button"
-              // state={init_password == "" || init_username == "" ? 0.75 : 1}
-            >
+            <div className="Button">
               {flag ? t("common.continue") : "Login"}
             </div>
             <div className="Signuplink">

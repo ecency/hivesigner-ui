@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { AiOutlineSelect, AiFillGithub } from "react-icons/ai";
 import Content from "../../layouts/content";
 import "./index.scss";
@@ -13,7 +12,7 @@ const Index = () => {
     setshowNavbar(!showNavbar);
   };
   useEffect(() => {
-    let window_width = window.matchMedia("(min-width:630px)");
+    let window_width = window.matchMedia("(min-width:632px)");
     window_width.addListener(handleScreenChange);
     handleScreenChange(window_width);
     return () => {
@@ -34,13 +33,6 @@ const Index = () => {
           {showNavbar ? <AiOutlineClose /> : <ImMenu />}
         </div>
         <div className="Logo">
-          {/* <img
-            draggable="false"
-            width="70px"
-            height="auto"
-            src={HomeLogo}
-            alt="logo"
-          /> */}
           <div className="about_logo">
             <HomeLogo />
           </div>
@@ -58,14 +50,14 @@ const Index = () => {
           <span>License:MIT</span>
         </div>
         <div className="LinkGroup">
-          <Link to="/">
+          <a href="#">
             <AiOutlineSelect />
             Website
-          </Link>
-          <Link to="/">
+          </a>
+          <a href="#">
             <AiOutlineSelect />
             Download Logo
-          </Link>
+          </a>
           <a href="https://github.com/ecency/hivesigner-ui/issues">
             <AiFillGithub />
             Report a bug

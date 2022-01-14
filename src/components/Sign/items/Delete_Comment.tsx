@@ -8,9 +8,6 @@ const DeleteComment = () => {
   const handleShow = () => {
     setShowTab(!showTab);
   };
-  const handleSign = () => {
-    alert("okay!!!");
-  };
   return (
     <div className="Item">
       <div className="ItemHeader" id="transfer" onClick={() => handleShow()}>
@@ -40,7 +37,7 @@ const DeleteComment = () => {
             />
           </div>
           <div className="form_control">
-            <button onClick={() => handleSign()}>Sign</button>
+            <button onClick={() => alert("sign")}>Sign</button>
           </div>
         </div>
       )}

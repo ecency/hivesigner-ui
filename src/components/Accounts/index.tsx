@@ -35,7 +35,6 @@ const Index = () => {
           {showNavbar ? <AiOutlineClose /> : <ImMenu />}
         </div>
         <div className="Header">
-          {/* <img width="70px" src={HomeLogo} alt="logo" /> */}
           <div className="account_logo">
             <HomeLogo />
           </div>

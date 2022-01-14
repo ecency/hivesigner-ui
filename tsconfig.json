@@ -16,5 +16,5 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["custom.d.ts", "**/*.ts", "**/*.tsx", "react-app-env.d.ts"]
+  "include": ["src", "custom.d.ts", "**/*.ts", "**/*.tsx", "react-app-env.d.ts"]
 }

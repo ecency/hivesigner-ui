@@ -42,4 +42,5 @@ module.exports = {
     "json",
     "scss",
   ],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
 };

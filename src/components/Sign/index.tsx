@@ -6,7 +6,6 @@ import Content from "../../layouts/content";
 import Navbar from "../Index/Navbar";
 import "./index.scss";
 import HomeLogo from "../../assets/img/logo";
-import { Link } from "react-router-dom";
 import Transfer from "./items/transfer";
 import Recurring from "./items/recurring";
 import Delegate from "./items/delegate";
@@ -70,7 +69,7 @@ const Index = () => {
             <HomeLogo />
           </div>
           <div className="Title">
-            <Link to="/">Sign transaction</Link>
+            <a href="#">Sign transaction</a>
           </div>
           <div className="SignMenubar" onClick={() => handleChange()}>
             {showNavbar ? <AiOutlineClose /> : <ImMenu />}

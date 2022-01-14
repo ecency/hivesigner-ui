@@ -10,8 +10,8 @@
   background-position: auto auto;
   background-repeat: no-repeat;
   background-attachment: local;
-  height: 40vh;
-  background-color: red;
+  height: 27vh;
+  background-color: #e31337;
   width: 100vw;
   left: 0;
   right: 0;
@@ -39,19 +39,24 @@
   height: 50px;
   padding: 5px 0;
   width: 100%;
-
-  .icon {
-    margin-top: 14px;
-    margin-right: -25px;
-    z-index: 999;
-  }
   input {
+    width: 70vw;
+    border-color: transparent !important;
     height: 40px;
     border: 1px solid black;
     border-radius: 15px;
     border-style: solid !important;
     max-width: 400px;
     padding: 0 25px;
+    :hover {
+      border: 1px solid grey !important;
+    }
+  }
+
+  .icon {
+    margin-top: 14px;
+    margin-right: -25px;
+    z-index: 999;
   }
 }
 .ResultContent {

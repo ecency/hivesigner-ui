@@ -39,7 +39,7 @@ const AccountActive = () => {
             <div className="label">owner</div>
             <input
               type="text"
-              value={account}
+              value={owner}
               onChange={(e: any) => setInitOwner(e.target.value)}
             />
           </div>
@@ -47,7 +47,7 @@ const AccountActive = () => {
             <div className="label">active</div>
             <input
               type="text"
-              value={account}
+              value={active}
               onChange={(e: any) => setInitActive(e.target.value)}
             />
           </div>
@@ -55,7 +55,7 @@ const AccountActive = () => {
             <div className="label">posting</div>
             <input
               type="text"
-              value={account}
+              value={posting}
               onChange={(e: any) => setInitPosting(e.target.value)}
             />
           </div>
@@ -63,7 +63,7 @@ const AccountActive = () => {
             <div className="label">memo key</div>
             <input
               type="text"
-              value={account}
+              value={memo_key}
               onChange={(e: any) => setInitMemoKey(e.target.value)}
             />
           </div>

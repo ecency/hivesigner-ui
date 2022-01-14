@@ -30,7 +30,7 @@
     flex-direction: column;
     z-index: -1;
     max-width: 500px;
-    margin: 0 auto;
+    margin: 50px auto 0 auto;
     padding-left: 20px;
     // img {
     //   max-width: 492px;
@@ -67,10 +67,15 @@
     /* justify-content: center;
     align-items: center; */
     justify-content: space-between;
+    margin-top: 30px;
     @media screen and (max-width: 630px) {
       padding: 0 10px;
       align-items: center;
       text-align: center;
+      margin-top: -100px;
+    }
+    @media screen and (max-width: 390px) {
+      margin-top: -150px;
     }
   }
   .Header {
