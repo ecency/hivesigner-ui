@@ -42,25 +42,11 @@ const Home = () => {
           {showNavbar ? <AiOutlineClose /> : <ImMenu />}
         </div>
         <div className="HomeDiv">
-          {/* <img
-            src={HomeImage}
-            alt="LOGO"
-            draggable="false"
-            width="500px"
-            height="auto"
-          /> */}
           <HomeImage />
           <div className="HomeTitle">{t("index.secure_way_sign_in")}</div>
         </div>
         <div className="HomeDetail">
           <div className="Header">
-            {/* <img
-              src={HomeLogo}
-              draggable="false"
-              width="auto"
-              height="auto"
-              alt="LOGO"
-            /> */}
             <HomeLogo />
             Hivesigner
           </div>
@@ -68,7 +54,6 @@ const Home = () => {
           <div className="DetailContent">{t("index.description")}</div>
           <Link to="/import">
             <div className="Button">
-              {/* <img src={Lock} alt="get button"></img> */}
               <Lock />
               {t("index.get_started")}
             </div>

@@ -5,13 +5,21 @@
   flex-direction: column;
   position: relative;
 }
-.ShapeHeader {
+.appstoreback {
+  z-index: -1;
+  width: 100vw;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #e31337;
   background-image: url("../../assets/img/shapes.svg");
+}
+.ShapeHeader {
   background-position: auto auto;
   background-repeat: no-repeat;
   background-attachment: local;
   height: 27vh;
-  background-color: #e31337;
   width: 100vw;
   left: 0;
   right: 0;
@@ -35,29 +43,27 @@
 .SearchContent {
   display: flex;
   justify-content: center;
-  border-bottom: 1px solid grey;
-  height: 50px;
-  padding: 5px 0;
+  border-bottom: 1px solid #d1d0d0;
+  height: 60px;
+  align-items: center;
+  background-color: white;
   width: 100%;
   input {
     width: 70vw;
-    border-color: transparent !important;
-    height: 40px;
-    border: 1px solid black;
+    height: 100%;
+    // border-style: none !important;
     border-radius: 15px;
-    border-style: solid !important;
+    padding: 0 20px;
+    font-size: 18px;
     max-width: 400px;
-    padding: 0 25px;
-    :hover {
-      border: 1px solid grey !important;
-    }
   }
-
   .icon {
-    margin-top: 14px;
-    margin-right: -25px;
-    z-index: 999;
+    font-size: 25px;
+    color: #c7c7c7;
   }
+}
+.SearchContent input:focus {
+  outline-style: unset !important;
 }
 .ResultContent {
   margin-top: 30px;
@@ -76,7 +82,6 @@
   flex-wrap: wrap;
   grid-gap: 50px;
   max-width: 600px;
-  margin-top: 50px;
   justify-content: center;
   align-items: center;
 }
@@ -86,34 +91,61 @@
   grid-gap: 5px;
   justify-content: center;
   align-items: center;
+  width: 110px;
   cursor: pointer;
+  p:hover {
+    text-decoration: underline;
+  }
 }
 .AppMenubar {
   font-size: 2rem;
   color: black;
   position: absolute;
-  right: 30px;
-  top: 50px;
+  right: 20px;
+  top: 20px;
   display: block;
   @media screen and (min-width: 630px) {
     display: none;
   }
 }
+.slideOut {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+}
+.sliderbackground {
+  background-color: rgba($color: #000000, $alpha: 0.6);
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  height: 100%;
+}
 .slider {
-  position: absolute;
+  position: fixed;
   right: 0;
   bottom: 0;
   top: 0;
-  width: 30vw;
-  background-color: rgba(0, 0, 0, 0.6);
-  padding: 50px;
-  transition: all 0.75s ease-in;
+  z-index: 10;
+  width: 500px;
+  background-color: white;
   border-left: 2px solid #fff;
-  animation-duration: 2.5s;
+  animation-duration: 0.2s;
   animation-name: anim;
+  @media screen and (max-width: 500px) {
+    width: 320px !important;
+    animation-name: animres !important;
+  }
   @keyframes anim {
     from {
-      right: -30vw;
+      right: -500px;
+    }
+    to {
+      right: 0;
+    }
+  }
+  @keyframes animres {
+    from {
+      right: -370px;
     }
     to {
       right: 0;
@@ -123,8 +155,12 @@
     display: flex;
     justify-content: space-between;
     flex-direction: row;
-    color: #fff;
+    border-bottom: 1px solid #e7e7e8;
+    background-color: transparent;
+    height: 70px;
+    color: #7e8b93;
     font-size: 20px;
+    padding: 0 20px;
     align-items: center;
   }
   img {
@@ -169,5 +205,56 @@
 .fix {
   * {
     top: 30px !important;
+  }
+}
+.circle {
+  background-color: #e9e7e8;
+  width: 60px;
+  height: 60px;
+  border-radius: 50px;
+}
+.topapps {
+  margin: 30px 0;
+  font-size: 18px;
+  color: #5c4a45;
+  font-weight: bold;
+}
+.recentapp {
+  margin: 70px 0 30px 0;
+  font-size: 18px;
+  color: #5c4a45;
+  font-weight: bold;
+}
+.contentdiv {
+  background-color: white;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.aiclose {
+  color: white;
+}
+.sliderlogopart {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: -30px;
+  z-index: -1;
+}
+.slidertitlepart {
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 20px;
+}
+.aboutpart {
+  width: 100%;
+  padding-left: 20px;
+  margin-top: 50px;
+  p {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #7e8b93;
   }
 }

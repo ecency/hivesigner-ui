@@ -122,6 +122,7 @@
   color: #fff;
   padding-top: 1rem;
   padding-bottom: 1rem;
+  width: 180px;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
   font-size: 1.125rem;
@@ -138,9 +139,7 @@
     margin-right: 10px;
   }
   &:hover {
-    background-color: transparent;
-    color: #e31337;
-    border: 1px solid #e31337;
+    background-color: #b40f2a;
   }
   @media screen and (max-width: 1280px) {
     margin: auto;

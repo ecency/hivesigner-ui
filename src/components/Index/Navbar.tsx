@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { BiChevronDown, BiChevronUp } from "react-icons/bi";
 import { useTranslation } from "react-i18next";
 import "./Navbar.scss";
 const Navbar = () => {
@@ -20,7 +21,7 @@ const Navbar = () => {
       <Link to="/about">About</Link>
       <Link to="/import">Login</Link>
       <div className="LinkBtn" onClick={() => setShowSettings(!ShowSetting)}>
-        {language}
+        {language}{ShowSetting ? <BiChevronUp color="black" /> : <BiChevronDown />}
       </div>
       {ShowSetting && (
         <div className="LanguageDiv">
