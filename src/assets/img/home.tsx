@@ -6,6 +6,7 @@ const Home = () => {
       width="492"
       height="482"
       viewBox="0 0 243 239"
+      className="HiveBiglogo"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
