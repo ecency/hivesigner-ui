@@ -24,7 +24,7 @@
     align-items: center;
     height: 400px;
     .lockLogo {
-      width: 90% !important;
+      width: 80% !important;
     }
   }
 }
@@ -184,6 +184,9 @@
   span {
     margin-left: 5px;
     color: red;
+    @media screen and (max-width: 350px) {
+      font-size: 17px;
+    }
   }
 }
 .InputGroup {
