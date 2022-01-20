@@ -8,6 +8,7 @@ const Auth = () => {
       viewBox="0 0 412 519"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className="lockLogo"
     >
       <g opacity="0.3" filter="url(#filter0_f)">
         <path
