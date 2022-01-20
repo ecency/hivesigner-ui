@@ -50,7 +50,8 @@ const Import = () => {
     setshowNavbar(!showNavbar);
   };
   const InputBlurFunc = () => {
-    setNamefocus(true);
+    if (!init_username)
+      setNamefocus(true);
   };
 
   const handleCheck = () => {
