@@ -7,7 +7,7 @@
 .Header {
   display: flex;
   flex-direction: column;
-  margin-top: 10vh;
+  margin-top: 5vh;
   align-items: center;
   .account_logo {
     width: 70px;
@@ -21,13 +21,18 @@
 }
 .AddButton {
   border: 1px solid grey;
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 15px 100px;
   max-width: 500px;
   opacity: 0.8;
   margin-top: 25vh;
   cursor: pointer;
+  color: #b6bbc1;
   margin-bottom: 7rem;
+  transition: all 0.3s;
+  &:hover {
+    color: black;
+  }
 }
 .AccountMenubar {
   font-size: 2rem;

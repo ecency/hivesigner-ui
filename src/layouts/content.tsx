@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 export const Container = styled.div`
-  max-width: 1440px;
   align-items: center;
   display: flex;
   justify-content: center;

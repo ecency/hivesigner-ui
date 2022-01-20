@@ -16,7 +16,7 @@ const UpdateProposal = () => {
     alert("okay!!!");
   };
   return (
-    <div className="Item">
+    <div className="Item endclass">
       <div className="ItemHeader" id="transfer" onClick={() => handleShow()}>
         {showTab ? (
           <AiOutlineDown className="Item_icon" />

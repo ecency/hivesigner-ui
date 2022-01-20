@@ -10,6 +10,12 @@ body {
 
   overflow-x: hidden;
 }
+
+@font-face {
+  font-family: LatoThin;
+  src: url('./assets/fonts/Lato/Lato-Thin.ttf');
+}
+
 @media screen and (min-width: 1440px) {
   body {
     width: 100%;
@@ -18,6 +24,7 @@ body {
     margin: auto;
   }
 }
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;

@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { ImMenu } from "react-icons/im";
-import { BsFillEyeSlashFill } from "react-icons/bs";
-import { BsFillEyeFill } from "react-icons/bs";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import { AiOutlineClose } from "react-icons/ai";
 
 import Content from "../layouts/content";
@@ -23,6 +22,7 @@ const Import = () => {
   const [init_password, setinit_password] = useState("");
   const username_ref = useRef(null);
   const [passwordShown, setPasswordShown] = useState(false);
+  const [namefocus, setNamefocus] = useState(false);
 
   const handleScreenChange = (mediaQuery: any) => {
     if (mediaQuery.matches) {
@@ -49,6 +49,9 @@ const Import = () => {
   const handleChange = () => {
     setshowNavbar(!showNavbar);
   };
+  const InputBlurFunc = () => {
+    setNamefocus(true);
+  };
 
   const handleCheck = () => {
     setFlag(!flag);
@@ -56,11 +59,6 @@ const Import = () => {
 
   const togglePasswordVisiblity = () => {
     setPasswordShown(passwordShown ? false : true);
-  };
-
-  const handleInputChange = (e: any) => {
-    if (e.target.name === "username") setinit_username(e.target.value);
-    if (e.target.name === "password") setinit_password(e.target.value);
   };
 
   return (
@@ -73,57 +71,61 @@ const Import = () => {
           <Auth />
         </div>
         <div className="HomeDetail">
-          <div className="ImportHeader">
+          <a href="/"><div className="ImportHeader">
             <div className="logo_image">
               <Logo />
             </div>
             <p>Hivesigner</p>
           </div>
+          </a>
 
           <div className="DetailContent">
             <div className="InputContainer">
-              <div className="Label">Username/</div>
+              <div className="Label">Username{namefocus && <span> / Hive username is required</span>}</div>
               <div className="InputGroup">
                 <input
-                  className="CustomInput"
+                  className="CustomInputName"
                   type="text"
                   name="username"
                   ref={username_ref}
+                  onBlur={() => InputBlurFunc()}
                   value={init_username}
-                  onChange={(e: any) => handleInputChange(e)}
+                  onChange={(e: any) => setinit_username(e.target.value)}
                   placeholder="Hive username, e.g. ecency"
                 />
                 <span>@</span>
               </div>
             </div>
             <div className="InputContainer">
-              <div className="Label">Private key/</div>
+              <div className="Label">Private key</div>
               <div className="InputGroup">
                 <div className="PasswordDiv">
                   <input
                     className="CustomInput"
                     placeholder="Password"
                     name="password"
+                    onChange={(e: any) => setinit_password(e.target.value)}
                     type={passwordShown ? "text" : "password"}
                   />
                   <i onClick={togglePasswordVisiblity}>
-                    {passwordShown ? <BsFillEyeFill /> : <BsFillEyeSlashFill />}
+                    {passwordShown ? <FiEye className="eyeIcon" /> : <FiEyeOff className="eyeIcon" />}
                   </i>
                 </div>
               </div>
             </div>
 
             <div className="CheckDiv">
-              <input type="checkbox" onChange={() => handleCheck()} />
+              <label />
+              <input type="checkbox" className="check-radio-multi" onChange={() => handleCheck()} />
               <span>
                 Save and encrypt your login information with a password
               </span>
             </div>
-            <div className="Button">
+            <div className={`ButtonImport ${(init_username && init_password) && 'ButtonBG'}`}>
               {flag ? t("common.continue") : "Login"}
             </div>
             <div className="Signuplink">
-              Don`t have an account? <Link to="/signup">Signup here</Link>
+              Don`t have an account? <Link to="/signup" className="signupLabel">Signup here</Link>
             </div>
           </div>
 

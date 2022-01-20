@@ -37,32 +37,34 @@ const Home = () => {
 
   return (
     <Content>
-      <div className="HomeContainer">
-        <div className="Menubar" onClick={() => handleChange()}>
-          {showNavbar ? <AiOutlineClose /> : <ImMenu />}
-        </div>
-        <div className="HomeDiv">
-          <HomeImage />
-          <div className="HomeTitle">{t("index.secure_way_sign_in")}</div>
-        </div>
-        <div className="HomeDetail">
-          <div className="Header">
-            <HomeLogo />
-            Hivesigner
+      <div className="HomeContainerOut">
+        <div className="HomeContainer">
+          <div className="Menubar" onClick={() => handleChange()}>
+            {showNavbar ? <AiOutlineClose /> : <ImMenu />}
           </div>
+          <div className="HomeDiv">
+            <HomeImage />
+            <div className="HomeTitle">{t("index.secure_way_sign_in")}</div>
+          </div>
+          <div className="HomeDetail">
+            <div className="Header">
+              <HomeLogo />
+              Hivesigner
+            </div>
 
-          <div className="DetailContent">{t("index.description")}</div>
-          <Link to="/import">
-            <div className="Button">
-              <Lock />
-              {t("index.get_started")}
-            </div>
-          </Link>
-          {showNavbar && (
-            <div className="homefix">
-              <Navbar />
-            </div>
-          )}
+            <div className="DetailContent">{t("index.description")}</div>
+            <Link to="/import">
+              <div className="Button">
+                <Lock />
+                {t("index.get_started")}
+              </div>
+            </Link>
+            {showNavbar && (
+              <div className="homefix">
+                <Navbar />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </Content>

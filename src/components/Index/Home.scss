@@ -1,18 +1,22 @@
+.HomeContainerOut {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+}
 .HomeContainer {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  margin-left: auto;
-  margin-right: auto;
-  grid-gap: 10rem;
-  padding: 4.5rem 2rem;
+  max-width: 1280px;
+  grid-gap: 9rem;
+  padding-bottom: 5rem;
   align-items: center;
   position: relative;
   transition: all 0.85s;
   @media screen and (max-width: 1280px) {
     flex-direction: column;
     margin-top: 10vh;
-    grid-gap: 0 !important;
   }
   .Menubar {
     font-size: 2rem;
@@ -50,8 +54,11 @@
     }
   }
   .HomeTitle {
-    font-size: 3rem;
-    font-weight: 300;
+    font-size: 3.6rem;
+    line-height: 60px;
+    font-family: LatoThin;
+    letter-spacing: 1px;
+    font-weight: 700;
     color: rgb(189, 189, 189);
     @media screen and (max-width: 1280px) {
       text-align: center;
@@ -118,7 +125,7 @@
   }
 }
 .Button {
-  background-color: #e31337;
+  background-color: rgb(255, 0, 43) !important;
   color: #fff;
   padding-top: 1rem;
   padding-bottom: 1rem;
@@ -139,7 +146,7 @@
     margin-right: 10px;
   }
   &:hover {
-    background-color: #b40f2a;
+    background-color: #b40f2a !important;
   }
   @media screen and (max-width: 1280px) {
     margin: auto;
