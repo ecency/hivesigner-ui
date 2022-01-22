@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { AiOutlineSelect, AiFillGithub } from "react-icons/ai";
+import { AiFillGithub } from "react-icons/ai";
+import { MdOpenInNew } from 'react-icons/md';
 import Content from "../../layouts/content";
 import "./index.scss";
 import HomeLogo from "../../assets/img/logo";
@@ -46,25 +47,25 @@ const Index = () => {
             Blockchain applications. Transform web 2.0 apps into web 3.0
             decentralized apps.
           </div>
-          <span>Version:1.0.1</span>
-          <span>License:MIT</span>
+          <span className="versionSpan">Version:1.0.1</span>
+          <span className="license">License:MIT</span>
         </div>
         <div className="LinkGroup">
           <a href="#">
-            <AiOutlineSelect />
+            <MdOpenInNew className="openinnewIcon" />
             Website
           </a>
           <a href="#">
-            <AiOutlineSelect />
+            <MdOpenInNew className="openinnewIcon" />
             Download Logo
           </a>
           <a href="https://github.com/ecency/hivesigner-ui/issues">
-            <AiFillGithub />
+            <AiFillGithub className="gitreport" />
             Report a bug
           </a>
         </div>
         <div className="Contributors">
-          <span>Contributors</span>
+          <span className="contrispan">Contributors:</span>
           <a href="https://ecency.com/@good-karma">Feruz Muradov</a>
           <a href="https://ecency.com/@dkildar">Ildar Timerbaev</a>
           <a href="https://ecency.com/@zetrix">Dmytro Khomenchuk</a>
@@ -73,8 +74,8 @@ const Index = () => {
           <a href="https://ecency.com/@jnordberg">Johan Nordberg</a>
           <a href="https://ecency.com/@wehmoen">Nico Wehmöller</a>
           <a href="https://ecency.com/@mahdiyari">Mahdi Yari</a>
-          <span>
-            Maintained by<a href="https://ecency.com/">Ecency Team .</a>
+          <span className="ecencyspan">
+            Maintained by<a href="https://ecency.com/"> Ecency Team</a> .
           </span>
         </div>
         {showNavbar && (

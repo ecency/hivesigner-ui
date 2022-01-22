@@ -17,14 +17,25 @@
     font-weight: 500;
   }
 }
+.openinnewIcon {
+  font-size: 22px;
+  color: #7a7a7a;
+}
+.gitreport {
+  font-size: 22px;
+}
 .AboutContent {
   margin-top: 3rem;
   display: flex;
   flex-direction: column;
   transition: all 0.8s;
+  .versionSpan {
+    margin: 30px 0;
+  }
+  .license {
+    margin-bottom: 30px;
+  }
   span {
-    margin-top: 15px;
-    margin-bottom: 15px;
     font-size: 1.15rem;
     color: rgba(0, 0, 0, 0.9);
   }
@@ -35,34 +46,46 @@
 .Title {
   font-weight: 600;
   color: black !important;
-  font-size: 2.5rem !important;
+  font-size: 2.3rem !important;
   text-align: left;
 }
 .Detail {
   margin-top: 20px;
-  font-size: 1.25rem;
-  color: rgba(0, 0, 0, 0.9);
+  font-size: 1.1em;
+  color: #605353;
   max-width: 550px;
+}
+.contrispan {
+  margin: 30px 0 10px 0 !important;
 }
 .LinkGroup {
   display: flex;
   flex-direction: column;
+  font-size: 17px;
   a {
     display: flex;
     flex-direction: row;
     align-items: center;
-    grid-gap: 10px;
+    grid-gap: 5px;
     margin-bottom: 15px;
+  }
+  a:hover {
+    text-decoration: underline !important;
   }
   transition: all 0.8s;
   @media screen and (max-width: 600px) {
     margin: 10px;
   }
 }
+.ecencyspan {
+  margin-top: 35px !important;
+  color: #605353 !important;
+  font-size: 1.1rem;
+}
 .Contributors {
   display: flex;
   flex-direction: column;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   transition: all 0.8s;
   @media screen and (max-width: 600px) {
     margin: 10px;
