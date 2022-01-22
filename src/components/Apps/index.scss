@@ -80,10 +80,11 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  grid-gap: 50px;
-  max-width: 600px;
+  grid-gap: 20px;
+  max-width: 500px;
   justify-content: center;
   align-items: center;
+  margin-bottom: 30px;
 }
 .ProductItem {
   display: flex;
@@ -91,7 +92,7 @@
   grid-gap: 5px;
   justify-content: center;
   align-items: center;
-  width: 110px;
+  width: 100px;
   cursor: pointer;
   p:hover {
     text-decoration: underline;
@@ -155,9 +156,9 @@
     display: flex;
     justify-content: space-between;
     flex-direction: row;
-    border-bottom: 1px solid #e7e7e8;
     background-color: transparent;
     height: 70px;
+    z-index: 100000;
     color: #7e8b93;
     font-size: 20px;
     padding: 0 20px;
@@ -203,9 +204,6 @@
   }
 }
 .fix {
-  * {
-    top: 30px !important;
-  }
 }
 .circle {
   background-color: #e9e7e8;
@@ -257,4 +255,10 @@
     margin-bottom: 10px;
     color: #7e8b93;
   }
+}
+.Logotopline {
+  width: 100%;
+  border-top: 1px solid #e7e7e8;
+  position: absolute;
+  top: 70px;
 }

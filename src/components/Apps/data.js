@@ -17,7 +17,7 @@ export const Topapp = [
   },
   {
     "avatar": "https://images.ecency.com/u/holybread.app/avatar",
-    "name": "ecency.app"
+    "name": "holybread.app"
   },
   {
     "avatar": "https://images.ecency.com/u/actifit.app/avatar",

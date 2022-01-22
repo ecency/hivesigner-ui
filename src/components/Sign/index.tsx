@@ -13,6 +13,7 @@ import PowerUp from "./items/power";
 import Withdraw from "./items/withdraw";
 import PowerDown from "./items/powerdown";
 import TransferToSaving from "./items/transfertosaving";
+import TransferFromSaving from "./items/transferfromsaving";
 import CancelTransfer from "./items/canceltransfer";
 import Convert from "./items/convert";
 import Collateralized from "./items/collateralized";
@@ -36,6 +37,40 @@ import RemoveProposal from "./items/Remove_Proposal";
 import UpdateProposalVote from "./items/Update_Proposal_Votes";
 import UpdateProposal from "./items/Update_Proposal";
 import Vote from "./items/vote";
+const listArr = [
+  { key: 'transfer', value: <Transfer /> },
+  { key: 'recurring transfers', value: <Recurring /> },
+  { key: 'delegate hive power', value: <Delegate /> },
+  { key: 'power up', value: <PowerUp /> },
+  { key: 'set withdraw vesting route', value: <Withdraw /> },
+  { key: 'powerdown', value: <PowerDown /> },
+  { key: 'transfer to saving', value: <TransferToSaving /> },
+  { key: 'transfer from saving', value: <TransferFromSaving /> },
+  { key: 'cancel transfer from saving', value: <CancelTransfer /> },
+  { key: 'convert', value: <Convert /> },
+  { key: 'collateralized convert', value: <Collateralized /> },
+  { key: 'witness vote', value: <WitnessVote /> },
+  { key: 'witness proxy', value: <WitnessProxy /> },
+  { key: 'claim account', value: <Claim /> },
+  { key: 'create account', value: <CreateAccount /> },
+  { key: 'vote', value: <Vote /> },
+  { key: 'create limit order', value: <LimitOrderOne /> },
+  { key: 'create limit order', value: <LimitOrderTwo /> },
+  { key: 'cancel limit order', value: <CancelLimitOrder /> },
+  { key: 'redeem rewards', value: <RedeemRewards /> },
+  { key: 'post or comment', value: <PostOrComment /> },
+  { key: 'post or comment options', value: <PostOrCommentOptions /> },
+  { key: 'custom operation', value: <CustomOperation /> },
+  { key: 'delete comment', value: <DeleteComment /> },
+  { key: 'update account (active)', value: <AccountActive /> },
+  { key: 'update account (posting)', value: <AccountPosting /> },
+  { key: 'vhange recovery account', value: <RecoveryAccount /> },
+  { key: 'vreate Proposal', value: <CreateProposal /> },
+  { key: 'remove Proposal', value: <RemoveProposal /> },
+  { key: 'update proposal votes', value: <UpdateProposalVote /> },
+  { key: 'update proposal', value: <UpdateProposal /> },
+
+];
 const Index = () => {
   const [showNavbar, setshowNavbar] = useState(true);
   const [init_value, setInit_value] = useState("");
@@ -77,45 +112,18 @@ const Index = () => {
         </div>
         <div>
           <div className="TransSearch">
-            <BiSearch className="icon" />
             <input
               type="text"
+              className="SignInput"
               value={init_value}
               onChange={(e: any) => handleSearch(e)}
-              placeholder="Search for apps"
+              placeholder="Please type name of transaction that need to sign"
             />
+            <BiSearch className="icon" />
           </div>
           <div className="ResultContent">
-            <Transfer />
-            <Recurring />
-            <Delegate />
-            <PowerUp />
-            <Withdraw />
-            <PowerDown />
-            <TransferToSaving />
-            <CancelTransfer />
-            <Convert />
-            <Collateralized />
-            <WitnessVote />
-            <WitnessProxy />
-            <Claim />
-            <CreateAccount />
-            <Vote />
-            <LimitOrderOne />
-            <LimitOrderTwo />
-            <CancelLimitOrder />
-            <RedeemRewards />
-            <PostOrComment />
-            <PostOrCommentOptions />
-            <CustomOperation />
-            <DeleteComment />
-            <AccountActive />
-            <AccountPosting />
-            <RecoveryAccount />
-            <CreateProposal />
-            <RemoveProposal />
-            <UpdateProposalVote />
-            <UpdateProposal />
+            {!init_value && listArr.map((v, k) => v.value)}
+            {init_value && listArr.filter((v, k) => v.key.includes(init_value.toLowerCase())).map((v1, k1) => v1.value)}
           </div>
         </div>
         <div className="Signfix">{showNavbar && <Navbar />}</div>

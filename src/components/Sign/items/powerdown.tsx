@@ -21,7 +21,7 @@ const PowerDown = () => {
         ) : (
           <AiOutlineDown className="Item_icon_rotate" />
         )}
-        <div className="Item_title">Power up</div>
+        <div className="Item_title">Power Down</div>
       </div>
       {showTab && (
         <div className="ItemContent">

@@ -50,9 +50,11 @@ const Index = () => {
       <div className="appstoreback" />
       <div className="ShapeContainer">
         <div className="ShapeHeader">
-          <div className="logo_image">
-            <HomeLogo />
-          </div>
+          <a href="/">
+            <div className="logo_image">
+              <HomeLogo />
+            </div>
+          </a>
           <div className="StoreTitle">App store</div>
           <div className="AppMenubar" onClick={() => handleChange()}>
             {showNavbar ? <AiOutlineClose className="aiclose" /> : <ImMenu className="aiclose" />}
@@ -116,30 +118,33 @@ const Index = () => {
           )}
         </div>
       </div>
-      {showSlider && (
-        <div className="slideOut">
-          <div className="sliderbackground" onClick={() => setShowSlider(false)} />
-          <div className="slider">
-            <div className="slider_header">
-              <span>{slidertitle}</span>
-              <AiOutlineClose
-                className="close"
-                onClick={() => {
-                  setShowSlider(false);
-                }}
-              />
-            </div>
-            <div className="sliderlogopart">
-              {sliderlogo === "circle" ? <div className="circle" /> : <img src={sliderlogo} width={70} />}
-              <div className="slidertitlepart">{slidertitle.split('.')[0].toUpperCase()}</div>
-              <div className="aboutpart">
-                <p>About</p>
-                {slidertitle}
+      {
+        showSlider && (
+          <div className="slideOut">
+            <div className="sliderbackground" onClick={() => setShowSlider(false)} />
+            <div className="slider">
+              <div className="slider_header">
+                <span>{slidertitle}</span>
+                <AiOutlineClose
+                  className="close"
+                  onClick={() => {
+                    setShowSlider(false);
+                  }}
+                />
+              </div>
+              <div className="sliderlogopart">
+                <div className="Logotopline" />
+                {sliderlogo === "circle" ? <div className="circle" /> : <img src={sliderlogo} width={70} />}
+                <div className="slidertitlepart">{slidertitle.split('.')[0].toUpperCase()}</div>
+                <div className="aboutpart">
+                  <p>About</p>
+                  {slidertitle}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
     </Content >
   );
 };

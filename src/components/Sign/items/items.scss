@@ -6,7 +6,8 @@
   text-align: left;
   color: rgba(0, 0, 0, 0.7);
   transition: all 0.85s;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
+  padding-left: 50px;
 }
 .ItemHeader {
   display: flex;
@@ -27,7 +28,7 @@
   font-size: 22px;
 }
 .Item_title {
-  font-size: 0.6em;
+  font-size: 0.55em;
   text-transform: capitalize;
   text-align: left;
   color: rgba(0, 0, 0, 0.7);
@@ -39,30 +40,29 @@
 .ItemContent {
   margin-top: 10px;
   font-size: 16px;
+  transition: all 0.3s;
 }
 .form_control {
   margin: 10px;
   .label {
-    font-size: 20px;
+    font-size: 18px;
     margin-bottom: 10px;
     margin-left: 10px;
   }
   input {
     height: 55px;
-    border: 1px solid rgba(0, 0, 0, 0.7);
-    border-radius: 10px;
+    border: 1px solid #c4c4c4;
+    border-radius: 5px;
     border-style: solid !important;
-    width: 80vw;
-    max-width: 600px;
+    width: 60vw;
+    max-width: 500px;
+    transition: all 0.3s;
     padding: 0 20px;
-    &:hover {
-      border-color: black !important;
-      border-style: solid !important;
-    }
-    &:focus {
-      border-color: red !important;
-      border-style: solid !important;
-    }
+  }
+  input:focus,
+  input:active {
+    outline: none !important;
+    border: 1px solid red;
   }
   button {
     min-width: 120px;
@@ -74,6 +74,4 @@
     background-color: rgba(255, 10, 10, 0.9);
     border-radius: 10px;
   }
-}
-.endclass {
 }
