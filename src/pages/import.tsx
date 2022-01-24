@@ -98,7 +98,7 @@ const Import = () => {
               </div>
             </div>
             <div className="InputContainer">
-              <div className="Label">Private key</div>
+              <div className="Label"></div>
               <div className="InputGroup">
                 <div className="PasswordDiv">
                   <input
@@ -132,6 +132,7 @@ const Import = () => {
 
           {showNavbar && (
             <div className="importfix">
+              <div className="ResBack" onClick={() => setshowNavbar(!showNavbar)} />
               <Navbar />
             </div>
           )}

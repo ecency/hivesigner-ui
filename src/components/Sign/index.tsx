@@ -104,7 +104,7 @@ const Index = () => {
             <HomeLogo />
           </div>
           <div className="Title">
-            <a href="#">Sign transaction</a>
+            <a href="#" style={{ color: 'red' }}>Sign transaction</a>
           </div>
           <div className="SignMenubar" onClick={() => handleChange()}>
             {showNavbar ? <AiOutlineClose /> : <ImMenu />}
@@ -127,7 +127,13 @@ const Index = () => {
           </div>
         </div>
       </div>
-      <div className="Signfix">{showNavbar && <Navbar />}</div>
+      <div className="Signfix">
+        {showNavbar &&
+          <>
+            <div className="ResBack" onClick={() => setshowNavbar(!showNavbar)} />
+            <Navbar />
+          </>
+        }</div>
     </Content>
   );
 };

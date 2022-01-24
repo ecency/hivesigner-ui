@@ -80,6 +80,7 @@ const Index = () => {
         </div>
         {showNavbar && (
           <div className="Aboutfix">
+            <div className="ResBack" onClick={() => setshowNavbar(!showNavbar)} />
             <Navbar />
           </div>
         )}

@@ -14,31 +14,33 @@ const Navbar = () => {
     i18n.changeLanguage(val);
   };
   return (
-    <div className="NavbarContainer">
-      <Link to="/apps">Apps</Link>
-      <Link to="/accounts">Accounts</Link>
-      <Link to="/sign">Signer</Link>
-      <a href="https://docs.hivesigner.com/h/">Docs</a>
-      <Link to="/about">About</Link>
-      <Link to="/import">Login</Link>
-      <div className="LinkBtn" onClick={() => setShowSettings(!ShowSetting)}>
-        {language}{ShowSetting ? <BiChevronUp color="black" /> : <BiChevronDown />}
-      </div>
-      {ShowSetting && (
-        <div className="LangmodalOut">
-          <div className="CoverDiv" onClick={() => setShowSettings(false)} />
-          <div className="LanguageDiv">
-            <IoMdClose className="closeIcon" onClick={() => setShowSettings(false)} />
-            <div className="Language en" onClick={() => handlechange("en")}>
-              English
-            </div>
-            <div className="Language ru" onClick={() => handlechange("ru")}>
-              Русский
+    <>
+      <div className="NavbarContainer">
+        <Link to="/apps">Apps</Link>
+        <Link to="/accounts">Accounts</Link>
+        <Link to="/sign">Signer</Link>
+        <a href="https://docs.hivesigner.com/h/">Docs</a>
+        <Link to="/about">About</Link>
+        <Link to="/import">Login</Link>
+        <div className="LinkBtn" onClick={() => setShowSettings(!ShowSetting)}>
+          {language}{ShowSetting ? <BiChevronUp color="black" /> : <BiChevronDown />}
+        </div>
+        {ShowSetting && (
+          <div className="LangmodalOut">
+            <div className="CoverDiv" onClick={() => setShowSettings(false)} />
+            <div className="LanguageDiv">
+              <IoMdClose className="closeIcon" onClick={() => setShowSettings(false)} />
+              <div className="Language en" onClick={() => handlechange("en")}>
+                English
+              </div>
+              <div className="Language ru" onClick={() => handlechange("ru")}>
+                Русский
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
 

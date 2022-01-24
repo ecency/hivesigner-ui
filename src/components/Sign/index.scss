@@ -15,8 +15,9 @@
   }
 }
 .Title {
-  font-size: 4rem;
-  color: red;
+  font-size: 3rem !important;
+  font-weight: lighter;
+  margin-bottom: 30px;
 }
 .SignMenubar {
   font-size: 2rem;
@@ -76,10 +77,25 @@
   bottom: 0 !important;
   background-color: white;
   width: 100%;
-  * {
-    top: 10px !important;
+  @media screen and (max-width: 630px) {
+    position: relative !important;
   }
 }
 .ResultContent {
   margin-bottom: 100px;
+  @media screen and (max-width: 630px) {
+    margin-bottom: 0 !important;
+  }
+}
+.ResBack {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  background-color: rgba($color: #000, $alpha: 0.6);
+  width: 100vw !important;
+  height: 100vh !important;
+  @media screen and (min-width: 630px) {
+    display: none !important;
+  }
 }

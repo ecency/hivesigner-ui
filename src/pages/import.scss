@@ -250,16 +250,22 @@
     cursor: pointer;
   }
 }
-.importfix {
-  * {
-    margin-top: 10px !important;
-    right: 35px !important;
-  }
-}
 .signupLabel {
   color: black;
   margin-left: 5px;
   &:hover {
     text-decoration: underline;
+  }
+}
+.ResBack {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  background-color: rgba($color: #000, $alpha: 0.6);
+  width: 100vw !important;
+  height: 100vh !important;
+  @media screen and (min-width: 630px) {
+    display: none !important;
   }
 }

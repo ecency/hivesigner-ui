@@ -45,6 +45,7 @@ const Index = () => {
         </div>
         {showNavbar && (
           <div className="Accountfix">
+            <div className="ResBack" onClick={() => setshowNavbar(!showNavbar)} />
             <Navbar />
           </div>
         )}

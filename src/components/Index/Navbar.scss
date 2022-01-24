@@ -8,6 +8,7 @@
   justify-content: space-between;
   transition: all 0.8s;
   margin-top: 30px;
+  text-align: left;
   * {
     cursor: pointer;
     font-size: 1.125rem;
@@ -17,19 +18,16 @@
     }
     transition: all 0.75s;
   }
-  @media screen and (max-width: 1280px) {
-    margin-top: 100px;
-  }
   @media screen and (max-width: 630px) {
-    transition: all 0.8s;
+    transition: all 0.3s;
     flex-direction: column;
-    background-color: rgba(255, 255, 255, 0.8);
-    border-radius: 10px;
-    position: absolute;
-    padding: 10px 50px;
-    box-shadow: 4px 4px 4px 1px grey;
-    top: -65px;
-    right: 65px;
+    background-color: white;
+    z-index: 101;
+    position: fixed;
+    width: 250px;
+    padding: 20px 50px;
+    top: -10px;
+    right: 10px;
     * {
       color: black;
     }
@@ -60,6 +58,13 @@
     transition: all 0.3s !important;
     cursor: pointer;
     padding: 20px 30px;
+    @media screen and (max-width: 630px) {
+      top: 300px !important;
+      right: 50px !important;
+    }
+    @media screen and (min-width: 630px) {
+      display: none !important;
+    }
   }
   .Language {
     font-size: 1rem;
@@ -74,10 +79,13 @@
 }
 .CoverDiv {
   width: 100vw;
-  height: 100vw;
+  height: 100vh;
   z-index: 9;
   position: fixed;
   top: 0;
   left: 0;
   background-color: rgba($color: #000, $alpha: 0.6);
+  @media screen and (min-width: 630px) {
+    display: none !important;
+  }
 }
