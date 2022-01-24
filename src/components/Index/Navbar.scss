@@ -34,22 +34,35 @@
       color: black;
     }
   }
+  .closeIcon {
+    z-index: 10;
+    right: 10px !important;
+    top: 0 !important;
+    color: #000;
+    font-size: 25px;
+    position: absolute;
+    margin-top: 10px;
+  }
+  .ru {
+    margin-top: 10px;
+  }
   .LanguageDiv {
     display: flex;
     flex-direction: column;
-    padding: 10px 50px;
-    border-radius: 10px;
-    border: 1px solid #b3b3b3;
+    z-index: 10;
+    font-size: 13px !important;
+    width: 300px;
+    height: 100px !important;
     position: absolute;
     background-color: white;
-    right: 0px;
-    bottom: 30px;
+    right: 0 !important;
+    top: -100px !important;
     transition: all 0.3s !important;
     cursor: pointer;
-    min-height: 80px;
+    padding: 20px 30px;
   }
   .Language {
-    font-size: 1.25rem;
+    font-size: 1rem;
     color: black;
   }
   .LinkBtn {
@@ -58,4 +71,13 @@
     display: flex;
     align-items: center;
   }
+}
+.CoverDiv {
+  width: 100vw;
+  height: 100vw;
+  z-index: 9;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: rgba($color: #000, $alpha: 0.6);
 }

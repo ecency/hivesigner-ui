@@ -126,8 +126,8 @@ const Index = () => {
             {init_value && listArr.filter((v, k) => v.key.includes(init_value.toLowerCase())).map((v1, k1) => v1.value)}
           </div>
         </div>
-        <div className="Signfix">{showNavbar && <Navbar />}</div>
       </div>
+      <div className="Signfix">{showNavbar && <Navbar />}</div>
     </Content>
   );
 };

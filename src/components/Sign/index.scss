@@ -66,13 +66,20 @@
 }
 .Signfix {
   display: flex;
+  height: 100vh;
   align-items: center;
   justify-content: center;
   margin: auto;
   height: 100px;
-  // background-color: white;
+  position: fixed;
+
+  bottom: 0 !important;
+  background-color: white;
   width: 100%;
   * {
     top: 10px !important;
   }
+}
+.ResultContent {
+  margin-bottom: 100px;
 }

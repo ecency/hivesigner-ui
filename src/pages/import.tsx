@@ -82,7 +82,7 @@ const Import = () => {
 
           <div className="DetailContent">
             <div className="InputContainer">
-              <div className="Label">Username{namefocus && <span> / Hive username is required</span>}</div>
+              <div className="Label">Username{(namefocus && !init_username) && <span> / Hive username is required</span>}</div>
               <div className="InputGroup">
                 <input
                   className="CustomInputName"
@@ -126,7 +126,7 @@ const Import = () => {
               {flag ? t("common.continue") : "Login"}
             </div>
             <div className="Signuplink">
-              Don`t have an account? <Link to="/signup" className="signupLabel">Signup here</Link>
+              Don`t have an account? <a href="https://signup.hive.io/" target='_blank' className="signupLabel">Signup here</a>
             </div>
           </div>
 

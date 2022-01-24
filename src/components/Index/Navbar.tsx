@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { BiChevronDown, BiChevronUp } from "react-icons/bi";
+import { IoMdClose } from "react-icons/io";
 import { useTranslation } from "react-i18next";
 import "./Navbar.scss";
 const Navbar = () => {
@@ -24,12 +25,16 @@ const Navbar = () => {
         {language}{ShowSetting ? <BiChevronUp color="black" /> : <BiChevronDown />}
       </div>
       {ShowSetting && (
-        <div className="LanguageDiv">
-          <div className="Language" onClick={() => handlechange("en")}>
-            English
-          </div>
-          <div className="Language" onClick={() => handlechange("ru")}>
-            Русский
+        <div className="LangmodalOut">
+          <div className="CoverDiv" onClick={() => setShowSettings(false)} />
+          <div className="LanguageDiv">
+            <IoMdClose className="closeIcon" onClick={() => setShowSettings(false)} />
+            <div className="Language en" onClick={() => handlechange("en")}>
+              English
+            </div>
+            <div className="Language ru" onClick={() => handlechange("ru")}>
+              Русский
+            </div>
           </div>
         </div>
       )}
