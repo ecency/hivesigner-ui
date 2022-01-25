@@ -31,7 +31,7 @@ exports[`powerdown component Test UI Test 1`] = `
     <div
       className="Item_title"
     >
-      Power up
+      Power Down
     </div>
   </div>
 </div>

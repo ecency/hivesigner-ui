@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Update_Proposal component Test UI Test 1`] = `
+exports[`Delete_Comment component Test UI Test 1`] = `
 <div
-  className="Item endclass"
+  className="Item"
 >
   <div
     className="ItemHeader"
@@ -31,7 +31,7 @@ exports[`Update_Proposal component Test UI Test 1`] = `
     <div
       className="Item_title"
     >
-      Update Proposal
+      Delete Comment
     </div>
   </div>
 </div>

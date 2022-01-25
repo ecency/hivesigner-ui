@@ -35,9 +35,6 @@ describe("Login component Test", () => {
     expect(shallow(<Login />).find(".CheckDiv").length).toEqual(1);
   });
   test("each components test", () => {
-    expect(shallow(<Login />).find(".Button").length).toEqual(1);
-  });
-  test("each components test", () => {
     expect(shallow(<Login />).find(".Signuplink").length).toEqual(1);
   });
   test("each components test", () => {

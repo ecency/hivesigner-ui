@@ -38,10 +38,9 @@ describe("App component Test", () => {
     expect(ProductContainer).toMatchSnapshot();
   });
   test("each components test", () => {
-    expect(shallow(<App />).find(".ShapeContainer").length).toEqual(1);
+    expect(shallow(<App />).find(".ShapeContainer").length).toEqual(1.5);
     expect(shallow(<App />).find(".ShapeHeader").length).toEqual(1);
     expect(shallow(<App />).find(".StoreTitle").length).toEqual(1);
-    expect(shallow(<App />).find(".SearchContent").length).toEqual(1);
-    expect(shallow(<App />).find(".ProductContainer").length).toEqual(1);
+    expect(shallow(<App />).find(".testing").length).toEqual(1);
   });
 });
