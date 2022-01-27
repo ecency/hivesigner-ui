@@ -1,4 +1,4 @@
-export default {
+const USVAL = {
   common: {
     continue: "Continue",
     continue_to: "Continue to {item}",
@@ -120,7 +120,7 @@ export default {
     hs_password_not_match: "Hivesigner passwords do not match",
     hs_password_length: `Hivesigner password has to be at least 8 characters long, contain lowercase letter and uppercase letter`,
     invalid_hs_password: "Invalid Hivesigner password",
-    encryption_key_message: `This is a custom password you\'ve set to unlock your account for usage. This is not your Hive private key. If you forgot your Hivesigner password you can import your account again.`,
+    encryption_key_message: `This is a custom password you 've set to unlock your account for usage. This is not your Hive private key. If you forgot your Hivesigner password you can import your account again.`,
     need_import: `You need to import your account using your password or at least {authority} key to do this request. Click "Add another account" button to proceed.`,
   },
   operations: {
@@ -261,3 +261,4 @@ export default {
     sign: "Sign",
   },
 };
+export default USVAL;

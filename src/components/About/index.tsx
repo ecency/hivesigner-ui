@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { AiFillGithub } from "react-icons/ai";
-import { MdOpenInNew } from 'react-icons/md';
+import { MdOpenInNew } from "react-icons/md";
 import Content from "../../layouts/content";
 import "./index.scss";
 import HomeLogo from "../../assets/img/logo";
@@ -51,11 +51,11 @@ const Index = () => {
           <span className="license">License:MIT</span>
         </div>
         <div className="LinkGroup">
-          <a href="#">
+          <a href="/">
             <MdOpenInNew className="openinnewIcon" />
             Website
           </a>
-          <a href="#">
+          <a href="/">
             <MdOpenInNew className="openinnewIcon" />
             Download Logo
           </a>
@@ -80,7 +80,10 @@ const Index = () => {
         </div>
         {showNavbar && (
           <div className="Aboutfix">
-            <div className="ResBack" onClick={() => setshowNavbar(!showNavbar)} />
+            <div
+              className="ResBack"
+              onClick={() => setshowNavbar(!showNavbar)}
+            />
             <Navbar />
           </div>
         )}

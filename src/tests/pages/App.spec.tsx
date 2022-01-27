@@ -38,9 +38,17 @@ describe("App component Test", () => {
     expect(ProductContainer).toMatchSnapshot();
   });
   test("each components test", () => {
-    expect(shallow(<App />).find(".ShapeContainer").length).toEqual(1.5);
+    expect(shallow(<App />).find(".ShapeContainer").length).toEqual(1);
     expect(shallow(<App />).find(".ShapeHeader").length).toEqual(1);
     expect(shallow(<App />).find(".StoreTitle").length).toEqual(1);
-    expect(shallow(<App />).find(".testing").length).toEqual(1);
+  });
+  test("function test", () => {
+    const search = jest.fn();
+    const component = shallow(<App />);
+    const event = {
+      target: { value: "" },
+    } as React.ChangeEvent<HTMLInputElement>;
+    component.find(".initInput").at(0).simulate("change", event);
+    // expect(search).toBeCalled();
   });
 });

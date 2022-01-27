@@ -2,7 +2,8 @@ import React from "react";
 import Home from "../../components/Index/Home";
 import Adapter from "@wojtekmaj/enzyme-adapter-react-17";
 import renderer from "react-test-renderer";
-import Enzyme, { shallow } from "enzyme";
+import Enzyme, { mount, shallow } from "enzyme";
+import { Link } from "react-router-dom";
 describe("Home component Test", () => {
   Enzyme.configure({ adapter: new Adapter() });
   test("Snapshot testing", () => {
@@ -24,5 +25,9 @@ describe("Home component Test", () => {
     expect(shallow(<Home />).find(".DetailContent").length).toEqual(1);
     expect(shallow(<Home />).find(".Button").length).toEqual(1);
     expect(shallow(<Home />).find(".homefix").length).toEqual(1);
+  });
+  test("function test", () => {
+    const wrapper = shallow(<Home />);
+    expect(wrapper.find(Link).props().to).toEqual("/import");
   });
 });

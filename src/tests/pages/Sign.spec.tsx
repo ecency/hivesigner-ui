@@ -31,4 +31,13 @@ describe("Sign component Test", () => {
     expect(shallow(<Sign />).find(".Title").length).toEqual(1);
     expect(shallow(<Sign />).find(".SignMenubar").length).toEqual(1);
   });
+  test("function test", () => {
+    const SignInput = jest.fn();
+    const component = shallow(<Sign />);
+    const event = {
+      target: { value: "" },
+    } as React.ChangeEvent<HTMLInputElement>;
+    component.find(".SignInput").at(0).simulate("change", event);
+    // expect(SignInput).toBeCalled();
+  });
 });
