@@ -7,7 +7,6 @@ import Navbar from "../Index/Navbar";
 import Content from "../../layouts/content";
 import "./index.scss";
 import HomeLogo from "../../assets/img/logo-white";
-import { AiOutlineSelect } from "react-icons/ai";
 const Index = () => {
   const [init_value, setInit_value] = useState("");
   const [count, setCount] = useState(0);
@@ -96,21 +95,23 @@ const Index = () => {
               </div>
             ))}
           </div>
-          <div className="recentapp">Recently created</div>
-          <div className="ProductContainer">
-            {Recentapp.map((item: any, key: any) => (
-              <div
-                className="ProductItem"
-                key={key}
-                onClick={() => {
-                  handleProcess(item);
-                }}
-              >
-                {item.avatar == "circle" ? <div className="circle" /> : <img width="60px" src={item.avatar} alt="logo" />}
-                <p>{item.name}</p>
-              </div>
-            ))}
-          </div>
+          {!init_value && <>
+            <div className="recentapp">Recently created</div>
+            <div className="ProductContainer">
+              {Recentapp.map((item: any, key: any) => (
+                <div
+                  className="ProductItem"
+                  key={key}
+                  onClick={() => {
+                    handleProcess(item);
+                  }}
+                >
+                  {item.avatar == "circle" ? <div className="circle" /> : <img width="60px" src={item.avatar} alt="logo" />}
+                  <p>{item.name}</p>
+                </div>
+              ))}
+            </div>
+          </>}
           {showNavbar && (
             <div className="fix">
               <div className="ResBack" onClick={() => setshowNavbar(!showNavbar)} />

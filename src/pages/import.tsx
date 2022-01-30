@@ -123,7 +123,7 @@ const Import = () => {
               </span>
             </div>
             <div className={`ButtonImport ${(init_username && init_password) && 'ButtonBG'}`}>
-              {flag ? t("common.continue") : "Login"}
+              {flag ? "Login" : t("common.continue")}
             </div>
             <div className="Signuplink">
               Don`t have an account? <a href="https://signup.hive.io/" target='_blank' className="signupLabel">Signup here</a>
