@@ -61,7 +61,10 @@ const Home = () => {
             </Link>
             {showNavbar && (
               <div className="homefix">
-                <div className="ResBack" onClick={() => setshowNavbar(!showNavbar)} />
+                <div
+                  className="ResBack"
+                  onClick={() => setshowNavbar(!showNavbar)}
+                />
                 <Navbar />
               </div>
             )}

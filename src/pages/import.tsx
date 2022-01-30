@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { ImMenu } from "react-icons/im";
@@ -50,8 +49,7 @@ const Import = () => {
     setshowNavbar(!showNavbar);
   };
   const InputBlurFunc = () => {
-    if (!init_username)
-      setNamefocus(true);
+    if (!init_username) setNamefocus(true);
   };
 
   const handleCheck = () => {
@@ -72,17 +70,23 @@ const Import = () => {
           <Auth />
         </div>
         <div className="HomeDetail">
-          <a href="/"><div className="ImportHeader">
-            <div className="logo_image">
-              <Logo />
+          <a href="/">
+            <div className="ImportHeader">
+              <div className="logo_image">
+                <Logo />
+              </div>
+              <p>Hivesigner</p>
             </div>
-            <p>Hivesigner</p>
-          </div>
           </a>
 
           <div className="DetailContent">
             <div className="InputContainer">
-              <div className="Label">Username{(namefocus && !init_username) && <span> / Hive username is required</span>}</div>
+              <div className="Label">
+                Username
+                {namefocus && !init_username && (
+                  <span> / Hive username is required</span>
+                )}
+              </div>
               <div className="InputGroup">
                 <input
                   className="CustomInputName"
@@ -109,7 +113,11 @@ const Import = () => {
                     type={passwordShown ? "text" : "password"}
                   />
                   <i onClick={togglePasswordVisiblity}>
-                    {passwordShown ? <FiEye className="eyeIcon" /> : <FiEyeOff className="eyeIcon" />}
+                    {passwordShown ? (
+                      <FiEye className="eyeIcon" />
+                    ) : (
+                      <FiEyeOff className="eyeIcon" />
+                    )}
                   </i>
                 </div>
               </div>
@@ -117,7 +125,11 @@ const Import = () => {
 
             <div className="CheckDiv">
               <label />
-              <input type="checkbox" className="check-radio-multi" onChange={() => handleCheck()} />
+              <input
+                type="checkbox"
+                className="check-radio-multi"
+                onChange={() => handleCheck()}
+              />
               <span>
                 Save and encrypt your login information with a password
               </span>
@@ -126,13 +138,24 @@ const Import = () => {
               {flag ? "Login" : t("common.continue")}
             </div>
             <div className="Signuplink">
-              Don`t have an account? <a href="https://signup.hive.io/" target='_blank' className="signupLabel">Signup here</a>
+              Don`t have an account?{" "}
+              <a
+                href="https://signup.hive.io/"
+                target="_blank"
+                className="signupLabel"
+                rel="noreferrer"
+              >
+                Signup here
+              </a>
             </div>
           </div>
 
           {showNavbar && (
             <div className="importfix">
-              <div className="ResBack" onClick={() => setshowNavbar(!showNavbar)} />
+              <div
+                className="ResBack"
+                onClick={() => setshowNavbar(!showNavbar)}
+              />
               <Navbar />
             </div>
           )}

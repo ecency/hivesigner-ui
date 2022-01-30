@@ -28,6 +28,7 @@ const CancelLimitOrder = () => {
             <input
               type="text"
               value={owner}
+              className="ownerInput"
               onChange={(e: any) => setInitOwner(e.target.value)}
             />
           </div>
@@ -36,6 +37,7 @@ const CancelLimitOrder = () => {
             <input
               type="text"
               value={orderid}
+              className="orderInput"
               onChange={(e: any) => setInitOrderId(e.target.value)}
             />
           </div>

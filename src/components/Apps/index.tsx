@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ImMenu } from "react-icons/im";
 import { BiSearch } from "react-icons/bi";
 import { AiOutlineClose } from "react-icons/ai";
@@ -9,7 +9,6 @@ import "./index.scss";
 import HomeLogo from "../../assets/img/logo-white";
 const Index = () => {
   const [init_value, setInit_value] = useState("");
-  const [count, setCount] = useState(0);
   const [showNavbar, setshowNavbar] = useState(true);
   const [showSlider, setShowSlider] = useState(false);
   const [slidertitle, setslidertitle] = useState("ecency");
@@ -32,12 +31,12 @@ const Index = () => {
   const handleChange = () => {
     setshowNavbar(!showNavbar);
   };
-  let len = 0;
+  // let len = 0;
   const handleSearch = (e: any) => {
     setInit_value(e.target.value);
   };
   useEffect(() => {
-    len = Topapp.length;
+    // len = Topapp.length;
   }, []);
   const handleProcess = (item: any) => {
     setsliderlogo(item.avatar);
@@ -56,7 +55,11 @@ const Index = () => {
           </a>
           <div className="StoreTitle">App store</div>
           <div className="AppMenubar" onClick={() => handleChange()}>
-            {showNavbar ? <AiOutlineClose className="aiclose" /> : <ImMenu className="aiclose" />}
+            {showNavbar ? (
+              <AiOutlineClose className="aiclose" />
+            ) : (
+              <ImMenu className="aiclose" />
+            )}
           </div>
         </div>
         <div className="contentdiv">
@@ -67,9 +70,10 @@ const Index = () => {
               value={init_value}
               onChange={(e: any) => handleSearch(e)}
               placeholder="Search for apps"
+              className="initInput"
             />
           </div>
-          {len !== 0 && (
+          {/* {len !== 0 && (
             <div className="ResultContent">
               <div className="ResultText">
                 {"Search for '" + init_value + "'"}
@@ -79,7 +83,7 @@ const Index = () => {
                 {"We didn't find any apps for'" + init_value + "'"}
               </div>
             </div>
-          )}
+          )} */}
           <div className="topapps">Top apps</div>
           <div className="ProductContainer">
             {Topapp.map((item: any, key: any) => (
@@ -90,11 +94,16 @@ const Index = () => {
                   handleProcess(item);
                 }}
               >
-                {item.avatar == "circle" ? <div className="circle" /> : <img width="60px" src={item.avatar} alt="logo" />}
+                {item.avatar === "circle" ? (
+                  <div className="circle" />
+                ) : (
+                  <img width="60px" src={item.avatar} alt="logo" />
+                )}
                 <p>{item.name}</p>
               </div>
             ))}
           </div>
+<<<<<<< HEAD
           {!init_value && <>
             <div className="recentapp">Recently created</div>
             <div className="ProductContainer">
@@ -112,42 +121,73 @@ const Index = () => {
               ))}
             </div>
           </>}
+=======
+          <div className="recentapp">Recently created</div>
+          <div className="ProductContainer">
+            {Recentapp.map((item: any, key: any) => (
+              <div
+                className="ProductItem"
+                key={key}
+                onClick={() => {
+                  handleProcess(item);
+                }}
+              >
+                {item.avatar === "circle" ? (
+                  <div className="circle" />
+                ) : (
+                  <img width="60px" src={item.avatar} alt="logo" />
+                )}
+                <p>{item.name}</p>
+              </div>
+            ))}
+          </div>
+>>>>>>> c189ac5bc30e3bf8ddbe764fa2f904b904cefb51
           {showNavbar && (
             <div className="fix">
-              <div className="ResBack" onClick={() => setshowNavbar(!showNavbar)} />
+              <div
+                className="ResBack"
+                onClick={() => setshowNavbar(!showNavbar)}
+              />
               <Navbar />
             </div>
           )}
         </div>
       </div>
-      {
-        showSlider && (
-          <div className="slideOut">
-            <div className="sliderbackground" onClick={() => setShowSlider(false)} />
-            <div className="slider">
-              <div className="slider_header">
-                <span>{slidertitle}</span>
-                <AiOutlineClose
-                  className="close"
-                  onClick={() => {
-                    setShowSlider(false);
-                  }}
-                />
+      {showSlider && (
+        <div className="slideOut">
+          <div
+            className="sliderbackground"
+            onClick={() => setShowSlider(false)}
+          />
+          <div className="slider">
+            <div className="slider_header">
+              <span>{slidertitle}</span>
+              <AiOutlineClose
+                className="close"
+                onClick={() => {
+                  setShowSlider(false);
+                }}
+              />
+            </div>
+            <div className="sliderlogopart">
+              <div className="Logotopline" />
+              {sliderlogo === "circle" ? (
+                <div className="circle" />
+              ) : (
+                <img src={sliderlogo} width={70} alt="logo" />
+              )}
+              <div className="slidertitlepart">
+                {slidertitle.split(".")[0].toUpperCase()}
               </div>
-              <div className="sliderlogopart">
-                <div className="Logotopline" />
-                {sliderlogo === "circle" ? <div className="circle" /> : <img src={sliderlogo} width={70} />}
-                <div className="slidertitlepart">{slidertitle.split('.')[0].toUpperCase()}</div>
-                <div className="aboutpart">
-                  <p>About</p>
-                  {slidertitle}
-                </div>
+              <div className="aboutpart">
+                <p>About</p>
+                {slidertitle}
               </div>
             </div>
           </div>
-        )
-      }
-    </Content >
+        </div>
+      )}
+    </Content>
   );
 };
 

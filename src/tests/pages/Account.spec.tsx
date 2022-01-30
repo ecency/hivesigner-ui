@@ -3,6 +3,7 @@ import Accounts from "../../components/Accounts";
 import Adapter from "@wojtekmaj/enzyme-adapter-react-17";
 import renderer from "react-test-renderer";
 import Enzyme, { shallow } from "enzyme";
+import { Link } from "react-router-dom";
 describe("Accounts component Test", () => {
   Enzyme.configure({ adapter: new Adapter() });
   test("Header snapshot testing", () => {
@@ -30,5 +31,12 @@ describe("Accounts component Test", () => {
   });
   test("each components test", () => {
     expect(shallow(<Accounts />).find(".AccountsContainer").length).toEqual(1);
+  });
+  test("function test", () => {
+    expect(
+      shallow(<Accounts />)
+        .find(Link)
+        .props().to
+    ).toEqual("/import");
   });
 });

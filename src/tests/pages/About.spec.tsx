@@ -22,4 +22,5 @@ describe("About component Test", () => {
     expect(shallow(<About />).find(".Contributors").length).toEqual(1);
     expect(shallow(<About />).find(".Aboutfix").length).toEqual(1);
   });
+  test("function test", () => {});
 });
