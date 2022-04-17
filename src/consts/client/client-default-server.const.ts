@@ -1,6 +1,6 @@
 export const DEFAULT_SERVER = [
   'https://rpc.ecency.com',
-  'https://api.hive.blog',
+  'https://rpc.ausbit.dev',
   'https://api.deathwing.me'
 ]
 export const DEFAULT_TESTNET_SERVER = [
