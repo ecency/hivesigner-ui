@@ -1,5 +1,6 @@
-import { b64uLookup } from '~/consts'
 import { Buffer } from 'buffer'
+import { b64uLookup } from '~/consts'
+
 
 export function b64uEnc (str: string): string {
   return Buffer.from(str, 'utf8').toString('base64').replace(/(\+|\/|=)/g, m => b64uLookup[m]);
