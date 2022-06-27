@@ -34,6 +34,7 @@
     "@nuxtjs/axios": "^5.12.5",
     "@types/triplesec": "^3.0.0",
     "bs58": "^4.0.1",
+    "buffer": "^6.0.3",
     "core-js": "^3.8.3",
     "date-fns": "^2.23.0",
     "hive-uri": "^0.2.3",
