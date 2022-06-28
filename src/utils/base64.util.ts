@@ -1,4 +1,4 @@
-import { Base64 } from 'js-base64';
+import { Base64 } from 'js-base64'
 import { b64uLookup } from '~/consts'
 
 export function b64uEnc (str: string): string {
