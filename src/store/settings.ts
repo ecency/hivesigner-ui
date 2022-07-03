@@ -16,7 +16,7 @@ export default class Settings extends VuexModule {
   public language: string = 'en'
   public timeout: string = '20'
   public theme: string = 'white'
-  public address: string = 'https://api.hive.blog'
+  public address: string = 'https://rpc.ecency.com'
 
   @VuexMutation
   public saveProperties (properties: any): void {
