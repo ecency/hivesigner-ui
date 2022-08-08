@@ -200,7 +200,7 @@ export default class Sign extends Vue {
         sig,
         id: confirmation.id || undefined,
         block: confirmation.block_num || undefined,
-        txn: confirmation.txn_num || undefined
+        txn: confirmation.trx_num || undefined
       })
     } else {
       this.loading = false
