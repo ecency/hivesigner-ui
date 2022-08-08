@@ -197,11 +197,11 @@ export default class Sign extends Vue {
         this.parsed.params.callback || `${this.$route.query.redirect_uri}?id=${confirmation.id}`
       // @ts-ignore
       window.location = hiveuri.resolveCallback(cburl, {
-        sig,
+        sig: sig,
         id: confirmation.id || undefined,
         block: confirmation.block_num || undefined,
-        txn: confirmation.txn_num || undefined
-      })
+        txn: confirmation.trx_num || undefined
+      });
     } else {
       this.loading = false
     }
