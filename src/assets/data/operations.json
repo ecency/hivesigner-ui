@@ -228,8 +228,61 @@
       }
     }
   },
+  "witness_update": {
+    "name": "Witness update",
+    "authority": "active",
+    "schema": {
+      "owner": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "url": {
+        "type": "string",
+        "defaultValue": "https://ecency.com"
+      },
+      "block_signing_key": {
+        "type": "string",
+        "defaultValue": "STM1111111111111111111111111111111114T1Anm"
+      },
+      "props": {
+        "type": "object",
+        "defaultValue": {
+          "account_creation_fee": "1.000 HIVE",
+          "maximum_block_size": 131072,
+          "hbd_interest_rate": 2000
+        }
+      },
+      "fee": {
+        "type": "string",
+        "defaultValue": "0.000 HIVE"
+      }
+    }
+  },
+  "witness_set_properties": {
+    "name": "Witness set properties",
+    "authority": "active",
+    "schema": {
+      "owner": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "props": {
+        "type": "object",
+        "defaultValue": {
+          "account_creation_fee": "1.000 HIVE",
+          "account_subsidy_budget": 10000,
+          "account_subsidy_decay": 330782,
+          "maximum_block_size": 65536,
+          "hbd_interest_rate": 2000,
+          "hbd_exchange_rate": {"base": "0.000 HBD", "quote": "0.000 HIVE"},
+          "url": "https://ecency.com",
+          "new_signing_key": "STM1111111111111111111111111111111114T1Anm"
+        }
+      }
+    }
+  },
   "account_witness_proxy": {
-    "name": "Witness proxy",
+    "name": "Governance proxy",
     "authority": "active",
     "schema": {
       "account": {
