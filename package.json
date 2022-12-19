@@ -29,7 +29,7 @@
     "@babel/plugin-proposal-throw-expressions": "^7.14.5",
     "@bugsnag/js": "^7.11.0",
     "@bugsnag/plugin-vue": "^7.11.0",
-    "@hiveio/dhive": "0.14.16",
+    "@hiveio/dhive": "^1.2.4",
     "@nuxt/typescript-runtime": "^2.0.1",
     "@nuxtjs/axios": "^5.12.5",
     "@types/triplesec": "^3.0.0",

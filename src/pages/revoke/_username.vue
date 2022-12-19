@@ -78,7 +78,7 @@ export default class RevokeUsername extends Vue {
   }
 
   private get successMessage (): string {
-    return `<span class="text-gray">${this.$t('sign.transaction_id')}:</span> <a href="https://hiveblocks.com/tx/${this.transactionId}" target="_blank" class="text-black hover:underline cursor-pointer">${this.transactionId}</a>`
+    return `<span class="text-gray">${this.$t('sign.transaction_id')}:</span> <a href="https://hivexplorer.com/tx/${this.transactionId}" target="_blank" class="text-black hover:underline cursor-pointer">${this.transactionId}</a>`
   }
 
   private get failureMessage (): string {

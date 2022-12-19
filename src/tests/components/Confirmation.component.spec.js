@@ -46,7 +46,7 @@ describe('ConfirmationComponent', function () {
     await wrapper.setProps({
       id: 'test'
     })
-    expect(wrapper.find('a').element.getAttribute('href')).toBe('https://hiveblocks.com/tx/test')
+    expect(wrapper.find('a').element.getAttribute('href')).toBe('https://hivexplorer.com/tx/test')
   })
 
   it('should contain ID as text in link', async function () {

@@ -1,7 +1,7 @@
 <template>
   <div class="alert alert-success mb-4">
     {{ $t('confirmation') }}
-    <a :href="`https://hiveblocks.com/tx/${id}`" target="_blank" class="text-black hover:underline">
+    <a :href="`https://hivexplorer.com/tx/${id}`" target="_blank" class="text-black hover:underline">
       {{ id }}
     </a>
   </div>
