@@ -348,6 +348,38 @@
       }
     }
   },
+  "create_claimed_account": {
+    "name": "Create account with account credits",
+    "authority": "active",
+    "schema": {
+      "creator": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "new_account_name": {
+        "type": "account"
+      },
+      "memo_key": {
+        "type": "string"
+      },
+      "json_metadata": {
+        "type": "string"
+      },
+      "owner": {
+        "type": "object"
+      },
+      "active": {
+        "type": "object"
+      },
+      "posting": {
+        "type": "object"
+      },
+      "extensions": {
+        "type": "array",
+        "defaultValue": []
+      }
+    }
+  },
   "vote": {
     "name": "Vote",
     "authority": "posting",
