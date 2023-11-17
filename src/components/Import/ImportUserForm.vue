@@ -99,7 +99,7 @@ export default class ImportUserForm extends Vue {
     password: false
   }
 
-  private storeAccount = true
+  private storeAccount = false
 
   private get username (): string {
     return PersistentFormsModule.import.username
