@@ -70,7 +70,7 @@ import {
   processTransaction,
   resolveTransaction
 } from '~/utils'
-import { AuthModule, SettingsModule } from '~/store'
+import { AccountsModule, AuthModule, SettingsModule } from '~/store'
 import { Authority } from '~/enums'
 import SinglePageLayout from '~/components/Layouts/SinglePageLayout.vue'
 
@@ -130,16 +130,7 @@ export default class Sign extends Vue {
   }
 
   private mounted (): void {
-    if (!this.authority && this.parsed && this.parsed.tx) {
-      this.hasRequiredKey = !!(
-        AuthModule.username && (
-          (this.authority === 'owner' && AuthModule.keys.owner) ||
-          (this.authority === 'active' && (AuthModule.keys.owner || AuthModule.keys.active)) ||
-          (this.authority === 'posting' && (AuthModule.keys.owner || AuthModule.keys.active || AuthModule.keys.posting)) ||
-          AuthModule.keys[this.authority]
-        )
-      )
-    }
+    this.setHasRequiredKey()
   }
 
   private parseUri (uri): void {
@@ -153,6 +144,15 @@ export default class Sign extends Vue {
       }
     }
     this.parsed = processTransaction(parsed, this.config)
+    this.setHasRequiredKey()
+  }
+
+  private setHasRequiredKey (): void {
+    if (this.authority && this.parsed && this.parsed.tx) {
+      this.hasRequiredKey = !!(AuthModule.username && AccountsModule.isValidKeysForAuthority(this.authority, AuthModule.keys))
+    } else {
+      this.hasRequiredKey = null
+    }
   }
 
   private async handleSubmit (): Promise<void> {
