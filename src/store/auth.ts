@@ -33,13 +33,11 @@ export default class Auth extends VuexModule {
   }
 
   private getPrivateKey (authority: string): PrivateKey {
-    const { keys } = this.context.state as Auth
-
-    if (!authority || !keys[authority]) {
+    if (!authority || !this.keys[authority]) {
       throw new Error(`Missing required ${authority || ''} key`)
     }
 
-    return privateKeyFrom(keys[authority])
+    return privateKeyFrom(this.keys[authority])
   }
 
   @VuexMutation
@@ -67,10 +65,8 @@ export default class Auth extends VuexModule {
 
   @VuexAction
   public async loginSession (): Promise<void> {
-    const { encryptedUserAccess, account } = this.context.state as Auth
-
-    if (encryptedUserAccess && account && isAfter(new Date(), new Date(encryptedUserAccess))) {
-      await this.context.dispatch('logout')
+    if (this.encryptedUserAccess && this.account && isAfter(new Date(), new Date(this.encryptedUserAccess))) {
+      await this.logout()
     }
   }
 
@@ -90,23 +86,23 @@ export default class Auth extends VuexModule {
 
     const result = await client.database.getAccounts([username])
 
-    this.context.commit('setUser', { result: result[0], keys })
+    this.setUser({ result: result[0], keys })
 
     if (!AccountsModule.isDecrypted(username)) {
       const now = new Date()
-      this.context.commit('setEncryptedAccountAsAccessible', add(now, { days: 1 }))
+      this.setEncryptedAccountAsAccessible(add(now, { days: 1 }))
     }
   }
 
   @VuexAction
   public async logout (): Promise<void> {
-    this.context.commit('clearUser')
+    this.clearUser()
   }
 
   @VuexAction
   public async loadAccount (): Promise<void> {
     const [account] = await client.database.getAccounts([this.username])
-    this.context.commit('setAccount', account)
+    this.setAccount(account)
   }
 
   @VuexAction({
@@ -123,8 +119,7 @@ export default class Auth extends VuexModule {
   })
   public async signMessage ({ message, authority }: { message: Record<string, string>, authority: string }): Promise<Record<string, object | object[] | number>> {
     const timestamp = parseInt((new Date().getTime() / 1000) + '', 10)
-    const { account } = this.context.state as Auth
-    const messageObj: Record<string, object | object[] | number> = { signed_message: message, authors: [account?.name || ''], timestamp }
+    const messageObj: Record<string, object | object[] | number> = { signed_message: message, authors: [this.username], timestamp }
     const hash = cryptoUtils.sha256(JSON.stringify(messageObj))
     const privateKey = this.getPrivateKey(authority)
     const signature = privateKey.sign(hash).toString()
@@ -143,7 +138,7 @@ export default class Auth extends VuexModule {
     rawError: true
   })
   public async updateAccount (data: AccountUpdateOperation[1]): Promise<TransactionConfirmation> {
-    const privateKey = this.getPrivateKey('owner')
+    const privateKey = this.getPrivateKey('active')
     return client.broadcast.updateAccount(data, privateKey)
   }
 
@@ -153,10 +148,10 @@ export default class Auth extends VuexModule {
       type: payload.responseType === 'code' ? 'code' : payload.scope,
       ...(payload.app ? { app: payload.app } : {})
     }
-    const signedMessageObj = await this.context.dispatch('signMessage', {
+    const signedMessageObj = await this.signMessage({
       message: loginObj,
       authority: payload.authority
-    }) as Record<string, object | object[] | number>;
+    });
     [payload.signature] = signedMessageObj.signatures as string[]
     const token = b64uEnc(JSON.stringify(signedMessageObj))
 
