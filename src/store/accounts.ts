@@ -61,8 +61,9 @@ export default class Accounts extends VuexModule {
   public get isValidKeysForAuthority (): (authority: string, keys: Record<string, string>) => boolean {
     return (authority, keys) =>
       !!((authority === 'owner' && keys.owner) ||
-      (authority === 'active' && (keys.owner || keys.active)) ||
-      (authority === 'posting' && (keys.owner || keys.active || keys.posting)) ||
+      (authority === 'active' && keys.active) ||
+      (authority === 'posting' && keys.posting) ||
+      (authority === 'memo' && keys.memo) ||
       keys[authority])
   }
 
