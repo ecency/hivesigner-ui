@@ -4,7 +4,6 @@ import {
   Account,
   AccountUpdateOperation,
   cryptoUtils,
-  PrivateKey,
   SignedTransaction,
   Transaction,
   TransactionConfirmation
@@ -30,14 +29,6 @@ export default class Auth extends VuexModule {
 
   public get password (): string {
     return this.keys.owner || this.keys.active || this.keys.posting || this.keys.memo
-  }
-
-  private getPrivateKey (authority: string): PrivateKey {
-    if (!authority || !this.keys[authority]) {
-      throw new Error(`Missing required ${authority || ''} key`)
-    }
-
-    return privateKeyFrom(this.keys[authority])
   }
 
   @VuexMutation
@@ -110,7 +101,9 @@ export default class Auth extends VuexModule {
   })
   public async sign ({ tx, authority }: { tx: Transaction, authority: string }): Promise<SignedTransaction> {
     const { chainId } = this.context.rootState.settings
-    const privateKey = this.getPrivateKey(authority)
+    const privateKey = authority && this.keys[authority]
+      ? privateKeyFrom(this.keys[authority])
+      : privateKeyFrom(this.password)
     return cryptoUtils.signTransaction(tx, [privateKey], Buffer.from(chainId, 'hex'))
   }
 
@@ -121,7 +114,10 @@ export default class Auth extends VuexModule {
     const timestamp = parseInt((new Date().getTime() / 1000) + '', 10)
     const messageObj: Record<string, object | object[] | number> = { signed_message: message, authors: [this.username], timestamp }
     const hash = cryptoUtils.sha256(JSON.stringify(messageObj))
-    const privateKey = this.getPrivateKey(authority)
+    const privateKey =
+      authority && this.keys[authority]
+        ? privateKeyFrom(this.keys[authority])
+        : privateKeyFrom(this.password)
     const signature = privateKey.sign(hash).toString()
     messageObj.signatures = [signature]
     return messageObj
@@ -138,7 +134,7 @@ export default class Auth extends VuexModule {
     rawError: true
   })
   public async updateAccount (data: AccountUpdateOperation[1]): Promise<TransactionConfirmation> {
-    const privateKey = this.getPrivateKey('active')
+    const privateKey = privateKeyFrom(this.keys.owner || this.keys.active)
     return client.broadcast.updateAccount(data, privateKey)
   }
 
