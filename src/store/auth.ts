@@ -134,7 +134,8 @@ export default class Auth extends VuexModule {
     rawError: true
   })
   public async updateAccount (data: AccountUpdateOperation[1]): Promise<TransactionConfirmation> {
-    const privateKey = privateKeyFrom(this.keys.owner || this.keys.active)
+    // account_update operation requires active authority
+    const privateKey = privateKeyFrom(this.keys.active)
     return client.broadcast.updateAccount(data, privateKey)
   }
 
