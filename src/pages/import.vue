@@ -277,7 +277,7 @@ export default class Import extends Vue {
 
   private async startLogin (): Promise<void> {
     this.isLoading = true
-    const { username, password, authority } = this
+    const { username, password } = this
     const keys = await AccountsModule.getAuthoritiesKeys({ username, password })
 
     // Check if user needs to add posting authority (requires active or owner key)
