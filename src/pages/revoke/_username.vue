@@ -61,8 +61,9 @@ export default class RevokeUsername extends Vue {
     return ['active', 'owner'].includes(this.authority) ? this.authority : Authority.Active
   }
 
-  private get callback (): any {
-    return this.$route.query.redirect_uri
+  private get callback (): string {
+    const redirectUri = this.$route.query.redirect_uri as string
+    return redirectUri ? decodeURIComponent(redirectUri) : ''
   }
 
   private get account (): Account {

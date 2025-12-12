@@ -102,7 +102,8 @@ export default class Import extends Vue {
   }
 
   private get callback (): string {
-    return this.$route.query.redirect_uri as string
+    const redirectUri = this.$route.query.redirect_uri as string
+    return redirectUri ? decodeURIComponent(redirectUri) : ''
   }
 
   private get state (): string {

@@ -103,7 +103,8 @@ export default class Login extends Vue {
   }
 
   private get callback (): string {
-    return this.$route.query.redirect_uri as string || this.$route.query.redirect as string
+    const redirectUri = this.$route.query.redirect_uri as string || this.$route.query.redirect as string
+    return redirectUri ? decodeURIComponent(redirectUri) : ''
   }
 
   private get clientId (): string {
