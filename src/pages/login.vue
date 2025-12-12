@@ -173,9 +173,13 @@ export default class Login extends Vue {
 
   private async loginMe (keys: Record<string, string>): Promise<void> {
     const { authority } = this
-    if (!AccountsModule.isValidKeysForAuthority(authority, keys)) {
+    const requiredAuthority = authority === Authority.Posting && !this.hasAuthority
+      ? Authority.Active
+      : authority
+
+    if (!AccountsModule.isValidKeysForAuthority(requiredAuthority, keys)) {
       this.isLoading = false
-      this.error = this.$t('login.need_import', { authority }) as string
+      this.error = this.$t('login.need_import', { authority: requiredAuthority }) as string
       return
     }
     this.isLoading = true
