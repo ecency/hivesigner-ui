@@ -279,11 +279,20 @@ export default class Import extends Vue {
     this.isLoading = true
     const { username, password, authority } = this
     const keys = await AccountsModule.getAuthoritiesKeys({ username, password })
-    if (!AccountsModule.isValidKeysForAuthority(authority, keys)) {
+
+    // Check if user needs to add posting authority (requires active or owner key)
+    if (
+      this.scope === 'posting' &&
+      this.clientId &&
+      !this.hasAuthority &&
+      !keys.active &&
+      !keys.owner
+    ) {
       this.isLoading = false
-      this.error = this.$t('import.master_key', { authority }) as string
+      this.error = this.$t('import.master_key', { authority: 'active' }) as string
       return
     }
+
     this.loading = true
     this.showLoading = true
 
