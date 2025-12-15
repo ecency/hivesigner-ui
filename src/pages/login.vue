@@ -147,7 +147,7 @@ export default class Login extends Vue {
   }
 
   private get hasAuthority (): boolean {
-    const auths = this.account.posting.account_auths.map(auth => auth[0])
+    const auths = this.account?.posting?.account_auths?.map(auth => auth[0]) || []
     return auths.includes(this.clientId)
   }
 
