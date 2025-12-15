@@ -91,6 +91,7 @@ export default class Login extends Vue {
   private signature = null
   private app = null
   private appProfile: Record<string, string> = {}
+  private postingAuthorities: string[] = []
 
   private get isRedirected (): boolean {
     return this.redirected === '/auths' ||
@@ -142,25 +143,33 @@ export default class Login extends Vue {
     return AuthModule.username
   }
 
+  private get username (): string {
+    return this.currentAccountUsername || AccountsModule.selectedAccount
+  }
+
   private get account (): Account | null {
     return AuthModule.account
   }
 
   private get hasAuthority (): boolean {
-    const auths = this.account?.posting?.account_auths?.map(auth => auth[0]) || []
-    return auths.includes(this.clientId)
+    const auths = this.account?.posting?.account_auths?.map(auth => auth[0]) || this.postingAuthorities
+    return this.clientId ? auths.includes(this.clientId) : false
   }
 
-  private mounted (): void {
+  private async mounted (): Promise<void> {
     this.redirected = this.$route.query.redirect as string || ''
     if (this.$route.fullPath === '/login' || this.$route.fullPath === '/login?authority=posting') {
       this.redirected = '/login'
     }
 
+    if (this.scope === 'posting' && this.clientId) {
+      await this.loadPostingAuthorities()
+    }
+
     if (
       this.scope === 'posting' &&
       this.clientId &&
-      this.currentAccountUsername &&
+      this.username &&
       !this.hasAuthority
     ) {
       this.$router.push({
@@ -263,6 +272,26 @@ export default class Login extends Vue {
       this.failed = true
     }
     this.showLoading = false
+  }
+
+  private async loadPostingAuthorities (): Promise<void> {
+    const username = this.username
+    if (!username) {
+      return
+    }
+
+    if (this.account?.name === username) {
+      this.postingAuthorities = this.account?.posting?.account_auths?.map(auth => auth[0]) || []
+      return
+    }
+
+    try {
+      const [account] = await client.database.getAccounts([username])
+      this.postingAuthorities = account?.posting?.account_auths?.map(auth => auth[0]) || []
+    } catch (error) {
+      console.error('Failed to load posting authorities', error)
+      Bugsnag.notify(error)
+    }
   }
 }
 </script>
