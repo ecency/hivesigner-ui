@@ -11,7 +11,7 @@ import {
 // import bugsnag from './../plugins/bugsnag'
 import { AccountsModule } from './index'
 import { b64uEnc, client, privateKeyFrom } from '~/utils'
-import { VuexModule } from '~/models'
+import { SignedMessagePayload, VuexModule } from '~/models'
 
 @Module({
   stateFactory: true,
@@ -110,9 +110,13 @@ export default class Auth extends VuexModule {
   @VuexAction({
     rawError: true
   })
-  public async signMessage ({ message, authority }: { message: Record<string, string>, authority: string }): Promise<Record<string, object | object[] | number>> {
+  public async signMessage ({ message, authority }: { message: Record<string, unknown> | string, authority: string }): Promise<SignedMessagePayload> {
     const timestamp = parseInt((new Date().getTime() / 1000) + '', 10)
-    const messageObj: Record<string, object | object[] | number> = { signed_message: message, authors: [this.username], timestamp }
+    const messageObj: SignedMessagePayload = {
+      signed_message: message,
+      authors: [this.username],
+      timestamp
+    }
     const hash = cryptoUtils.sha256(JSON.stringify(messageObj))
     const privateKey =
       authority && this.keys[authority]
@@ -120,6 +124,7 @@ export default class Auth extends VuexModule {
         : privateKeyFrom(this.password)
     const signature = privateKey.sign(hash).toString()
     messageObj.signatures = [signature]
+    messageObj.authority = authority
     return messageObj
   }
 

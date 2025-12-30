@@ -71,6 +71,8 @@ export default class Navigation extends Vue {
       { label: this.$t('footer.apps'), to: '/apps' },
       { label: this.$t('footer.accounts'), to: '/accounts' },
       { label: this.$t('footer.signs'), to: '/signs' },
+      { label: this.$t('footer.sign_message'), to: '/signmessage' },
+      { label: this.$t('footer.verify_message'), to: '/verifymessage' },
       { label: this.$t('footer.documentation'), href: 'https://docs.hivesigner.com/' },
       { label: this.$t('footer.about'), to: '/about' },
       ...(!this.hasAuthorizedAccount ? [{ label: this.$t('footer.login'), to: '/login?redirect=accounts' }] : [])
