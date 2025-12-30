@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Development script that works with both Node 16.x and Node 20.x
 
 NODE_VERSION=$(node -v | cut -d'.' -f1 | sed 's/v//')

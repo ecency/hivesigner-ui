@@ -8,10 +8,10 @@
     "url": "https://github.com/ecency/hivesigner-ui/issues"
   },
   "scripts": {
-    "dev": "bash scripts/dev.sh",
-    "build": "bash scripts/build.sh",
+    "dev": "sh scripts/dev.sh",
+    "build": "sh scripts/build.sh",
     "start": "nuxt-ts start",
-    "generate": "bash scripts/generate.sh",
+    "generate": "sh scripts/generate.sh",
     "lint": "eslint --ext \".ts,.vue\" --ignore-path .gitignore .",
     "test": "rimraf coverage & jest"
   },
