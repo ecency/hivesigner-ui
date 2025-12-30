@@ -29,7 +29,7 @@
         </router-link>
       </div>
       <div v-if="verificationState === 'valid'" class="alert alert-success mb-4">
-        {{ $t('message_verification.success', { username: decodedPayload?.authors?.[0] }) }}
+        {{ $t('message_verification.success', { username: author }) }}
       </div>
       <div v-else-if="verificationState === 'invalid'" class="alert alert-error mb-4">
         {{ $t('message_verification.invalid_signature') }}
@@ -48,7 +48,7 @@
                 {{ $t('message_verification.author') }}
               </div>
               <div class="font-semibold">
-                {{ decodedPayload.authors[0] }}
+                {{ author }}
               </div>
             </div>
             <div>
@@ -129,6 +129,11 @@ export default class VerifyMessage extends Vue {
   private error = ''
   private recoveredKey = ''
   private matchedAuthority: Authority | 'memo' | '' = ''
+
+  private get author (): string {
+    const authors = this.decodedPayload && this.decodedPayload.authors
+    return Array.isArray(authors) && authors.length ? authors[0] : ''
+  }
 
   private get signature (): string {
     return this.decodedPayload?.signatures?.[0] || ''
