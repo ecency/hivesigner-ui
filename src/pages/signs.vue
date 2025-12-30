@@ -12,6 +12,19 @@
       />
     </div>
     <div class="container-sm mx-auto">
+      <router-link
+        v-for="messageOp of messageOperations"
+        :key="messageOp.route"
+        :to="{ name: messageOp.route }"
+        class="flex items-center text-black-400 cursor-pointer hover:text-black text-lg mb-5"
+      >
+        <icon
+          name="select-arrow"
+          style="width: 18px;height: 9px; stroke-width: 2px"
+          class="block mr-3 -rotate-90"
+        />
+        {{ messageOp.name }}
+      </router-link>
       <sign-operation
         v-for="operation of operations"
         :key="operation.name"
@@ -36,6 +49,19 @@ import { Operation } from '~/models'
 })
 export default class Signs extends Vue {
   private search = ''
+
+  private get messageOperations (): { name: string, route: string }[] {
+    const ops = [
+      { name: this.$t('message_signing.title') as string, route: 'signmessage' },
+      { name: this.$t('message_verification.title') as string, route: 'verifymessage' }
+    ]
+
+    if (!this.search) {
+      return ops
+    }
+
+    return ops.filter(op => op.name.toLowerCase().includes(this.search.toLowerCase()))
+  }
 
   private get operations (): { name: string, details: Operation }[] {
     return Object.keys(OPERATIONS)
