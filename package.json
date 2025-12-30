@@ -8,10 +8,10 @@
     "url": "https://github.com/ecency/hivesigner-ui/issues"
   },
   "scripts": {
-    "dev": "NODE_OPTIONS=--openssl-legacy-provider nuxt-ts",
-    "build": "NODE_OPTIONS=--openssl-legacy-provider nuxt-ts build",
+    "dev": "bash scripts/dev.sh",
+    "build": "bash scripts/build.sh",
     "start": "nuxt-ts start",
-    "generate": "NODE_OPTIONS=--openssl-legacy-provider nuxt-ts generate",
+    "generate": "bash scripts/generate.sh",
     "lint": "eslint --ext \".ts,.vue\" --ignore-path .gitignore .",
     "test": "rimraf coverage & jest"
   },

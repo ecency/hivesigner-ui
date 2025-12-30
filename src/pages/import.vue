@@ -71,7 +71,7 @@ const passphraseSchema = new PasswordValidator()
 passphraseSchema.is().min(8).is().max(50).has().uppercase().has().lowercase()
 
 @Component({
-  components: { BasePageLayout, Loader, Icon }
+  components: { BasePageLayout, Loader, Icon, ImportSetPassword, ImportUserForm }
 })
 export default class Import extends Vue {
   @Ref('set-password')
@@ -267,8 +267,12 @@ export default class Import extends Vue {
   }
 
   private resetForm (): void {
-    this.importUserRef?.reset()
-    this.setPasswordRef?.reset()
+    if (this.importUserRef && typeof this.importUserRef.reset === 'function') {
+      this.importUserRef.reset()
+    }
+    if (this.setPasswordRef && typeof this.setPasswordRef.reset === 'function') {
+      this.setPasswordRef.reset()
+    }
     this.step = 1
     this.username = ''
     this.password = ''

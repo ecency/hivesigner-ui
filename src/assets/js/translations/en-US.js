@@ -193,7 +193,8 @@ export default {
     unknown_authority: 'Unknown',
     message_preview: 'Message',
     signature: 'Signature',
-    copy: 'Copy'
+    copy: 'Copy',
+    copied: 'Copied to clipboard'
   },
   sign: {
     sign: 'Sign',

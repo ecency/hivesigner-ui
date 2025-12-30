@@ -44,10 +44,11 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import AccountSelection from './AccountSelection.vue'
+import LocaleSelector from './LocaleSelector.vue'
 import { AuthModule } from '~/store'
 
 @Component({
-  components: { AccountSelection }
+  components: { AccountSelection, LocaleSelector }
 })
 export default class Navigation extends Vue {
   @Prop({

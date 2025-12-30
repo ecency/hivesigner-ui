@@ -25,6 +25,7 @@
         :label="$t('message_signing.authority_label')"
         :options="authorityOptions"
       >
+        <span class="capitalize">{{ selectedAuthority }}</span>
         <template #option="{ option }">
           <span class="capitalize">{{ option.label }}</span>
         </template>
@@ -85,7 +86,7 @@
             <div class="text-gray text-sm">
               {{ $t('message_signing.signature') }}
             </div>
-            <button class="button button-sm" @click.prevent="copy(signature)">
+            <button type="button" class="button button-sm" @click.prevent="copy(signature)">
               {{ $t('message_signing.copy') }}
             </button>
           </div>
@@ -98,7 +99,7 @@
             <div class="text-gray text-sm">
               {{ $t('message_signing.verification_token') }}
             </div>
-            <button class="button button-sm" @click.prevent="copy(encodedPayload)">
+            <button type="button" class="button button-sm" @click.prevent="copy(encodedPayload)">
               {{ $t('message_signing.copy') }}
             </button>
           </div>
@@ -111,7 +112,7 @@
             <div class="text-gray text-sm">
               {{ $t('message_signing.verification_link') }}
             </div>
-            <button class="button button-sm" @click.prevent="copy(verificationLink)">
+            <button type="button" class="button button-sm" @click.prevent="copy(verificationLink)">
               {{ $t('message_signing.copy') }}
             </button>
           </div>
@@ -124,7 +125,7 @@
             <div class="text-gray text-sm">
               {{ $t('message_signing.message_preview') }}
             </div>
-            <button class="button button-sm" @click.prevent="copy(displayMessage)">
+            <button type="button" class="button button-sm" @click.prevent="copy(displayMessage)">
               {{ $t('message_signing.copy') }}
             </button>
           </div>
@@ -251,14 +252,41 @@ export default class SignMessage extends Vue {
   }
 
   private async copy (value: string): Promise<void> {
-    if (!value || !process.client || !navigator?.clipboard) {
+    if (!value) {
       return
     }
     try {
-      await navigator.clipboard.writeText(value)
-      this.copySuccess = this.$t('message_signing.copied') as string
+      // Try modern clipboard API first
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value)
+        this.copySuccess = this.$t('message_signing.copied') as string
+        setTimeout(() => {
+          this.copySuccess = ''
+        }, 3000)
+        return
+      }
+
+      // Fallback to legacy method
+      const textArea = document.createElement('textarea')
+      textArea.value = value
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      const successful = document.execCommand('copy')
+      document.body.removeChild(textArea)
+
+      if (successful) {
+        this.copySuccess = this.$t('message_signing.copied') as string
+        setTimeout(() => {
+          this.copySuccess = ''
+        }, 3000)
+      }
     } catch (err) {
       console.error('Failed to copy', err)
+      this.error = 'Failed to copy to clipboard'
     }
   }
 }

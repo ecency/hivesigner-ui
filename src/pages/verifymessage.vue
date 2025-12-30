@@ -37,6 +37,9 @@
       <div v-if="error && verificationState === 'idle'" class="alert alert-error mb-4">
         {{ error }}
       </div>
+      <div v-if="copySuccess" class="text-success mb-4">
+        {{ copySuccess }}
+      </div>
       <div v-if="decodedPayload" class="space-y-4">
         <div class="bg-gray-100 border border-gray-200 rounded p-4">
           <div class="mb-2 text-sm uppercase text-gray">
@@ -82,7 +85,7 @@
             <div class="text-gray text-sm">
               {{ $t('message_verification.message_preview') }}
             </div>
-            <button class="button button-sm" @click.prevent="copy(displayMessage)">
+            <button type="button" class="button button-sm" @click.prevent="copy(displayMessage)">
               {{ $t('message_verification.copy') }}
             </button>
           </div>
@@ -93,7 +96,7 @@
             <div class="text-gray text-sm">
               {{ $t('message_verification.signature') }}
             </div>
-            <button class="button button-sm" @click.prevent="copy(signature)">
+            <button type="button" class="button button-sm" @click.prevent="copy(signature)">
               {{ $t('message_verification.copy') }}
             </button>
           </div>
@@ -129,6 +132,7 @@ export default class VerifyMessage extends Vue {
   private error = ''
   private recoveredKey = ''
   private matchedAuthority: Authority | 'memo' | '' = ''
+  private copySuccess = ''
 
   private get author (): string {
     const authors = this.decodedPayload && this.decodedPayload.authors
@@ -250,13 +254,41 @@ export default class VerifyMessage extends Vue {
   }
 
   private async copy (value: string): Promise<void> {
-    if (!value || !process.client || !navigator?.clipboard) {
+    if (!value) {
       return
     }
     try {
-      await navigator.clipboard.writeText(value)
+      // Try modern clipboard API first
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value)
+        this.copySuccess = this.$t('message_verification.copied') as string
+        setTimeout(() => {
+          this.copySuccess = ''
+        }, 3000)
+        return
+      }
+
+      // Fallback to legacy method
+      const textArea = document.createElement('textarea')
+      textArea.value = value
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      const successful = document.execCommand('copy')
+      document.body.removeChild(textArea)
+
+      if (successful) {
+        this.copySuccess = this.$t('message_verification.copied') as string
+        setTimeout(() => {
+          this.copySuccess = ''
+        }, 3000)
+      }
     } catch (err) {
       console.error('Failed to copy', err)
+      this.error = 'Failed to copy to clipboard'
     }
   }
 }

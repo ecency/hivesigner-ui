@@ -6,5 +6,5 @@ export function b64uEnc (str: string): string {
 }
 
 export function b64uDec (str: string): string {
-  return Base64.decode(str).replace(/(-|_|\.)/g, m => b64uLookup[m])
+  return Base64.decode(str.replace(/(-|_|\.)/g, m => b64uLookup[m]))
 }
