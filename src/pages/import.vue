@@ -238,6 +238,12 @@ export default class Import extends Vue {
     if (this.clientId) {
       this.loadAppProfile()
     }
+
+    // Pre-fill username from query parameter (used by onboarding apps)
+    const qsUsername = (this.$route.query.username as string || '').toLowerCase().trim()
+    if (qsUsername && /^[a-z][a-z0-9.-]{2,15}$/.test(qsUsername) && !this.username) {
+      this.username = qsUsername
+    }
   }
 
   private beforeDestroy (): void {
