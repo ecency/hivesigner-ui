@@ -3,3 +3,5 @@ version: '3.7'
 services:
   app:
     image: ecency/hivesigner:latest
+    deploy:
+      replicas: 4
