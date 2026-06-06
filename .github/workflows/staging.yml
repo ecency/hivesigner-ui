@@ -70,9 +70,8 @@ jobs:
           export PORT=$STAGING_PORT
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
           export BUGSNAG_API_KEY=$BUGSNAG_API_KEY
-          echo $BUGSNAG_API_KEY
           docker pull ecency/hivesigner:development
-          docker stack deploy -c docker-compose.yml hivesigner-staging
+          docker stack deploy -c docker-compose.yml -c docker-compose.staging.yml hivesigner-staging
           
   deploy-testnet:
     needs: build
