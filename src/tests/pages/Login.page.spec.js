@@ -8,7 +8,9 @@ jest.mock('~/utils', () => ({
   client: { database: { getAccounts: jest.fn() } },
   buildSearchParams: jest.fn(() => ''),
   getAuthority: jest.fn(),
-  isValidUrl: jest.fn(() => true)
+  isValidUrl: jest.fn(() => true),
+  hasPostingGrant: jest.fn(() => true),
+  confirmPostingGrant: jest.fn(() => Promise.resolve(true))
 }))
 
 import * as storeModules from '@/store'

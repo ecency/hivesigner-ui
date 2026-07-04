@@ -58,7 +58,7 @@ import { Component, Ref, Vue, Watch } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
 import Bugsnag from '../plugins/bugsnag'
 import BasePageLayout from '../components/Layouts/BasePageLayout.vue'
-import { buildSearchParams, client, encrypt, getAuthority, isValidUrl } from '~/utils'
+import { buildSearchParams, client, confirmPostingGrant, encrypt, getAuthority, hasPostingGrant, isValidUrl } from '~/utils'
 import { AccountsModule, AuthModule, PersistentFormsModule } from '~/store'
 import { ERROR_INVALID_CREDENTIALS } from '~/consts'
 import { Authority } from '~/enums'
@@ -207,8 +207,9 @@ export default class Import extends Vue {
   }
 
   private get hasAuthority (): boolean {
-    const auths = this.account?.posting?.account_auths?.map(auth => auth[0]) || []
-    return auths.includes(this.clientId)
+    // Weight-aware: a name-only match can report a stale/low-weight entry as
+    // authorized while the chain still rejects the broadcast.
+    return hasPostingGrant(this.account?.posting, this.clientId)
   }
 
   @Watch('keyConfirmation')
@@ -317,11 +318,15 @@ export default class Import extends Vue {
         this.isLoading = false
         this.resetForm()
       } else {
+        // Confirm the grant ON-CHAIN before issuing a token. Not gated on
+        // `currentAccountUsername` (empty until a freshly created account
+        // propagates, which used to skip this and mint a token that can't
+        // broadcast) and not trusting any cached authority snapshot.
+        const grantUser = this.username || this.currentAccountUsername
         if (
           this.scope === 'posting' &&
           this.clientId &&
-          this.currentAccountUsername &&
-          !this.hasAuthority
+          !(await confirmPostingGrant(grantUser, this.clientId))
         ) {
           this.$router.push({
             name: 'authorize-username',

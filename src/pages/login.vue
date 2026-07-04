@@ -70,7 +70,7 @@ import Icon from '../components/UI/Icons/Icon.vue'
 import Loader from '../components/UI/Loader.vue'
 import BasePageLayout from '../components/Layouts/BasePageLayout.vue'
 import { ERROR_INVALID_CREDENTIALS } from '~/consts'
-import { buildSearchParams, client, getAuthority, isValidUrl } from '~/utils'
+import { buildSearchParams, client, confirmPostingGrant, getAuthority, hasPostingGrant, isValidUrl } from '~/utils'
 import { AccountsModule, AuthModule } from '~/store'
 import { Authority } from '~/enums'
 import LoginForm from '~/components/Login/LoginForm.vue'
@@ -91,7 +91,7 @@ export default class Login extends Vue {
   private signature = null
   private app = null
   private appProfile: Record<string, string> = {}
-  private postingAuthorities: string[] = []
+  private loadedPosting: Account['posting'] | null = null
 
   private get isRedirected (): boolean {
     return this.redirected === '/auths' ||
@@ -152,8 +152,9 @@ export default class Login extends Vue {
   }
 
   private get hasAuthority (): boolean {
-    const auths = this.account?.posting?.account_auths?.map(auth => auth[0]) || this.postingAuthorities
-    return this.clientId ? auths.includes(this.clientId) : false
+    // Weight-aware, and prefers the account freshly loaded at login over the
+    // separately-fetched snapshot. Never trusts a name-only or cached match.
+    return hasPostingGrant(this.account?.posting ?? this.loadedPosting, this.clientId)
   }
 
   private async mounted (): Promise<void> {
@@ -205,11 +206,16 @@ export default class Login extends Vue {
         await this.$router.push(redirect || '/')
         this.loginFormRef.resetForm()
       } else {
+        // Only issue a token once the grant is confirmed ON-CHAIN for the
+        // account being signed for. Do not gate on `currentAccountUsername`
+        // (empty when a freshly created account hasn't propagated, which used
+        // to skip this check and hand out a token that can't broadcast) and do
+        // not trust cached authorities — re-verify against the chain here.
+        const grantUser = AccountsModule.selectedAccount || this.currentAccountUsername
         if (
           this.scope === 'posting' &&
           this.clientId &&
-          this.currentAccountUsername &&
-          !this.hasAuthority
+          !(await confirmPostingGrant(grantUser, this.clientId))
         ) {
           this.$router.push({
             name: 'authorize-username',
@@ -277,20 +283,19 @@ export default class Login extends Vue {
   private async loadPostingAuthorities (): Promise<void> {
     const username = this.username
     if (!username) {
+      this.loadedPosting = null
       return
     }
 
-    if (this.account?.name === username) {
-      this.postingAuthorities = this.account?.posting?.account_auths?.map(auth => auth[0]) || []
-      return
-    }
-
+    // Always read the chain — a persisted/cached snapshot can report the app
+    // as authorized after the grant was removed (or never landed) on-chain.
     try {
       const [account] = await client.database.getAccounts([username])
-      this.postingAuthorities = account?.posting?.account_auths?.map(auth => auth[0]) || []
+      this.loadedPosting = account?.posting ?? null
     } catch (error) {
       console.error('Failed to load posting authorities', error)
       Bugsnag.notify(error)
+      this.loadedPosting = null
     }
   }
 }
