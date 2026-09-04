@@ -95,7 +95,10 @@
             </legend>
           </div>
         </div>
-        <button type="submit" class="button-primary mb-2 mt-2">
+        <div v-if="error" class="mb-4 text-red">
+          <span class="text-gray">{{ $t('sign.error_message') }}:</span> {{ error }}
+        </div>
+        <button type="submit" class="button-primary mb-2 mt-2" :disabled="!loaded">
           {{ $t('common.continue') }}
         </button>
       </form>
@@ -119,6 +122,8 @@ import { jsonParse } from '~/utils'
   layout: 'page'
 })
 export default class Profile extends Vue {
+  private loaded = false
+  private error = ''
   private draft = {
     type: 'user',
     name: null,
@@ -146,15 +151,32 @@ export default class Profile extends Vue {
     return profile
   }
 
-  private mounted (): void {
-    const { profile } = this
+  private async mounted (): Promise<void> {
+    // The account in the store is the snapshot taken at login. The form has
+    // to start from what is on chain now: handleSubmit sends the whole
+    // profile back, so a stale start silently drops anything changed since
+    // that login, such as redirect URIs registered by another tool.
+    try {
+      await AuthModule.loadAccount()
+    } catch (err) {
+      this.error = err.message
+      return
+    }
+    // A copy: the getter's result is cached by Vue, and handleSubmit reads
+    // it again. Editing it in place here (secret removed, arrays joined)
+    // would be what gets sent back.
+    const profile = { ...this.profile }
     profile.is_public = profile.is_public ? '1' : '0'
     profile.redirect_uris = profile.redirect_uris ? profile.redirect_uris.join('\n') : ''
     delete profile.secret
     this.draft = { ...this.draft, ...profile }
+    this.loaded = true
   }
 
   private handleSubmit () {
+    if (!this.loaded) {
+      return
+    }
     const draft = JSON.parse(JSON.stringify(this.draft))
     draft.is_public = draft.is_public === '1'
     if (draft.secret) {
