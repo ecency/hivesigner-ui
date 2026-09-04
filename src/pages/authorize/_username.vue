@@ -39,7 +39,7 @@ import { Account, TransactionConfirmation } from '@hiveio/dhive'
 import Bugsnag from '../../plugins/bugsnag'
 import SinglePageLayout from '../../components/Layouts/SinglePageLayout.vue'
 import TransactionStatus from '../../components/TransactionStatus.vue'
-import { getAuthority } from '~/utils'
+import { getAuthority, hasPostingGrant } from '~/utils'
 import { AccountsModule, AuthModule } from '~/store'
 import { Authority } from '~/enums'
 
@@ -85,11 +85,10 @@ export default class AuthorizeUsername extends Vue {
   }
 
   private get hasAuthority (): boolean {
-    if (this.account?.name) {
-      const auths = this.account[this.authority].account_auths.map(auth => auth[0])
-      return auths.includes(this.username)
-    }
-    return false
+    // Weight-aware, to stay consistent with the login/import gate: a name-only
+    // match would show the "already authorized" view for a stale or low-weight
+    // grant and leave the user unable to complete it.
+    return hasPostingGrant(this.account?.[this.authority], this.username)
   }
 
   private get successMessage (): string {

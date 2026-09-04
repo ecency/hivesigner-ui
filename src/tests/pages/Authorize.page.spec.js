@@ -74,7 +74,8 @@ describe('AuthorizePage', function () {
       account: {
         name: 'tester',
         posting: {
-          account_auths: [['tester', 'anotherUser']],
+          weight_threshold: 1,
+          account_auths: [['tester', 1]],
         },
       },
     }
