@@ -1,8 +1,12 @@
 import { Module, VuexAction, VuexMutation } from 'nuxt-property-decorator'
 import Bugsnag from '../plugins/bugsnag'
 import { client } from '~/utils'
-import { SETTINGS_KEY } from '~/consts'
+import { DEFAULT_SERVER, SETTINGS_KEY } from '~/consts'
 import { VuexModule } from '~/models'
+
+// Node addresses that used to be the default but are no longer served.
+// Saved settings still pointing at one of them fall back to the current default.
+const RETIRED_ADDRESSES = ['https://rpc.ecency.com']
 
 @Module({
   stateFactory: true,
@@ -16,7 +20,7 @@ export default class Settings extends VuexModule {
   public language: string = 'en'
   public timeout: string = '20'
   public theme: string = 'white'
-  public address: string = 'https://rpc.ecency.com'
+  public address: string = DEFAULT_SERVER[0]
 
   @VuexMutation
   public saveProperties (properties: any): void {
@@ -65,8 +69,12 @@ export default class Settings extends VuexModule {
     }
 
     try {
-      const settings = JSON.parse(settingsContent);
-      (client as any).updateClient(settings.address)
+      const settings = JSON.parse(settingsContent)
+      if (!settings.address || RETIRED_ADDRESSES.includes(settings.address)) {
+        delete settings.address
+      } else {
+        (client as any).updateClient(settings.address)
+      }
       await this.getConfig()
 
       this.setSettings(settings)
