@@ -32,7 +32,7 @@ describe('ProfilePage', function () {
     wrapper = shallowMount(Profile, {
       localVue,
       store,
-      stubs: ['form-control', 'single-page-layout'],
+      stubs: ['form-control', 'loader', 'single-page-layout'],
       mocks: {
         $router,
         $t: v => v
@@ -60,6 +60,33 @@ describe('ProfilePage', function () {
     expect(storeModules.AuthModule.loadAccount).toHaveBeenCalledTimes(1)
     expect(wrapper.vm.draft.redirect_uris).toBe(onChain.join('\n'))
     expect(wrapper.vm.loaded).toBe(true)
+    expect(wrapper.find('form').exists()).toBe(true)
+    expect(wrapper.find('loader-stub').exists()).toBe(false)
+  })
+
+  it('shows no form while the reload is still running, so nothing typed can be lost', async function () {
+    let finish
+    storeModules.AuthModule.loadAccount = jest.fn(() => new Promise((resolve) => { finish = resolve }))
+    initWrapper()
+    await flush()
+    expect(wrapper.find('form').exists()).toBe(false)
+    expect(wrapper.find('loader-stub').exists()).toBe(true)
+    storeModules.AuthModule.account = account(onChain)
+    finish()
+    await flush()
+    expect(wrapper.find('form').exists()).toBe(true)
+  })
+
+  it('treats a reload that left no account as a failure', async function () {
+    storeModules.AuthModule.loadAccount = jest.fn(() => {
+      storeModules.AuthModule.account = null
+      return Promise.resolve()
+    })
+    initWrapper()
+    await flush()
+    expect(wrapper.vm.error).toBe('Not logged in')
+    expect(wrapper.vm.loaded).toBe(false)
+    expect(wrapper.find('form').exists()).toBe(false)
   })
 
   it('submits the on-chain profile plus the edit, not the login snapshot', async function () {
@@ -83,6 +110,8 @@ describe('ProfilePage', function () {
     expect(wrapper.vm.error).toBe('node down')
     expect(wrapper.vm.loaded).toBe(false)
     expect(wrapper.vm.draft.redirect_uris).toBeNull()
+    expect(wrapper.find('form').exists()).toBe(false)
+    expect(wrapper.find('loader-stub').exists()).toBe(false)
     wrapper.vm.handleSubmit()
     expect($router.push).not.toHaveBeenCalled()
   })
