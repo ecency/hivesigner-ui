@@ -90,9 +90,21 @@ export default class Auth extends VuexModule {
     this.clearUser()
   }
 
-  @VuexAction
+  @VuexAction({
+    rawError: true
+  })
   public async loadAccount (): Promise<void> {
-    const [account] = await client.database.getAccounts([this.username])
+    const { username } = this
+    const [account] = await client.database.getAccounts([username])
+    // The answer can land after a logout or a switch to another account.
+    // Committing it then would bring back whoever left, or put one
+    // account's profile next to another's keys.
+    if (this.username !== username) {
+      return
+    }
+    if (!account) {
+      throw new Error(`Account ${username} not found`)
+    }
     this.setAccount(account)
   }
 

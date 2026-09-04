@@ -1,7 +1,11 @@
 <template>
   <single-page-layout :title="$t('profile.profile')">
     <div class="container-sm mx-auto">
-      <form class="mb-6" @submit.prevent="handleSubmit">
+      <loader v-if="!loaded && !error" class="my-6" />
+      <div v-if="error" class="mb-4 text-red">
+        <span class="text-gray">{{ $t('sign.error_message') }}:</span> {{ error }}
+      </div>
+      <form v-if="loaded" class="mb-6" @submit.prevent="handleSubmit">
         <label class="label-light">{{ $t('profile.account_type') }}</label>
         <div class="mb-2">
           <input id="type-user" v-model="draft.type" type="radio" value="user" class="mr-2">
@@ -110,15 +114,18 @@ import { encodeOp } from 'hive-uri'
 import { Operation } from '@hiveio/dhive'
 import SinglePageLayout from '../components/Layouts/SinglePageLayout.vue'
 import FormControl from '../components/UI/Form/FormControl.vue'
+import Loader from '../components/UI/Loader.vue'
 import { AuthModule } from '~/store'
 import { jsonParse } from '~/utils'
 
 @Component({
-  components: { FormControl, SinglePageLayout },
+  components: { FormControl, Loader, SinglePageLayout },
   middleware: ['auth'],
   layout: 'page'
 })
 export default class Profile extends Vue {
+  private loaded = false
+  private error = ''
   private draft = {
     type: 'user',
     name: null,
@@ -146,15 +153,35 @@ export default class Profile extends Vue {
     return profile
   }
 
-  private mounted (): void {
-    const { profile } = this
-    profile.is_public = profile.is_public ? '1' : '0'
-    profile.redirect_uris = profile.redirect_uris ? profile.redirect_uris.join('\n') : ''
-    delete profile.secret
-    this.draft = { ...this.draft, ...profile }
+  private async mounted (): Promise<void> {
+    // The account in the store is the snapshot taken at login. The form has
+    // to start from what is on chain now: handleSubmit sends the whole
+    // profile back, so a stale start silently drops anything changed since
+    // that login, such as redirect URIs registered by another tool. The form
+    // is not rendered until then, so there is nothing typed to lose.
+    try {
+      await AuthModule.loadAccount()
+      if (!this.account) {
+        throw new Error('Not logged in')
+      }
+      // A copy: the getter's result is cached by Vue, and handleSubmit reads
+      // it again. Editing it in place here (secret removed, arrays joined)
+      // would be what gets sent back.
+      const profile = { ...this.profile }
+      profile.is_public = profile.is_public ? '1' : '0'
+      profile.redirect_uris = profile.redirect_uris ? profile.redirect_uris.join('\n') : ''
+      delete profile.secret
+      this.draft = { ...this.draft, ...profile }
+      this.loaded = true
+    } catch (err) {
+      this.error = err.message
+    }
   }
 
   private handleSubmit () {
+    if (!this.loaded) {
+      return
+    }
     const draft = JSON.parse(JSON.stringify(this.draft))
     draft.is_public = draft.is_public === '1'
     if (draft.secret) {
