@@ -1,7 +1,7 @@
 import { Module, VuexAction, VuexMutation } from 'nuxt-property-decorator'
 import Bugsnag from '../plugins/bugsnag'
 import { client } from '~/utils'
-import { DEFAULT_SERVER, SETTINGS_KEY } from '~/consts'
+import { ACTIVE_DEFAULT_SERVER, SETTINGS_KEY } from '~/consts'
 import { VuexModule } from '~/models'
 
 // Node addresses that used to be the default but are no longer served.
@@ -20,7 +20,7 @@ export default class Settings extends VuexModule {
   public language: string = 'en'
   public timeout: string = '20'
   public theme: string = 'white'
-  public address: string = DEFAULT_SERVER[0]
+  public address: string = ACTIVE_DEFAULT_SERVER[0]
 
   @VuexMutation
   public saveProperties (properties: any): void {
@@ -73,8 +73,8 @@ export default class Settings extends VuexModule {
       if (!settings.address || RETIRED_ADDRESSES.includes(settings.address)) {
         // Restore the built-in defaults: full failover list on the client, first entry as the
         // displayed address, and persist it so the retired value does not come back on reload.
-        settings.address = DEFAULT_SERVER[0];
-        (client as any).updateClient(DEFAULT_SERVER)
+        settings.address = ACTIVE_DEFAULT_SERVER[0];
+        (client as any).updateClient(ACTIVE_DEFAULT_SERVER)
         try {
           localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
         } catch (err) {

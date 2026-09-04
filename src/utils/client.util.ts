@@ -1,10 +1,9 @@
 import { Client } from '@hiveio/dhive'
 import * as hiveuri from 'hive-uri'
-import { CLIENT_OPTIONS, DEFAULT_SERVER, DEFAULT_TESTNET_SERVER, EXPIRE_TIME } from '~/consts'
+import { ACTIVE_DEFAULT_SERVER, CLIENT_OPTIONS, EXPIRE_TIME } from '~/consts'
 
 // TODO: Move it from utils
-const servers = CLIENT_OPTIONS.addressPrefix === 'TST' ? DEFAULT_TESTNET_SERVER : DEFAULT_SERVER
-let rawClient = new Client(servers, CLIENT_OPTIONS)
+let rawClient = new Client(ACTIVE_DEFAULT_SERVER, CLIENT_OPTIONS)
 
 const handler = {
   get (_: any, prop: string) {
