@@ -15,9 +15,11 @@ export function processValue (schema: Operation['schema'], key: string, value: s
     case 'bool':
       if (value === 'false' || value === false) { return false }
       return realValue
-    case 'string':
-      if (maxLength) { return realValue.substring(0, Math.min(realValue.length, maxLength - 1)) }
-      return realValue
+    case 'string': {
+      const str = realValue === undefined || realValue === null ? '' : String(realValue)
+      if (maxLength) { return str.substring(0, Math.min(str.length, maxLength - 1)) }
+      return str
+    }
     default:
       return realValue
   }

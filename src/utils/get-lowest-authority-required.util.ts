@@ -19,7 +19,10 @@ function getCustomJsonAuthority (operationData: any): Authority {
  * After Hive HF, each authority can only sign operations for that specific authority level.
  * Returns the authority if all operations require the same authority, otherwise returns null.
  */
-export function getLowestAuthorityRequired (tx: Transaction): Authority | null {
+export function getLowestAuthorityRequired (tx?: Transaction | null): Authority | null {
+  if (!tx || !Array.isArray(tx.operations)) {
+    return null
+  }
   const authorities = new Set<string>()
 
   tx.operations.forEach((operation) => {

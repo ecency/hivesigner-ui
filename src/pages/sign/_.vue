@@ -138,16 +138,26 @@ export default class Sign extends Vue {
   }
 
   private parseUri (uri): void {
-    let parsed: DecodeResult
+    let parsed: DecodeResult | null = null
     try {
       parsed = hiveuri.decode(uri)
     } catch (err) {
       parsed = legacyToHiveUri(uri)
-      if (!parsed) {
-        this.uriIsValid = false
-      }
     }
-    this.parsed = processTransaction(parsed, this.config)
+    if (!parsed || !parsed.tx || !Array.isArray(parsed.tx.operations) || parsed.tx.operations.length === 0) {
+      this.uriIsValid = false
+      this.parsed = null
+      return
+    }
+    try {
+      this.parsed = processTransaction(parsed, this.config)
+      this.uriIsValid = true
+    } catch (err) {
+      console.error('Failed to process transaction', err)
+      Bugsnag.notify(err)
+      this.uriIsValid = false
+      this.parsed = null
+    }
   }
 
   private async handleSubmit (): Promise<void> {
