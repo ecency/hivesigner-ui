@@ -144,7 +144,7 @@ export default class Sign extends Vue {
     } catch (err) {
       parsed = legacyToHiveUri(uri)
     }
-    if (!parsed || !parsed.tx || !Array.isArray(parsed.tx.operations)) {
+    if (!parsed || !parsed.tx || !Array.isArray(parsed.tx.operations) || parsed.tx.operations.length === 0) {
       this.uriIsValid = false
       this.parsed = null
       return

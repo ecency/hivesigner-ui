@@ -71,7 +71,15 @@ export default class Settings extends VuexModule {
     try {
       const settings = JSON.parse(settingsContent)
       if (!settings.address || RETIRED_ADDRESSES.includes(settings.address)) {
-        delete settings.address
+        // Restore the built-in defaults: full failover list on the client, first entry as the
+        // displayed address, and persist it so the retired value does not come back on reload.
+        settings.address = DEFAULT_SERVER[0];
+        (client as any).updateClient(DEFAULT_SERVER)
+        try {
+          localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+        } catch (err) {
+          console.error("Couldn't persist migrated settings", err)
+        }
       } else {
         (client as any).updateClient(settings.address)
       }

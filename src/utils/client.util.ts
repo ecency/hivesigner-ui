@@ -9,7 +9,7 @@ let rawClient = new Client(servers, CLIENT_OPTIONS)
 const handler = {
   get (_: any, prop: string) {
     if (prop === 'updateClient') {
-      return (address: string) => {
+      return (address: string | string[]) => {
         rawClient = new Client(address, CLIENT_OPTIONS)
       }
     }
