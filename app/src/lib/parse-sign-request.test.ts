@@ -57,6 +57,26 @@ describe('parseSignRequest — legacy /sign/<op>?params', () => {
   it('returns null for an unknown operation', () => {
     expect(parseSignRequest('not_an_op', { a: 'b' }, 1)).toBeNull();
   });
+
+  it('preserves weight=0 as an unvote instead of the default upvote', () => {
+    // Regression: a numeric 0 (from JSON-parsed search) would be treated as
+    // empty and defaulted to 10000. With a raw string it stays 0.
+    const req = parseSignRequest(
+      'vote',
+      { author: 'a', permlink: 'p', weight: '0' },
+      1,
+    );
+    expect(req?.operations[0][1].weight).toBe(0);
+  });
+
+  it('keeps a custom_json json payload as a string', () => {
+    const req = parseSignRequest(
+      'custom_json',
+      { id: 'follow', json: JSON.stringify({ type: 'follow' }) },
+      1,
+    );
+    expect(typeof req?.operations[0][1].json).toBe('string');
+  });
 });
 
 describe('parseSignRequest — /sign/op/<b64>', () => {

@@ -37,6 +37,15 @@ describe('summarizeOperation', () => {
     expect(s.detail).toBe('100%');
   });
 
+  it('labels a zero-weight vote as a removal, not a 0% upvote', () => {
+    const s = summarizeOperation([
+      'vote',
+      { author: 'ecency', permlink: 'x', weight: 0 },
+    ]);
+    expect(s.title).toBe('Remove vote from @ecency/x');
+    expect(s.detail).toBeUndefined();
+  });
+
   it('reads a negative weight as a downvote', () => {
     const op: Operation = [
       'vote',
@@ -115,5 +124,33 @@ describe('authority resolution', () => {
         ['made_up_op', {}],
       ]),
     ).toBeNull();
+  });
+
+  it('account_update needs owner for an owner change, active otherwise', () => {
+    const owner = { weight_threshold: 1, account_auths: [], key_auths: [] };
+    expect(
+      operationAuthority(['account_update', { account: 'a', owner }]),
+    ).toBe('owner');
+    expect(
+      operationAuthority([
+        'account_update',
+        { account: 'a', json_metadata: '{}' },
+      ]),
+    ).toBe('active');
+  });
+
+  it('account_update2 needs active for json_metadata, posting for a profile-only edit', () => {
+    expect(
+      operationAuthority([
+        'account_update2',
+        { account: 'a', json_metadata: '{"x":1}', posting_json_metadata: '' },
+      ]),
+    ).toBe('active');
+    expect(
+      operationAuthority([
+        'account_update2',
+        { account: 'a', json_metadata: '', posting_json_metadata: '{"p":1}' },
+      ]),
+    ).toBe('posting');
   });
 });

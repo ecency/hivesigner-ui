@@ -25,13 +25,35 @@ function humanizeName(name: string): string {
   return name.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
 }
 
+function present(value: unknown): boolean {
+  if (value === undefined || value === null || value === '') return false;
+  if (Array.isArray(value) && value.length === 0) return false;
+  return true;
+}
+
 /**
- * The authority a single operation requires (schema-driven; custom_json is
- * data-dependent). Returns null for an operation not in the schema rather than
- * assuming posting, so an unmapped privileged op never understates the key it
- * needs. Note account_update2's real authority is field-dependent (posting for
- * a profile-only edit, higher to change keys); the schema value is the common
- * profile case and is refined when the account-update flow is ported.
+ * account_update / account_update2 need the authority of whatever they change,
+ * not a fixed level: an owner change needs owner; changing keys or json_metadata
+ * needs active; a posting_json_metadata-only profile edit needs posting.
+ */
+function accountUpdateAuthority(
+  name: string,
+  p: Record<string, unknown>,
+): HiveAuthority {
+  if (present(p.owner)) return 'owner';
+  if (name === 'account_update2') {
+    // json_metadata is an active-level field; posting_json_metadata is posting.
+    return present(p.json_metadata) ? 'active' : 'posting';
+  }
+  // account_update (v1): active covers key and metadata changes; owner handled above.
+  return 'active';
+}
+
+/**
+ * The authority a single operation requires. custom_json and the account
+ * updates are data-dependent; every other op comes from the schema. Returns
+ * null for an operation not in the schema rather than assuming posting, so an
+ * unmapped privileged op never understates the key it needs.
  */
 export function operationAuthority(op: Operation): HiveAuthority | null {
   const [name, payload] = op;
@@ -40,6 +62,9 @@ export function operationAuthority(op: Operation): HiveAuthority | null {
     return Array.isArray(required) && required.length > 0
       ? 'active'
       : 'posting';
+  }
+  if (name === 'account_update' || name === 'account_update2') {
+    return accountUpdateAuthority(name, payload);
   }
   return OPERATIONS[name]?.authority ?? null;
 }
@@ -73,12 +98,11 @@ export function summarizeOperation(op: Operation): OperationSummary {
     case 'vote': {
       const weight = Number(p.weight ?? 0);
       const pct = Math.round(weight / 100);
+      const target = `@${str(p.author)}/${str(p.permlink)}`;
+      if (weight === 0)
+        return { title: `Remove vote from ${target}`, authority };
       const verb = weight < 0 ? 'Downvote' : 'Upvote';
-      return {
-        title: `${verb} @${str(p.author)}/${str(p.permlink)}`,
-        detail: `${pct}%`,
-        authority,
-      };
+      return { title: `${verb} ${target}`, detail: `${pct}%`, authority };
     }
     case 'comment': {
       const isReply = str(p.parent_author) !== '';

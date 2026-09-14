@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import './globals.css';
 import './i18n';
+import { parseSearch, stringifySearch } from './lib/search';
 import { routeTree } from './routeTree.gen';
 
 const router = createRouter({
@@ -11,6 +12,10 @@ const router = createRouter({
   // Hive uses the @author form everywhere; keep it literal rather than
   // percent-encoded, matching the current app's URLs.
   pathParamsAllowedCharacters: ['@'],
+  // Keep search values as raw strings; the default JSON parsing corrupts
+  // operation params (see lib/search.ts).
+  parseSearch,
+  stringifySearch,
 });
 
 declare module '@tanstack/react-router' {
