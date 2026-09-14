@@ -32,10 +32,21 @@
  */
 
 import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import ts from 'typescript';
 
 const DIST = join(import.meta.dirname, '..', 'dist', 'static', 'js');
+
+/** All .js files under dir, recursively. Rsbuild emits route chunks under async/. */
+function jsFilesRecursive(dir) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...jsFilesRecursive(full));
+    else if (entry.name.endsWith('.js')) out.push(full);
+  }
+  return out;
+}
 const GLOBALS = new Set(['process', 'Buffer', '__dirname', '__filename']);
 
 /** True when this identifier is a real value read rather than a name that merely looks like one. */
@@ -167,7 +178,7 @@ function scan(source, fileName) {
 
 let files;
 try {
-  files = readdirSync(DIST).filter((name) => name.endsWith('.js'));
+  files = jsFilesRecursive(DIST);
 } catch {
   console.error(
     `[node-globals] no build output at ${DIST}; run the build first`,
@@ -183,8 +194,9 @@ if (files.length === 0) {
 }
 
 let failures = 0;
-for (const name of files) {
-  for (const hit of scan(readFileSync(join(DIST, name), 'utf8'), name)) {
+for (const file of files) {
+  const name = relative(DIST, file);
+  for (const hit of scan(readFileSync(file, 'utf8'), name)) {
     failures += 1;
     if (failures <= 20) {
       console.error(

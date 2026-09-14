@@ -98,4 +98,22 @@ describe('authority resolution', () => {
       ]),
     ).toBeNull();
   });
+
+  it('reads schema-listed privileged ops from the schema, not a default', () => {
+    expect(operationAuthority(['transfer_from_savings', {}])).toBe('active');
+    expect(operationAuthority(['change_recovery_account', {}])).toBe('owner');
+  });
+
+  it('returns null for an operation absent from the schema, not posting', () => {
+    expect(operationAuthority(['made_up_op', {}])).toBeNull();
+  });
+
+  it('is null for a transaction containing an unknown-authority op', () => {
+    expect(
+      requiredAuthority([
+        ['vote', { weight: 1 }],
+        ['made_up_op', {}],
+      ]),
+    ).toBeNull();
+  });
 });

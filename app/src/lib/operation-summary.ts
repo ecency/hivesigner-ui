@@ -13,8 +13,8 @@ export interface OperationSummary {
   title: string;
   /** Optional secondary line, e.g. a memo or the vote weight. */
   detail?: string;
-  /** Lowest authority this single operation needs. */
-  authority: HiveAuthority;
+  /** Authority this single operation needs, or null when it cannot be determined. */
+  authority: HiveAuthority | null;
 }
 
 function str(value: unknown): string {
@@ -25,8 +25,15 @@ function humanizeName(name: string): string {
   return name.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
 }
 
-/** The authority a single operation requires (schema-driven; custom_json is data-dependent). */
-export function operationAuthority(op: Operation): HiveAuthority {
+/**
+ * The authority a single operation requires (schema-driven; custom_json is
+ * data-dependent). Returns null for an operation not in the schema rather than
+ * assuming posting, so an unmapped privileged op never understates the key it
+ * needs. Note account_update2's real authority is field-dependent (posting for
+ * a profile-only edit, higher to change keys); the schema value is the common
+ * profile case and is refined when the account-update flow is ported.
+ */
+export function operationAuthority(op: Operation): HiveAuthority | null {
   const [name, payload] = op;
   if (name === 'custom_json') {
     const required = (payload as { required_auths?: unknown }).required_auths;
@@ -34,19 +41,22 @@ export function operationAuthority(op: Operation): HiveAuthority {
       ? 'active'
       : 'posting';
   }
-  return OPERATIONS[name]?.authority ?? 'posting';
+  return OPERATIONS[name]?.authority ?? null;
 }
 
 /**
  * The authority needed to sign a whole transaction. Since Hive HF, one key
- * signs one authority level: if every operation needs the same authority that
- * is returned, otherwise null (a mixed-authority transaction cannot be signed
- * with a single key). Mirrors the Nuxt app's getLowestAuthorityRequired.
+ * signs one authority level: returns that authority only when every operation
+ * needs the same known one, otherwise null — a mixed-authority transaction (or
+ * one with an operation whose authority is unknown) cannot be signed with a
+ * single key. Mirrors the Nuxt app's getLowestAuthorityRequired.
  */
 export function requiredAuthority(ops: Operation[]): HiveAuthority | null {
-  const authorities = new Set<HiveAuthority>();
+  const authorities = new Set<HiveAuthority | null>();
   for (const op of ops) authorities.add(operationAuthority(op));
-  return authorities.size === 1 ? [...authorities][0] : null;
+  if (authorities.size !== 1) return null;
+  const only = [...authorities][0];
+  return only; // null when the single distinct value is itself unknown
 }
 
 export function summarizeOperation(op: Operation): OperationSummary {
