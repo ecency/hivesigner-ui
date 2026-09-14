@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      The enforced Content-Security-Policy and the report-only rollout policy are
+      set as response HEADERS by the serving nginx (see nginx.conf), not here:
+      frame-ancestors and report-only are ignored in a <meta> CSP. The app runs
+      entirely in the browser and talks only to Hive RPC nodes over fetch, so
+      connect-src is the directive that matters.
+    -->
+    <title>Hivesigner</title>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

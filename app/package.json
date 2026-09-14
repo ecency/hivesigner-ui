@@ -1,0 +1,42 @@
+{
+  "name": "hivesigner-ui-react",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "React (Rsbuild) rewrite of the Hivesigner UI. Long-lived rewrite target; coexists with the Nuxt app until cutover (see README).",
+  "scripts": {
+    "dev": "rsbuild dev --open",
+    "build": "rsbuild build && node scripts/check-node-globals.mjs",
+    "preview": "rsbuild preview",
+    "test": "vitest run",
+    "check": "biome check --write",
+    "format": "biome format --write",
+    "check:node-globals": "node scripts/check-node-globals.mjs"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.2",
+    "@tanstack/react-router": "^1.132.27",
+    "clsx": "^2.1.1",
+    "i18next": "^24.2.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-i18next": "^15.4.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.3",
+    "@rsbuild/core": "^1.5.6",
+    "@rsbuild/plugin-react": "^1.4.0",
+    "@tailwindcss/postcss": "^4.1.13",
+    "@tanstack/router-plugin": "^1.132.27",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/node": "^24.6.0",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "jsdom": "^26.1.0",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.8"
+  }
+}
