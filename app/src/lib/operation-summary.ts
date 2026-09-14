@@ -1,23 +1,19 @@
 // Turn a Hive operation into a short, human-readable sentence for the confirm
-// screen. This is the redesign's answer to complaint theme #4 ("the sign page
-// shows raw JSON"): the summary is what the user reads, the raw op is collapsed
-// beneath it.
-//
-// The current Nuxt app renders every operation field verbatim from a schema
-// table (src/assets/data/operations.json); the summaries here cover the common
-// operations first and fall back to a readable title for the rest, so no
-// operation is ever a blank screen. Extended as flows are ported (#102).
+// screen — the redesign's answer to complaint theme #4 ("the sign page shows
+// raw JSON"). The summary is what the user reads; the raw op is collapsed
+// beneath it. Authority is driven by the operation schema (operations.json), so
+// it matches what the Nuxt app signs with.
+import { type HiveAuthority, OPERATIONS } from './operations';
 
+export type { HiveAuthority } from './operations';
 export type Operation = [string, Record<string, unknown>];
-
-export type HiveAuthority = 'posting' | 'active' | 'owner';
 
 export interface OperationSummary {
   /** One-line human sentence, e.g. "Send 10.000 HIVE to @bob". */
   title: string;
-  /** Optional secondary line, e.g. a memo or the target permlink. */
+  /** Optional secondary line, e.g. a memo or the vote weight. */
   detail?: string;
-  /** Lowest authority the operation needs. */
+  /** Lowest authority this single operation needs. */
   authority: HiveAuthority;
 }
 
@@ -29,46 +25,28 @@ function humanizeName(name: string): string {
   return name.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
 }
 
-/** The lowest authority a single operation requires. */
+/** The authority a single operation requires (schema-driven; custom_json is data-dependent). */
 export function operationAuthority(op: Operation): HiveAuthority {
   const [name, payload] = op;
-  switch (name) {
-    case 'transfer':
-    case 'transfer_to_vesting':
-    case 'withdraw_vesting':
-    case 'delegate_vesting_shares':
-    case 'transfer_to_savings':
-    case 'account_witness_vote':
-    case 'account_witness_proxy':
-    case 'update_proposal_votes':
-      return 'active';
-    case 'account_update':
-    case 'account_update2':
-      return 'owner';
-    case 'custom_json': {
-      const required = payload.required_auths;
-      return Array.isArray(required) && required.length > 0
-        ? 'active'
-        : 'posting';
-    }
-    default:
-      return 'posting';
+  if (name === 'custom_json') {
+    const required = (payload as { required_auths?: unknown }).required_auths;
+    return Array.isArray(required) && required.length > 0
+      ? 'active'
+      : 'posting';
   }
+  return OPERATIONS[name]?.authority ?? 'posting';
 }
 
-/** The lowest authority a whole transaction requires (highest across its ops). */
-export function transactionAuthority(ops: Operation[]): HiveAuthority {
-  const rank: Record<HiveAuthority, number> = {
-    posting: 0,
-    active: 1,
-    owner: 2,
-  };
-  let highest: HiveAuthority = 'posting';
-  for (const op of ops) {
-    const a = operationAuthority(op);
-    if (rank[a] > rank[highest]) highest = a;
-  }
-  return highest;
+/**
+ * The authority needed to sign a whole transaction. Since Hive HF, one key
+ * signs one authority level: if every operation needs the same authority that
+ * is returned, otherwise null (a mixed-authority transaction cannot be signed
+ * with a single key). Mirrors the Nuxt app's getLowestAuthorityRequired.
+ */
+export function requiredAuthority(ops: Operation[]): HiveAuthority | null {
+  const authorities = new Set<HiveAuthority>();
+  for (const op of ops) authorities.add(operationAuthority(op));
+  return authorities.size === 1 ? [...authorities][0] : null;
 }
 
 export function summarizeOperation(op: Operation): OperationSummary {
@@ -103,8 +81,8 @@ export function summarizeOperation(op: Operation): OperationSummary {
     }
     case 'custom_json':
       return { title: `Custom action (${str(p.id)})`, authority };
-    case 'account_update2':
     case 'account_update':
+    case 'account_update2':
       return { title: 'Update account authorities', authority };
     default:
       return { title: humanizeName(name), authority };

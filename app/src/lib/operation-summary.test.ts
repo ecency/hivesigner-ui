@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   type Operation,
   operationAuthority,
+  requiredAuthority,
   summarizeOperation,
-  transactionAuthority,
 } from './operation-summary';
 
 describe('summarizeOperation', () => {
@@ -84,11 +84,18 @@ describe('authority resolution', () => {
     ).toBe('active');
   });
 
-  it('takes the highest authority across a multi-op transaction', () => {
-    const ops: Operation[] = [
-      ['vote', { weight: 1 }],
-      ['transfer', { to: 'bob' }],
-    ];
-    expect(transactionAuthority(ops)).toBe('active');
+  it('returns a single authority when every op agrees, null when mixed', () => {
+    expect(
+      requiredAuthority([
+        ['vote', { weight: 1 }],
+        ['comment', { parent_author: '' }],
+      ]),
+    ).toBe('posting');
+    expect(
+      requiredAuthority([
+        ['vote', { weight: 1 }],
+        ['transfer', { to: 'bob' }],
+      ]),
+    ).toBeNull();
   });
 });
