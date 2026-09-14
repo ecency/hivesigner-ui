@@ -1,21 +1,21 @@
-FROM node:14-alpine as base
+FROM node:14-alpine AS build
 
 WORKDIR /var/app
 
-COPY . /var/app/
+COPY package.json yarn.lock /var/app/
 
 RUN yarn --force --non-interactive --frozen-lockfile --ignore-optional
 
-RUN yarn build
+COPY . /var/app/
 
-# Add Tini
-ENV TINI_VERSION v0.18.0
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static /tini
-RUN chmod +x /tini
+RUN yarn generate
 
-ENTRYPOINT ["/tini", "--"]
+# serve the generated SPA
+FROM nginx:1.31-alpine
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD node /var/app/healthCheck.js
+ENV PORT=3000
 
-# start the app
-CMD [ "yarn", "run", "start" ]
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY --from=build /var/app/dist /usr/share/nginx/html
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD wget -q -O /dev/null "http://127.0.0.1:${PORT}/" || exit 1
