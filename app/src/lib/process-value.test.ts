@@ -22,6 +22,12 @@ describe('processValue', () => {
     );
   });
 
+  it('preserves a numeric zero instead of applying the default', () => {
+    // An encoded unvote decodes weight as the number 0; it must not become 10000.
+    expect(processValue({ type: 'int', defaultValue: 10000 }, 0, 1)).toBe(0);
+    expect(processValue({ type: 'int', defaultValue: 10000 }, '0', 1)).toBe(0);
+  });
+
   it('coerces bool strings', () => {
     expect(processValue({ type: 'bool' }, 'false', 1)).toBe(false);
     expect(processValue({ type: 'bool' }, 'true', 1)).toBe('true');

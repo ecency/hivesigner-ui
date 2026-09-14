@@ -153,4 +153,23 @@ describe('authority resolution', () => {
       ]),
     ).toBe('posting');
   });
+
+  it('account_update2 needs active for an active/posting/memo-key change, owner for an owner change', () => {
+    const auth = { weight_threshold: 1, account_auths: [], key_auths: [] };
+    expect(
+      operationAuthority(['account_update2', { account: 'a', active: auth }]),
+    ).toBe('active');
+    expect(
+      operationAuthority(['account_update2', { account: 'a', posting: auth }]),
+    ).toBe('active');
+    expect(
+      operationAuthority([
+        'account_update2',
+        { account: 'a', memo_key: 'STM1' },
+      ]),
+    ).toBe('active');
+    expect(
+      operationAuthority(['account_update2', { account: 'a', owner: auth }]),
+    ).toBe('owner');
+  });
 });

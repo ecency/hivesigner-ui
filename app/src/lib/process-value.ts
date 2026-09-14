@@ -10,8 +10,12 @@ export function processValue(
   vestsToSP: number,
 ): string | number | boolean {
   const { type, defaultValue, maxLength } = field;
+  // Apply the default only for a genuinely missing value. A plain `!value` here
+  // treats numeric 0 (and false) as missing, so an encoded weight:0 unvote was
+  // replaced by the 10000 default and became a full upvote.
+  const missing = value === undefined || value === null || value === '';
   const realValue =
-    !value && typeof defaultValue !== 'undefined' ? defaultValue : value;
+    missing && typeof defaultValue !== 'undefined' ? defaultValue : value;
 
   switch (type) {
     case 'amount': {

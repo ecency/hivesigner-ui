@@ -33,17 +33,20 @@ function present(value: unknown): boolean {
 
 /**
  * account_update / account_update2 need the authority of whatever they change,
- * not a fixed level: an owner change needs owner; changing keys or json_metadata
- * needs active; a posting_json_metadata-only profile edit needs posting.
+ * not a fixed level: an owner change needs owner; changing the active/posting
+ * authorities, the memo key or json_metadata needs active; a
+ * posting_json_metadata-only profile edit needs posting.
  */
 function accountUpdateAuthority(
   name: string,
   p: Record<string, unknown>,
 ): HiveAuthority {
   if (present(p.owner)) return 'owner';
+  const activeLevelChange =
+    present(p.active) || present(p.posting) || present(p.memo_key);
   if (name === 'account_update2') {
-    // json_metadata is an active-level field; posting_json_metadata is posting.
-    return present(p.json_metadata) ? 'active' : 'posting';
+    // json_metadata is active-level; posting_json_metadata alone is posting.
+    return activeLevelChange || present(p.json_metadata) ? 'active' : 'posting';
   }
   // account_update (v1): active covers key and metadata changes; owner handled above.
   return 'active';

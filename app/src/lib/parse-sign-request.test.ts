@@ -98,4 +98,28 @@ describe('parseSignRequest — /sign/op/<b64>', () => {
     ]);
     expect(req?.noBroadcast).toBe(true);
   });
+
+  it('keeps an encoded weight:0 (number) as an unvote, not a full upvote', () => {
+    // The op is JSON so weight is a real number 0, not a string.
+    const uri = encodeOp([
+      'vote',
+      { voter: 'alice', author: 'a', permlink: 'p', weight: 0 },
+    ]);
+    const path = uri.replace('hive://sign/', '');
+    const req = parseSignRequest(path, {}, 1);
+    expect(req?.operations[0][1].weight).toBe(0);
+  });
+
+  it('preserves an owner change on an encoded account_update2', () => {
+    const owner = {
+      weight_threshold: 1,
+      account_auths: [],
+      key_auths: [['STM1', 1]],
+    };
+    const uri = encodeOp(['account_update2', { account: 'a', owner }]);
+    const path = uri.replace('hive://sign/', '');
+    const req = parseSignRequest(path, {}, 1);
+    // The owner field survives schema processing (it is no longer dropped).
+    expect(req?.operations[0][1].owner).toEqual(owner);
+  });
 });
