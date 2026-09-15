@@ -35,31 +35,40 @@ export function normalizeAuthRequest(
   }
   return {
     clientId: query.client_id || query.clientId,
-    // A malformed escape (a stray `%`) makes decodeURIComponent throw; fall back
-    // to the raw value so the consent screen still renders and then fails the
-    // registration check, rather than breaking on an attacker-shaped URL.
-    redirectUri: query.redirect_uri
-      ? safeDecode(query.redirect_uri)
-      : undefined,
+    // NOT decoded here: the router's parseSearch (lib/search.ts) builds the
+    // query with URLSearchParams, which has already percent-decoded every value.
+    // Decoding a second time corrupts a legitimate callback that contains an
+    // encoded character (a registered `...?next=a%2Bb` would become `a+b` and
+    // then fail the exact-match registration check).
+    redirectUri: query.redirect_uri,
     scope,
     responseType,
     state: query.state,
   };
 }
 
-function safeDecode(value: string): string {
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return value;
-  }
+/** Loopback, where TLS is not available and a plain-http callback is expected. */
+function isLoopback(hostname: string): boolean {
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '[::1]' ||
+    hostname === '::1'
+  );
 }
 
-/** An http(s) URL only - a `javascript:`/other-scheme redirect is never valid. */
+/**
+ * A redirect we are willing to put a token in. https only (a `javascript:` or
+ * other-scheme redirect is never valid), because buildRedirectUrl puts the
+ * signed token in the query string: over plain http that token, which grants
+ * posting authority for a week, is readable by anyone on the path. Loopback is
+ * exempt so local development against 127.0.0.1 still works.
+ */
 function isValidUrl(value: string): boolean {
   try {
     const u = new URL(value);
-    return u.protocol === 'https:' || u.protocol === 'http:';
+    if (u.protocol === 'https:') return true;
+    return u.protocol === 'http:' && isLoopback(u.hostname);
   } catch {
     return false;
   }
@@ -80,9 +89,15 @@ export async function loadAppProfile(
     const profile =
       JSON.parse(account.posting_json_metadata || '{}').profile ?? {};
     return {
-      name: profile.name || clientId,
+      // The profile is the app account's own on-chain metadata, so `name` can be
+      // any JSON value. Accept it only when it is a string: rendering an object
+      // as a React child throws and takes the consent screen down.
+      name:
+        typeof profile.name === 'string' && profile.name
+          ? profile.name
+          : clientId,
       redirectUris: Array.isArray(profile.redirect_uris)
-        ? profile.redirect_uris
+        ? profile.redirect_uris.filter((u: unknown) => typeof u === 'string')
         : [],
     };
   } catch {
@@ -124,9 +139,12 @@ export function buildAuthToken(
 }
 
 /**
- * The callback URL to redirect to after issuing a token, matching
- * signAndRedirectToCallback: a single '?' is always appended, params in order
- * code|access_token+expires_in, then state, then username.
+ * The callback URL to redirect to after issuing a token. Params are added in the
+ * Nuxt app's order (code|access_token+expires_in, then state, then username),
+ * but MERGED into the callback's existing query rather than appended after a
+ * second '?'. The Nuxt app always concatenated '?', which corrupts a registered
+ * callback that already carries a query ('.../cb?tenant=1' became
+ * '.../cb?tenant=1?access_token=...', losing tenant to a malformed query).
  */
 export function buildRedirectUrl(
   callback: string,
@@ -142,7 +160,15 @@ export function buildRedirectUrl(
     params.set('expires_in', '604800');
   }
   params.set('username', username);
-  return `${callback}?${params.toString()}`;
+  try {
+    const url = new URL(callback);
+    for (const [key, value] of params) url.searchParams.set(key, value);
+    return url.toString();
+  } catch {
+    // Callbacks reaching here are already validated as URLs; keep a separator
+    // that at least does not produce a second '?' if one ever is not.
+    return `${callback}${callback.includes('?') ? '&' : '?'}${params.toString()}`;
+  }
 }
 
 export type { Account };

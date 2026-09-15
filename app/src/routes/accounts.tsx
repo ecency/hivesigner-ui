@@ -16,7 +16,21 @@ import { useAccounts } from '@/lib/use-accounts';
 // passcode first.
 export const Route = createFileRoute('/accounts')({
   component: Accounts,
+  // `next` is OPTIONAL: returning it as a always-present key would make
+  // `search` a required prop on every <Link to="/accounts"> in the app.
+  validateSearch: (search: Record<string, unknown>): { next?: string } =>
+    typeof search.next === 'string' ? { next: search.next } : {},
 });
+
+/**
+ * Where to return after unlocking. Only a same-origin ABSOLUTE PATH is accepted:
+ * anything with a scheme or protocol-relative form would turn this into an open
+ * redirect, and the caller of this screen is the OAuth consent flow.
+ */
+function safeNext(next: string | undefined): string | null {
+  if (!next || !next.startsWith('/') || next.startsWith('//')) return null;
+  return next;
+}
 
 const fld: CSSProperties = {
   width: '100%',
@@ -31,9 +45,11 @@ const fld: CSSProperties = {
 function AccountRow({
   username,
   current,
+  next,
 }: {
   username: string;
   current: boolean;
+  next?: string;
 }) {
   const { t } = useTranslation();
   const encrypted = accountIsEncrypted(username);
@@ -43,9 +59,17 @@ function AccountRow({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  function done() {
+    // Return to the flow that sent the user here (an OAuth consent request
+    // would otherwise be lost, forcing the app to start over).
+    const back = safeNext(next);
+    if (back) window.location.assign(back);
+  }
+
   async function activate() {
     if (unlocked) {
       selectAccount(username);
+      done();
       return;
     }
     if (encrypted) {
@@ -58,6 +82,11 @@ function AccountRow({
     try {
       await unlockAccount(username);
       selectAccount(username);
+      done();
+    } catch (e) {
+      // A corrupt persisted plaintext keystore rejects here; without this the
+      // row just stopped working with nothing on screen.
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
@@ -71,6 +100,7 @@ function AccountRow({
       selectAccount(username);
       setUnlocking(false);
       setPasscode('');
+      done();
     } catch {
       setError(t('login.invalid_hs_password'));
     } finally {
@@ -208,6 +238,7 @@ function AccountRow({
 function Accounts() {
   const { t } = useTranslation();
   const { usernames, selectedAccount } = useAccounts();
+  const { next } = Route.useSearch();
 
   return (
     <section
@@ -224,7 +255,12 @@ function Accounts() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {usernames.map((u) => (
-            <AccountRow key={u} username={u} current={u === selectedAccount} />
+            <AccountRow
+              key={u}
+              username={u}
+              current={u === selectedAccount}
+              next={next}
+            />
           ))}
         </div>
       )}

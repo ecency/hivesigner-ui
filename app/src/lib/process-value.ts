@@ -30,9 +30,14 @@ export function processValue(
     }
     case 'int':
       return Number.parseInt(String(realValue), 10);
-    case 'bool':
-      if (value === 'false' || value === false) return false;
-      return realValue as boolean;
+    case 'bool': {
+      // Search params are raw STRINGS (lib/search.ts keeps them unparsed), so a
+      // cast would leave "true"/"0" as truthy strings and the serializer would
+      // write TRUE for both. Convert to an actual boolean.
+      if (typeof realValue === 'boolean') return realValue;
+      const s = String(realValue).trim().toLowerCase();
+      return !(s === 'false' || s === '0' || s === '' || s === 'no');
+    }
     case 'string':
       if (maxLength) {
         const s = String(realValue);

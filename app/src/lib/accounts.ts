@@ -79,7 +79,13 @@ export function subscribe(listener: () => void): () => void {
 export function getState(): AccountsState {
   if (snapshot) return snapshot;
   const { accountsKeychains, selectedAccount } = readPersisted();
-  const usernames = Object.keys(accountsKeychains);
+  // Union with the in-memory cache: writePersisted swallows a storage failure
+  // (private window, blocked storage, quota), and without this the account would
+  // be unlocked and able to sign yet absent from the account list. It still
+  // disappears on reload, which is correct - nothing was stored.
+  const usernames = [
+    ...new Set([...Object.keys(accountsKeychains), ...keyCache.keys()]),
+  ];
   snapshot = {
     usernames,
     selectedAccount:

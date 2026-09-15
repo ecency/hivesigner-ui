@@ -28,9 +28,21 @@ describe('processValue', () => {
     expect(processValue({ type: 'int', defaultValue: 10000 }, '0', 1)).toBe(0);
   });
 
-  it('coerces bool strings', () => {
+  it('coerces bool strings to real booleans', () => {
+    // Search params are raw strings, so every one of these reaches the
+    // serializer. A truthy string would serialize as TRUE: "0" and "false" on a
+    // witness-vote `approve` would have flipped an unvote into a vote.
     expect(processValue({ type: 'bool' }, 'false', 1)).toBe(false);
-    expect(processValue({ type: 'bool' }, 'true', 1)).toBe('true');
+    expect(processValue({ type: 'bool' }, 'true', 1)).toBe(true);
+    expect(processValue({ type: 'bool' }, '0', 1)).toBe(false);
+    expect(processValue({ type: 'bool' }, '1', 1)).toBe(true);
+    expect(processValue({ type: 'bool' }, 'False', 1)).toBe(false);
+    expect(processValue({ type: 'bool' }, false, 1)).toBe(false);
+    expect(processValue({ type: 'bool' }, true, 1)).toBe(true);
+    // A missing value still takes the schema default.
+    expect(processValue({ type: 'bool', defaultValue: true }, '', 1)).toBe(
+      true,
+    );
   });
 
   it('truncates a string to maxLength - 1', () => {

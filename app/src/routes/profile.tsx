@@ -102,11 +102,16 @@ function Profile() {
 
   const initial = useMemo(() => readProfile(account), [account]);
   const [form, setForm] = useState<ProfileForm | null>(null);
+  // The account the pending edits belong to. Without this the form survived an
+  // account switch and `current` kept preferring it, so saving wrote one
+  // account's profile onto another.
+  const [formFor, setFormFor] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'busy' | 'done' | 'error'>(
     'idle',
   );
   const [error, setError] = useState('');
-  const current = form ?? initial;
+  const current =
+    form !== null && formFor === (account?.name ?? null) ? form : initial;
 
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
   const postingKey = selectedAccount
@@ -114,7 +119,11 @@ function Profile() {
     : undefined;
 
   function set(field: keyof ProfileForm, value: string) {
+    // `initial` is empty until the account query resolves; seeding from it would
+    // copy blanks over the stored profile on save.
+    if (!account) return;
     setForm({ ...current, [field]: value });
+    setFormFor(account.name);
   }
 
   async function save() {

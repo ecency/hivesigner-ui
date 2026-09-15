@@ -42,6 +42,12 @@ function SignMessage() {
 
   const [message, setMessage] = useState('');
   const [role, setRole] = useState<KeyRole>(heldRoles[0] ?? 'posting');
+  // useState seeds only on the first render, so after switching to an account
+  // that lacks the previously selected role the signer would look for a key it
+  // does not hold. Derive the role actually in use from what is held now.
+  const effectiveRole: KeyRole = heldRoles.includes(role)
+    ? role
+    : (heldRoles[0] ?? 'posting');
   const [payload, setPayload] = useState<SignedMessagePayload | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,7 +76,7 @@ function SignMessage() {
 
   function sign() {
     setError(null);
-    const wif = keys?.[role];
+    const wif = keys?.[effectiveRole];
     if (!selectedAccount || !wif) return;
     try {
       setPayload(
@@ -78,7 +84,7 @@ function SignMessage() {
           { message: message.trim() },
           selectedAccount,
           wif,
-          role,
+          effectiveRole,
         ),
       );
     } catch {
@@ -124,7 +130,7 @@ function SignMessage() {
         </span>
         <select
           style={fld}
-          value={role}
+          value={effectiveRole}
           onChange={(e) => setRole(e.target.value as KeyRole)}
         >
           {heldRoles.map((r) => (

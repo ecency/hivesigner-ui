@@ -9,6 +9,7 @@ import {
   operationActors,
   operationFields,
   requiredAuthority,
+  safeText,
   summarizeOperation,
 } from '@/lib/operation-summary';
 import { parseSignRequest } from '@/lib/parse-sign-request';
@@ -330,7 +331,7 @@ function Sign() {
       {req.preservedTx && (
         <div style={{ ...card, fontSize: 12.5, color: '#59636e' }}>
           This request supplied its own transaction header. Expires:{' '}
-          <b>{String(req.preservedTx.expiration)}</b>
+          <b>{safeText(String(req.preservedTx.expiration))}</b>
           {Array.isArray(req.preservedTx.signatures) &&
             req.preservedTx.signatures.length > 0 && (
               <>

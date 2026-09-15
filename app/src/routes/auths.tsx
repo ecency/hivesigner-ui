@@ -91,13 +91,23 @@ function Auths() {
                 <span>
                   @{a} · {t('auths.weight')} {w}
                 </span>
-                <Link
-                  to="/revoke/$username"
-                  params={{ username: a }}
-                  style={{ color: '#cf222e', fontWeight: 600, fontSize: 12 }}
-                >
-                  {t('revoke.revoke')}
-                </Link>
+                {/* Revoke removes an account from posting and active, signed with
+                    the active key. An OWNER delegation needs the owner key, so
+                    offering the same link here reported success while changing
+                    nothing. Say so instead of pretending. */}
+                {role === 'owner' ? (
+                  <span style={{ fontSize: 11.5, color: '#59636e' }}>
+                    owner delegation: remove with your owner key
+                  </span>
+                ) : (
+                  <Link
+                    to="/revoke/$username"
+                    params={{ username: a }}
+                    style={{ color: '#cf222e', fontWeight: 600, fontSize: 12 }}
+                  >
+                    {t('revoke.revoke')}
+                  </Link>
+                )}
               </div>
             ))}
             {heldKey && (

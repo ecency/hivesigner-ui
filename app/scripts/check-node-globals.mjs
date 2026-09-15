@@ -86,12 +86,21 @@ function isValueReference(node) {
   return true;
 }
 
-/** True when any `typeof` appears inside this subtree. */
-function containsTypeOf(node) {
+/**
+ * True when this subtree contains `typeof <name>` for the SAME identifier we are
+ * checking. Accepting any typeof at all was a false negative: a chunk reading
+ * `typeof window !== 'undefined' && process.env.X` passed the guard while
+ * `process` stayed unguarded, so the build went green and the page broke.
+ */
+function containsTypeOf(node, name) {
   let found = false;
   const visit = (child) => {
     if (found) return;
-    if (ts.isTypeOfExpression(child)) {
+    if (
+      ts.isTypeOfExpression(child) &&
+      ts.isIdentifier(child.expression) &&
+      child.expression.text === name
+    ) {
       found = true;
       return;
     }
@@ -109,6 +118,7 @@ function containsTypeOf(node) {
  * near a typeof is not enough, which is the whole point.
  */
 function isGuarded(node) {
+  const name = node.text;
   let child = node;
   let parent = node.parent;
 
@@ -116,14 +126,14 @@ function isGuarded(node) {
     if (ts.isConditionalExpression(parent)) {
       if (
         (child === parent.whenTrue || child === parent.whenFalse) &&
-        containsTypeOf(parent.condition)
+        containsTypeOf(parent.condition, name)
       ) {
         return true;
       }
     } else if (ts.isIfStatement(parent)) {
       if (
         (child === parent.thenStatement || child === parent.elseStatement) &&
-        containsTypeOf(parent.expression)
+        containsTypeOf(parent.expression, name)
       ) {
         return true;
       }
@@ -133,7 +143,11 @@ function isGuarded(node) {
         kind === ts.SyntaxKind.AmpersandAmpersandToken ||
         kind === ts.SyntaxKind.BarBarToken ||
         kind === ts.SyntaxKind.QuestionQuestionToken;
-      if (isLogical && child === parent.right && containsTypeOf(parent.left)) {
+      if (
+        isLogical &&
+        child === parent.right &&
+        containsTypeOf(parent.left, name)
+      ) {
         return true;
       }
     }

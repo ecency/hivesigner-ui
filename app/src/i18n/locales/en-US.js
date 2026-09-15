@@ -68,6 +68,7 @@ export default {
   },
   authorize: {
     authorize: 'Authorize',
+    request_access: 'is requesting access to your account.',
     authorize_active: 'Authorize (active)',
     authority_require: `The <b>{username}</b> requires your <b>{authority}</b> authority in order for
         you to be able to interact with it. By clicking "Continue" you are allowing

@@ -117,22 +117,41 @@ export function deriveKeysFromMasterPassword(
 }
 
 /**
- * Which role a private key holds for an account, or null if it belongs to none.
- * owner/active/posting are matched against key_auths; memo against memo_key.
- * This is the login credential check: a key the user pastes is accepted only
- * when its public key is actually on the account on-chain.
+ * EVERY role a private key can sign for ON ITS OWN. owner/active/posting are
+ * matched against key_auths; memo against memo_key. This is the login credential
+ * check: a key the user pastes is accepted only when its public key is actually
+ * on the account on-chain.
+ *
+ * Two things this must get right. A key whose weight is below the authority's
+ * weight_threshold cannot sign alone, so accepting it would let the app offer to
+ * sign and then fail only at broadcast (a multisig account's co-signer key).
+ * And one public key can legitimately sit in several authorities, so returning
+ * only the first match would store it under one role and then report the key as
+ * missing when a different authority is needed.
  */
+export function keyRolesForAccount(account: Account, wif: string): KeyRole[] {
+  const pub = publicKeyFromWif(wif);
+  if (!pub) return [];
+  const roles: KeyRole[] = [];
+  for (const role of ['owner', 'active', 'posting'] as const) {
+    const auth = account[role];
+    const entry = auth?.key_auths?.find(([key]) => key === pub);
+    if (!auth || !entry) continue;
+    const weight = Number(entry[1] ?? 0);
+    // Absent threshold defaults to 1, the chain's own default.
+    const threshold = Number(auth.weight_threshold ?? 1);
+    if (Number.isFinite(weight) && weight >= threshold) roles.push(role);
+  }
+  if (account.memo_key === pub) roles.push('memo');
+  return roles;
+}
+
+/** The strongest single role a key can sign for, or null for none. */
 export function keyRoleForAccount(
   account: Account,
   wif: string,
 ): KeyRole | null {
-  const pub = publicKeyFromWif(wif);
-  if (!pub) return null;
-  for (const role of ['owner', 'active', 'posting'] as const) {
-    if (account[role]?.key_auths?.some(([key]) => key === pub)) return role;
-  }
-  if (account.memo_key === pub) return 'memo';
-  return null;
+  return keyRolesForAccount(account, wif)[0] ?? null;
 }
 
 /**
@@ -144,16 +163,22 @@ export function resolveCredential(
   account: Account,
   secret: string,
 ): Keys | null {
-  // A single WIF.
-  const role = keyRoleForAccount(account, secret);
-  if (role) return { [role]: secret };
+  // A single WIF: store it under EVERY role it can sign for, not just the first.
+  const roles = keyRolesForAccount(account, secret);
+  if (roles.length) {
+    const single: Keys = {};
+    for (const r of roles) single[r] = secret;
+    return single;
+  }
 
   // A master password: derive, keep only roles whose pubkey is on the account.
   const derived = deriveKeysFromMasterPassword(account.name, secret);
   const kept: Keys = {};
   for (const r of ROLES) {
     const wif = derived[r];
-    if (wif && keyRoleForAccount(account, wif) === r) kept[r] = wif;
+    // `.includes(r)`, not `=== r`: a derived key that also sits in a stronger
+    // authority would otherwise be dropped for its own role.
+    if (wif && keyRolesForAccount(account, wif).includes(r)) kept[r] = wif;
   }
   return Object.keys(kept).length > 0 ? kept : null;
 }

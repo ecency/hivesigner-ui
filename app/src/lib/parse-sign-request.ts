@@ -122,6 +122,19 @@ export function parseSignRequest(
   const rawOps = decoded?.tx?.operations;
   if (!decoded || !Array.isArray(rawOps) || rawOps.length === 0) return null;
 
+  // Refuse a transaction carrying extensions rather than signing around them.
+  // They ARE part of the signed digest but have no display, so signing one would
+  // put bytes the user never saw under their key; silently emptying them instead
+  // would hand a co-signer a signature over a different transaction than the one
+  // they built. Hive defines no value-bearing transaction extension today, so
+  // failing closed costs nothing and keeps both properties.
+  if (
+    Array.isArray(decoded.tx?.extensions) &&
+    decoded.tx.extensions.length > 0
+  ) {
+    return null;
+  }
+
   try {
     let hpDependent = false;
     const operations: Operation[] = rawOps.map(([name, payload]) => {

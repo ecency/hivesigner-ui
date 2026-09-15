@@ -132,6 +132,21 @@ async function decryptV1(field: string, passcode: string): Promise<Keys> {
   const env = JSON.parse(field) as EnvelopeV1;
   if (env.v !== 1)
     throw new Error(`keystore: unsupported envelope version ${env.v}`);
+  // N/r/p come from persisted data. scrypt here is synchronous, so an absurd N
+  // (or a non-number) would hang the tab instead of failing; bound them to the
+  // range we ever write (N = 2^17, r = 8, p = 1).
+  const { N, r, p } = env.kdf;
+  const pow2 = (n: unknown) =>
+    typeof n === 'number' &&
+    Number.isInteger(n) &&
+    n > 1 &&
+    (n & (n - 1)) === 0;
+  if (!pow2(N) || N > 2 ** 18)
+    throw new Error('keystore: unsupported key-derivation cost');
+  if (!Number.isInteger(r) || r < 1 || r > 16)
+    throw new Error('keystore: unsupported key-derivation block size');
+  if (!Number.isInteger(p) || p < 1 || p > 4)
+    throw new Error('keystore: unsupported key-derivation parallelism');
   const key = await deriveAesKey(
     passcode,
     base64.decode(env.salt),

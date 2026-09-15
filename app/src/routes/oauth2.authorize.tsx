@@ -274,7 +274,13 @@ function Authorize() {
             {t('common.continue')}
           </Link>
         ) : !isUnlocked ? (
-          <Link to="/accounts" style={btn(true)}>
+          // Carry the consent request through the unlock, or the app has to
+          // start the whole authorization over.
+          <Link
+            to="/accounts"
+            search={{ next: window.location.pathname + window.location.search }}
+            style={btn(true)}
+          >
             {t('accounts.unlock')} @{selectedAccount}
           </Link>
         ) : !signingKey ? (

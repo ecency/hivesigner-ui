@@ -54,7 +54,14 @@ function Import() {
         setError(t('import.invalid_username_password'));
         return;
       }
-      const keys = resolveCredential(account, secret.trim());
+      // Try the secret EXACTLY as entered first. Trimming can change a master
+      // password that legitimately begins or ends with whitespace, deriving
+      // different keys; the trimmed retry still rescues a pasted key that
+      // carried a stray newline. resolveCredential validates against the chain,
+      // so whichever form matches is the right one.
+      const keys =
+        resolveCredential(account, secret) ??
+        resolveCredential(account, secret.trim());
       if (!keys) {
         setError(t('import.invalid_username_password'));
         return;

@@ -85,7 +85,14 @@ export function buildRevokeOperation(
   return ['account_update', payload];
 }
 
-/** The apps (account_auths names) that can post as this account. */
+/**
+ * The apps that can actually post as this account. Weight-aware for the same
+ * reason hasGrant is: an entry below posting.weight_threshold cannot sign on its
+ * own, so listing it as authorized overstates what the app can do.
+ */
 export function authorizedApps(account: Account): string[] {
-  return account.posting.account_auths.map(([n]) => n);
+  const threshold = Number(account.posting.weight_threshold ?? 1);
+  return account.posting.account_auths
+    .filter(([, w]) => Number(w ?? 0) >= threshold)
+    .map(([n]) => n);
 }

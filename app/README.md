@@ -39,7 +39,7 @@ crypto/signing dependencies browser-native or shim them (see the guard's notes).
 
 Routing, config, i18n, the shared shell and a read-only `/sign/*` confirm screen
 built on `lib/operation-summary.ts` (the human-readable summary that answers the
-"raw JSON" complaint). Signing, key import and encryption are intentionally
-absent: they arrive with the flow port (#102) and key-storage migration (#103),
-where the Buffer question for the signer is handled. The external contract these
+"raw JSON" complaint). Signing, key import and the encrypted keystore are
+implemented: the flow port (#102) and key-storage migration (#103) have landed,
+including the browser-native crypto that keeps Node globals out of the bundle. The external contract these
 must preserve is in `../CONTRACT.md`; the parity E2E suite in `../e2e` is the gate.

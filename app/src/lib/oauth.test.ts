@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { decodeToken } from './message-token';
 import {
   type AuthRequest,
@@ -30,12 +30,24 @@ describe('normalizeAuthRequest', () => {
     expect(normalizeAuthRequest({ scope: 'whatever' }).scope).toBe('posting');
   });
 
-  it('decodes an encoded redirect_uri', () => {
+  it('takes the redirect_uri as given, because the router already decoded it', () => {
+    // parseSearch (lib/search.ts) builds the query with URLSearchParams, so
+    // values arrive percent-DECODED. This test models that input.
     const r = normalizeAuthRequest({
       scope: 'posting',
-      redirect_uri: 'https%3A%2F%2Fecency.com%2Fcb',
+      redirect_uri: 'https://ecency.com/cb',
     });
     expect(r.redirectUri).toBe('https://ecency.com/cb');
+  });
+
+  it('does not decode a second time, which would corrupt an encoded callback', () => {
+    // A registered callback whose query legitimately contains %2B: decoding
+    // again turns it into '+' and the exact-match registration check then fails.
+    const r = normalizeAuthRequest({
+      scope: 'posting',
+      redirect_uri: 'https://ecency.com/cb?next=a%2Bb',
+    });
+    expect(r.redirectUri).toBe('https://ecency.com/cb?next=a%2Bb');
   });
 });
 
@@ -123,5 +135,57 @@ describe('buildRedirectUrl', () => {
   it('always appends a single ? even when the callback has none', () => {
     const url = buildRedirectUrl('https://ecency.com/cb', 'T', base, 'alice');
     expect(url.startsWith('https://ecency.com/cb?')).toBe(true);
+  });
+});
+
+describe('redirect hardening (review findings)', () => {
+  const profile = {
+    name: 'Ecency',
+    redirectUris: [
+      'https://ecency.com/cb',
+      'http://insecure.example/cb',
+      'http://localhost:3000/cb',
+    ],
+  };
+
+  it('refuses a plain-http callback: the token rides in the query string', () => {
+    expect(isRegisteredRedirect(profile, 'http://insecure.example/cb')).toBe(
+      false,
+    );
+  });
+
+  it('still allows loopback http, where TLS is not available', () => {
+    expect(isRegisteredRedirect(profile, 'http://localhost:3000/cb')).toBe(
+      true,
+    );
+  });
+
+  it('merges auth params into a callback that already has a query', () => {
+    const url = buildRedirectUrl(
+      'https://example.com/cb?tenant=1',
+      'TOKEN',
+      { scope: 'posting', responseType: 'token' },
+      'alice',
+    );
+    const parsed = new URL(url);
+    // The app's own param survives, and there is exactly one '?'.
+    expect(parsed.searchParams.get('tenant')).toBe('1');
+    expect(parsed.searchParams.get('access_token')).toBe('TOKEN');
+    expect(parsed.searchParams.get('username')).toBe('alice');
+    expect(url.split('?').length).toBe(2);
+  });
+
+  it('keeps a non-string profile name out of the render path', async () => {
+    // An app account can publish any JSON in its own profile; an object name
+    // rendered as a React child throws and takes the consent screen down.
+    const { loadAppProfile } = await import('./oauth');
+    const hive = await import('./hive');
+    vi.spyOn(hive, 'getAccount').mockResolvedValue({
+      name: 'theapp',
+      posting_json_metadata: JSON.stringify({ profile: { name: { evil: 1 } } }),
+    } as never);
+    const p = await loadAppProfile('theapp');
+    expect(typeof p?.name).toBe('string');
+    expect(p?.name).toBe('theapp');
   });
 });

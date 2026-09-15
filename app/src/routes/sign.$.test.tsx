@@ -28,7 +28,8 @@ vi.mock('@tanstack/react-router', () => ({
   Link: ({ children }: { children: unknown }) => children,
 }));
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({ data: h.vests, isSuccess: h.vests.ready }),
+  // The real queryFn (getVestsToSp) resolves to a NUMBER; model that.
+  useQuery: () => ({ data: h.vests.rate, isSuccess: h.vests.ready }),
 }));
 vi.mock('@/lib/hive', () => ({ getVestsToSp: vi.fn() }));
 vi.mock('@/lib/use-accounts', () => ({ useAccounts: () => h.accounts }));

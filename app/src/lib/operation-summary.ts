@@ -172,10 +172,21 @@ function describeAuthority(value: unknown): string {
     account_auths?: [string, number][];
   } | null;
   if (!a || typeof a !== 'object') return '';
-  const keys = (a.key_auths ?? []).map(([k, w]) => `${txt(k)} (${txt(w)})`);
-  const accts = (a.account_auths ?? []).map(
-    ([n, w]) => `@${txt(n)} (${txt(w)})`,
-  );
+  // These come straight from a decoded /sign payload, so an entry can be any
+  // JSON value, not the [name, weight] tuple the type claims. Destructuring a
+  // non-array threw and took the whole confirm screen down, which is a way to
+  // stop a user inspecting an authority change. Render whatever is there.
+  const entry = (v: unknown): [string, string] =>
+    Array.isArray(v) ? [txt(v[0]), txt(v[1])] : [txt(v), '?'];
+  const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+  const keys = list(a.key_auths).map((e) => {
+    const [k, w] = entry(e);
+    return `${k} (${w})`;
+  });
+  const accts = list(a.account_auths).map((e) => {
+    const [n, w] = entry(e);
+    return `@${n} (${w})`;
+  });
   // The threshold is material: raising it above the total weight (or an
   // account_auths swap that keeps the same shape) can lock the owner out. Print
   // it for ANY present value, not only a number - the chain coerces a string
