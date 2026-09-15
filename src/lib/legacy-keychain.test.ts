@@ -71,6 +71,46 @@ describe('migrateLegacyKeychain', () => {
     expect(current().selectedAccount).toBe('alice');
   });
 
+  // `constructor` is a perfectly valid Hive account name, and a truthiness
+  // check on `keychains['constructor']` finds Object.prototype.constructor.
+  // That made the account read as already migrated, so it was never copied -
+  // and then the legacy key was deleted underneath it. Both storage keys ended
+  // up empty and the keys were gone.
+  it.each(['constructor', 'valueof', 'tostring'])(
+    'migrates @%s, whose name collides with Object.prototype',
+    (username) => {
+      localStorage.setItem(LEGACY, JSON.stringify({ [username]: 'blob' }));
+      expect(migrateLegacyKeychain()).toBe(true);
+      expect(current().accountsKeychains[username]).toEqual({
+        password: 'blob',
+      });
+      expect(localStorage.getItem(LEGACY)).toBeNull();
+    },
+  );
+
+  it('does not let a __proto__ entry touch the prototype', () => {
+    localStorage.setItem(
+      LEGACY,
+      JSON.stringify({ __proto__: 'evil', alice: 'blob' }),
+    );
+    migrateLegacyKeychain();
+    expect(({} as Record<string, unknown>).password).toBeUndefined();
+    expect(Object.hasOwn(current().accountsKeychains, '__proto__')).toBe(false);
+    expect(current().accountsKeychains.alice).toEqual({ password: 'blob' });
+  });
+
+  // Refusing to carry something across is a reason to KEEP the legacy data:
+  // clearing it would destroy the only copy of an entry we chose not to read.
+  it('keeps the legacy key when any entry was skipped', () => {
+    localStorage.setItem(
+      LEGACY,
+      JSON.stringify({ alice: 'blob', 'NOT A NAME': 'blob' }),
+    );
+    expect(migrateLegacyKeychain()).toBe(true);
+    expect(current().accountsKeychains.alice).toEqual({ password: 'blob' });
+    expect(localStorage.getItem(LEGACY)).not.toBeNull();
+  });
+
   it('leaves unparsable legacy data alone rather than destroying it', () => {
     localStorage.setItem(LEGACY, 'not json at all');
     expect(migrateLegacyKeychain()).toBe(false);

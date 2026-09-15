@@ -288,6 +288,8 @@ export function lockAccount(username: string): void {
  *   storage. The old plugin deleted it unconditionally, which in a private
  *   window or with storage full would have destroyed the only copy.
  */
+const LEGACY_NAME_RE = /^[a-z][a-z0-9.-]{2,15}$/;
+
 export function migrateLegacyKeychain(): boolean {
   const LEGACY_KEY = 'keychain';
   let raw: string | null = null;
@@ -305,13 +307,38 @@ export function migrateLegacyKeychain(): boolean {
     }
     const state = readPersisted();
     let added = false;
+    let skipped = false;
     for (const [username, password] of Object.entries(
       parsed as Record<string, unknown>,
     )) {
       if (typeof password !== 'string' || !password) continue;
-      if (state.accountsKeychains[username]) continue;
+      // Hive account names only. This is not tidying: without it `__proto__`
+      // as a key would set the object's PROTOTYPE rather than an entry, and a
+      // name the chain cannot issue has no account behind it anyway.
+      if (!LEGACY_NAME_RE.test(username)) {
+        skipped = true;
+        continue;
+      }
+      // Object.hasOwn, NOT a truthiness check on the index. `constructor` is a
+      // perfectly valid Hive account name, and `keychains['constructor']`
+      // resolves to Object.prototype.constructor - truthy - so that account
+      // read as "already migrated", was never copied across, and then the
+      // legacy key was deleted underneath it. Every inherited name on
+      // Object.prototype was the same trap.
+      if (Object.hasOwn(state.accountsKeychains, username)) continue;
       state.accountsKeychains[username] = { password };
       added = true;
+    }
+    // An entry we refused to carry across is a reason to KEEP the legacy data:
+    // deleting it would destroy the only copy of something we chose not to
+    // read. Only a clean pass may clear it.
+    if (skipped) {
+      if (added) {
+        if (!writePersisted(state)) return false;
+        emit();
+        return true;
+      }
+      return false;
     }
     if (!added) {
       // Nothing to carry over (already migrated, or every entry unusable):
