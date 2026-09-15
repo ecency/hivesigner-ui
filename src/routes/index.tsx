@@ -13,8 +13,8 @@ import {
   mutedXs,
   page,
 } from '@/components/ui';
-import { getTopApps } from '@/lib/hive';
-import { topAppsKey } from '@/lib/query-keys';
+import { getAppDirectory } from '@/lib/app-directory';
+import { appDirectoryKey } from '@/lib/query-keys';
 import { useAccounts } from '@/lib/use-accounts';
 
 export const Route = createFileRoute('/')({
@@ -64,11 +64,13 @@ function Home() {
   // import, a returning one to their accounts.
   const primary = usernames.length > 0 ? '/accounts' : '/import';
 
-  const { data: featured = [] } = useQuery({
-    queryKey: topAppsKey(),
-    queryFn: getTopApps,
+  // Same query key as /apps, so opening one warms the other.
+  const { data: index } = useQuery({
+    queryKey: appDirectoryKey(),
+    queryFn: getAppDirectory,
     staleTime: 10 * 60_000,
   });
+  const featured = index?.featured ?? [];
 
   return (
     <section className={page}>
@@ -141,13 +143,13 @@ function Home() {
           <div className="flex flex-wrap gap-2">
             {featured.map((app) => (
               <Link
-                key={app}
+                key={app.username}
                 to="/authorize/$username"
-                params={{ username: app }}
+                params={{ username: app.username }}
                 className={`${cardTight} flex items-center gap-2 py-2 text-[13px] font-semibold text-ink no-underline hover:border-line-strong`}
               >
-                <Avatar username={app} size="sm" />
-                <span className="[unicode-bidi:isolate]">@{app}</span>
+                <Avatar username={app.username} size="sm" />
+                <span className="[unicode-bidi:isolate]">@{app.username}</span>
               </Link>
             ))}
           </div>

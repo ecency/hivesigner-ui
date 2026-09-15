@@ -15,13 +15,13 @@ import {
   mutedXs,
   page,
 } from '@/components/ui';
-import { getAllApps, getProfiles, getTopApps, type Profile } from '@/lib/hive';
+import { getAppDirectory } from '@/lib/app-directory';
+import { getProfiles, type Profile } from '@/lib/hive';
 import { safeText } from '@/lib/operation-summary';
 import {
-  allAppsKey,
+  appDirectoryKey,
   directoryProfileBatchKey,
   directoryProfileKey,
-  topAppsKey,
 } from '@/lib/query-keys';
 
 // The directory of apps that use Hivesigner to sign in.
@@ -94,21 +94,25 @@ function Apps() {
   const [limit, setLimit] = useState(PAGE_SIZE);
   const queryClient = useQueryClient();
 
-  const { data: featured = [] } = useQuery({
-    queryKey: topAppsKey(),
-    queryFn: getTopApps,
-    staleTime: 10 * 60_000,
-  });
+  // ONE query for both lists, shared with the homepage. The API ranks the
+  // featured list from real usage; if it cannot be reached this falls back to
+  // reading the curated post and the follow list straight off the chain, which
+  // is what the app did before the endpoint existed.
   const {
-    data: all = [],
+    data: index,
     isLoading,
     isError,
     refetch,
   } = useQuery({
-    queryKey: allAppsKey(),
-    queryFn: getAllApps,
+    queryKey: appDirectoryKey(),
+    queryFn: getAppDirectory,
     staleTime: 10 * 60_000,
   });
+  const featured = useMemo(
+    () => (index?.featured ?? []).map((app) => app.username),
+    [index],
+  );
+  const all = index?.directory ?? [];
 
   const query = search.trim().toLowerCase();
 
