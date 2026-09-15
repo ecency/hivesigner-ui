@@ -13,6 +13,19 @@ export default {
     encrypted: 'Encrypted'
   },
   index: {
+    tagline: 'One secure login for the Hive blockchain',
+    lede: 'Hivesigner keeps your Hive keys on your own device, shows you exactly what a transaction does before you sign it, and lets apps ask for only the permission they need.',
+    sign_in_with: 'Sign in to an app',
+    browse_apps: 'Browse apps',
+    keys_title: 'Your keys never leave this device',
+    keys_body: 'Keys are encrypted with a passcode you choose and stored only in this browser. They are never uploaded, and nobody else can read them.',
+    review_title: 'See what you are signing',
+    review_body: 'Every transaction is shown in plain language before it is broadcast, with the account it signs as and the authority it needs.',
+    scope_title: 'Apps get only what they ask for',
+    scope_body: 'An app can request posting access to publish on your behalf, or just your username. Active and owner keys stay with you.',
+    powering: 'Powering apps on Hive',
+    see_all_apps: 'See all apps',
+    developers_cta: 'Building an app? Add Hivesigner sign-in with OAuth2.',
     title: 'Hivesigner',
     description: `Secure way to sign with Hivesigner. Best security for users and developers to integrate industry standard OAuth2 for their Blockchain applications. Transform web 2.0 apps into web 3.0 decentralized apps.`,
     get_started: 'Get started',
@@ -46,6 +59,15 @@ export default {
     successfully_logged_in: 'Logged in successfully!'
   },
   apps: {
+    directory_unavailable: 'Could not load the app directory. A Hive node may be unreachable.',
+    directory_hint: 'Every app that uses Hivesigner to sign people in.',
+    featured: 'Featured',
+    all_apps: 'All apps',
+    loading: 'Loading the directory…',
+    show_more: 'Show more',
+    count_one: '{count} app',
+    count_other: '{count} apps',
+    can_post_as: 'Apps that can post as <b>@{account}</b>.',
     none_authorized: 'No apps are authorized.',
     store: 'App store',
     search_placeholder: 'Search for apps',
@@ -84,6 +106,10 @@ export default {
         <a class="text-black hover:underline uppercase cursor-pointer" href="/revoke/{username}" target="_blank">here</a>.`,
     authority_active: `Giving active authority enables the authorized account to do fund transfers from your account, this should be used with utmost care.`,
     redirect_not_registered: `This app's redirect URL is not registered. For your safety, sign-in is blocked.`,
+    hive_account: 'Hive account',
+    sends_you_to: 'sends you to',
+    grant_explain: '@{app} will be able to post, comment, vote and follow as @{account}.',
+    granted: '@{app} is authorized.',
     scope: 'Scope',
     scope_login: 'View your account username',
     scope_posting: 'Post, comment, vote and follow on your behalf',
@@ -146,6 +172,8 @@ export default {
     you: 'You'
   },
   revoke: {
+    revoke_explain: '@{app} will no longer be able to act as @{account}.',
+    revoked: '@{app} is revoked.',
     revoke: 'Revoke',
     revoke_active: 'Revoke (active)',
     message: `By clicking "Continue" you are revoking <b>{authority}</b> authority from

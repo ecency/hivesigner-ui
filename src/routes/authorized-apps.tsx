@@ -1,7 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import { Avatar } from '@/components/Avatar';
 import {
   alertError,
   cardGrid,
@@ -73,7 +74,11 @@ function AuthorizedApps() {
       <div>
         <h1 className={h1}>{t('footer.apps')}</h1>
         <p className={`${muted} mt-1`}>
-          Apps that can post as <b>@{selectedAccount}</b>.
+          <Trans
+            i18nKey="apps.can_post_as"
+            values={{ account: selectedAccount }}
+            components={{ b: <b /> }}
+          />
         </p>
       </div>
 
@@ -89,7 +94,8 @@ function AuthorizedApps() {
         <div className={cardGrid}>
           {apps.map((app) => (
             <div key={app} className={`${cardTight} flex items-center gap-3`}>
-              <div className="min-w-0 flex-1 break-all text-[15px] font-semibold">
+              <Avatar username={app} size="md" />
+              <div className="min-w-0 flex-1 break-all text-[15px] font-semibold [unicode-bidi:isolate]">
                 @{app}
               </div>
               {!isUnlocked || !activeKey ? (

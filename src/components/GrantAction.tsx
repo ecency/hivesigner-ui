@@ -2,8 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Avatar } from '@/components/Avatar';
 import {
   alertError,
+  alertOk,
   btnPrimary,
   card,
   formColumn,
@@ -81,14 +83,23 @@ export function GrantAction({
     <section className={`${page} ${formColumn} sm:max-w-xl`}>
       {/* `appName` is a rendered value taken from the URL, so let it wrap
           rather than push the page sideways at 320px. */}
-      <h1 className={`${h1} break-words`}>
-        {verb} @{appName}
+      <h1 className={`${h1} flex flex-wrap items-center gap-2 break-words`}>
+        <Avatar username={appName} size="md" />
+        <span className="min-w-0 break-words [unicode-bidi:isolate]">
+          {verb} @{appName}
+        </span>
       </h1>
 
       <div className={`${card} text-sm break-words`}>
         {mode === 'grant'
-          ? `@${appName} will be able to post, comment, vote and follow as @${selectedAccount}.`
-          : `@${appName} will no longer be able to act as @${selectedAccount}.`}
+          ? t('authorize.grant_explain', {
+              app: appName,
+              account: selectedAccount,
+            })
+          : t('revoke.revoke_explain', {
+              app: appName,
+              account: selectedAccount,
+            })}
         <div className="mt-2 text-[12.5px] text-warn">
           {t('authorize.requires_active_key', { authority: 'active' }).replace(
             /<\/?b>/g,
@@ -98,12 +109,10 @@ export function GrantAction({
       </div>
 
       {status === 'done' || alreadyDone ? (
-        // No success recipe exists in ui.ts; these are the card metrics with
-        // the existing green palette, kept verbatim.
-        <output className="block rounded-xl border border-ok-line bg-ok-bg p-4 text-sm font-semibold break-words text-ok">
+        <output className={`${alertOk} block text-sm font-semibold`}>
           {mode === 'grant'
-            ? `@${appName} is authorized.`
-            : `@${appName} is revoked.`}
+            ? t('authorize.granted', { app: appName })
+            : t('revoke.revoked', { app: appName })}
         </output>
       ) : null}
 
