@@ -37,9 +37,16 @@ export function stripUrl(value: string): string {
   }
 }
 
-// Credential shapes to redact wherever they appear in free text: a WIF (base58,
-// starts with 5/K/L), a Hive public key, a base64url token or operation blob,
-// and the named parameters that carry tokens and passcodes.
+// Field names whose VALUE is sensitive whatever it looks like. Sentry serializes
+// a non-Error throw into extra.__serialized__, so `throw { password: 'hunter2' }`
+// arrives as a plain field: the value matches no credential pattern and would
+// otherwise pass straight through. Over-redacting here is the right trade in a
+// signer, even though it costs an error `code` now and then.
+const SECRET_KEYS =
+  /^(pass|password|passcode|secret|wif|mnemonic|seed|privatekey|private_key|token|access_token|refresh_token|id_token|code|auth|authorization|signature|sig|payload|memo|key|keys)$/i;
+
+// Credential SHAPES to redact wherever they appear in free text, for values that
+// arrive without a telling field name.
 const SECRET_PATTERNS: RegExp[] = [
   /\b[5KL][1-9A-HJ-NP-Za-km-z]{50,51}\b/g, // WIF private key
   /\bSTM[1-9A-HJ-NP-Za-km-z]{30,}\b/g, // Hive public key
@@ -47,9 +54,16 @@ const SECRET_PATTERNS: RegExp[] = [
   /\/sign\/(op|ops|tx)\/[A-Za-z0-9_\-.]+/g, // encoded operation payload
 ];
 
+// A URL appearing inside free text: absolute, or a rooted path carrying a query.
+// Stack frame filenames, culprit, transaction and breadcrumb data all hold these.
+const URL_IN_TEXT =
+  /(?:[a-z][a-z0-9+.-]*:\/\/[^\s"'<>\\]+|\/[^\s"'<>\\?#]*\?[^\s"'<>\\]*)/gi;
+
 /** Redact credential-shaped substrings from any string we might send. */
 export function scrubText(value: string): string {
-  let out = value;
+  // Strip every URL's query and fragment FIRST: the credential is usually the
+  // query itself, and enumerating URL-bearing fields missed stack frames.
+  let out = value.replace(URL_IN_TEXT, (match) => stripUrl(match));
   for (const pattern of SECRET_PATTERNS) {
     out = out.replace(pattern, (match) => {
       // Keep the parameter name so the report is still readable.
@@ -74,7 +88,8 @@ function scrubDeep(value: unknown, depth = 0, seen = new WeakSet()): unknown {
     return value.map((v) => scrubDeep(v, depth + 1, seen));
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(value)) {
-    out[k] = scrubDeep(v, depth + 1, seen);
+    // The field name alone is enough to redact: see SECRET_KEYS.
+    out[k] = SECRET_KEYS.test(k) ? REDACTED : scrubDeep(v, depth + 1, seen);
   }
   return out;
 }

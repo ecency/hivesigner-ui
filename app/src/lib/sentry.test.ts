@@ -49,16 +49,22 @@ describe('scrubText', () => {
     expect(scrubText(`signer ${pub}`)).not.toContain(pub);
   });
 
-  it('redacts credential-carrying parameters but keeps their names', () => {
+  it('drops the whole query of a URL, since that is where credentials live', () => {
     const out = scrubText(
       'GET /cb?access_token=eyJhbGciOi.abc&code=XYZ123&username=alice',
     );
     expect(out).not.toContain('eyJhbGciOi.abc');
     expect(out).not.toContain('XYZ123');
+    // The path stays, so the report still says which endpoint failed.
+    expect(out).toContain('/cb');
+    expect(out).not.toContain('?');
+  });
+
+  it('redacts a named credential in free text, keeping the name readable', () => {
+    // Not a URL, so the parameter-level redaction is what applies here.
+    const out = scrubText('request failed: access_token=eyJhbGciOi.abc');
+    expect(out).not.toContain('eyJhbGciOi.abc');
     expect(out).toContain('access_token=[redacted]');
-    expect(out).toContain('code=[redacted]');
-    // Non-secret context survives, or the report is useless.
-    expect(out).toContain('username=alice');
   });
 
   it('redacts a passcode and a password', () => {
@@ -143,5 +149,80 @@ describe('sanitizeBreadcrumb', () => {
       data: { url: 'https://api.example/x?token=SECRET' },
     } as never);
     expect(out?.data?.url).toBe('https://api.example/x');
+  });
+});
+
+describe('credentials identified by their FIELD NAME, not their shape', () => {
+  it('redacts a structured throw that Sentry serialises into extra', () => {
+    // Sentry turns a non-Error throw into extra.__serialized__, so
+    // `throw { password: 'hunter2' }` arrives as a plain field whose VALUE
+    // matches no credential pattern. Checking values alone let it straight
+    // through.
+    const out = sanitizeEvent({
+      extra: {
+        __serialized__: {
+          password: 'hunter2',
+          passcode: 'letmein',
+          access_token: 'TOKENVALUE',
+          wif: '5KsomethingShort',
+        },
+      },
+    } as never);
+    const json = JSON.stringify(out);
+    for (const secret of [
+      'hunter2',
+      'letmein',
+      'TOKENVALUE',
+      '5KsomethingShort',
+    ]) {
+      expect(json, `leaked ${secret}`).not.toContain(secret);
+    }
+  });
+
+  it('redacts a sensitive field at any depth and inside arrays', () => {
+    const out = sanitizeEvent({
+      contexts: { a: { b: [{ keys: { posting: 'WIFVALUE' } }] } },
+    } as never);
+    expect(JSON.stringify(out)).not.toContain('WIFVALUE');
+  });
+
+  it('keeps non-sensitive fields so a report is still useful', () => {
+    const out = sanitizeEvent({
+      extra: { username: 'alice', operation: 'transfer' },
+    } as never);
+    const json = JSON.stringify(out);
+    expect(json).toContain('alice');
+    expect(json).toContain('transfer');
+  });
+});
+
+describe('URLs are stripped wherever they appear, not just known fields', () => {
+  it('strips a stack frame filename and abs_path', () => {
+    // A frame filename is the page URL, so for this app it carries the payload.
+    const url = 'https://signer.example/verifymessage?payload=SIGNEDPAYLOAD';
+    const out = sanitizeEvent({
+      exception: {
+        values: [
+          {
+            type: 'Error',
+            stacktrace: { frames: [{ filename: url, abs_path: url }] },
+          },
+        ],
+      },
+    } as never);
+    const json = JSON.stringify(out);
+    expect(json).not.toContain('SIGNEDPAYLOAD');
+    expect(json).toContain('https://signer.example/verifymessage');
+  });
+
+  it('strips culprit and any other URL-bearing string', () => {
+    const out = sanitizeEvent({
+      culprit: '/verifymessage?payload=SIGNEDPAYLOAD',
+      message: 'failed at https://signer.example/cb?access_token=SECRET',
+    } as never);
+    const json = JSON.stringify(out);
+    expect(json).not.toContain('SIGNEDPAYLOAD');
+    expect(json).not.toContain('SECRET');
+    expect(json).toContain('/verifymessage');
   });
 });
