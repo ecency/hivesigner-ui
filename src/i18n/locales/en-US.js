@@ -59,6 +59,7 @@ export default {
     successfully_logged_in: 'Logged in successfully!'
   },
   apps: {
+    self_declared: 'The name, website and creator above are published by the app account itself, and are not verified by Hivesigner.',
     directory_unavailable: 'Could not load the app directory. A Hive node may be unreachable.',
     directory_hint: 'Every app that uses Hivesigner to sign people in.',
     featured: 'Featured',
@@ -108,6 +109,7 @@ export default {
     redirect_not_registered: `This app's redirect URL is not registered. For your safety, sign-in is blocked.`,
     hive_account: 'Hive account',
     sends_you_to: 'sends you to',
+    grant_explain_no_account: '@{app} is asking to post, comment, vote and follow on your behalf. Add an account to continue.',
     grant_explain: '@{app} will be able to post, comment, vote and follow as @{account}.',
     granted: '@{app} is authorized.',
     scope: 'Scope',
@@ -156,6 +158,7 @@ export default {
     hs_placeholder: 'Your Hivesigner password'
   },
   login: {
+    unlock_to_continue_to: 'Unlock an account to continue to <target>{target}</target>.',
     switch_an_account: 'Switch an account',
     username_required: 'Hive username is required',
     password_required: 'Hive private key is required',
@@ -172,6 +175,7 @@ export default {
     you: 'You'
   },
   revoke: {
+    revoke_explain_no_account: '@{app} currently has permission to post on behalf of accounts that granted it. Add an account to revoke it.',
     revoke_explain: '@{app} will no longer be able to act as @{account}.',
     revoked: '@{app} is revoked.',
     revoke: 'Revoke',

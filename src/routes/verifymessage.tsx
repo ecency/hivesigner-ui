@@ -9,6 +9,7 @@ import {
   fieldBase,
   h1,
   label,
+  link,
   mono,
   muted,
   mutedXs,
@@ -174,7 +175,9 @@ function VerifyMessage() {
         </div>
       )}
 
-      <Link to="/signmessage">{t('message_verification.go_to_sign')}</Link>
+      <Link to="/signmessage" className={link}>
+        {t('message_verification.go_to_sign')}
+      </Link>
     </section>
   );
 }

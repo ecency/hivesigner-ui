@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { AuthorizeConsent } from '@/components/AuthorizeConsent';
-import { formColumn, h1, muted, page } from '@/components/ui';
+import { formColumn, h1, link, muted, page } from '@/components/ui';
 import { resolveInternalPath } from '@/lib/internal-path';
 import {
   isLocalLoginRequest,
@@ -73,19 +73,31 @@ function LocalLogin({ next }: { next?: string }) {
           isolate it and let it break instead of pushing the page sideways at
           320px. */}
       <p className={`${muted} m-0 break-words`}>
-        Unlock an account to continue to{' '}
-        <b className="break-all [unicode-bidi:isolate]">{target}</b>.
+        {/* I claimed in #113 that the last hardcoded English was gone. It was
+            not: this one survived because the sentence is split around the
+            target. One Trans key, so the target can move within it. */}
+        <Trans
+          i18nKey="login.unlock_to_continue_to"
+          values={{ target }}
+          components={{
+            target: <b className="break-all [unicode-bidi:isolate]" />,
+          }}
+        />
       </p>
       {usernames.length === 0 ? (
         <Link
           to="/import"
           search={{ next: window.location.pathname + window.location.search }}
-          className="text-sm"
+          className={`${link} text-sm`}
         >
           {t('accounts.add_another')}
         </Link>
       ) : (
-        <Link to="/accounts" search={{ next: target }} className="text-sm">
+        <Link
+          to="/accounts"
+          search={{ next: target }}
+          className={`${link} text-sm`}
+        >
           {t('accounts.unlock')}
         </Link>
       )}

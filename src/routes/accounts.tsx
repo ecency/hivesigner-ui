@@ -11,6 +11,7 @@ import {
   h1,
   label,
   labelText,
+  link,
   muted,
   mutedXs,
   page,
@@ -236,7 +237,9 @@ function Accounts() {
 
       {usernames.length === 0 ? (
         <p className={muted}>
-          <Link to="/import">{t('accounts.add_another')}</Link>
+          <Link to="/import" className={link}>
+            {t('accounts.add_another')}
+          </Link>
         </p>
       ) : (
         // One column on a phone, two from `sm` and three from `lg`: the shell is

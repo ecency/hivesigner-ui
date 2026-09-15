@@ -8,6 +8,7 @@ import {
   card,
   cardGrid,
   h1,
+  link,
   mono,
   mutedXs,
   page,
@@ -40,7 +41,9 @@ function Auths() {
   if (!selectedAccount) {
     return (
       <section className={page}>
-        <Link to="/accounts">{t('footer.login')}</Link>
+        <Link to="/accounts" className={link}>
+          {t('footer.login')}
+        </Link>
       </section>
     );
   }

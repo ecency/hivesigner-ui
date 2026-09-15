@@ -172,3 +172,16 @@ body {
   outline: 2px solid var(--hs-brand);
   outline-offset: 2px;
 }
+
+/* A row that scrolls sideways WITHOUT drawing scrollbar chrome.
+ *
+ * For the nav bar, which is a deliberate scroll row: on a platform with classic
+ * (non-overlay) scrollbars the bar is a heavy grey slab across a 41px-tall
+ * strip. Scrolling still works by wheel, trackpad, touch and keyboard - only
+ * the chrome is hidden. */
+@utility scroll-row {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

@@ -8,6 +8,8 @@ import {
   btnPrimary,
   card,
   h1,
+  link,
+  mono,
   page,
 } from '@/components/ui';
 import { getKeys } from '@/lib/accounts';
@@ -178,12 +180,17 @@ function Sign() {
         ) : (
           <div className={`${card} text-sm`}>
             {t('sign.transaction_id')}:{' '}
+            {/* This is the one thing on the success screen a user wants to act
+                on, and with no class it inherited body colour and no underline,
+                so it read as plain text. */}
             <a
               href={`https://hivexplorer.com/tx/${outcome.id}`}
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
+              className={`${link} ${mono}`}
             >
               {outcome.id.slice(0, 12)}
+              <span aria-hidden="true"> &#8599;</span>
             </a>
           </div>
         )}

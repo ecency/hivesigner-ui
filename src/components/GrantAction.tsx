@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AppProfile } from '@/components/AppProfile';
 import { Avatar } from '@/components/Avatar';
 import {
   alertError,
@@ -90,16 +91,34 @@ export function GrantAction({
         </span>
       </h1>
 
+      {/* Who the app claims to be, before deciding to let it post. The
+          directory used to show this and the rewrite dropped it. */}
+      <AppProfile username={appName} />
+
       <div className={`${card} text-sm break-words`}>
-        {mode === 'grant'
-          ? t('authorize.grant_explain', {
-              app: appName,
-              account: selectedAccount,
-            })
-          : t('revoke.revoke_explain', {
-              app: appName,
-              account: selectedAccount,
-            })}
+        {/* The account is part of the CLAIM this sentence makes, so it cannot
+            be interpolated when there is no account: logged out, this read
+            "@ecency.app will be able to post, comment, vote and follow as @."
+            - a consent sentence naming nobody. */}
+        {!selectedAccount
+          ? // Review caught this: branching on the account alone told a user
+            // opening /revoke/:app that the app "is asking to post ... on your
+            // behalf", the exact opposite of what the page does.
+            t(
+              mode === 'grant'
+                ? 'authorize.grant_explain_no_account'
+                : 'revoke.revoke_explain_no_account',
+              { app: appName },
+            )
+          : mode === 'grant'
+            ? t('authorize.grant_explain', {
+                app: appName,
+                account: selectedAccount,
+              })
+            : t('revoke.revoke_explain', {
+                app: appName,
+                account: selectedAccount,
+              })}
         <div className="mt-2 text-[12.5px] text-warn">
           {t('authorize.requires_active_key', { authority: 'active' }).replace(
             /<\/?b>/g,
