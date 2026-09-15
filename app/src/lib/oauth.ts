@@ -64,7 +64,7 @@ function isLoopback(hostname: string): boolean {
  * posting authority for a week, is readable by anyone on the path. Loopback is
  * exempt so local development against 127.0.0.1 still works.
  */
-function isValidUrl(value: string): boolean {
+export function isValidRedirectUri(value: string): boolean {
   try {
     const u = new URL(value);
     if (u.protocol === 'https:') return true;
@@ -115,7 +115,9 @@ export function isRegisteredRedirect(
   profile: AppProfile,
   callback: string,
 ): boolean {
-  return isValidUrl(callback) && profile.redirectUris.includes(callback);
+  return (
+    isValidRedirectUri(callback) && profile.redirectUris.includes(callback)
+  );
 }
 
 /** The role a scope needs: posting scope grants posting authority. */

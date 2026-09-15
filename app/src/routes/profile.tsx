@@ -4,6 +4,7 @@ import { type CSSProperties, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getKeys } from '@/lib/accounts';
 import { type Account, getAccount } from '@/lib/hive';
+import { isValidRedirectUri } from '@/lib/oauth';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
 
@@ -128,6 +129,21 @@ function Profile() {
 
   async function save() {
     if (!account || !postingKey) return;
+    // Reject a callback that could never be used: isRegisteredRedirect now
+    // refuses non-loopback http, so saving one would register something the
+    // consent screen silently declines. Fail here, where it can be corrected.
+    const bad = current.redirect_uris
+      .split('\n')
+      .map((u) => u.trim())
+      .filter(Boolean)
+      .filter((u) => !isValidRedirectUri(u));
+    if (bad.length > 0) {
+      setStatus('error');
+      setError(
+        `Not a usable callback (https, or http on localhost): ${bad.join(', ')}`,
+      );
+      return;
+    }
     setStatus('busy');
     setError('');
     try {
