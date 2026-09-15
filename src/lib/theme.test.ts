@@ -8,6 +8,8 @@ import {
   initTheme,
   isDarkNow,
   setTheme,
+  subscribeTheme,
+  themeSnapshot,
 } from './theme';
 
 function matchMedia(dark: boolean) {
@@ -89,6 +91,52 @@ describe('theme preference', () => {
     localStorage.setItem('hs_theme', 'light');
     initTheme();
     expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+  });
+
+  // With two tabs open, a change in one left the other showing the old mode and
+  // cycling from a value that was no longer stored, writing back a choice the
+  // user had already moved on from.
+  describe('another tab changes the theme', () => {
+    function storageEvent(newValue: string | null) {
+      localStorage.setItem('hs_theme', newValue ?? '');
+      window.dispatchEvent(
+        new StorageEvent('storage', { key: 'hs_theme', newValue }),
+      );
+    }
+
+    it('adopts the new value, attribute and all', () => {
+      initTheme();
+      const seen: string[] = [];
+      subscribeTheme(() => seen.push(themeSnapshot()));
+
+      storageEvent('dark');
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+      expect(getTheme()).toBe('dark');
+      expect(seen.at(-1)).toContain('dark');
+
+      storageEvent('system');
+      expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
+      expect(getTheme()).toBe('system');
+    });
+
+    // The other tab's write is NEWER than anything this one holds in memory.
+    it('overrides a choice made in this tab', () => {
+      initTheme();
+      setTheme('light');
+      expect(getTheme()).toBe('light');
+      storageEvent('dark');
+      expect(getTheme()).toBe('dark');
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    });
+
+    it('ignores a storage event for some other key', () => {
+      initTheme();
+      setTheme('dark');
+      window.dispatchEvent(
+        new StorageEvent('storage', { key: 'hs_lang', newValue: 'ru' }),
+      );
+      expect(getTheme()).toBe('dark');
+    });
   });
 
   describe('isDarkNow', () => {

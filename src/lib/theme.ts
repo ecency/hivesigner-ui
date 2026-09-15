@@ -79,8 +79,33 @@ export function setTheme(theme: Theme): void {
   for (const fn of listeners) fn();
 }
 
+/**
+ * Adopt a change another tab made.
+ *
+ * `storage` fires in every OTHER tab of the origin. Without it a second tab
+ * kept the old attribute and the old snapshot: its header showed the previous
+ * mode, and clicking there cycled from a value that was no longer stored,
+ * writing back a choice the user had already moved on from.
+ *
+ * The other tab's write is newer than anything this one has in memory, so the
+ * session value is replaced rather than preferred.
+ */
+function adoptExternalChange(event: StorageEvent): void {
+  if (event.key !== null && event.key !== THEME_KEY) return;
+  sessionTheme = isTheme(event.newValue) ? event.newValue : null;
+  applyTheme(getTheme());
+  for (const fn of listeners) fn();
+}
+
 /** Apply the stored preference. Called once at startup. */
 export function initTheme(): void {
+  try {
+    // Registered here rather than in subscribeTheme so the ATTRIBUTE follows
+    // the other tab even on a screen that renders no theme control.
+    window.addEventListener('storage', adoptExternalChange);
+  } catch {
+    // no window (or blocked): the page still works, it just will not follow
+  }
   applyTheme(getTheme());
 }
 
