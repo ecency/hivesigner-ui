@@ -77,15 +77,17 @@ function Authorize() {
 
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  // Set when this screen is left, so an in-flight approve() cannot redirect
-  // after the user withdrew consent.
+  // Set when this screen is left, so an in-flight approve() cannot grant
+  // authority or redirect after the user withdrew consent. Setup MUST clear it:
+  // Strict Mode runs setup -> cleanup -> setup, so a cleanup-only effect would
+  // leave the latch stuck on and silently abort every approval in development.
   const abandoned = useRef(false);
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    abandoned.current = false;
+    return () => {
       abandoned.current = true;
-    },
-    [],
-  );
+    };
+  }, []);
 
   const authority = authorityForScope(req.scope);
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
@@ -129,6 +131,11 @@ function Authorize() {
         // Refetch fresh first, so a retry after a grant that already landed sees
         // the authority and does not broadcast a second account_update.
         const loaded = (await refetchAccount()).data ?? account;
+        // Re-check here, BEFORE the broadcast. The refetch is awaited, so the
+        // user can cancel while it is in flight; granting posting authority is
+        // an irreversible on-chain write, so withdrawn consent has to stop it
+        // at this point, not merely stop the token afterwards.
+        if (abandoned.current) return;
         if (!loaded) {
           setError(t('common.try_again'));
           return;
