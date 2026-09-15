@@ -96,7 +96,7 @@ describe('parseWebsite', () => {
 });
 
 describe('AppProfile', () => {
-  const WARNING = /not verified by Hivesigner/i;
+  const WARNING = /Hivesigner does not verify/i;
 
   it('warns that the data is self-declared', () => {
     profile.current = { username: 'ecency.app', name: 'Ecency' };

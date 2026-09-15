@@ -143,8 +143,10 @@ function Apps() {
     queryKey: directoryProfileBatchKey(names),
     queryFn: async () => {
       const batch = await getProfiles(names);
-      // Seed the single-app cache the authorize screen reads. Without this,
-      // opening an app whose profile this batch already fetched issued a
+      // Seed the single-app cache AppProfile reads. Not the OAuth consent
+      // screen: that caches a different shape under its own key, and the two
+      // sharing one is what crashed consent (see lib/query-keys.ts). Without
+      // this, opening an app whose profile this batch already fetched issued a
       // second getAccounts for it inside the same freshness window.
       for (const [name, profile] of Object.entries(batch)) {
         queryClient.setQueryData(directoryProfileKey(name), profile);

@@ -42,12 +42,19 @@ describe('query keys', () => {
 });
 
 /**
- * And nothing may hand-write a profile key again: the builders only help if
- * they are the single way these caches are addressed.
+ * And nothing may hand-write a cache key again: the builders only help if they
+ * are the single way these caches are addressed.
  */
 describe('cache keys are not hand-written', () => {
   const SRC = resolve(process.cwd(), 'src');
+  const BUILDERS = Object.keys(ALL_KEY_BUILDERS);
 
+  // TEST FILES ARE INCLUDED. Review pointed out that excluding them exempted
+  // the exact failure this guard exists for: oauth2.authorize.test.tsx
+  // dispatched its useQuery mock on a hardcoded 'app-profile', so renaming the
+  // real key sent the profile query down the account branch and handed the
+  // component the wrong object. A stale key in a mock is as dangerous as one in
+  // a component, because it makes the suite agree with the bug.
   function files(dir: string): string[] {
     const out: string[] = [];
     for (const entry of readdirSync(dir)) {
@@ -55,28 +62,60 @@ describe('cache keys are not hand-written', () => {
       if (statSync(p).isDirectory()) {
         if (entry === 'locales') continue;
         out.push(...files(p));
-      } else if (/\.tsx?$/.test(entry) && !/\.test\.tsx?$/.test(entry)) {
+      } else if (/\.tsx?$/.test(entry)) {
         out.push(p);
       }
     }
     return out;
   }
 
-  it('every queryKey comes from lib/query-keys', () => {
+  /**
+   * A key must be a CALL to one of the builders.
+   *
+   * The first version of this only matched an array literal written directly
+   * after `queryKey:`, so `const key = ['a', b]; useQuery({ queryKey: key })`
+   * walked straight past it. Requiring the shape `queryKey: someBuilder(` means
+   * a literal, a variable and a call to anything else are all rejected, which
+   * is the whole space.
+   */
+  const ALLOWED = new RegExp(`^(?:${BUILDERS.join('|')})\\(`);
+
+  // `{ queryKey: unknown[] }` in a mock's parameter list is a TYPE, not a key.
+  const TYPE_ANNOTATION = /^(?:readonly\s+)?(?:unknown|string|any|QueryKey)\b/;
+
+  it('every queryKey and setQueryData uses a builder from lib/query-keys', () => {
     const offenders: string[] = [];
     for (const file of files(SRC)) {
-      if (file.endsWith('query-keys.ts')) continue;
+      // The builders themselves, and THIS file, whose comments and regexes
+      // necessarily contain the patterns being searched for.
+      if (/query-keys\.(test\.)?tsx?$/.test(file)) continue;
       const src = readFileSync(file, 'utf8');
-      // A queryKey whose value starts with an inline array literal.
-      for (const m of src.matchAll(/queryKey:\s*\[/g)) {
-        const line = src.slice(0, m.index).split('\n').length;
-        offenders.push(`${file.replace(`${SRC}/`, '')}:${line}`);
+      const where = (index: number) =>
+        `${file.replace(`${SRC}/`, '')}:${src.slice(0, index).split('\n').length}`;
+
+      for (const m of src.matchAll(/queryKey:\s*([^,\n]+)/g)) {
+        const value = m[1].trim();
+        if (!ALLOWED.test(value) && !TYPE_ANNOTATION.test(value)) {
+          offenders.push(`${where(m.index ?? 0)} queryKey: ${value}`);
+        }
       }
-      // setQueryData with an inline array is the same hazard: that is exactly
-      // how the wrong shape got into the consent screen's cache.
-      for (const m of src.matchAll(/setQueryData\(\s*\[/g)) {
-        const line = src.slice(0, m.index).split('\n').length;
-        offenders.push(`${file.replace(`${SRC}/`, '')}:${line} (setQueryData)`);
+      // A mock that DISPATCHES on a key literal is the same hazard wearing a
+      // different hat, and it is what actually happened: the oauth mock
+      // compared `opts.queryKey[0] === 'app-profile'`, so renaming the real key
+      // silently routed the profile query down the account branch. Comparing
+      // against a builder is fine; comparing against a literal is not.
+      for (const m of src.matchAll(
+        /queryKey\[\d+\]\s*===\s*(['"][^'"]+['"])/g,
+      )) {
+        offenders.push(
+          `${where(m.index ?? 0)} compares queryKey against the literal ${m[1]}`,
+        );
+      }
+
+      for (const m of src.matchAll(/setQueryData\(\s*([^,\n]+)/g)) {
+        if (!ALLOWED.test(m[1].trim())) {
+          offenders.push(`${where(m.index ?? 0)} setQueryData(${m[1].trim()}`);
+        }
       }
     }
     expect(

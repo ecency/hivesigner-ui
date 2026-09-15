@@ -59,7 +59,7 @@ export default {
     successfully_logged_in: 'Logged in successfully!'
   },
   apps: {
-    self_declared: 'The name, website and creator above are published by the app account itself, and are not verified by Hivesigner.',
+    self_declared: 'Everything above is published by the app account itself. Hivesigner does not verify any of it.',
     directory_unavailable: 'Could not load the app directory. A Hive node may be unreachable.',
     directory_hint: 'Every app that uses Hivesigner to sign people in.',
     featured: 'Featured',
