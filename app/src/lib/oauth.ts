@@ -4,6 +4,7 @@
 // what is signed and how the browser is redirected, matching the Nuxt app
 // (oauth2/authorize.vue + login.vue + store/auth.ts signAndRedirectToCallback).
 import { type Account, getAccount } from './hive';
+import { isAbsoluteHttpUrl } from './internal-path';
 import { createSignedMessage, encodeToken } from './message-token';
 
 export type ResponseType = 'code' | 'token';
@@ -66,13 +67,39 @@ export function normalizeLoginRequest(
   const scope = query.scope === 'posting' ? 'posting' : 'login';
   return {
     clientId: pathClientId || query.clientId || query.client_id,
+    // `redirect` is only a CALLBACK when it is an absolute http(s) URL. A
+    // relative `?redirect=/profile` is the legacy LOCAL login-and-return flow
+    // (login.vue pushed straight to it without issuing a token), so treating it
+    // as an OAuth callback turned that flow into an invalid-request error.
     // Not decoded: the router's parseSearch already did (see
     // normalizeAuthRequest).
-    redirectUri: query.redirect_uri || query.redirect,
+    redirectUri: query.redirect_uri || absoluteRedirect(query.redirect),
     scope,
     responseType: query.response_type === 'code' ? 'code' : 'token',
     state: query.state,
   };
+}
+
+function absoluteRedirect(value: string | undefined): string | undefined {
+  return isAbsoluteHttpUrl(value) ? value : undefined;
+}
+
+/**
+ * Whether a legacy /login request is the LOCAL login-and-return flow rather than
+ * app consent: no client id and no absolute callback. A bare /login is local too
+ * (login.vue sent it to '/'), and a `redirect` pointing at /login-request is the
+ * OAuth grant detour, not a local path.
+ */
+export function isLocalLoginRequest(query: Record<string, string>): boolean {
+  if (query.client_id || query.clientId) return false;
+  if (query.redirect_uri) return false;
+  const redirect = query.redirect;
+  if (
+    redirect &&
+    (isAbsoluteHttpUrl(redirect) || redirect.includes('/login-request'))
+  )
+    return false;
+  return true;
 }
 
 /** Loopback, where TLS is not available and a plain-http callback is expected. */

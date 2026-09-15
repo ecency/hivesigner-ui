@@ -8,6 +8,7 @@ import {
   selectAccount,
   unlockAccount,
 } from '@/lib/accounts';
+import { resolveInternalPath } from '@/lib/internal-path';
 import { parseSearch } from '@/lib/search';
 import { useAccounts } from '@/lib/use-accounts';
 
@@ -22,30 +23,6 @@ export const Route = createFileRoute('/accounts')({
   validateSearch: (search: Record<string, unknown>): { next?: string } =>
     typeof search.next === 'string' ? { next: search.next } : {},
 });
-
-/**
- * Where to return after unlocking, as a resolved pathname + search, or null.
- *
- * Resolve against our own origin and compare origins rather than pattern-matching
- * the string: a browser reads `/\\evil.example/x` (and `\\/evil.example`) as
- * protocol-relative, so a startsWith('//') check lets an off-site target through.
- * The RESOLVED parts are returned, which also neutralises `/..//evil.example`,
- * whose path resolves to a protocol-relative form even though its origin is ours.
- */
-function safeNext(
-  next: string | undefined,
-): { pathname: string; search: string } | null {
-  if (!next) return null;
-  try {
-    const origin = window.location.origin;
-    const url = new URL(next, origin);
-    if (url.origin !== origin) return null;
-    if (url.pathname.startsWith('//')) return null;
-    return { pathname: url.pathname, search: url.search };
-  } catch {
-    return null;
-  }
-}
 
 const fld: CSSProperties = {
   width: '100%',
@@ -78,14 +55,14 @@ function AccountRow({
   function done() {
     // Return to the flow that sent the user here (an OAuth consent request
     // would otherwise be lost, forcing the app to start over).
-    const back = safeNext(next);
+    const back = resolveInternalPath(next);
     if (!back) return;
     // CLIENT-SIDE navigation only. Decrypted keys live in memory and are never
     // persisted, so a document navigation (window.location.assign) would reload
     // the app, drop the key cache, re-lock the account that was just unlocked,
     // and the consent screen would send the user straight back here forever.
     // The target is a runtime string, so the typed router cannot model it; the
-    // cast is at this boundary only. safeNext has already constrained it to a
+    // cast is at this boundary only. resolveInternalPath has already constrained it
     // same-origin path.
     navigate({
       to: back.pathname,

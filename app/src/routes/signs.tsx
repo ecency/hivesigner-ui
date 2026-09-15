@@ -31,24 +31,63 @@ const card: CSSProperties = {
   padding: '12px 14px',
 };
 
+/** Whether a schema field carries JSON rather than a scalar. */
+function isStructured(type: string): boolean {
+  return type === 'array' || type === 'object' || type === 'json';
+}
+
+/**
+ * The editable text for a default value. String() is wrong for a structured
+ * field: an array default like ['__signer'] would render as the bare string
+ * "__signer" and an object default as "[object Object]", both of which then get
+ * ENCODED that way, so the operation leaves here with a string where the chain
+ * expects a list or a map.
+ */
+function defaultText(spec: { type: string; defaultValue?: unknown }): string {
+  const d = spec.defaultValue;
+  if (d === undefined || d === null) return '';
+  if (typeof d === 'object') return JSON.stringify(d);
+  return String(d);
+}
+
 function OperationForm({ name }: { name: string }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const schema = OPERATIONS[name].schema;
   const [form, setForm] = useState<Record<string, string>>(() =>
     Object.fromEntries(
-      Object.entries(schema).map(([field, spec]) => [
-        field,
-        spec.defaultValue === undefined ? '' : String(spec.defaultValue),
-      ]),
+      Object.entries(schema).map(([field, spec]) => [field, defaultText(spec)]),
     ),
   );
+  const [error, setError] = useState<string | null>(null);
 
   function submit() {
+    // Parse structured fields back into JSON before encoding: processValue
+    // passes array/object fields through untouched, so a string here reaches the
+    // serializer as a string.
+    const payload: Record<string, unknown> = {};
+    for (const [field, raw] of Object.entries(form)) {
+      const type = schema[field]?.type ?? 'string';
+      if (!isStructured(type)) {
+        payload[field] = raw;
+        continue;
+      }
+      if (raw.trim() === '') {
+        payload[field] = type === 'array' ? [] : {};
+        continue;
+      }
+      try {
+        payload[field] = JSON.parse(raw);
+      } catch {
+        setError(`${field} must be valid JSON for this ${type} field.`);
+        return;
+      }
+    }
+    setError(null);
     // Same handoff as the Nuxt page: encode the operation and let the /sign
     // confirm screen do the schema processing, authority check and signing, so
     // this page never becomes a second signing path.
-    const uri = encodeOp([name, form]);
+    const uri = encodeOp([name, payload]);
     navigate({ to: uri.replace('hive://', '/') as never });
   }
 
@@ -66,18 +105,44 @@ function OperationForm({ name }: { name: string }) {
       }}
     >
       {Object.keys(schema).map((field) => (
-        <label
+        <div
           key={field}
           style={{ display: 'flex', flexDirection: 'column', gap: 4 }}
         >
-          <span style={{ fontSize: 12, color: '#59636e' }}>{field}</span>
-          <input
-            style={fld}
-            value={form[field]}
-            onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-          />
-        </label>
+          <label
+            htmlFor={`${name}-${field}`}
+            style={{ fontSize: 12, color: '#59636e' }}
+          >
+            {field}
+            {isStructured(schema[field].type) ? ' (JSON)' : ''}
+          </label>
+          {isStructured(schema[field].type) ? (
+            <textarea
+              id={`${name}-${field}`}
+              style={{
+                ...fld,
+                height: 68,
+                padding: 8,
+                fontFamily: 'ui-monospace, monospace',
+              }}
+              value={form[field]}
+              onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+            />
+          ) : (
+            <input
+              id={`${name}-${field}`}
+              style={fld}
+              value={form[field]}
+              onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+            />
+          )}
+        </div>
       ))}
+      {error && (
+        <div role="alert" style={{ fontSize: 12.5, color: '#cf222e' }}>
+          {error}
+        </div>
+      )}
       <button
         type="submit"
         style={{
