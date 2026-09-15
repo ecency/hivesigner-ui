@@ -1,34 +1,21 @@
 name: UI CI
 
-# Lint, test and build the UI app in app/, on PULL REQUESTS only. Pushes to
-# development are gated by the identical job in Staging CI/CD before it deploys,
-# so a push trigger here would just duplicate it. (This previously triggered on
-# feature/react-rewrite, which no longer exists, so it had stopped running at
-# all once that branch merged.)
+# Lint, test and build on PULL REQUESTS only. Pushes to development are gated by
+# the identical job in Staging CI/CD before it deploys, and pushes to main by the
+# one in Master CI/CD, so a push trigger here would just duplicate them.
 on:
   pull_request:
-    paths:
-      - 'app/**'
-      - '.github/workflows/ui-ci.yml'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          # The React app's package.json carries packageManager; the repo-root
-          # package.json is the Nuxt app's and has none.
-          package_json_file: app/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: 24.x
           cache: pnpm
-          cache-dependency-path: app/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint:ci
       # build first: it generates src/routeTree.gen.ts (gitignored), which the

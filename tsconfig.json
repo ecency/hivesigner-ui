@@ -1,45 +1,24 @@
 {
   "compilerOptions": {
-    "rootDir": "src",
-    "target": "ES2018",
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "module": "ESNext",
-    "moduleResolution": "Node",
-    "lib": [
-      "ESNext",
-      "ESNext.AsyncIterable",
-      "DOM"
-    ],
-    "esModuleInterop": true,
-    "allowJs": true,
-    "sourceMap": true,
+    "jsx": "react-jsx",
     "strict": true,
-    "noEmit": true,
-    "experimentalDecorators": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "allowJs": true,
+    "checkJs": false,
     "resolveJsonModule": true,
+    "moduleResolution": "bundler",
+    "useDefineForClassFields": true,
+    "types": ["node", "vitest/globals", "@testing-library/jest-dom"],
     "baseUrl": ".",
     "paths": {
-      "~/*": [
-        "./src/*"
-      ],
-      "@/*": [
-        "./src/*"
-      ]
-    },
-    "types": [
-      "@nuxt/types",
-      "@nuxtjs/axios",
-      "@types/jest",
-      "@types/node",
-      "nuxt-i18n"
-    ]
+      "@/*": ["src/*"]
+    }
   },
-  "exclude": [
-    "node_modules",
-    "app",
-    ".nuxt",
-    "dist"
-  ],
-  "files": [
-    "package.json"
-  ]
+  "include": ["src"]
 }

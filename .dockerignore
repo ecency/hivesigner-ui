@@ -2,10 +2,9 @@
 **/.github
 **/.vscode
 **/.idea
-**/.nyc_output
 **/dist
-**/.nuxt
+**/coverage
 **/node_modules
 **/docker-compose.yml
+**/docker-compose.staging.yml
 **/docker-compose.production.yml
-**/docker-compose.testnet.yml
