@@ -1,8 +1,8 @@
-name: React app CI
+name: UI CI
 
-# Lint, test and build the React rewrite in app/. Runs only when app/ changes,
-# so it does not interfere with the Nuxt Staging/Master workflows (which deploy
-# on push to development/main). The React app has no deploy step until cutover.
+# Lint, test and build the UI app in app/. Runs only when app/ changes, so it
+# does not interfere with the Staging/Master workflows (which deploy on push to
+# development/main). No deploy step until cutover.
 on:
   push:
     branches:
@@ -22,6 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          # The React app's package.json carries packageManager; the repo-root
+          # package.json is the Nuxt app's and has none.
+          package_json_file: app/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: 24.x

@@ -21,6 +21,26 @@ function RootLayout() {
       <main style={{ flex: 1 }}>
         <Outlet />
       </main>
+      <footer
+        style={{
+          padding: '16px 20px',
+          borderTop: '1px solid #d1d9e0',
+          textAlign: 'center',
+          fontSize: 12.5,
+          color: '#59636e',
+        }}
+      >
+        Built with <span style={{ color: '#E31337' }}>♥</span> by the{' '}
+        <a
+          href="https://ecency.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#b90f2e', fontWeight: 600 }}
+        >
+          Ecency
+        </a>{' '}
+        team
+      </footer>
     </div>
   );
 }
