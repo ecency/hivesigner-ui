@@ -113,13 +113,13 @@ function Sign() {
     setStatus('signing');
     try {
       const result = await broadcastOperations(
-        request!.operations,
+        request.operations,
         signingKey,
         selectedAccount,
       );
       setOutcome(result);
       setStatus('done');
-      if (request!.callback) redirectToCallback(request!.callback, result);
+      if (request.callback) redirectToCallback(request.callback, result);
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : String(e));
       setStatus('error');
