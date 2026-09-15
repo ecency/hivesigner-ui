@@ -64,10 +64,12 @@ function Home() {
   // import, a returning one to their accounts.
   const primary = usernames.length > 0 ? '/accounts' : '/import';
 
-  // Same query key as /apps, so opening one warms the other.
+  // Same query key as /apps, so opening one warms the other. `withDirectory`
+  // only affects the FALLBACK path: this route renders the featured strip and
+  // nothing else, so an API outage should not make it page ~900 accounts.
   const { data: index } = useQuery({
     queryKey: appDirectoryKey(),
-    queryFn: getAppDirectory,
+    queryFn: () => getAppDirectory({ withDirectory: false }),
     staleTime: 10 * 60_000,
   });
   const featured = index?.featured ?? [];

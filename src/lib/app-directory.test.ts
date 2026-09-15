@@ -113,6 +113,51 @@ describe('fetchFromApi', () => {
     respond({ featured: [], directory: [] });
     await expect(fetchFromApi()).rejects.toThrow(/empty/);
   });
+
+  // Coercing a malformed field to [] returned a featured strip with no
+  // directory behind it and never fell back - one blank page instead of the
+  // chain answer that was available all along.
+  it('rejects when ONE list is malformed and the other is fine', async () => {
+    respond({ featured: OK.featured, directory: null });
+    await expect(fetchFromApi()).rejects.toThrow(/directory is not a list/);
+    respond({ featured: { nope: true }, directory: OK.directory });
+    await expect(fetchFromApi()).rejects.toThrow(/featured is not a list/);
+  });
+
+  it('deduplicates repeated rows, as the chain path does', async () => {
+    respond({
+      featured: [
+        { username: 'ecency.app' },
+        { username: 'ecency.app', name: 'again' },
+        { username: 'peakd.app' },
+      ],
+      directory: ['ecency.app', 'ecency.app', 'peakd.app'],
+    });
+    const r = await fetchFromApi();
+    expect(r.featured.map((a) => a.username)).toEqual([
+      'ecency.app',
+      'peakd.app',
+    ]);
+    expect(r.directory).toEqual(['ecency.app', 'peakd.app']);
+  });
+
+  // The homepage maps every featured entry into the DOM and the apps page holds
+  // the whole directory: an oversized answer would lock the page up rather than
+  // merely look wrong.
+  it('caps how much it will hand on to be rendered', async () => {
+    const many = (n: number, prefix: string) =>
+      Array.from(
+        { length: n },
+        (_, i) => `${prefix}${String(i).padStart(5, '0')}`,
+      );
+    respond({
+      featured: many(400, 'app').map((username) => ({ username })),
+      directory: many(20000, 'dir'),
+    });
+    const r = await fetchFromApi();
+    expect(r.featured.length).toBeLessThanOrEqual(50);
+    expect(r.directory.length).toBeLessThanOrEqual(5000);
+  });
 });
 
 describe('getAppDirectory', () => {
@@ -152,5 +197,51 @@ describe('getAppDirectory', () => {
     getTopApps.mockResolvedValue(['ecency.app']);
     getAllApps.mockResolvedValue(['ecency.app']);
     await expect(getAppDirectory()).resolves.toMatchObject({ source: 'chain' });
+  });
+
+  // Promise.all threw away a featured list that had already arrived because the
+  // ten-call follow list lost one page. They are independent; treat them so.
+  it('keeps the featured list when the directory read fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('down');
+      }),
+    );
+    getTopApps.mockResolvedValue(['ecency.app']);
+    getAllApps.mockRejectedValue(new Error('node down'));
+    const r = await getAppDirectory();
+    expect(r.featured).toEqual([{ username: 'ecency.app' }]);
+    expect(r.directory).toEqual([]);
+  });
+
+  it('keeps the directory when the curated read fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('down');
+      }),
+    );
+    getTopApps.mockRejectedValue(new Error('node down'));
+    getAllApps.mockResolvedValue(['ecency.app', 'peakd.app']);
+    const r = await getAppDirectory();
+    expect(r.featured).toEqual([]);
+    expect(r.directory).toEqual(['ecency.app', 'peakd.app']);
+  });
+
+  // The homepage renders the featured strip only; paging ~900 accounts to fill
+  // a list it never reads made an API outage expensive on the landing page.
+  it('skips the directory read when the caller does not want it', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('down');
+      }),
+    );
+    getTopApps.mockResolvedValue(['ecency.app']);
+    getAllApps.mockResolvedValue(['ecency.app']);
+    const r = await getAppDirectory({ withDirectory: false });
+    expect(getAllApps).not.toHaveBeenCalled();
+    expect(r.featured).toEqual([{ username: 'ecency.app' }]);
   });
 });

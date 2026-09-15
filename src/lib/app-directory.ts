@@ -49,13 +49,29 @@ function str(value: unknown, max: number): string | undefined {
   return trimmed ? trimmed.slice(0, max) : undefined;
 }
 
+/**
+ * How much of a response will be rendered at all.
+ *
+ * The homepage maps every featured entry into the DOM and the apps page holds
+ * the whole directory in memory, so an oversized answer - a compromised or
+ * merely buggy API - would lock the page up rather than look wrong. These are
+ * far above the real numbers (8 featured, ~900 apps).
+ */
+const MAX_FEATURED = 50;
+const MAX_DIRECTORY = 5000;
+
 function readFeatured(value: unknown): FeaturedApp[] {
-  if (!Array.isArray(value)) return [];
+  if (!Array.isArray(value))
+    throw new Error('app directory: featured is not a list');
   const out: FeaturedApp[] = [];
-  for (const entry of value) {
+  // Deduplicated, as the chain path deduplicates its own paging: a repeated
+  // username would render the same card twice and collide on its React key.
+  const seen = new Set<string>();
+  for (const entry of value.slice(0, MAX_FEATURED)) {
     if (!entry || typeof entry !== 'object') continue;
     const row = entry as Record<string, unknown>;
-    if (!isUsername(row.username)) continue;
+    if (!isUsername(row.username) || seen.has(row.username)) continue;
+    seen.add(row.username);
     out.push({
       username: row.username,
       name: str(row.name, 200),
@@ -84,12 +100,19 @@ export async function fetchFromApi(
   if (!body || typeof body !== 'object')
     throw new Error('app directory: not an object');
   const parsed = body as Record<string, unknown>;
+  // A malformed field REJECTS rather than becoming an empty list. Coercing it
+  // meant `{ featured: [...], directory: null }` returned a featured strip with
+  // no directory behind it and never fell back - one blank page instead of the
+  // chain answer that was available all along.
   const featured = readFeatured(parsed.featured);
-  const directory = Array.isArray(parsed.directory)
-    ? parsed.directory.filter(isUsername)
-    : [];
-  // An empty answer is a failure, not an empty directory: it would blank the
-  // apps page, and the chain fallback can do better.
+  if (!Array.isArray(parsed.directory)) {
+    throw new Error('app directory: directory is not a list');
+  }
+  const directory = [
+    ...new Set(parsed.directory.slice(0, MAX_DIRECTORY).filter(isUsername)),
+  ];
+  // An empty answer is a failure too: it would blank the apps page, and the
+  // chain fallback can do better.
   if (featured.length === 0 && directory.length === 0) {
     throw new Error('app directory: empty');
   }
@@ -103,17 +126,30 @@ export async function fetchFromApi(
  * when the API is down, and it did all of this from the chain before the
  * endpoint existed, so the capability is already there.
  */
-export async function getAppDirectory(): Promise<AppDirectory> {
+export async function getAppDirectory({
+  withDirectory = true,
+}: {
+  withDirectory?: boolean;
+} = {}): Promise<AppDirectory> {
   try {
     return await fetchFromApi();
   } catch {
-    const [featured, directory] = await Promise.all([
+    // allSettled, NOT all: the curated post is one call and the follow list is
+    // ten, so a single failing page of the latter threw away a featured list
+    // that had already arrived.
+    const [featured, directory] = await Promise.allSettled([
       getTopApps(),
-      getAllApps(),
+      // The homepage only renders the featured strip. Paging ~900 accounts to
+      // populate a list it never reads made an API outage cost ten RPC calls on
+      // the landing page.
+      withDirectory ? getAllApps() : Promise.resolve<string[]>([]),
     ]);
     return {
-      featured: featured.map((username) => ({ username })),
-      directory,
+      featured:
+        featured.status === 'fulfilled'
+          ? featured.value.map((username) => ({ username }))
+          : [],
+      directory: directory.status === 'fulfilled' ? directory.value : [],
       source: 'chain',
     };
   }

@@ -49,6 +49,7 @@ jobs:
           build-args: |
             GIT_SHA=${{ github.sha }}
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            API_URL=${{ vars.API_URL }}
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

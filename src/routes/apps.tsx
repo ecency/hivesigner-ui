@@ -105,7 +105,10 @@ function Apps() {
     refetch,
   } = useQuery({
     queryKey: appDirectoryKey(),
-    queryFn: getAppDirectory,
+    // Wrapped: React Query passes its own context as the first argument, which
+    // is not the options object this takes, and the mismatch silently widened
+    // the query's data type to any.
+    queryFn: () => getAppDirectory(),
     staleTime: 10 * 60_000,
   });
   const featured = useMemo(

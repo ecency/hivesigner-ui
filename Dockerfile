@@ -18,6 +18,14 @@ ENV GIT_SHA=${GIT_SHA}
 # carry it, and an empty value simply disables reporting.
 ARG SENTRY_DSN=""
 ENV SENTRY_DSN=${SENTRY_DSN}
+# The Hivesigner API that serves the ranked app directory. Baked at build time
+# like the DSN, because this is a static bundle with nothing to read at runtime.
+# Empty means the public API; a deployment can point somewhere else. Declared
+# here because rsbuild.config.ts only ever sees the build environment, so
+# without this the documented override could not be used by the deploy path
+# that actually builds the image.
+ARG API_URL=""
+ENV API_URL=${API_URL}
 RUN pnpm build
 
 # serve the static build
