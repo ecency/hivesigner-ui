@@ -2,7 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { alertError, btnPrimary, card, h1, page } from '@/components/ui';
+import {
+  alertError,
+  btnPrimary,
+  card,
+  formColumn,
+  h1,
+  page,
+} from '@/components/ui';
 import { getKeys } from '@/lib/accounts';
 import {
   buildGrantOperation,
@@ -71,7 +78,7 @@ export function GrantAction({
   return (
     // A confirm-and-act screen, so it stays one readable column instead of
     // stretching the sentence across the widened shell.
-    <section className={`${page} sm:max-w-xl`}>
+    <section className={`${page} ${formColumn} sm:max-w-xl`}>
       {/* `appName` is a rendered value taken from the URL, so let it wrap
           rather than push the page sideways at 320px. */}
       <h1 className={`${h1} break-words`}>

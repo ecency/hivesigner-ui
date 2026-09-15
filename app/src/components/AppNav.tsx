@@ -5,8 +5,9 @@ import { useTranslation } from 'react-i18next';
 // components/Navigation.vue) and the React rewrite dropped. Without it a desktop
 // user who lands on /sign or /accounts has no way to reach anything else.
 //
-// It is shown on every screen at every width: the phone layout puts it in a
-// single scrollable row under the brand bar, and from `sm` up it sits inline.
+// Shown on every screen at EVERY width, in its own bar under the brand bar: a
+// scrollable row when the viewport is narrow, roomier when it is not. It must
+// never be hidden at a breakpoint - that is the bug this component exists to fix.
 export function AppNav() {
   const { t } = useTranslation();
 
@@ -20,8 +21,8 @@ export function AppNav() {
 
   return (
     <nav
-      aria-label={t('footer.apps')}
-      className="flex items-center gap-4 overflow-x-auto whitespace-nowrap px-5 py-2 text-[13px] text-[#59636e] sm:gap-5 sm:px-0 sm:py-0"
+      aria-label="Main"
+      className="flex items-center gap-4 overflow-x-auto whitespace-nowrap px-5 py-2.5 text-[13px] text-[#59636e] sm:gap-6 sm:px-6"
     >
       {links.map((l) => (
         <Link

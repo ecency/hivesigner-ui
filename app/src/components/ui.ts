@@ -43,8 +43,12 @@ export const btnSecondary =
 /** Everything a field needs EXCEPT a height. Use for a textarea or any control
  * that sizes itself: `${fieldBase} py-2` rather than `${field} h-auto`, which
  * only worked because Tailwind happened to emit .h-auto after .h-11. */
+// `text-[#1f2328]` is load-bearing, not decoration: Tailwind's preflight sets
+// `color: inherit` on input/select/textarea, so a control inside the `label`
+// recipe would otherwise inherit its muted grey and render the user's own typed
+// value in caption colour.
 export const fieldBase =
-  'w-full rounded-lg border border-[#d1d9e0] px-3 text-[15px] box-border';
+  'w-full rounded-lg border border-[#d1d9e0] px-3 text-[15px] text-[#1f2328] box-border';
 
 /** Single-line text input or select. */
 export const field = `${fieldBase} h-11`;

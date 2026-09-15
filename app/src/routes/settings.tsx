@@ -1,7 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { cardTight, field, h1, label, mutedXs, page } from '@/components/ui';
+import {
+  cardTight,
+  field,
+  formColumn,
+  h1,
+  label,
+  mutedXs,
+  page,
+} from '@/components/ui';
 import { supportedLngs } from '@/i18n/locales';
 import { getLanguage, type Language, setLanguage } from '@/lib/prefs';
 
@@ -29,7 +37,7 @@ function Settings() {
   return (
     // A settings form, so it stays one readable column instead of stretching
     // across the wider shell.
-    <section className={`${page} sm:max-w-xl`}>
+    <section className={`${page} ${formColumn} sm:max-w-xl`}>
       <h1 className={h1}>{t('settings.settings')}</h1>
 
       {/* The control itself stays a comfortable field width on a desktop. */}

@@ -14,8 +14,12 @@ function RootLayout() {
     // monitor rather than stretching edge to edge.
     <div className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-[#f6f8fa] sm:max-w-2xl lg:max-w-4xl">
       <AppHeader />
-      {/* Below the brand bar on a phone, inline with it from `sm` up. */}
-      <div className="border-b border-[#d1d9e0] bg-white sm:hidden">
+      {/* ONE nav, in its own bar, visible at EVERY width. It was previously
+          wrapped in `sm:hidden` with no desktop counterpart, so the navigation
+          this component exists to restore disappeared at 640px and above - the
+          exact regression it was meant to fix. One instance also avoids a
+          duplicate <nav> landmark. */}
+      <div className="border-b border-[#d1d9e0] bg-white">
         <AppNav />
       </div>
       <main className="flex-1">

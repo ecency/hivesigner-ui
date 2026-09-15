@@ -6,6 +6,7 @@ import {
   alertError,
   btnPrimary,
   field as fieldClass,
+  formColumn,
   h1,
   mutedXs,
   page,
@@ -201,7 +202,7 @@ function Profile() {
   return (
     // A form, so it stays one readable column: the shell widens on a desktop,
     // but stretching these inputs across it would only make them harder to read.
-    <section className={`${page} w-full sm:max-w-xl`}>
+    <section className={`${page} ${formColumn} sm:max-w-xl`}>
       <h1 className={h1}>
         {t('profile.profile')} · @{selectedAccount}
       </h1>
