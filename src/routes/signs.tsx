@@ -9,6 +9,7 @@ import {
   cardTight,
   field,
   h1,
+  link,
   muted,
   mutedXs,
   page,
@@ -195,7 +196,7 @@ function Signs() {
       />
 
       {messageOps.map((op) => (
-        <Link key={op.to} to={op.to} className="text-sm">
+        <Link key={op.to} to={op.to} className={`${link} text-sm`}>
           {op.name}
         </Link>
       ))}

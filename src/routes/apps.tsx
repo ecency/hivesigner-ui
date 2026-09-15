@@ -1,4 +1,4 @@
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -86,6 +86,7 @@ function Apps() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [limit, setLimit] = useState(PAGE_SIZE);
+  const queryClient = useQueryClient();
 
   const { data: featured = [] } = useQuery({
     queryKey: ['top-apps'],
@@ -134,7 +135,16 @@ function Apps() {
 
   const profileQuery = (names: string[]) => ({
     queryKey: ['app-profiles', names.join(',')],
-    queryFn: () => getProfiles(names),
+    queryFn: async () => {
+      const batch = await getProfiles(names);
+      // Seed the single-app cache the authorize screen reads. Without this,
+      // opening an app whose profile this batch already fetched issued a
+      // second getAccounts for it inside the same freshness window.
+      for (const [name, profile] of Object.entries(batch)) {
+        queryClient.setQueryData(['app-profile', name], profile);
+      }
+      return batch;
+    },
     enabled: names.length > 0,
     staleTime: 10 * 60_000,
   });

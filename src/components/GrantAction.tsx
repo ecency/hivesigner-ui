@@ -101,7 +101,15 @@ export function GrantAction({
             "@ecency.app will be able to post, comment, vote and follow as @."
             - a consent sentence naming nobody. */}
         {!selectedAccount
-          ? t('authorize.grant_explain_no_account', { app: appName })
+          ? // Review caught this: branching on the account alone told a user
+            // opening /revoke/:app that the app "is asking to post ... on your
+            // behalf", the exact opposite of what the page does.
+            t(
+              mode === 'grant'
+                ? 'authorize.grant_explain_no_account'
+                : 'revoke.revoke_explain_no_account',
+              { app: appName },
+            )
           : mode === 'grant'
             ? t('authorize.grant_explain', {
                 app: appName,

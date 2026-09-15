@@ -47,12 +47,14 @@ export function parseWebsite(
  */
 export function AppProfile({ username }: { username: string }) {
   const { t } = useTranslation();
-  const { data: profiles } = useQuery({
-    queryKey: ['app-profiles', username],
-    queryFn: () => getProfiles([username]),
+  // Keyed on the single username, and the directory SEEDS this same key from
+  // its batch (see apps.tsx). Keying it on a comma-joined batch instead meant
+  // opening an app the list had already loaded fetched it a second time.
+  const { data: profile } = useQuery({
+    queryKey: ['app-profile', username],
+    queryFn: async () => (await getProfiles([username]))[username] ?? null,
     staleTime: 10 * 60_000,
   });
-  const profile = profiles?.[username];
 
   const handle = `@${username}`;
   const name = profile?.name ? safeText(profile.name) : null;
@@ -101,11 +103,12 @@ export function AppProfile({ username }: { username: string }) {
         </div>
       )}
 
-      {site && (
-        // The website is the app's OWN claim. Saying so matters here: this is
-        // the screen where posting authority is handed over, and a lapsed
-        // domain that now redirects elsewhere looks identical from here.
-        <p className={mutedXs}>{t('apps.website_disclaimer')}</p>
+      {(site || creator || name) && (
+        // EVERY field above is the app account's own claim, not just the
+        // website: review pointed out that naming a trusted account as
+        // "Creator" is free, and this card sits immediately above the control
+        // that hands over posting authority. One line covering all of it.
+        <p className={mutedXs}>{t('apps.self_declared')}</p>
       )}
     </div>
   );
