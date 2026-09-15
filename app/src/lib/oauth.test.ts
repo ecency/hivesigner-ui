@@ -7,6 +7,7 @@ import {
   buildRedirectUrl,
   isRegisteredRedirect,
   normalizeAuthRequest,
+  normalizeLoginRequest,
 } from './oauth';
 
 const POSTING_WIF = '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL';
@@ -187,5 +188,55 @@ describe('redirect hardening (review findings)', () => {
     const p = await loadAppProfile('theapp');
     expect(typeof p?.name).toBe('string');
     expect(p?.name).toBe('theapp');
+  });
+});
+
+describe('normalizeLoginRequest (legacy /login contract)', () => {
+  it('accepts redirect as an alias for redirect_uri', () => {
+    expect(
+      normalizeLoginRequest({ redirect: 'https://ecency.com/cb' }).redirectUri,
+    ).toBe('https://ecency.com/cb');
+    // redirect_uri wins when both are present.
+    expect(
+      normalizeLoginRequest({
+        redirect_uri: 'https://a.example/cb',
+        redirect: 'https://b.example/cb',
+      }).redirectUri,
+    ).toBe('https://a.example/cb');
+  });
+
+  it('takes the client id from the path, clientId or client_id', () => {
+    expect(normalizeLoginRequest({}, 'frompath').clientId).toBe('frompath');
+    expect(normalizeLoginRequest({ clientId: 'a' }).clientId).toBe('a');
+    expect(normalizeLoginRequest({ client_id: 'b' }).clientId).toBe('b');
+  });
+
+  it('falls back to LOGIN scope, not posting, for an unknown scope', () => {
+    // This is the reason /login has its own normalizer: /oauth2/authorize falls
+    // back to posting, so sharing one would silently turn a malformed legacy
+    // request from a username-only login into a posting grant.
+    expect(normalizeLoginRequest({ scope: 'whatever' }).scope).toBe('login');
+    expect(normalizeLoginRequest({}).scope).toBe('login');
+    expect(normalizeLoginRequest({ scope: 'posting' }).scope).toBe('posting');
+    // Contrast, pinned so the divergence is deliberate and visible:
+    expect(normalizeAuthRequest({ scope: 'whatever' }).scope).toBe('posting');
+  });
+
+  it('accepts only code or token as the response type', () => {
+    expect(normalizeLoginRequest({ response_type: 'code' }).responseType).toBe(
+      'code',
+    );
+    expect(normalizeLoginRequest({ response_type: 'wat' }).responseType).toBe(
+      'token',
+    );
+    expect(normalizeLoginRequest({}).responseType).toBe('token');
+  });
+
+  it('does not let an offline scope upgrade a legacy request', () => {
+    // normalizeAuthRequest forces posting+code for anything containing
+    // 'offline'; the legacy route has no such rule, so it stays a login.
+    const r = normalizeLoginRequest({ scope: 'login,offline' });
+    expect(r.scope).toBe('login');
+    expect(r.responseType).toBe('token');
   });
 });

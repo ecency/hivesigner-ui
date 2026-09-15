@@ -47,6 +47,34 @@ export function normalizeAuthRequest(
   };
 }
 
+/**
+ * Normalize the LEGACY /login (and /login-request/<clientId>) query, matching
+ * login.vue. It is deliberately not the same as normalizeAuthRequest:
+ *
+ * - the callback may arrive as `redirect_uri` OR `redirect`;
+ * - the client id may arrive as a path segment, `clientId` or `client_id`;
+ * - scope accepts ONLY 'login' or 'posting' and anything else falls back to
+ *   'login'. /oauth2/authorize falls back to 'posting' instead, so mapping these
+ *   onto one normalizer would silently upgrade a malformed legacy request from a
+ *   username-only login to a posting grant;
+ * - response_type accepts only 'code' or 'token', defaulting to 'token'.
+ */
+export function normalizeLoginRequest(
+  query: Record<string, string>,
+  pathClientId?: string,
+): AuthRequest {
+  const scope = query.scope === 'posting' ? 'posting' : 'login';
+  return {
+    clientId: pathClientId || query.clientId || query.client_id,
+    // Not decoded: the router's parseSearch already did (see
+    // normalizeAuthRequest).
+    redirectUri: query.redirect_uri || query.redirect,
+    scope,
+    responseType: query.response_type === 'code' ? 'code' : 'token',
+    state: query.state,
+  };
+}
+
 /** Loopback, where TLS is not available and a plain-http callback is expected. */
 function isLoopback(hostname: string): boolean {
   return (
