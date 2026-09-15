@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Avatar } from '@/components/Avatar';
 import {
   btnGhost,
   card,
@@ -46,8 +47,11 @@ function Auths() {
 
   return (
     <section className={page}>
-      <h1 className={h1}>
-        {t('auths.auths')} · @{selectedAccount}
+      <h1 className={`${h1} flex flex-wrap items-center gap-2`}>
+        <Avatar username={selectedAccount} size="md" />
+        <span>
+          {t('auths.auths')} · @{selectedAccount}
+        </span>
       </h1>
 
       <div className={cardGrid}>

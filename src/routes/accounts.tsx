@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import clsx from 'clsx';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Avatar } from '@/components/Avatar';
 import {
   btnPrimary,
   cardGrid,
@@ -127,9 +128,7 @@ function AccountRow({
       )}
     >
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-brand-soft font-bold uppercase text-brand-ink">
-          {username[0]}
-        </div>
+        <Avatar username={username} size="md" />
         <div className="min-w-0 flex-1">
           <div className="text-[15px] font-semibold break-all">@{username}</div>
           <div className={`${mutedXs} mt-0.5 flex gap-1.5`}>

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Avatar } from '@/components/Avatar';
 import {
   alertError,
   alertWarn,
@@ -188,9 +189,10 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   return (
     <section className={page}>
       <div className="flex flex-col gap-2 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand text-2xl font-extrabold uppercase text-white">
-          {appName[0]}
-        </div>
+        {/* The app account's OWN avatar, keyed on client_id rather than on
+            the display name: client_id is the part of the identity the app
+            cannot rename, so the picture and the name below it agree. */}
+        <Avatar username={req.clientId ?? ''} size="lg" className="mx-auto" />
         <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
           <b className="[unicode-bidi:isolate]">{appName}</b>{' '}
           {t('authorize.request_access')}
@@ -200,11 +202,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             real client_id and the callback host: those are what the grant and
             the redirect actually use, and they cannot be renamed. */}
         <div className={mutedXs}>
-          Hive account <b>@{req.clientId}</b>
+          {t('authorize.hive_account')} <b>@{req.clientId}</b>
           {callbackHost && (
             <>
               {' '}
-              · sends you to <b>{callbackHost}</b>
+              · {t('authorize.sends_you_to')} <b>{callbackHost}</b>
             </>
           )}
         </div>
