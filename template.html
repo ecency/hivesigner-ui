@@ -10,6 +10,12 @@
       entirely in the browser and talks only to Hive RPC nodes over fetch, so
       connect-src is the directive that matters.
     -->
+    <!--
+      Applies a saved light/dark choice before the first paint. A separate file
+      rather than an inline script because the CSP is `script-src 'self'`; see
+      public/theme-boot.js. Render-blocking on purpose, and tiny.
+    -->
+    <script src="/theme-boot.js"></script>
     <title>Hivesigner</title>
   </head>
   <body>

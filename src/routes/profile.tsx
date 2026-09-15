@@ -223,7 +223,7 @@ function Profile() {
         </div>
       )}
       {status === 'done' && (
-        <output className="block text-[13px] text-[#1a5c2b]">
+        <output className="block text-[13px] text-ok">
           {t('settings.saved')}
         </output>
       )}

@@ -7,10 +7,18 @@ import './i18n';
 import { autoUnlockPlaintext, migrateLegacyKeychain } from './lib/accounts';
 import { parseSearch, stringifySearch } from './lib/search';
 import { initErrorReporting } from './lib/sentry';
+import { initTheme } from './lib/theme';
 import { routeTree } from './routeTree.gen';
 
 // Before anything else, so a failure during startup is still reported.
 initErrorReporting();
+
+// Put a stored light/dark choice on <html> BEFORE the first render. The CSS
+// handles the default "follows your device" on its own, so this is only the
+// explicit override - but without it an explicit choice is forgotten on every
+// reload, and the theme control would still read back the stored value and
+// claim a mode the page was not actually in.
+initTheme();
 
 // Accounts saved before April 2021 live under the original `keychain` key. The
 // Nuxt plugin that moved them into `vuex__accounts` went with the Nuxt app, so

@@ -10,7 +10,7 @@ export const Route = createFileRoute('/developers')({
 
 // Body copy inside a pointer card: a step smaller than `muted`, with room to
 // breathe. No recipe covers it, and both cards share it.
-const cardBody = 'm-0 text-[13px] leading-[1.5] text-[#59636e]';
+const cardBody = 'm-0 text-[13px] leading-[1.5] text-muted';
 
 function Developers() {
   const { t } = useTranslation();
@@ -24,7 +24,7 @@ function Developers() {
           href="https://docs.hivesigner.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-semibold text-[#b90f2e]"
+          className="font-semibold text-brand-ink"
         >
           docs.hivesigner.com
         </a>
@@ -49,7 +49,7 @@ function Developers() {
               href="https://github.com/ecency/hivesigner.js"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#b90f2e]"
+              className="text-brand-ink"
             >
               hivesigner.js
             </a>

@@ -1,13 +1,174 @@
 @import "tailwindcss";
 
+/* --- Design tokens -----------------------------------------------------------
+ *
+ * Every colour in the app resolves through one of these. Screens must not carry
+ * raw hex: a literal cannot follow the theme, and the app now has two.
+ *
+ * The dark values are written TWICE on purpose, and the two lists must stay
+ * identical (globals.test.ts fails the build if they drift):
+ *
+ *   1. the `prefers-color-scheme` block, which covers the default "system"
+ *      setting with no JavaScript at all, so a dark-preferring visitor never
+ *      sees a white page flash before the bundle loads;
+ *   2. the `[data-theme="dark"]` block, which is the explicit choice from the
+ *      theme switch and has to win over the system preference in both
+ *      directions.
+ *
+ * `light-dark()` would express this once, but it resolves to nothing on a
+ * browser that lacks it, and a custom property cannot carry a fallback
+ * declaration the way a normal property can. Duplication is the cost of not
+ * blanking the page on an older browser.
+ */
+
 :root {
   color-scheme: light;
+
+  --hs-canvas: #f6f8fa;
+  --hs-surface: #ffffff;
+  --hs-subtle: #f6f8fa;
+  --hs-line: #d1d9e0;
+  --hs-line-strong: #c4ccd4;
+  --hs-ink: #1f2328;
+  --hs-muted: #59636e;
+
+  --hs-brand: #e31337;
+  --hs-brand-hover: #c8102f;
+  --hs-brand-ink: #b90f2e;
+  --hs-brand-soft: #ffe3e8;
+  --hs-brand-tint: #fff5f6;
+  --hs-brand-muted: #f0a5b3;
+
+  --hs-danger: #cf222e;
+  --hs-danger-bg: #ffebe9;
+  --hs-danger-line: #f0b3b3;
+
+  --hs-warn: #7a5300;
+  --hs-warn-bg: #fff8e6;
+  --hs-warn-line: #f0d38a;
+
+  --hs-ok: #1a7f37;
+  --hs-ok-bg: #e6f4ea;
+  --hs-ok-line: #a7dab8;
+
+  --hs-shadow: 0 1px 2px rgb(31 35 40 / 0.04);
+}
+
+/* DARK (1/2): the system preference, unless the user explicitly chose light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --hs-canvas: #0d1117;
+    --hs-surface: #161b22;
+    --hs-subtle: #21262d;
+    --hs-line: #30363d;
+    --hs-line-strong: #3d444d;
+    --hs-ink: #e6edf3;
+    --hs-muted: #9198a1;
+
+    --hs-brand: #e31337;
+    --hs-brand-hover: #f0264a;
+    --hs-brand-ink: #ff8098;
+    --hs-brand-soft: #3d1622;
+    --hs-brand-tint: #2a1119;
+    --hs-brand-muted: #7a2233;
+
+    --hs-danger: #ff7b72;
+    --hs-danger-bg: #2d1214;
+    --hs-danger-line: #5c2326;
+
+    --hs-warn: #e3b341;
+    --hs-warn-bg: #2b2007;
+    --hs-warn-line: #5c4a1a;
+
+    --hs-ok: #3fb950;
+    --hs-ok-bg: #0f2417;
+    --hs-ok-line: #2b5c3a;
+
+    --hs-shadow: 0 1px 2px rgb(1 4 9 / 0.5);
+  }
+}
+
+/* DARK (2/2): the explicit choice, which must also win over a light system. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --hs-canvas: #0d1117;
+  --hs-surface: #161b22;
+  --hs-subtle: #21262d;
+  --hs-line: #30363d;
+  --hs-line-strong: #3d444d;
+  --hs-ink: #e6edf3;
+  --hs-muted: #9198a1;
+
+  --hs-brand: #e31337;
+  --hs-brand-hover: #f0264a;
+  --hs-brand-ink: #ff8098;
+  --hs-brand-soft: #3d1622;
+  --hs-brand-tint: #2a1119;
+  --hs-brand-muted: #7a2233;
+
+  --hs-danger: #ff7b72;
+  --hs-danger-bg: #2d1214;
+  --hs-danger-line: #5c2326;
+
+  --hs-warn: #e3b341;
+  --hs-warn-bg: #2b2007;
+  --hs-warn-line: #5c4a1a;
+
+  --hs-ok: #3fb950;
+  --hs-ok-bg: #0f2417;
+  --hs-ok-line: #2b5c3a;
+
+  --hs-shadow: 0 1px 2px rgb(1 4 9 / 0.5);
+}
+
+/* `inline` so the generated utilities substitute var(--hs-*) directly: the
+ * theme swap happens on :root, and a non-inline theme would freeze the value
+ * these utilities were compiled with. */
+@theme inline {
+  --color-canvas: var(--hs-canvas);
+  --color-surface: var(--hs-surface);
+  --color-subtle: var(--hs-subtle);
+  --color-line: var(--hs-line);
+  --color-line-strong: var(--hs-line-strong);
+  --color-ink: var(--hs-ink);
+  --color-muted: var(--hs-muted);
+
+  --color-brand: var(--hs-brand);
+  --color-brand-hover: var(--hs-brand-hover);
+  --color-brand-ink: var(--hs-brand-ink);
+  --color-brand-soft: var(--hs-brand-soft);
+  --color-brand-tint: var(--hs-brand-tint);
+  --color-brand-muted: var(--hs-brand-muted);
+
+  --color-danger: var(--hs-danger);
+  --color-danger-bg: var(--hs-danger-bg);
+  --color-danger-line: var(--hs-danger-line);
+
+  --color-warn: var(--hs-warn);
+  --color-warn-bg: var(--hs-warn-bg);
+  --color-warn-line: var(--hs-warn-line);
+
+  --color-ok: var(--hs-ok);
+  --color-ok-bg: var(--hs-ok-bg);
+  --color-ok-line: var(--hs-ok-line);
+
+  --shadow-card: var(--hs-shadow);
 }
 
 body {
   margin: 0;
-  background: #f6f8fa;
-  color: #1f2328;
+  background: var(--hs-canvas);
+  color: var(--hs-ink);
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+/* The brand red is the focus colour everywhere, rather than the UA default
+ * which is invisible against the dark surface. */
+:focus-visible {
+  outline: 2px solid var(--hs-brand);
+  outline-offset: 2px;
 }

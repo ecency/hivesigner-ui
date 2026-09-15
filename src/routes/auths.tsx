@@ -2,7 +2,16 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { card, cardGrid, h1, mono, mutedXs, page, row } from '@/components/ui';
+import {
+  btnGhost,
+  card,
+  cardGrid,
+  h1,
+  mono,
+  mutedXs,
+  page,
+  row,
+} from '@/components/ui';
 import { getKeys } from '@/lib/accounts';
 import { type Account, getAccount, type KeyRole } from '@/lib/hive';
 import { useAccounts } from '@/lib/use-accounts';
@@ -70,7 +79,7 @@ function Auths() {
                     <Link
                       to="/revoke/$username"
                       params={{ username: a }}
-                      className="text-xs font-semibold text-[#cf222e]"
+                      className="text-xs font-semibold text-danger"
                     >
                       {t('revoke.revoke')}
                     </Link>
@@ -80,14 +89,14 @@ function Auths() {
               {heldKey && (
                 <div className="mt-1">
                   {revealed === role ? (
-                    <code className={`${mono} text-[11px] text-[#1f2328]`}>
+                    <code className={`${mono} text-[11px] text-ink`}>
                       {heldKey}
                     </code>
                   ) : (
                     <button
                       type="button"
                       onClick={() => setRevealed(role)}
-                      className="cursor-pointer rounded-lg border border-[#d1d9e0] bg-white px-3 py-1.5 text-[12.5px] font-semibold"
+                      className={btnGhost}
                     >
                       {t('auths.reveal_private_key')}
                     </button>

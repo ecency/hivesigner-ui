@@ -25,7 +25,7 @@ export const Route = createFileRoute('/authorized-apps')({
 });
 
 const revokeButton =
-  'inline-flex h-[34px] shrink-0 cursor-pointer items-center justify-center rounded-lg border border-[#d1d9e0] bg-white px-3.5 text-[13px] font-semibold text-[#cf222e] disabled:cursor-not-allowed';
+  'inline-flex h-[34px] shrink-0 cursor-pointer items-center justify-center rounded-lg border border-line bg-surface px-3.5 text-[13px] font-semibold text-danger disabled:cursor-not-allowed';
 
 function AuthorizedApps() {
   const { t } = useTranslation();
@@ -84,7 +84,7 @@ function AuthorizedApps() {
       )}
 
       {apps.length === 0 ? (
-        <p className={muted}>No apps are authorized.</p>
+        <p className={muted}>{t('apps.none_authorized')}</p>
       ) : (
         <div className={cardGrid}>
           {apps.map((app) => (
@@ -95,7 +95,7 @@ function AuthorizedApps() {
               {!isUnlocked || !activeKey ? (
                 <Link
                   to="/accounts"
-                  className="shrink-0 text-[13px] font-semibold text-[#b90f2e]"
+                  className="shrink-0 text-[13px] font-semibold text-brand-ink"
                 >
                   {t('accounts.unlock')}
                 </Link>

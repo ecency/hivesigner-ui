@@ -36,9 +36,17 @@ export default {
     sign_transactions: 'Sign transactions',
     delete_account: 'Remove',
     delete_account_confirm: `<div>Do you want to delete account?</div><div>This will remove account from local storage.</div>`,
+    current: 'Current',
+    unlocked: 'Unlocked',
+    protected: 'Protected',
+    no_passcode: 'No passcode',
+    passcode: 'Passcode',
+    remove_confirm: 'Remove @{username} from this device? Its keys here will be deleted.',
+    remove_failed: 'Removed for this session only: storage is unavailable, so this account will return when you reload.',
     successfully_logged_in: 'Logged in successfully!'
   },
   apps: {
+    none_authorized: 'No apps are authorized.',
     store: 'App store',
     search_placeholder: 'Search for apps',
     search_for: 'Search for "{search}"',
@@ -75,6 +83,10 @@ export default {
         {authority} access. This can be withdrawn by you at any time by clicking
         <a class="text-black hover:underline uppercase cursor-pointer" href="/revoke/{username}" target="_blank">here</a>.`,
     authority_active: `Giving active authority enables the authorized account to do fund transfers from your account, this should be used with utmost care.`,
+    redirect_not_registered: `This app's redirect URL is not registered. For your safety, sign-in is blocked.`,
+    scope: 'Scope',
+    scope_login: 'View your account username',
+    scope_posting: 'Post, comment, vote and follow on your behalf',
     requires_active_key: `This transaction requires your <b>{authority}</b> key.`
   },
   import: {
@@ -109,6 +121,12 @@ export default {
     incorrect_encryption_key: 'Incorrect Hivesigner password',
     username_placeholder: 'Hive username, e.g. ecency',
     password_placeholder: 'Hive private key, e.g. Owner, Active, Posting, Memo keys',
+    passcode: 'Passcode',
+    protect_with_passcode: 'Protect with a passcode (recommended)',
+    private_key_hint: 'A posting key covers everyday actions. Use an active or owner key, or your master password, only if you need to. The key is stored on this device and never sent anywhere.',
+    passcode_hint: 'A local password, separate from your Hive keys. It encrypts the key on this device and unlocks it again. It is not your Hive password and cannot be recovered.',
+    accounts_on_device_one: '{count} account on this device.',
+    accounts_on_device_other: '{count} accounts on this device.',
     hs_placeholder: 'Your Hivesigner password'
   },
   login: {
@@ -138,6 +156,13 @@ export default {
   already_action_account: `You {action} the account <b>{username}</b> to do
       <b>{authority}</b> operations on your behalf.`,
   confirmation: 'Your transaction is on the way! Here is the ID of the transaction:',
+  theme: {
+    theme: 'Theme',
+    system: 'Follows your device',
+    light: 'Light',
+    dark: 'Dark',
+    switch_to: 'Switch to: {theme}'
+  },
   footer: {
     apps: 'Apps',
     accounts: 'Accounts',
@@ -149,7 +174,8 @@ export default {
     sign_message: 'Sign message',
     verify_message: 'Verify message',
     network: `{network}`,
-    login: 'Login'
+    login: 'Login',
+    built_by: 'Built with <heart>♥</heart> by the <link>Ecency</link> team',
   },
   open_external: `We recommend you to use the HiveSigner desktop app. If you don't have this, you can download it from the <a href="{homepage}" target="_blank">official site</a>.`,
   open_desktop_app: 'Open desktop app',
@@ -274,6 +300,8 @@ export default {
     }
   },
   settings: {
+    language: 'Language',
+    node_note: 'Hivesigner connects to Hive through a managed pool of nodes and fails over automatically, so there is no node to configure here.',
     settings: 'Settings',
     saved: 'Settings has been saved.',
     session: 'Session timeout in',
@@ -303,6 +331,7 @@ export default {
     blank_field: 'Leave this field blank to keep your secret unchanged.'
   },
   signs: {
+    nothing_matches: 'Nothing matches that.',
     title: 'Sign transaction',
     search_placeholder: 'Please type name of transaction that need to sign',
     sign: 'Sign'

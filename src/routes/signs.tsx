@@ -128,7 +128,7 @@ function OperationForm({ name }: { name: string }) {
             // so it gets its own string rather than fighting the recipe.
             <textarea
               id={`${name}-${fieldName}`}
-              className="box-border h-[68px] w-full rounded-lg border border-[#d1d9e0] p-2 font-mono text-sm"
+              className="box-border h-[68px] w-full rounded-lg border border-line p-2 font-mono text-sm"
               value={form[fieldName]}
               onChange={(e) =>
                 setForm({ ...form, [fieldName]: e.target.value })
@@ -201,7 +201,7 @@ function Signs() {
       ))}
 
       {operations.length === 0 && messageOps.length === 0 && (
-        <p className={`${muted} m-0`}>Nothing matches that.</p>
+        <p className={`${muted} m-0`}>{t('signs.nothing_matches')}</p>
       )}
 
       {/* The operation directory is a list of cards, so it uses the width the
@@ -219,8 +219,8 @@ function Signs() {
                   className={clsx(
                     'shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-semibold uppercase',
                     OPERATIONS[name].authority === 'posting'
-                      ? 'bg-[#eaf5ea] text-[#1a7f37]'
-                      : 'bg-[#ffebe9] text-[#cf222e]',
+                      ? 'bg-ok-bg text-ok'
+                      : 'bg-danger-bg text-danger',
                   )}
                 >
                   {OPERATIONS[name].authority}

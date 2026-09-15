@@ -16,20 +16,29 @@ export function AppNav() {
     { to: '/apps', label: t('footer.apps') },
     { to: '/accounts', label: t('footer.accounts') },
     { to: '/signs', label: t('footer.signs') },
+    { to: '/settings', label: t('footer.settings') },
     { to: '/about', label: t('footer.about') },
   ] as const;
+
+  // The active item is marked with an underline that sits ON the bar's bottom
+  // border, so the current section reads at a glance rather than from a weight
+  // change alone. -mb-px pulls it over the border rather than below it.
+  const base =
+    'inline-flex items-center border-b-2 border-transparent py-2.5 -mb-px hover:text-ink';
 
   return (
     <nav
       aria-label="Main"
-      className="flex items-center gap-4 overflow-x-auto whitespace-nowrap px-5 py-2.5 text-[13px] text-[#59636e] sm:gap-6 sm:px-6"
+      className="-mx-1 flex items-center gap-4 overflow-x-auto px-1 whitespace-nowrap text-[13px] text-muted sm:gap-6"
     >
       {links.map((l) => (
         <Link
           key={l.to}
           to={l.to}
-          className="hover:text-[#1f2328] hover:underline"
-          activeProps={{ className: 'text-[#1f2328] font-semibold' }}
+          className={base}
+          activeProps={{
+            className: `${base} border-brand font-semibold text-ink`,
+          }}
         >
           {l.label}
         </Link>
@@ -38,7 +47,7 @@ export function AppNav() {
         href="https://docs.hivesigner.com/"
         target="_blank"
         rel="noopener noreferrer"
-        className="hover:text-[#1f2328] hover:underline"
+        className={base}
       >
         {t('footer.documentation')}
       </a>

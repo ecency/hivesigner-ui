@@ -8,6 +8,7 @@ import {
   formColumn,
   h1,
   label,
+  labelText,
   muted,
   mutedXs,
   page,
@@ -115,9 +116,7 @@ function Import() {
       </div>
 
       <label className={label}>
-        <span className="text-[13px] font-semibold text-[#1f2328]">
-          {t('import.username')}
-        </span>
+        <span className={labelText}>{t('import.username')}</span>
         <input
           className={field}
           name="username"
@@ -129,9 +128,7 @@ function Import() {
       </label>
 
       <label className={label}>
-        <span className="text-[13px] font-semibold text-[#1f2328]">
-          {t('import.private_key')}
-        </span>
+        <span className={labelText}>{t('import.private_key')}</span>
         <input
           className={`${field} font-mono`}
           name="password"
@@ -139,29 +136,39 @@ function Import() {
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
         />
-        <span className={mutedXs}>
-          A posting key covers daily use. It is stored only on this device.
-        </span>
+        <span className={mutedXs}>{t('import.private_key_hint')}</span>
       </label>
 
       <div className="flex flex-col gap-2.5">
         <label className="flex items-center gap-2 text-[13.5px]">
           <input
             type="checkbox"
+            className="accent-brand"
             checked={usePasscode}
             onChange={(e) => setUsePasscode(e.target.checked)}
           />
-          <span>Protect with a passcode (recommended)</span>
+          <span>{t('import.protect_with_passcode')}</span>
         </label>
         {usePasscode && (
-          <input
-            className={field}
-            name="passcode"
-            type="password"
-            placeholder="Passcode"
-            value={passcode}
-            onChange={(e) => setPasscode(e.target.value)}
-          />
+          // A real <label>, not a placeholder: a placeholder is not an
+          // accessible name and it vanishes as soon as the user types, which
+          // left this field - the one that protects the key - unnamed.
+          <label className={label}>
+            <span className={labelText}>{t('import.passcode')}</span>
+            <input
+              className={field}
+              name="passcode"
+              type="password"
+              autoComplete="new-password"
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+            />
+            {/* Which secret this is has to be said out loud. Three different
+                things could plausibly go in a password box on this screen - a
+                Hive key, the Hive master password, or a local passcode - and
+                the field only said "Passcode". */}
+            <span className={mutedXs}>{t('import.passcode_hint')}</span>
+          </label>
         )}
       </div>
 
@@ -182,8 +189,7 @@ function Import() {
 
       {usernames.length > 0 && (
         <p className={`${muted} m-0`}>
-          {usernames.length} account{usernames.length > 1 ? 's' : ''} on this
-          device.
+          {t('import.accounts_on_device', { count: usernames.length })}
         </p>
       )}
     </form>

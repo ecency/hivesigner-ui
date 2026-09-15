@@ -147,7 +147,7 @@ function SignMessage() {
 
       {payload && (
         <div className={`${card} flex flex-col gap-2.5`}>
-          <div className="text-[13px] font-bold text-[#59636e]">
+          <div className="text-[13px] font-bold text-muted">
             {t('message_signing.summary')}
           </div>
           <Field label={t('message_signing.author')}>
