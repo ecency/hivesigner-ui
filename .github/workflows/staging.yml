@@ -1,4 +1,12 @@
 name: Staging CI/CD
+# Staging serves the REACT app from app/. Production still serves the Nuxt app
+# via master.yml, so the Nuxt sources stay in the repo until staging has been
+# verified and production cuts over too (#104).
+#
+# The testnet deploy is gone: nobody develops against a Hive testnet, and the
+# bundle baked BROADCAST_NETWORK at build time so testnet.hivesigner.com was
+# serving mainnet behaviour regardless. Its swarm stack has to be removed on the
+# host by hand; CI no longer touches it.
 on:
   push:
     branches:
@@ -6,43 +14,54 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.x]
+    defaults:
+      run:
+        working-directory: app
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: npm install, build, lint and test
-      run: |
-        yarn
-        yarn lint
-        yarn build --no-unsafe-inline
-      env:
-        CI: true
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          # app/package.json carries packageManager; the repo-root one is the
+          # Nuxt app's and has none.
+          package_json_file: app/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint:ci
+      # build first: it generates src/routeTree.gen.ts (gitignored), which the
+      # typecheck needs, and it runs the node-globals guard.
+      - run: pnpm build
+        env:
+          GIT_SHA: ${{ github.sha }}
+      - run: pnpm typecheck
+      - run: pnpm test
+
   build:
     needs: tests
     runs-on: ubuntu-latest
     steps:
       - name: Check Out Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
-          context: ./
-          file: ./Dockerfile
+          context: ./app
+          file: ./app/Dockerfile
           push: true
           tags: ecency/hivesigner:development
+          build-args: |
+            GIT_SHA=${{ github.sha }}
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
@@ -72,29 +91,4 @@ jobs:
           export BUGSNAG_API_KEY=$BUGSNAG_API_KEY
           docker pull ecency/hivesigner:development
           docker stack deploy -c docker-compose.yml -c docker-compose.staging.yml hivesigner-staging
-          
-  deploy-testnet:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: SSH and deploy node app
-      uses: appleboy/ssh-action@5711a203b3207eb1c6cebec6ac2152ab210ec3ae
-      env:
-        TESTNET_PORT: ${{secrets.TESTNET_PORT}}
-        BROADCAST_NETWORK: ${{secrets.BROADCAST_TESTNET_NETWORK}}
-        BUGSNAG_API_KEY: ${{secrets.BUGSNAG_API_KEY}}
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        envs: TESTNET_PORT,BROADCAST_NETWORK,BUGSNAG_API_KEY
-        script: |
-          cd ~/hivesigner-ui
-          git pull origin development
-          git checkout development
-          export PORT=$TESTNET_PORT
-          export BROADCAST_NETWORK=$BROADCAST_NETWORK
-          export BUGSNAG_API_KEY=$BUGSNAG_API_KEY
-          docker pull ecency/hivesigner:development
-          docker stack deploy -c docker-compose.yml -c docker-compose.testnet.yml hivesigner-testnet
+

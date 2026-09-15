@@ -4,7 +4,7 @@
 
 Optional env variable:
 
-`BROADCAST_NETWORK` could be either `'mainnet'` or `'testnet'`.
+`BROADCAST_NETWORK` is `'mainnet'`. The testnet deployment is discontinued.
 
 ## Build Setup
 

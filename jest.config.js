@@ -1,5 +1,8 @@
 module.exports = {
   rootDir: __dirname,
+  // Only the Nuxt app. Without this, Jest's defaults also pick up the React
+  // app's vitest specs under app/.
+  roots: ['<rootDir>/src'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^~/(.*)$': '<rootDir>/src/$1',
