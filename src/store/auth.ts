@@ -8,10 +8,10 @@ import {
   Transaction,
   TransactionConfirmation
 } from '@hiveio/dhive'
-// import bugsnag from './../plugins/bugsnag'
 import { AccountsModule } from './index'
 import { b64uEnc, client, privateKeyFrom } from '~/utils'
 import { SignedMessagePayload, VuexModule } from '~/models'
+import { Authority } from '~/enums'
 
 @Module({
   stateFactory: true,
@@ -136,7 +136,10 @@ export default class Auth extends VuexModule {
         : privateKeyFrom(this.password)
     const signature = privateKey.sign(hash).toString()
     messageObj.signatures = [signature]
-    messageObj.authority = authority
+    // `authority` is declared string here but the payload field is the Authority
+    // enum, and every caller passes an Authority value. ts-jest typechecks on
+    // compile, so this mismatch stopped 20 suites from loading at all.
+    messageObj.authority = authority as Authority
     return messageObj
   }
 

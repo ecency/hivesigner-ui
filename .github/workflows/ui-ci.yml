@@ -1,15 +1,11 @@
 name: UI CI
 
-# Lint, test and build the UI app in app/. Runs only when app/ changes, so it
-# does not interfere with the Staging/Master workflows (which deploy on push to
-# development/main). No deploy step until cutover.
+# Lint, test and build the UI app in app/, on PULL REQUESTS only. Pushes to
+# development are gated by the identical job in Staging CI/CD before it deploys,
+# so a push trigger here would just duplicate it. (This previously triggered on
+# feature/react-rewrite, which no longer exists, so it had stopped running at
+# all once that branch merged.)
 on:
-  push:
-    branches:
-      - feature/react-rewrite
-    paths:
-      - 'app/**'
-      - '.github/workflows/ui-ci.yml'
   pull_request:
     paths:
       - 'app/**'

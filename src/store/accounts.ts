@@ -1,6 +1,5 @@
 import { Module, Vue, VuexAction, VuexModule, VuexMutation } from 'nuxt-property-decorator'
 import { PrivateKey } from '@hiveio/dhive'
-import Bugsnag from '../plugins/bugsnag'
 import { AuthModule } from './index'
 import { CLIENT_OPTIONS } from '~/consts'
 import { decrypt, getUserKeysMap, isKey, jsonParse, privateKeyFrom } from '~/utils'
@@ -125,7 +124,6 @@ export default class Accounts extends VuexModule {
         buffer = await decrypt(key, encryptionKey)
       } catch (e) {
         error = e
-        Bugsnag.notify(e)
       }
     }
 

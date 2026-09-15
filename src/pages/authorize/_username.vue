@@ -36,7 +36,6 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator'
 import { Account, TransactionConfirmation } from '@hiveio/dhive'
-import Bugsnag from '../../plugins/bugsnag'
 import SinglePageLayout from '../../components/Layouts/SinglePageLayout.vue'
 import TransactionStatus from '../../components/TransactionStatus.vue'
 import { getAuthority, hasPostingGrant } from '~/utils'
@@ -140,8 +139,6 @@ export default class AuthorizeUsername extends Vue {
       console.error('Failed to broadcast transaction', err)
       this.failed = true
       this.loading = false
-
-      Bugsnag.notify(err)
     }
   }
 

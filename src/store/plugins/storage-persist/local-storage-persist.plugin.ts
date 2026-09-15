@@ -1,5 +1,4 @@
 import { MutationPayload, Store } from 'vuex'
-import Bugsnag from '../../../plugins/bugsnag'
 import { StoragePersist } from './storage-persist'
 
 export class LocalStoragePersist<T extends Record<any, any>> extends StoragePersist<T> {
@@ -21,7 +20,6 @@ export class LocalStoragePersist<T extends Record<any, any>> extends StoragePers
         })
       } catch (e) {
         console.error(`Failed to load persistent data from localstorage for ${module} Vuex module`)
-        Bugsnag.notify(e)
       }
     })
   }

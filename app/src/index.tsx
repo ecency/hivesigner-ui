@@ -6,7 +6,11 @@ import './globals.css';
 import './i18n';
 import { autoUnlockPlaintext } from './lib/accounts';
 import { parseSearch, stringifySearch } from './lib/search';
+import { initErrorReporting } from './lib/sentry';
 import { routeTree } from './routeTree.gen';
+
+// Before anything else, so a failure during startup is still reported.
+initErrorReporting();
 
 // Plaintext (no-passcode) accounts carry no security by staying locked; load
 // their keys at startup so signing works after a reload. Encrypted accounts

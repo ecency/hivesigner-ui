@@ -65,7 +65,6 @@
 <script lang="ts">
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
-import Bugsnag from '../plugins/bugsnag'
 import Icon from '../components/UI/Icons/Icon.vue'
 import Loader from '../components/UI/Loader.vue'
 import BasePageLayout from '../components/Layouts/BasePageLayout.vue'
@@ -247,8 +246,6 @@ export default class Login extends Vue {
           this.failed = true
           this.isLoading = false
           this.showLoading = false
-
-          Bugsnag.notify(err)
         }
       }
     } catch (err) {
@@ -271,8 +268,6 @@ export default class Login extends Vue {
         }
       } catch (e) {
         console.log('Failed to parse app account', e)
-
-        Bugsnag.notify(e)
       }
     } else {
       this.failed = true
@@ -294,7 +289,6 @@ export default class Login extends Vue {
       this.loadedPosting = account?.posting ?? null
     } catch (error) {
       console.error('Failed to load posting authorities', error)
-      Bugsnag.notify(error)
       this.loadedPosting = null
     }
   }

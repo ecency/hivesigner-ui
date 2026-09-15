@@ -1,6 +1,6 @@
-# Build the React SPA and serve dist/ with nginx. This is the cutover image for
-# the React rewrite; it is NOT yet wired into the deploy workflows (the Nuxt
-# image at the repo root still serves production until cutover, #104).
+# Build the React SPA and serve dist/ with nginx. Staging deploys this image;
+# production still serves the Nuxt image built from the repo root until it cuts
+# over too (#104).
 FROM node:24-alpine AS build
 
 WORKDIR /app
@@ -14,6 +14,11 @@ COPY . .
 # GIT_SHA is baked into the bundle so the served build is identifiable.
 ARG GIT_SHA=unknown
 ENV GIT_SHA=${GIT_SHA}
+# Sentry DSN, baked at build time. A DSN is public by design (it ships in the
+# bundle); it is passed in rather than committed so this public repo does not
+# carry it, and an empty value simply disables reporting.
+ARG SENTRY_DSN=""
+ENV SENTRY_DSN=${SENTRY_DSN}
 RUN pnpm build
 
 # serve the static build
