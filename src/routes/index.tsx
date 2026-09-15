@@ -13,7 +13,7 @@ import {
   mutedXs,
   page,
 } from '@/components/ui';
-import { getAppDirectory } from '@/lib/app-directory';
+import { fetchAppDirectory } from '@/lib/app-directory';
 import { appDirectoryKey } from '@/lib/query-keys';
 import { useAccounts } from '@/lib/use-accounts';
 
@@ -64,12 +64,13 @@ function Home() {
   // import, a returning one to their accounts.
   const primary = usernames.length > 0 ? '/accounts' : '/import';
 
-  // Same query key as /apps, so opening one warms the other. `withDirectory`
-  // only affects the FALLBACK path: this route renders the featured strip and
-  // nothing else, so an API outage should not make it page ~900 accounts.
+  // The SAME query as /apps, with no per-route variation. An earlier version
+  // passed an option here that made this route fetch a deliberately incomplete
+  // answer and then cache it under the shared key, so clicking through to /apps
+  // showed an empty directory for ten minutes. One key, one answer.
   const { data: index } = useQuery({
     queryKey: appDirectoryKey(),
-    queryFn: () => getAppDirectory({ withDirectory: false }),
+    queryFn: () => fetchAppDirectory(),
     staleTime: 10 * 60_000,
   });
   const featured = index?.featured ?? [];
@@ -143,15 +144,15 @@ function Home() {
             </Link>
           </div>
           <div className="flex flex-wrap gap-2">
-            {featured.map((app) => (
+            {featured.map((username) => (
               <Link
-                key={app.username}
+                key={username}
                 to="/authorize/$username"
-                params={{ username: app.username }}
+                params={{ username }}
                 className={`${cardTight} flex items-center gap-2 py-2 text-[13px] font-semibold text-ink no-underline hover:border-line-strong`}
               >
-                <Avatar username={app.username} size="sm" />
-                <span className="[unicode-bidi:isolate]">@{app.username}</span>
+                <Avatar username={username} size="sm" />
+                <span className="[unicode-bidi:isolate]">@{username}</span>
               </Link>
             ))}
           </div>
