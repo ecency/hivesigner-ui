@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   _resetKeyCache,
   accountIsEncrypted,
@@ -187,5 +187,44 @@ describe('adding a key to an encrypted account (key-loss guards)', () => {
     _resetKeyCache();
     await expect(addAccount('erin', { active: '5Kactive' })).rejects.toThrow();
     expect(accountIsEncrypted('erin')).toBe(true);
+  });
+});
+
+describe('when localStorage refuses to persist', () => {
+  it('leaves the account listed, unlocked AND selectable so its keys are usable', async () => {
+    const setItem = vi
+      .spyOn(Storage.prototype, 'setItem')
+      .mockImplementation(() => {
+        throw new Error('blocked');
+      });
+    try {
+      await addAccount('alice', { posting: '5Kposting' });
+      const s = getState();
+      expect(s.usernames).toContain('alice');
+      expect(s.unlocked).toContain('alice');
+      // Without a volatile selection this was null, so every signing consumer
+      // (which reads selectedAccount) could not use the keys just imported.
+      expect(s.selectedAccount).toBe('alice');
+      expect(getKeys('alice')).toEqual({ posting: '5Kposting' });
+    } finally {
+      setItem.mockRestore();
+    }
+  });
+
+  it('can still switch between two in-memory accounts', async () => {
+    const setItem = vi
+      .spyOn(Storage.prototype, 'setItem')
+      .mockImplementation(() => {
+        throw new Error('blocked');
+      });
+    try {
+      await addAccount('alice', { posting: '5Ka' });
+      await addAccount('bob', { posting: '5Kb' });
+      expect(getState().selectedAccount).toBe('alice');
+      selectAccount('bob');
+      expect(getState().selectedAccount).toBe('bob');
+    } finally {
+      setItem.mockRestore();
+    }
   });
 });

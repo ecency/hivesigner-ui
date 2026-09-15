@@ -162,3 +162,27 @@ describe('returning to the flow that required an unlock', () => {
     );
   });
 });
+
+describe('plaintext unlock failure', () => {
+  it('shows the error even though the passcode form never opens', async () => {
+    // A corrupt persisted plaintext keystore rejects in unlockAccount. The row
+    // stays in its normal state (unlocking is false), so an error rendered only
+    // inside the passcode form would never be seen.
+    await addAccount('alice', { posting: '5Ka' });
+    await addAccount('bob', { posting: '5Kb' });
+    selectAccount('alice');
+    lockAccount('bob');
+    // Corrupt bob's stored blob.
+    const raw = JSON.parse(localStorage.getItem('vuex__accounts') as string);
+    // Detected as the legacy PLAINTEXT format (it ends with the marker) but its
+    // hex body is junk, so readKeys rejects without opening a passcode form.
+    raw.accountsKeychains.bob.password = 'zzdecrypted';
+    localStorage.setItem('vuex__accounts', JSON.stringify(raw));
+
+    render(<Accounts />);
+    await userEvent.click(screen.getByRole('button', { name: /unlock/i }));
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    // And it did not silently select the account it could not unlock.
+    expect(getState().selectedAccount).toBe('alice');
+  });
+});

@@ -35,6 +35,13 @@ export interface AccountsState {
 // In-memory only. Never persisted.
 const keyCache = new Map<string, Keys>();
 
+// The account selected THIS SESSION. It exists because writePersisted swallows a
+// storage failure (private window, blocked storage, quota): without it an
+// account added in that state was listed and unlocked but selectedAccount stayed
+// null and selectAccount refused it, so the keys the user had just imported
+// could never be used for signing.
+let sessionSelected: string | null = null;
+
 function readPersisted(): PersistedState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -86,12 +93,19 @@ export function getState(): AccountsState {
   const usernames = [
     ...new Set([...Object.keys(accountsKeychains), ...keyCache.keys()]),
   ];
+  const persistedChoice =
+    selectedAccount && usernames.includes(selectedAccount)
+      ? selectedAccount
+      : null;
+  const sessionChoice =
+    sessionSelected && usernames.includes(sessionSelected)
+      ? sessionSelected
+      : null;
   snapshot = {
     usernames,
-    selectedAccount:
-      selectedAccount && usernames.includes(selectedAccount)
-        ? selectedAccount
-        : null,
+    // Persisted choice wins so a reload is stable; the session choice covers the
+    // unpersisted case above.
+    selectedAccount: persistedChoice ?? sessionChoice,
     unlocked: [...keyCache.keys()],
   };
   return snapshot;
@@ -169,6 +183,9 @@ export async function addAccount(
   if (!state.selectedAccount) state.selectedAccount = username;
   writePersisted(state);
   keyCache.set(username, merged);
+  // Mirror the selection in volatile state, so a rejected write still leaves the
+  // account selectable for this session.
+  if (!sessionSelected) sessionSelected = state.selectedAccount || username;
   emit();
 }
 
@@ -208,7 +225,10 @@ export async function unlockAccount(
 
 export function selectAccount(username: string): void {
   const state = readPersisted();
-  if (!state.accountsKeychains[username]) return;
+  // An account may exist only in memory (its write was rejected). It is listed
+  // and unlocked, so it has to be selectable or its keys are unusable.
+  if (!state.accountsKeychains[username] && !keyCache.has(username)) return;
+  sessionSelected = username;
   state.selectedAccount = username;
   writePersisted(state);
   emit();
@@ -222,6 +242,9 @@ export function removeAccount(username: string): void {
   }
   writePersisted(state);
   keyCache.delete(username);
+  if (sessionSelected === username) {
+    sessionSelected = state.selectedAccount || null;
+  }
   emit();
 }
 
@@ -255,5 +278,6 @@ export async function autoUnlockPlaintext(): Promise<void> {
 /** Test seam: clear in-memory keys and the cached snapshot (not storage). */
 export function _resetKeyCache(): void {
   keyCache.clear();
+  sessionSelected = null;
   snapshot = null;
 }

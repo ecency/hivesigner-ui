@@ -200,6 +200,14 @@ function AccountRow({
         </button>
       </div>
 
+      {/* A plaintext unlock failure never opens the passcode form, so its error
+          has to render outside it or the row just goes quiet. */}
+      {error && !unlocking && (
+        <div role="alert" style={{ fontSize: 12.5, color: '#cf222e' }}>
+          {error}
+        </div>
+      )}
+
       {unlocking && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <input
