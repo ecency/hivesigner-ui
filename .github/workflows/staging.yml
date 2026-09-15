@@ -1,7 +1,5 @@
 name: Staging CI/CD
-# Staging serves the REACT app from app/. Production still serves the Nuxt app
-# via master.yml, so the Nuxt sources stay in the repo until staging has been
-# verified and production cuts over too (#104).
+# Pushing to development deploys staging.hivesigner.com.
 #
 # The testnet deploy is gone: nobody develops against a Hive testnet, and the
 # bundle baked BROADCAST_NETWORK at build time so testnet.hivesigner.com was
@@ -14,21 +12,13 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          # app/package.json carries packageManager; the repo-root one is the
-          # Nuxt app's and has none.
-          package_json_file: app/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: 24.x
           cache: pnpm
-          cache-dependency-path: app/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint:ci
       # build first: it generates src/routeTree.gen.ts (gitignored), which the
@@ -56,8 +46,8 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v6
         with:
-          context: ./app
-          file: ./app/Dockerfile
+          context: ./
+          file: ./Dockerfile
           push: true
           tags: ecency/hivesigner:development
           build-args: |
@@ -90,4 +80,3 @@ jobs:
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
           docker pull ecency/hivesigner:development
           docker stack deploy -c docker-compose.yml -c docker-compose.staging.yml hivesigner-staging
-
