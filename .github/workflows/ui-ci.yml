@@ -33,8 +33,10 @@ jobs:
           cache-dependency-path: app/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint:ci
-      - run: pnpm typecheck
-      - run: pnpm test
+      # build first: it generates src/routeTree.gen.ts (gitignored), which the
+      # typecheck needs for the route registry. It also runs the node-globals guard.
       - run: pnpm build
         env:
           GIT_SHA: ${{ github.sha }}
+      - run: pnpm typecheck
+      - run: pnpm test
