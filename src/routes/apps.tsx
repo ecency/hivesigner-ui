@@ -17,6 +17,12 @@ import {
 } from '@/components/ui';
 import { getAllApps, getProfiles, getTopApps, type Profile } from '@/lib/hive';
 import { safeText } from '@/lib/operation-summary';
+import {
+  allAppsKey,
+  directoryProfileBatchKey,
+  directoryProfileKey,
+  topAppsKey,
+} from '@/lib/query-keys';
 
 // The directory of apps that use Hivesigner to sign in.
 //
@@ -89,7 +95,7 @@ function Apps() {
   const queryClient = useQueryClient();
 
   const { data: featured = [] } = useQuery({
-    queryKey: ['top-apps'],
+    queryKey: topAppsKey(),
     queryFn: getTopApps,
     staleTime: 10 * 60_000,
   });
@@ -99,7 +105,7 @@ function Apps() {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['all-apps'],
+    queryKey: allAppsKey(),
     queryFn: getAllApps,
     staleTime: 10 * 60_000,
   });
@@ -134,14 +140,14 @@ function Apps() {
   }, [visible]);
 
   const profileQuery = (names: string[]) => ({
-    queryKey: ['app-profiles', names.join(',')],
+    queryKey: directoryProfileBatchKey(names),
     queryFn: async () => {
       const batch = await getProfiles(names);
       // Seed the single-app cache the authorize screen reads. Without this,
       // opening an app whose profile this batch already fetched issued a
       // second getAccounts for it inside the same freshness window.
       for (const [name, profile] of Object.entries(batch)) {
-        queryClient.setQueryData(['app-profile', name], profile);
+        queryClient.setQueryData(directoryProfileKey(name), profile);
       }
       return batch;
     },

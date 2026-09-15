@@ -24,6 +24,7 @@ import {
   loadAppProfile,
 } from '@/lib/oauth';
 import { safeText } from '@/lib/operation-summary';
+import { accountKey, oauthAppProfileKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
 
@@ -65,13 +66,13 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const { selectedAccount, unlocked } = useAccounts();
 
   const { data: profile, isLoading } = useQuery({
-    queryKey: ['app-profile', req.clientId],
+    queryKey: oauthAppProfileKey(req.clientId ?? ''),
     queryFn: (): Promise<AppProfile | null> =>
       req.clientId ? loadAppProfile(req.clientId) : Promise.resolve(null),
     enabled: !!req.clientId,
   });
   const { data: account, refetch: refetchAccount } = useQuery({
-    queryKey: ['account', selectedAccount],
+    queryKey: accountKey(selectedAccount),
     queryFn: (): Promise<Account | null> =>
       selectedAccount ? getAccount(selectedAccount) : Promise.resolve(null),
     enabled: !!selectedAccount,

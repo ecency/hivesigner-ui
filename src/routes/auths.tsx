@@ -16,6 +16,7 @@ import {
 } from '@/components/ui';
 import { getKeys } from '@/lib/accounts';
 import { type Account, getAccount, type KeyRole } from '@/lib/hive';
+import { accountKey } from '@/lib/query-keys';
 import { useAccounts } from '@/lib/use-accounts';
 
 // View the selected account's authorities: the key/account auths on each role,
@@ -30,7 +31,7 @@ function Auths() {
   const { t } = useTranslation();
   const { selectedAccount } = useAccounts();
   const { data: account } = useQuery({
-    queryKey: ['account', selectedAccount],
+    queryKey: accountKey(selectedAccount),
     queryFn: (): Promise<Account | null> =>
       selectedAccount ? getAccount(selectedAccount) : Promise.resolve(null),
     enabled: !!selectedAccount,

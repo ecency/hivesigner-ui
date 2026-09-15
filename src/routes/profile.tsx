@@ -16,6 +16,7 @@ import {
 import { getKeys } from '@/lib/accounts';
 import { type Account, getAccount } from '@/lib/hive';
 import { isValidRedirectUri } from '@/lib/oauth';
+import { accountKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
 
@@ -96,7 +97,7 @@ function Profile() {
   const { t } = useTranslation();
   const { selectedAccount, unlocked } = useAccounts();
   const { data: account } = useQuery({
-    queryKey: ['account', selectedAccount],
+    queryKey: accountKey(selectedAccount),
     queryFn: (): Promise<Account | null> =>
       selectedAccount ? getAccount(selectedAccount) : Promise.resolve(null),
     enabled: !!selectedAccount,

@@ -1,5 +1,16 @@
-import { describe, expect, it } from 'vitest';
-import { parseWebsite } from './AppProfile';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import '../i18n';
+
+const profile = vi.hoisted(() => ({ current: null as unknown }));
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: () => ({ data: profile.current }),
+}));
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({ children }: { children: unknown }) => children,
+}));
+
+import { AppProfile, parseWebsite } from './AppProfile';
 
 // The website comes out of the app account's own posting_json_metadata, so it
 // is attacker-controlled text that ends up in an href on the screen that hands
@@ -81,5 +92,33 @@ describe('parseWebsite', () => {
   it('reports the real host for a userinfo trick', () => {
     const r = parseWebsite('https://ecency.com@evil.example/');
     expect(r?.host).toBe('evil.example');
+  });
+});
+
+describe('AppProfile', () => {
+  const WARNING = /not verified by Hivesigner/i;
+
+  it('warns that the data is self-declared', () => {
+    profile.current = { username: 'ecency.app', name: 'Ecency' };
+    render(<AppProfile username="ecency.app" />);
+    expect(screen.getByText(WARNING)).toBeInTheDocument();
+  });
+
+  // An `about` on its own is still a claim, and it sits directly above the
+  // control that grants posting authority: "the official Hive wallet" with no
+  // warning was possible while the warning keyed off site/creator/name only.
+  it('warns for a profile that carries ONLY a description', () => {
+    profile.current = {
+      username: 'evil.app',
+      about: 'The official Hive wallet, endorsed by Hivesigner.',
+    };
+    render(<AppProfile username="evil.app" />);
+    expect(screen.getByText(WARNING)).toBeInTheDocument();
+  });
+
+  it('says nothing when the account published no profile at all', () => {
+    profile.current = { username: 'bare.app' };
+    render(<AppProfile username="bare.app" />);
+    expect(screen.queryByText(WARNING)).not.toBeInTheDocument();
   });
 });

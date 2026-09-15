@@ -4,6 +4,7 @@ import { Avatar } from '@/components/Avatar';
 import { card, link, mutedXs } from '@/components/ui';
 import { getProfiles } from '@/lib/hive';
 import { safeText } from '@/lib/operation-summary';
+import { directoryProfileKey } from '@/lib/query-keys';
 
 /**
  * The app's own published website, or null.
@@ -47,11 +48,12 @@ export function parseWebsite(
  */
 export function AppProfile({ username }: { username: string }) {
   const { t } = useTranslation();
-  // Keyed on the single username, and the directory SEEDS this same key from
-  // its batch (see apps.tsx). Keying it on a comma-joined batch instead meant
-  // opening an app the list had already loaded fetched it a second time.
+  // The DIRECTORY profile, which is a different shape from the one the OAuth
+  // consent screen caches for the same account - sharing a key between them
+  // crashed consent (see lib/query-keys.ts). The directory seeds this same key
+  // from its batch, so opening an app the list already loaded does not refetch.
   const { data: profile } = useQuery({
-    queryKey: ['app-profile', username],
+    queryKey: directoryProfileKey(username),
     queryFn: async () => (await getProfiles([username]))[username] ?? null,
     staleTime: 10 * 60_000,
   });
@@ -103,11 +105,11 @@ export function AppProfile({ username }: { username: string }) {
         </div>
       )}
 
-      {(site || creator || name) && (
-        // EVERY field above is the app account's own claim, not just the
-        // website: review pointed out that naming a trusted account as
-        // "Creator" is free, and this card sits immediately above the control
-        // that hands over posting authority. One line covering all of it.
+      {(site || creator || name || about) && (
+        // EVERY field above is the app account's own claim, and `about` is part
+        // of that: listing only site/creator/name meant a profile carrying
+        // nothing but a description - "the official Hive wallet", say - showed
+        // it directly above the grant control with no warning at all.
         <p className={mutedXs}>{t('apps.self_declared')}</p>
       )}
     </div>

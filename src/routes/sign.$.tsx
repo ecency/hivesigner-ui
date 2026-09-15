@@ -23,6 +23,7 @@ import {
   summarizeOperation,
 } from '@/lib/operation-summary';
 import { parseSignRequest } from '@/lib/parse-sign-request';
+import { vestsToSpKey } from '@/lib/query-keys';
 import {
   type BroadcastOutcome,
   broadcastOperations,
@@ -43,7 +44,7 @@ export const Route = createFileRoute('/sign/$')({
 
 function useVestsToSp(): { rate: number; ready: boolean } {
   const { data, isSuccess } = useQuery({
-    queryKey: ['vests-to-sp'],
+    queryKey: vestsToSpKey(),
     queryFn: getVestsToSp,
     staleTime: 60_000,
   });
