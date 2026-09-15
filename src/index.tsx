@@ -4,13 +4,19 @@ import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import './globals.css';
 import './i18n';
-import { autoUnlockPlaintext } from './lib/accounts';
+import { autoUnlockPlaintext, migrateLegacyKeychain } from './lib/accounts';
 import { parseSearch, stringifySearch } from './lib/search';
 import { initErrorReporting } from './lib/sentry';
 import { routeTree } from './routeTree.gen';
 
 // Before anything else, so a failure during startup is still reported.
 initErrorReporting();
+
+// Accounts saved before April 2021 live under the original `keychain` key. The
+// Nuxt plugin that moved them into `vuex__accounts` went with the Nuxt app, so
+// this carries them over instead. MUST run before autoUnlockPlaintext, which
+// only looks at the new key.
+migrateLegacyKeychain();
 
 // Plaintext (no-passcode) accounts carry no security by staying locked; load
 // their keys at startup so signing works after a reload. Encrypted accounts

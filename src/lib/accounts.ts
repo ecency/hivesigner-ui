@@ -269,6 +269,78 @@ export function lockAccount(username: string): void {
  * a reload gives no security and just breaks signing; the app calls this at
  * startup. Encrypted accounts are untouched (they need their passcode).
  */
+/**
+ * Import accounts still held under the ORIGINAL `keychain` localStorage key.
+ *
+ * Before April 2021 the app stored `{ "<username>": "<keystore blob>" }` there,
+ * and a Nuxt plugin (plugins/transform-old-keychain.ts) moved them into
+ * `vuex__accounts` on every page load. Deleting the Nuxt app deletes that
+ * plugin, so anyone who saved keys before that date and has not opened the site
+ * since would arrive at an empty account list with no way back: those keys are
+ * the only copy on that device.
+ *
+ * Runs before autoUnlockPlaintext so a migrated plaintext account is usable in
+ * the same startup. Two deliberate differences from the plugin it replaces:
+ *
+ * - an account already in `vuex__accounts` is NOT overwritten, so a stale
+ *   legacy blob cannot replace a newer keystore;
+ * - the legacy key is removed only once the new state has actually reached
+ *   storage. The old plugin deleted it unconditionally, which in a private
+ *   window or with storage full would have destroyed the only copy.
+ */
+export function migrateLegacyKeychain(): boolean {
+  const LEGACY_KEY = 'keychain';
+  let raw: string | null = null;
+  try {
+    raw = localStorage.getItem(LEGACY_KEY);
+  } catch {
+    return false;
+  }
+  if (!raw) return false;
+
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return false;
+    }
+    const state = readPersisted();
+    let added = false;
+    for (const [username, password] of Object.entries(
+      parsed as Record<string, unknown>,
+    )) {
+      if (typeof password !== 'string' || !password) continue;
+      if (state.accountsKeychains[username]) continue;
+      state.accountsKeychains[username] = { password };
+      added = true;
+    }
+    if (!added) {
+      // Nothing to carry over (already migrated, or every entry unusable):
+      // drop the legacy key so this does not run again.
+      try {
+        localStorage.removeItem(LEGACY_KEY);
+      } catch {
+        // best effort
+      }
+      return false;
+    }
+    if (!state.selectedAccount) {
+      state.selectedAccount = Object.keys(state.accountsKeychains)[0] ?? '';
+    }
+    if (!writePersisted(state)) return false;
+    try {
+      localStorage.removeItem(LEGACY_KEY);
+    } catch {
+      // The accounts are safely in the new key; a leftover legacy key is
+      // harmless, and the next run will find nothing new to add.
+    }
+    emit();
+    return true;
+  } catch {
+    // Unparsable legacy data: leave it alone rather than destroy it.
+    return false;
+  }
+}
+
 export async function autoUnlockPlaintext(): Promise<void> {
   const { accountsKeychains } = readPersisted();
   let changed = false;
