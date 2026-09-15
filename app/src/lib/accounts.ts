@@ -56,12 +56,15 @@ function readPersisted(): PersistedState {
   }
 }
 
-function writePersisted(state: PersistedState): void {
+/** True when the state actually reached storage. */
+function writePersisted(state: PersistedState): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return true;
   } catch {
     // A private window or blocked storage: the session still works from
     // keyCache; it just will not persist. Never throw from the store.
+    return false;
   }
 }
 
@@ -237,18 +240,21 @@ export function selectAccount(username: string): void {
   emit();
 }
 
-export function removeAccount(username: string): void {
+export function removeAccount(username: string): boolean {
   const state = readPersisted();
   delete state.accountsKeychains[username];
   if (state.selectedAccount === username) {
     state.selectedAccount = Object.keys(state.accountsKeychains)[0] ?? '';
   }
-  writePersisted(state);
+  const stored = writePersisted(state);
   keyCache.delete(username);
   if (sessionSelected === username) {
     sessionSelected = state.selectedAccount || null;
   }
   emit();
+  // False means the record is gone from this session but still on disk, so it
+  // returns on reload. The caller must say so rather than report success.
+  return stored;
 }
 
 /** Lock an account (drop its in-memory keys) without removing it. */

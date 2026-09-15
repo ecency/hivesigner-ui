@@ -269,7 +269,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {!selectedAccount ? (
-          <Link to="/import" style={btn(true)}>
+          <Link
+            to="/import"
+            search={{ next: window.location.pathname + window.location.search }}
+            style={btn(true)}
+          >
             {t('common.continue')}
           </Link>
         ) : !isUnlocked ? (
@@ -283,7 +287,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             {t('accounts.unlock')} @{selectedAccount}
           </Link>
         ) : !signingKey ? (
-          <Link to="/import" style={btn(true)}>
+          <Link
+            to="/import"
+            search={{ next: window.location.pathname + window.location.search }}
+            style={btn(true)}
+          >
             {t('login.need_import', { authority })}
           </Link>
         ) : postingScope && !accountLoaded ? (
@@ -297,6 +305,12 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           </button>
         ) : (
           <>
+            {/* Name the account being authorized. Without it a user with several
+                accounts cannot see WHICH account's token they are issuing, which
+                is what made a wrong selected account silent. */}
+            <div style={{ fontSize: 12.5, color: '#59636e' }}>
+              Authorizing as <b>@{selectedAccount}</b>
+            </div>
             {grantNeeded && (
               <div style={{ fontSize: 12.5, color: '#7a5300' }}>
                 First-time authorization: this adds <b>@{req.clientId}</b> to

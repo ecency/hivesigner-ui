@@ -430,3 +430,24 @@ describe('authority resolution', () => {
     ).toBe('owner');
   });
 });
+
+describe('sanitising the label and actor paths (not just values)', () => {
+  it('strips bidi controls from a JSON KEY used as a row label', () => {
+    // JSON.stringify does NOT escape U+202E, so a hostile custom_json key used
+    // to reach the label and reorder the text around it.
+    const json = JSON.stringify({ 'a‮b': 'x' });
+    const rows = operationFields(['custom_json', { id: 'x', json }]);
+    expect(rows.every((r) => !r.label.includes('‮'))).toBe(true);
+    expect(rows.some((r) => r.label.includes('�'))).toBe(true);
+  });
+
+  it('sanitises the acting account, so an invisible name cannot hide', () => {
+    // A zero-width char both rendered invisibly in the "acts as" alert and
+    // defeated the "differs from the selected account" comparison.
+    const actors = operationActors(['transfer', { from: 'alice​' }]);
+    expect(actors[0]).not.toContain('​');
+    expect(actors[0]).toBe('alice�');
+    const rows = operationFields(['transfer', { from: 'alice​' }]);
+    expect(rows.find((r) => r.label === 'From')?.value).toBe('@alice�');
+  });
+});

@@ -206,7 +206,12 @@ function describeAuthority(value: unknown): string {
 /** A JSON path segment, quoted when it is not a plain identifier so two
  * distinct paths (`a.b` nested vs a literal `"a.b"` key) never render alike. */
 function segment(key: string): string {
-  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(key) ? key : JSON.stringify(key);
+  // safeText as well as quoting: JSON.stringify does NOT escape bidi controls,
+  // so a custom_json KEY containing U+202E would reach the row label and reorder
+  // the text the user reads.
+  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(key)
+    ? key
+    : safeText(JSON.stringify(key));
 }
 
 /**
@@ -276,7 +281,10 @@ export function operationActors(op: Operation): string[] {
   const out: string[] = [];
   for (const [field, spec] of Object.entries(OPERATIONS[name]?.schema ?? {})) {
     if (spec.defaultValue !== '__signer') continue;
-    const v = str(p[field]);
+    // safeText here too: this value is rendered in the foreign-actor alert AND
+    // compared against the selected account, so `alice\u200b` would otherwise
+    // both defeat the comparison and render as an invisible difference.
+    const v = safeText(str(p[field]));
     if (v) out.push(v);
   }
   // custom_json has no schema signer slot; its actor is whoever it requires.
@@ -285,7 +293,7 @@ export function operationActors(op: Operation): string[] {
       const list = p[key];
       if (Array.isArray(list))
         for (const a of list) {
-          const v = str(a);
+          const v = safeText(str(a));
           if (v) out.push(v);
         }
     }

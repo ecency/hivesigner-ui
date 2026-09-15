@@ -22,6 +22,7 @@ const h = vi.hoisted(() => ({
   releaseRefetch: undefined as undefined | (() => void),
   refetchAccount: vi.fn(),
   hasGrant: vi.fn(),
+  getAccount: vi.fn(),
   broadcastOperations: vi.fn(),
   assign: vi.fn(),
 }));
@@ -42,7 +43,7 @@ vi.mock('@tanstack/react-query', () => ({
 }));
 vi.mock('@/lib/use-accounts', () => ({ useAccounts: () => h.accounts }));
 vi.mock('@/lib/accounts', () => ({ getKeys: () => h.keys }));
-vi.mock('@/lib/hive', () => ({ getAccount: vi.fn() }));
+vi.mock('@/lib/hive', () => ({ getAccount: h.getAccount }));
 vi.mock('@/lib/grant', () => ({
   hasGrant: h.hasGrant,
   buildGrantOperation: () => ['account_update', { account: 'alice' }],
@@ -104,11 +105,37 @@ describe('oauth consent screen', () => {
     expect(h.assign).not.toHaveBeenCalled();
   });
 
-  it('grants and issues a token when the user stays on the screen', async () => {
+  it('grants, CONFIRMS on chain, then issues the token', async () => {
+    // The previous version asserted only that broadcastOperations ran, while
+    // getAccount was a bare mock so waitForGrant could never succeed and no
+    // token was ever issued: it passed with the grant-before-token ordering
+    // broken. Model the chain catching up instead, and assert the redirect.
+    let broadcasted = false;
+    h.broadcastOperations.mockImplementation(async () => {
+      broadcasted = true;
+      return { id: 'tx1' };
+    });
+    // The grant appears only after the broadcast, which is the real sequence.
+    h.hasGrant.mockImplementation(() => broadcasted);
+    h.getAccount.mockResolvedValue({
+      name: 'alice',
+      posting: { account_auths: [], key_auths: [] },
+    });
+
     const user = userEvent.setup();
     render(<Authorize />);
     await user.click(screen.getByRole('button', { name: /authorize/i }));
     await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalled());
+    // waitForGrant polls every 2s, so allow one interval.
+    await waitFor(
+      () =>
+        expect(h.assign).toHaveBeenCalledWith(
+          'https://app.example/cb?access_token=TOKEN',
+        ),
+      { timeout: 6000 },
+    );
+    // Exactly one grant broadcast: the poll must not re-broadcast.
+    expect(h.broadcastOperations).toHaveBeenCalledTimes(1);
   });
 
   it('still issues a token under Strict Mode (the latch resets on setup)', async () => {

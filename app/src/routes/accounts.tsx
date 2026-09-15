@@ -186,7 +186,14 @@ function AccountRow({
                 `Remove @${username} from this device? Its keys here will be deleted.`,
               )
             ) {
-              removeAccount(username);
+              // The confirm promised the keys would be deleted. If the write did
+              // not reach storage the record comes back on reload, so say so
+              // instead of silently leaving a false impression.
+              if (!removeAccount(username)) {
+                setError(
+                  'Removed for this session only: storage is unavailable, so this account will return when you reload.',
+                );
+              }
             }
           }}
           style={{

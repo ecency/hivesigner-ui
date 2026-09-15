@@ -188,3 +188,32 @@ describe('parseSignRequest — /sign/tx preserved envelope', () => {
     expect(opReq?.preservedTx).toBeUndefined();
   });
 });
+
+describe('non-finite numbers are refused, not signed as 0', () => {
+  it('rejects a vote whose weight does not parse', () => {
+    // parseInt('abc') is NaN and DataView.setInt16(NaN) writes 0, so this used to
+    // render "Upvote ... NaN%" and sign weight 0, which REMOVES an existing vote.
+    expect(
+      parseSignRequest(
+        'vote',
+        { author: 'a', permlink: 'p', weight: 'abc' },
+        1,
+      ),
+    ).toBeNull();
+  });
+
+  it('still accepts a well-formed weight, including 0', () => {
+    const up = parseSignRequest(
+      'vote',
+      { author: 'a', permlink: 'p', weight: '10000' },
+      1,
+    );
+    expect(up?.operations[0][1].weight).toBe(10000);
+    const unvote = parseSignRequest(
+      'vote',
+      { author: 'a', permlink: 'p', weight: '0' },
+      1,
+    );
+    expect(unvote?.operations[0][1].weight).toBe(0);
+  });
+});

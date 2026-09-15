@@ -14,8 +14,13 @@ const { navigate, getAccount } = vi.hoisted(() => ({
   getAccount: vi.fn(),
 }));
 
+const rs = vi.hoisted(() => ({ search: {} as { next?: string } }));
+
 vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: () => (opts: unknown) => opts,
+  createFileRoute: () => (opts: unknown) => ({
+    ...(opts as object),
+    useSearch: () => rs.search,
+  }),
   useNavigate: () => navigate,
 }));
 
@@ -48,6 +53,7 @@ function account() {
 }
 
 beforeEach(() => {
+  rs.search = {};
   localStorage.clear();
   navigate.mockClear();
   getAccount.mockReset();
@@ -115,5 +121,44 @@ describe('import screen', () => {
     await user.click(screen.getByRole('button'));
 
     expect(await screen.findByRole('alert')).toBeInTheDocument();
+  });
+});
+
+describe('import carries the flow it was sent from', () => {
+  async function fillAndSubmit() {
+    getAccount.mockResolvedValue(account());
+    const user = userEvent.setup();
+    render(<Import />);
+    await user.type(
+      screen.getByRole('textbox', { name: /username/i }),
+      'alice',
+    );
+    await user.type(
+      document.querySelector('input[name="password"]')!,
+      POSTING_WIF,
+    );
+    await user.click(screen.getByRole('checkbox'));
+    await user.click(screen.getByRole('button'));
+  }
+
+  it('returns to ?next= after a successful import, not /accounts', async () => {
+    // A first-time user arriving from an app consent screen would otherwise lose
+    // the authorization request and the app would have to start over.
+    rs.search = { next: '/oauth2/authorize?client_id=theapp' };
+    await fillAndSubmit();
+    await waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith({
+        to: '/oauth2/authorize',
+        search: { client_id: 'theapp' },
+      }),
+    );
+  });
+
+  it('refuses an off-site next and falls back to /accounts', async () => {
+    rs.search = { next: 'https://evil.example/x' };
+    await fillAndSubmit();
+    await waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith({ to: '/accounts' }),
+    );
   });
 });

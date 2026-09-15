@@ -313,7 +313,14 @@ function Sign() {
                 key={`${f.label}-${fi}`}
                 style={{ fontSize: 12.5, display: 'flex', gap: 6 }}
               >
-                <span style={{ color: '#59636e', flex: 'none' }}>
+                {/* isolate the LABEL too: a JSON key can carry bidi controls. */}
+                <span
+                  style={{
+                    color: '#59636e',
+                    flex: 'none',
+                    unicodeBidi: 'isolate',
+                  }}
+                >
                   {f.label}:
                 </span>
                 {/* isolate: a value cannot reorder the text around it. */}

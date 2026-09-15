@@ -149,11 +149,16 @@ export function parseSignRequest(
         ) {
           hpDependent = true;
         }
-        processed[key] = processValue(
-          schema.schema[key],
-          payload[key],
-          vestsToSP,
-        );
+        const value = processValue(schema.schema[key], payload[key], vestsToSP);
+        // Refuse a non-finite number instead of passing it on. parseInt('abc')
+        // is NaN, and the serializer's DataView.setInt16(NaN) writes 0: a
+        // `/sign/vote?weight=abc` displayed as "Upvote ... NaN%" would have been
+        // signed as weight 0, which REMOVES an existing vote. Same for
+        // percent_hbd, orderid, recurrence and every other int field.
+        if (typeof value === 'number' && !Number.isFinite(value)) {
+          throw new Error(`Invalid numeric value for '${key}'`);
+        }
+        processed[key] = value;
       }
       return [name, processed];
     });

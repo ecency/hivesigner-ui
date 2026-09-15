@@ -100,13 +100,11 @@ export function unpackLoginRequest(query: Record<string, string>): {
   query: Record<string, string>;
   pathClientId?: string;
 } {
-  const redirect = query.redirect;
-  if (!redirect?.includes('/login-request')) return { query };
+  const url = loginRequestUrl(query.redirect);
+  if (!url) return { query };
   try {
-    const url = new URL(redirect, window.location.origin);
     const segments = url.pathname.split('/').filter(Boolean);
-    const at = segments.indexOf('login-request');
-    const pathClientId = at >= 0 ? segments[at + 1] : undefined;
+    const pathClientId = segments[1];
     const nested: Record<string, string> = {};
     url.searchParams.forEach((value, key) => {
       nested[key] = value;
@@ -120,6 +118,25 @@ export function unpackLoginRequest(query: Record<string, string>): {
 }
 
 /**
+ * The nested /login-request URL a `redirect` points at, or null.
+ *
+ * Matched on the resolved PATHNAME, not with `includes`: a substring test also
+ * fired for `?redirect=/profile?ref=/login-request`, which is an ordinary local
+ * redirect, and then discarded the user's destination.
+ */
+function loginRequestUrl(redirect: string | undefined): URL | null {
+  if (!redirect) return null;
+  try {
+    const url = new URL(redirect, window.location.origin);
+    if (url.origin !== window.location.origin) return null;
+    const segments = url.pathname.split('/').filter(Boolean);
+    return segments[0] === 'login-request' ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Whether a legacy /login request is the LOCAL login-and-return flow rather than
  * app consent: no client id and no absolute callback. A bare /login is local too
  * (login.vue sent it to '/'), and a `redirect` pointing at /login-request is the
@@ -129,10 +146,7 @@ export function isLocalLoginRequest(query: Record<string, string>): boolean {
   if (query.client_id || query.clientId) return false;
   if (query.redirect_uri) return false;
   const redirect = query.redirect;
-  if (
-    redirect &&
-    (isAbsoluteHttpUrl(redirect) || redirect.includes('/login-request'))
-  )
+  if (redirect && (isAbsoluteHttpUrl(redirect) || loginRequestUrl(redirect)))
     return false;
   return true;
 }
@@ -252,15 +266,12 @@ export function buildRedirectUrl(
     params.set('expires_in', '604800');
   }
   params.set('username', username);
-  try {
-    const url = new URL(callback);
-    for (const [key, value] of params) url.searchParams.set(key, value);
-    return url.toString();
-  } catch {
-    // Callbacks reaching here are already validated as URLs; keep a separator
-    // that at least does not produce a second '?' if one ever is not.
-    return `${callback}${callback.includes('?') ? '&' : '?'}${params.toString()}`;
-  }
+  // Append to the callback's own STRING rather than round-tripping it through
+  // URL: searchParams re-serialises the app's existing query (`q=%20x` becomes
+  // `q=+x`, a valueless `flag` becomes `flag=`), and an app that byte-compares
+  // its own callback would see a different URL than it registered. Choosing the
+  // separator still fixes the second '?' this used to emit.
+  return `${callback}${callback.includes('?') ? '&' : '?'}${params.toString()}`;
 }
 
 export type { Account };

@@ -3,6 +3,8 @@ import { type CSSProperties, type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { addAccount } from '@/lib/accounts';
 import { getAccount, resolveCredential } from '@/lib/hive';
+import { resolveInternalPath } from '@/lib/internal-path';
+import { parseSearch } from '@/lib/search';
 import { useAccounts } from '@/lib/use-accounts';
 
 // Add an account: paste a Hive key or master password (validated on-chain), and
@@ -11,6 +13,9 @@ import { useAccounts } from '@/lib/use-accounts';
 // (sign instantly) per the reviewed mockups.
 export const Route = createFileRoute('/import')({
   component: Import,
+  // `next` is OPTIONAL so it stays absent from every other <Link to="/import">.
+  validateSearch: (search: Record<string, unknown>): { next?: string } =>
+    typeof search.next === 'string' ? { next: search.next } : {},
 });
 
 const USERNAME_RE = /^[a-z][a-z0-9.-]{2,15}$/;
@@ -29,6 +34,7 @@ function Import() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { usernames } = useAccounts();
+  const { next } = Route.useSearch();
 
   const [username, setUsername] = useState('');
   const [secret, setSecret] = useState('');
@@ -67,7 +73,18 @@ function Import() {
         return;
       }
       await addAccount(name, keys, usePasscode ? passcode : undefined);
-      navigate({ to: '/accounts' });
+      // Return to the flow that sent the user here (an OAuth consent request
+      // would otherwise be lost and the app would have to start over), falling
+      // back to the accounts screen.
+      const back = resolveInternalPath(next);
+      navigate(
+        back
+          ? ({
+              to: back.pathname,
+              search: back.search ? parseSearch(back.search) : {},
+            } as never)
+          : { to: '/accounts' },
+      );
     } catch (e) {
       // Surface keystore/accounts messages verbatim: a wrong passcode on an
       // already-protected account now throws here, and telling the user to "try

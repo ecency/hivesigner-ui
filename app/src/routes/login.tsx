@@ -74,7 +74,11 @@ function LocalLogin({ next }: { next?: string }) {
         Unlock an account to continue to <b>{target}</b>.
       </p>
       {usernames.length === 0 ? (
-        <Link to="/import" style={{ fontSize: 14 }}>
+        <Link
+          to="/import"
+          search={{ next: window.location.pathname + window.location.search }}
+          style={{ fontSize: 14 }}
+        >
           {t('accounts.add_another')}
         </Link>
       ) : (
