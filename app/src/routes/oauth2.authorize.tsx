@@ -3,6 +3,8 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { type CSSProperties, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getKeys } from '@/lib/accounts';
+import { buildGrantOperation, hasGrant } from '@/lib/grant';
+import { type Account, getAccount } from '@/lib/hive';
 import {
   type AppProfile,
   authorityForScope,
@@ -12,11 +14,13 @@ import {
   loadAppProfile,
   normalizeAuthRequest,
 } from '@/lib/oauth';
+import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
 
 // The OAuth consent screen (#106 pain #3): one screen naming the app and its
-// scope in plain words, issuing a token and redirecting on approval. The
-// posting-authority grant (authorize/revoke) is a separate flow.
+// scope in plain words. For a posting-scope request it first confirms (and, if
+// missing, establishes with the active key) the app's on-chain posting authority
+// before issuing the token - without the grant the token cannot broadcast (#95).
 export const Route = createFileRoute('/oauth2/authorize')({
   component: Authorize,
   validateSearch: (s: Record<string, unknown>) => s as Record<string, string>,
@@ -41,8 +45,15 @@ function Authorize() {
       req.clientId ? loadAppProfile(req.clientId) : Promise.resolve(null),
     enabled: !!req.clientId,
   });
+  const { data: account, refetch: refetchAccount } = useQuery({
+    queryKey: ['account', selectedAccount],
+    queryFn: (): Promise<Account | null> =>
+      selectedAccount ? getAccount(selectedAccount) : Promise.resolve(null),
+    enabled: !!selectedAccount,
+  });
 
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const authority = authorityForScope(req.scope);
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
@@ -51,7 +62,14 @@ function Authorize() {
   const callback = req.redirectUri ?? '';
   const registered = profile ? isRegisteredRedirect(profile, callback) : false;
 
-  function approve() {
+  // A posting-scope request needs the app to hold posting authority on-chain.
+  const grantNeeded =
+    req.scope !== 'login' &&
+    !!req.clientId &&
+    !!account &&
+    !hasGrant(account.posting, req.clientId);
+
+  async function approve() {
     setError(null);
     if (!selectedAccount || !signingKey) return;
     // Enforce redirect_uri registration (the Nuxt app does not; we do).
@@ -59,10 +77,29 @@ function Authorize() {
       setError(t('errors.unknown'));
       return;
     }
-    const token = buildAuthToken(req, selectedAccount, signingKey, authority);
-    window.location.assign(
-      buildRedirectUrl(callback, token, req, selectedAccount),
-    );
+    setBusy(true);
+    try {
+      // Establish the on-chain grant first when missing (needs the active key),
+      // so the token we issue can actually broadcast.
+      if (grantNeeded && account && req.clientId) {
+        const activeKey = keys?.active;
+        if (!activeKey) {
+          setError(t('login.need_import', { authority: 'active' }));
+          return;
+        }
+        const op = buildGrantOperation(account, req.clientId);
+        if (op) await broadcastOperations([op], activeKey, account.name);
+        await refetchAccount();
+      }
+      const token = buildAuthToken(req, selectedAccount, signingKey, authority);
+      window.location.assign(
+        buildRedirectUrl(callback, token, req, selectedAccount),
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (isLoading) {
@@ -161,14 +198,22 @@ function Authorize() {
             {t('login.need_import', { authority })}
           </Link>
         ) : (
-          <button
-            type="button"
-            onClick={approve}
-            disabled={unregistered}
-            style={{ ...btn(!unregistered), border: 'none' }}
-          >
-            {t('authorize.authorize')}
-          </button>
+          <>
+            {grantNeeded && (
+              <div style={{ fontSize: 12.5, color: '#7a5300' }}>
+                First-time authorization: this grants posting access on-chain
+                and needs your active key once.
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={approve}
+              disabled={unregistered || busy}
+              style={{ ...btn(!unregistered && !busy), border: 'none' }}
+            >
+              {busy ? '…' : t('authorize.authorize')}
+            </button>
+          </>
         )}
         <Link
           to="/accounts"

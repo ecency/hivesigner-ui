@@ -43,12 +43,24 @@ function AccountRow({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  function activate() {
-    if (encrypted && !unlocked) {
+  async function activate() {
+    if (unlocked) {
+      selectAccount(username);
+      return;
+    }
+    if (encrypted) {
+      // Needs a passcode: open the inline form.
       setUnlocking(true);
       return;
     }
-    selectAccount(username);
+    // Plaintext but not yet in memory (e.g. just after a reload): load and select.
+    setBusy(true);
+    try {
+      await unlockAccount(username);
+      selectAccount(username);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function submitUnlock() {
@@ -113,22 +125,21 @@ function AccountRow({
             {encrypted ? (unlocked ? 'Unlocked' : 'Protected') : 'No passcode'}
           </div>
         </div>
-        {!current && (
+        {(!current || !unlocked) && (
           <button
             type="button"
             onClick={activate}
+            disabled={busy}
             style={{
               border: 'none',
               background: 'none',
               color: '#b90f2e',
               fontWeight: 600,
               fontSize: 13,
-              cursor: 'pointer',
+              cursor: busy ? 'not-allowed' : 'pointer',
             }}
           >
-            {encrypted && !unlocked
-              ? t('accounts.unlock')
-              : t('login.switch_an_account')}
+            {!unlocked ? t('accounts.unlock') : t('login.switch_an_account')}
           </button>
         )}
         <button

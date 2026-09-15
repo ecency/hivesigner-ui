@@ -19,6 +19,12 @@ export interface SignRequest {
   callback?: string;
   noBroadcast: boolean;
   signer?: string;
+  /**
+   * True when an amount field held an HP value, so the rendered/broadcast VESTS
+   * depends on the live SP-per-VEST rate. The UI must not approve such a request
+   * until a real rate has loaded (a fallback rate would submit the wrong VESTS).
+   */
+  hpDependent: boolean;
 }
 
 /** camelCase / kebab-case operation name to snake_case (transferToVesting -> transfer_to_vesting). */
@@ -94,11 +100,19 @@ export function parseSignRequest(
   if (!decoded || !Array.isArray(rawOps) || rawOps.length === 0) return null;
 
   try {
+    let hpDependent = false;
     const operations: Operation[] = rawOps.map(([name, payload]) => {
       const schema = OPERATIONS[name];
       if (!schema) throw new Error(`Unknown operation '${name}'`);
       const processed: Record<string, unknown> = {};
       for (const key of Object.keys(schema.schema)) {
+        // Detect an HP amount on the RAW value (processValue converts it away).
+        if (
+          schema.schema[key].type === 'amount' &&
+          String(payload[key] ?? '').includes('HP')
+        ) {
+          hpDependent = true;
+        }
         processed[key] = processValue(
           schema.schema[key],
           payload[key],
@@ -112,6 +126,7 @@ export function parseSignRequest(
       callback: decoded.params.callback,
       noBroadcast: decoded.params.no_broadcast === true,
       signer: decoded.params.signer,
+      hpDependent,
     };
   } catch {
     return null;

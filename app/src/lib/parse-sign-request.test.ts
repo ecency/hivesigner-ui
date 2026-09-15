@@ -69,6 +69,16 @@ describe('parseSignRequest — legacy /sign/<op>?params', () => {
     expect(req?.operations[0][1].weight).toBe(0);
   });
 
+  it('flags an HP amount as rate-dependent, and a HIVE amount as not', () => {
+    expect(
+      parseSignRequest('transfer', { to: 'b', amount: '1 HP' }, 2)?.hpDependent,
+    ).toBe(true);
+    expect(
+      parseSignRequest('transfer', { to: 'b', amount: '1 HIVE' }, 2)
+        ?.hpDependent,
+    ).toBe(false);
+  });
+
   it('keeps a custom_json json payload as a string', () => {
     const req = parseSignRequest(
       'custom_json',

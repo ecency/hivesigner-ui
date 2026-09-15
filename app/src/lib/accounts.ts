@@ -124,12 +124,15 @@ export async function addAccount(
   keys: Keys,
   passcode?: string,
 ): Promise<void> {
-  const field = await writeKeys(keys, passcode);
+  // Merge with any keys already unlocked for this account, so importing a second
+  // key (e.g. active after posting) adds to the set rather than replacing it.
+  const merged: Keys = { ...(keyCache.get(username) ?? {}), ...keys };
+  const field = await writeKeys(merged, passcode);
   const state = readPersisted();
   state.accountsKeychains[username] = { password: field };
   if (!state.selectedAccount) state.selectedAccount = username;
   writePersisted(state);
-  keyCache.set(username, keys);
+  keyCache.set(username, merged);
   emit();
 }
 
@@ -183,6 +186,27 @@ export function removeAccount(username: string): void {
 export function lockAccount(username: string): void {
   keyCache.delete(username);
   emit();
+}
+
+/**
+ * Load into memory every plaintext (no-passcode) account that is not already
+ * unlocked. Plaintext accounts have no passcode, so keeping them "locked" after
+ * a reload gives no security and just breaks signing; the app calls this at
+ * startup. Encrypted accounts are untouched (they need their passcode).
+ */
+export async function autoUnlockPlaintext(): Promise<void> {
+  const { accountsKeychains } = readPersisted();
+  let changed = false;
+  for (const [username, { password }] of Object.entries(accountsKeychains)) {
+    if (keyCache.has(username) || fieldIsEncrypted(password)) continue;
+    try {
+      keyCache.set(username, await readKeys(password));
+      changed = true;
+    } catch {
+      // A corrupt plaintext blob: skip it rather than break startup.
+    }
+  }
+  if (changed) emit();
 }
 
 /** Test seam: clear in-memory keys and the cached snapshot (not storage). */

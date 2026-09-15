@@ -4,8 +4,14 @@ import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import './globals.css';
 import './i18n';
+import { autoUnlockPlaintext } from './lib/accounts';
 import { parseSearch, stringifySearch } from './lib/search';
 import { routeTree } from './routeTree.gen';
+
+// Plaintext (no-passcode) accounts carry no security by staying locked; load
+// their keys at startup so signing works after a reload. Encrypted accounts
+// still require their passcode.
+autoUnlockPlaintext();
 
 const router = createRouter({
   routeTree,

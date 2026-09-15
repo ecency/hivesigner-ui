@@ -7,7 +7,11 @@ import { getVestsToSp } from '@/lib/hive';
 import { resolveCallback } from '@/lib/hive-uri';
 import { requiredAuthority, summarizeOperation } from '@/lib/operation-summary';
 import { parseSignRequest } from '@/lib/parse-sign-request';
-import { type BroadcastOutcome, broadcastOperations } from '@/lib/sign-tx';
+import {
+  type BroadcastOutcome,
+  broadcastOperations,
+  signOperations,
+} from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
 
 // /sign/<op>?params, /sign/op|ops|tx/<b64>. Decode, schema-process, confirm,
@@ -20,13 +24,15 @@ export const Route = createFileRoute('/sign/$')({
     search as Record<string, string>,
 });
 
-function useVestsToSp(): number {
-  const { data } = useQuery({
+function useVestsToSp(): { rate: number; ready: boolean } {
+  const { data, isSuccess } = useQuery({
     queryKey: ['vests-to-sp'],
     queryFn: getVestsToSp,
     staleTime: 60_000,
   });
-  return data ?? 1;
+  // ready only once a real rate has actually loaded; until then callers must not
+  // treat the fallback (1) as a usable HP conversion rate.
+  return { rate: data ?? 1, ready: isSuccess };
 }
 
 function callbackHost(callback: string): string | null {
@@ -40,6 +46,7 @@ function callbackHost(callback: string): string | null {
 /** Fill the callback templates (or append ?id=) and send the browser there. */
 function redirectToCallback(callback: string, outcome: BroadcastOutcome): void {
   let url = resolveCallback(callback, {
+    sig: outcome.signature,
     id: outcome.id,
     block: outcome.blockNum?.toString(),
     txn: outcome.trxNum?.toString(),
@@ -81,7 +88,7 @@ function Sign() {
   const [outcome, setOutcome] = useState<BroadcastOutcome | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const request = parseSignRequest(_splat ?? '', search, vestsToSp);
+  const request = parseSignRequest(_splat ?? '', search, vestsToSp.rate);
 
   if (!request) {
     return (
@@ -107,16 +114,22 @@ function Sign() {
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
   const keys = selectedAccount ? getKeys(selectedAccount) : null;
   const signingKey = authority && keys ? keys[authority] : undefined;
+  // An HP amount needs the live SP-per-VEST rate; block approval until it loads
+  // so a fallback rate never signs the wrong VESTS amount.
+  const rateBlocked = request.hpDependent && !vestsToSp.ready;
 
   async function approve() {
-    if (!selectedAccount || !signingKey) return;
+    if (!selectedAccount || !signingKey || rateBlocked) return;
     setStatus('signing');
     try {
-      const result = await broadcastOperations(
-        request.operations,
-        signingKey,
-        selectedAccount,
-      );
+      // A no_broadcast request only wants a signature; never broadcast it.
+      const result = request.noBroadcast
+        ? await signOperations(request.operations, signingKey, selectedAccount)
+        : await broadcastOperations(
+            request.operations,
+            signingKey,
+            selectedAccount,
+          );
       setOutcome(result);
       setStatus('done');
       if (request.callback) redirectToCallback(request.callback, result);
@@ -137,18 +150,27 @@ function Sign() {
         }}
       >
         <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>
-          {t('sign.success_title')}
+          {request.noBroadcast ? t('sign.sign') : t('sign.success_title')}
         </h1>
-        <div style={{ ...card, fontSize: 14 }}>
-          {t('sign.transaction_id')}:{' '}
-          <a
-            href={`https://hivexplorer.com/tx/${outcome.id}`}
-            target="_blank"
-            rel="noopener"
-          >
-            {outcome.id.slice(0, 12)}
-          </a>
-        </div>
+        {request.noBroadcast ? (
+          <div style={{ ...card, fontSize: 13 }}>
+            {t('message_signing.signature')}:{' '}
+            <code style={{ wordBreak: 'break-all', fontSize: 11 }}>
+              {outcome.signature}
+            </code>
+          </div>
+        ) : (
+          <div style={{ ...card, fontSize: 14 }}>
+            {t('sign.transaction_id')}:{' '}
+            <a
+              href={`https://hivexplorer.com/tx/${outcome.id}`}
+              target="_blank"
+              rel="noopener"
+            >
+              {outcome.id.slice(0, 12)}
+            </a>
+          </div>
+        )}
       </section>
     );
   }
@@ -305,18 +327,25 @@ function Sign() {
             </Link>
           </>
         ) : (
-          <button
-            type="button"
-            onClick={approve}
-            disabled={status === 'signing'}
-            style={primaryBtn(status !== 'signing')}
-          >
-            {status === 'signing'
-              ? '…'
-              : request.noBroadcast
-                ? t('sign.sign')
-                : t('sign.approve')}
-          </button>
+          <>
+            {rateBlocked && (
+              <div style={{ fontSize: 13, color: '#7a5300' }}>
+                Loading the current HIVE Power rate…
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={approve}
+              disabled={status === 'signing' || rateBlocked}
+              style={primaryBtn(status !== 'signing' && !rateBlocked)}
+            >
+              {status === 'signing'
+                ? '…'
+                : request.noBroadcast
+                  ? t('sign.sign')
+                  : t('sign.approve')}
+            </button>
+          </>
         )}
       </div>
     </section>

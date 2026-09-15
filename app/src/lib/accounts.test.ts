@@ -3,6 +3,7 @@ import {
   _resetKeyCache,
   accountIsEncrypted,
   addAccount,
+  autoUnlockPlaintext,
   getKeys,
   getState,
   hasAccounts,
@@ -42,6 +43,36 @@ describe('adding and reading accounts', () => {
     await addAccount('bob', { active: '5Kactive' }, 'pass');
     const raw = localStorage.getItem('vuex__accounts') ?? '';
     expect(raw).not.toContain('5Kactive');
+  });
+
+  it('merges keys when a second key is imported for the same account', async () => {
+    await addAccount('alice', { posting: '5Kposting' }, 'pass');
+    // Import the active key later; posting must survive.
+    await addAccount('alice', { active: '5Kactive' }, 'pass');
+    expect(getKeys('alice')).toEqual({
+      posting: '5Kposting',
+      active: '5Kactive',
+    });
+    // And it persists: re-unlock reads both back.
+    _resetKeyCache();
+    expect(await unlockAccount('alice', 'pass')).toEqual({
+      posting: '5Kposting',
+      active: '5Kactive',
+    });
+  });
+});
+
+describe('autoUnlockPlaintext', () => {
+  it('loads plaintext accounts into memory but leaves encrypted ones locked', async () => {
+    await addAccount('plain', { posting: '5Kp' });
+    await addAccount('enc', { active: '5Ka' }, 'pass');
+    // Simulate a reload: memory cleared, storage intact.
+    _resetKeyCache();
+    expect(isUnlocked('plain')).toBe(false);
+    await autoUnlockPlaintext();
+    expect(isUnlocked('plain')).toBe(true);
+    expect(getKeys('plain')).toEqual({ posting: '5Kp' });
+    expect(isUnlocked('enc')).toBe(false); // still needs its passcode
   });
 });
 

@@ -12,30 +12,14 @@ describe('resolveSigner', () => {
     ]);
   });
 
-  it('replaces __signer in a transfer from-field, leaving other fields alone', () => {
+  it('replaces __signer in the from-field', () => {
     const ops: Operation[] = [
       [
         'transfer',
-        {
-          from: '__signer',
-          to: 'bob',
-          amount: '1.000 HIVE',
-          memo: 'to __signer? no',
-        },
+        { from: '__signer', to: 'bob', amount: '1.000 HIVE', memo: 'x' },
       ],
     ];
-    // Only an exact "__signer" string is replaced, not a substring inside another value.
-    expect(resolveSigner(ops, 'alice')).toEqual([
-      [
-        'transfer',
-        {
-          from: 'alice',
-          to: 'bob',
-          amount: '1.000 HIVE',
-          memo: 'to __signer? no',
-        },
-      ],
-    ]);
+    expect(resolveSigner(ops, 'alice')[0][1].from).toBe('alice');
   });
 
   it('recurses into nested arrays and objects', () => {
@@ -48,6 +32,19 @@ describe('resolveSigner', () => {
     expect(resolveSigner(ops, 'alice')[0][1].required_posting_auths).toEqual([
       'alice',
     ]);
+  });
+
+  it('replaces __signer EMBEDDED in a custom_json json string (follow op)', () => {
+    // A follow custom_json carries the follower inside the json STRING, not as a
+    // top-level field; an exact-match replace would leave it as __signer.
+    const json = JSON.stringify([
+      'follow',
+      { follower: '__signer', following: 'bob', what: ['blog'] },
+    ]);
+    const ops: Operation[] = [['custom_json', { id: 'follow', json }]];
+    const out = resolveSigner(ops, 'alice')[0][1].json as string;
+    expect(out).toContain('"follower":"alice"');
+    expect(out).not.toContain('__signer');
   });
 
   it('leaves operations without a placeholder unchanged', () => {

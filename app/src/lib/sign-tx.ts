@@ -9,11 +9,16 @@
 import { PrivateKey, Transaction } from '@ecency/sdk/hive';
 import type { Operation } from './hive-uri';
 
-const SIGNER = '__signer';
+const SIGNER = /__signer/g;
 
-/** Replace the `__signer` placeholder with `username` throughout a value. */
+/**
+ * Replace the `__signer` placeholder with `username` throughout a value. Matches
+ * hive-uri's resolver: it replaces every occurrence inside any string, not only
+ * an exact "__signer" value - a follow custom_json embeds it inside the `json`
+ * string (e.g. {"follower":"__signer",...}), which an exact-match would miss.
+ */
 function resolvePlaceholders(value: unknown, username: string): unknown {
-  if (typeof value === 'string') return value === SIGNER ? username : value;
+  if (typeof value === 'string') return value.replace(SIGNER, username);
   if (Array.isArray(value))
     return value.map((v) => resolvePlaceholders(v, username));
   if (value && typeof value === 'object') {
@@ -40,18 +45,16 @@ export interface BroadcastOutcome {
   id: string;
   blockNum?: number;
   trxNum?: number;
+  /** Present for a sign-only (no_broadcast) result. */
+  signature?: string;
 }
 
-/**
- * Build a transaction from the operations, sign it with `wif`, and broadcast it
- * through the SDK failover client. `username` resolves `__signer`. Throws the
- * node's error on rejection.
- */
-export async function broadcastOperations(
+/** Build a transaction from the operations and sign it (no broadcast). */
+async function buildSigned(
   operations: Operation[],
   wif: string,
   username: string,
-): Promise<BroadcastOutcome> {
+): Promise<Transaction> {
   const resolved = resolveSigner(operations, username);
   const tx = new Transaction();
   for (const [name, payload] of resolved) {
@@ -60,6 +63,33 @@ export async function broadcastOperations(
     await tx.addOperation(name as never, payload as never);
   }
   tx.sign(PrivateKey.fromString(wif));
+  return tx;
+}
+
+/**
+ * Sign the operations WITHOUT broadcasting (a no_broadcast / `nb` request): the
+ * caller asked only for a signature. Returns the tx id and the signature.
+ */
+export async function signOperations(
+  operations: Operation[],
+  wif: string,
+  username: string,
+): Promise<BroadcastOutcome> {
+  const tx = await buildSigned(operations, wif, username);
+  const signed = tx.transaction as { signatures?: string[] };
+  return { id: tx.digest().txId, signature: signed.signatures?.[0] };
+}
+
+/**
+ * Build, sign and broadcast the operations through the SDK failover client.
+ * `username` resolves `__signer`. Throws the node's error on rejection.
+ */
+export async function broadcastOperations(
+  operations: Operation[],
+  wif: string,
+  username: string,
+): Promise<BroadcastOutcome> {
+  const tx = await buildSigned(operations, wif, username);
   const result = (await tx.broadcast()) as {
     id?: string;
     tx_id?: string;
