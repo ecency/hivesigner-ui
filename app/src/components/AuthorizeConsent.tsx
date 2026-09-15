@@ -1,7 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  alertError,
+  alertWarn,
+  btnPrimary,
+  card,
+  mutedXs,
+  page,
+} from '@/components/ui';
 import { getKeys } from '@/lib/accounts';
 import { buildGrantOperation, hasGrant } from '@/lib/grant';
 import { type Account, getAccount } from '@/lib/hive';
@@ -26,13 +34,6 @@ import { useAccounts } from '@/lib/use-accounts';
 // their query is normalised into an AuthRequest. Keeping one implementation is
 // the point: the grant confirmation, the cancellation latch and the client_id
 // disclosure must not drift between the two entry points.
-
-const card: CSSProperties = {
-  background: '#fff',
-  border: '1px solid #d1d9e0',
-  borderRadius: 12,
-  padding: 16,
-};
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -173,7 +174,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   }
 
   if (isLoading) {
-    return <section style={{ padding: 20 }}>…</section>;
+    return <section className={page}>…</section>;
   }
 
   const appName = profile?.name ?? req.clientId ?? 'This site';
@@ -181,43 +182,19 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     !!req.clientId && !!callback && profile != null && !registered;
 
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}
-    >
-      <div
-        style={{
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 8,
-        }}
-      >
-        <div
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 14,
-            background: '#E31337',
-            color: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 800,
-            fontSize: 24,
-            margin: '0 auto',
-            textTransform: 'uppercase',
-          }}
-        >
+    <section className={page}>
+      <div className="flex flex-col gap-2 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E31337] text-2xl font-extrabold uppercase text-white">
           {appName[0]}
         </div>
-        <h1 style={{ margin: 0, fontSize: 19, fontWeight: 700 }}>
+        <h1 className="m-0 text-[19px] font-bold sm:text-xl">
           <b>{appName}</b> {t('authorize.request_access')}
         </h1>
         {/* profile.name is the app account's OWN self-declared metadata, so an
             account like `ecency-login` can call itself "Ecency". Always show the
             real client_id and the callback host: those are what the grant and
             the redirect actually use, and they cannot be renamed. */}
-        <div style={{ fontSize: 12.5, color: '#59636e' }}>
+        <div className={mutedXs}>
           Hive account <b>@{req.clientId}</b>
           {callbackHost && (
             <>
@@ -229,23 +206,15 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
       </div>
 
       {unregistered && (
-        <div
-          style={{
-            ...card,
-            background: '#ffebe9',
-            border: '1px solid #f0b3b3',
-            color: '#cf222e',
-            fontSize: 13,
-          }}
-        >
+        <div className={alertError}>
           This app's redirect URL is not registered. For your safety, sign-in is
           blocked.
         </div>
       )}
 
-      <div style={{ ...card, fontSize: 14 }}>
-        <div style={{ fontSize: 12, color: '#59636e' }}>Scope</div>
-        <div style={{ fontWeight: 600 }}>
+      <div className={`${card} text-sm`}>
+        <div className="text-xs text-[#59636e]">Scope</div>
+        <div className="font-semibold">
           {req.scope === 'login'
             ? 'View your account username'
             : 'Post, comment, vote and follow on your behalf'}
@@ -253,26 +222,17 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
       </div>
 
       {error && (
-        <div
-          role="alert"
-          style={{
-            ...card,
-            background: '#ffebe9',
-            border: '1px solid #f0b3b3',
-            color: '#cf222e',
-            fontSize: 13,
-          }}
-        >
+        <div role="alert" className={alertError}>
           {error}
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="flex flex-col gap-2.5">
         {!selectedAccount ? (
           <Link
             to="/import"
             search={{ next: window.location.pathname + window.location.search }}
-            style={btn(true)}
+            className={btnPrimary}
           >
             {t('common.continue')}
           </Link>
@@ -282,7 +242,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           <Link
             to="/accounts"
             search={{ next: window.location.pathname + window.location.search }}
-            style={btn(true)}
+            className={btnPrimary}
           >
             {t('accounts.unlock')} @{selectedAccount}
           </Link>
@@ -290,17 +250,13 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           <Link
             to="/import"
             search={{ next: window.location.pathname + window.location.search }}
-            style={btn(true)}
+            className={btnPrimary}
           >
             {t('login.need_import', { authority })}
           </Link>
         ) : postingScope && !accountLoaded ? (
           // Never issue a posting token before we can confirm the on-chain grant.
-          <button
-            type="button"
-            disabled
-            style={{ ...btn(false), border: 'none' }}
-          >
+          <button type="button" disabled className={btnPrimary}>
             …
           </button>
         ) : (
@@ -308,11 +264,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             {/* Name the account being authorized. Without it a user with several
                 accounts cannot see WHICH account's token they are issuing, which
                 is what made a wrong selected account silent. */}
-            <div style={{ fontSize: 12.5, color: '#59636e' }}>
+            <div className={mutedXs}>
               Authorizing as <b>@{selectedAccount}</b>
             </div>
             {grantNeeded && (
-              <div style={{ fontSize: 12.5, color: '#7a5300' }}>
+              <div className={`${alertWarn} text-[12.5px]`}>
                 First-time authorization: this adds <b>@{req.clientId}</b> to
                 your posting authority on-chain and needs your active key once.
                 That account will be able to post as you until you revoke it.
@@ -322,35 +278,16 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
               type="button"
               onClick={approve}
               disabled={unregistered || busy}
-              style={{ ...btn(!unregistered && !busy), border: 'none' }}
+              className={btnPrimary}
             >
               {busy ? '…' : t('authorize.authorize')}
             </button>
           </>
         )}
-        <Link
-          to="/accounts"
-          style={{ textAlign: 'center', fontSize: 13, color: '#59636e' }}
-        >
+        <Link to="/accounts" className="text-center text-[13px] text-[#59636e]">
           {t('common.cancel')}
         </Link>
       </div>
     </section>
   );
-}
-
-function btn(enabled: boolean): CSSProperties {
-  return {
-    height: 50,
-    borderRadius: 10,
-    background: enabled ? '#E31337' : '#f0a5b3',
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 600,
-    cursor: enabled ? 'pointer' : 'not-allowed',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textDecoration: 'none',
-  };
 }

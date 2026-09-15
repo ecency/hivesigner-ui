@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { type CSSProperties, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { cardTight, field, h1, label, mutedXs, page } from '@/components/ui';
 import { supportedLngs } from '@/i18n/locales';
 import { getLanguage, type Language, setLanguage } from '@/lib/prefs';
 
@@ -10,16 +11,6 @@ import { getLanguage, type Language, setLanguage } from '@/lib/prefs';
 export const Route = createFileRoute('/settings')({
   component: Settings,
 });
-
-const fld: CSSProperties = {
-  width: '100%',
-  boxSizing: 'border-box',
-  height: 48,
-  padding: '0 12px',
-  border: '1px solid #d1d9e0',
-  borderRadius: 8,
-  fontSize: 15,
-};
 
 const LANGUAGE_NAMES: Record<string, string> = { en: 'English', ru: 'Русский' };
 
@@ -36,19 +27,18 @@ function Settings() {
   }
 
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}
-    >
-      <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-        {t('settings.settings')}
-      </h1>
+    // A settings form, so it stays one readable column instead of stretching
+    // across the wider shell.
+    <section className={`${page} sm:max-w-xl`}>
+      <h1 className={h1}>{t('settings.settings')}</h1>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 600 }}>
+      {/* The control itself stays a comfortable field width on a desktop. */}
+      <label className={`${label} max-w-sm`}>
+        <span className="font-semibold">
           {t('footer.network', { network: 'Language' })}
         </span>
         <select
-          style={fld}
+          className={field}
           aria-label="Language"
           value={lang}
           onChange={(e) => change(e.target.value as Language)}
@@ -62,22 +52,12 @@ function Settings() {
       </label>
 
       {saved && (
-        <output style={{ display: 'block', fontSize: 13, color: '#1a5c2b' }}>
+        <output className="block text-[13px] text-[#1a5c2b]">
           {t('settings.saved')}
         </output>
       )}
 
-      <div
-        style={{
-          background: '#fff',
-          border: '1px solid #d1d9e0',
-          borderRadius: 12,
-          padding: 14,
-          fontSize: 12.5,
-          color: '#59636e',
-          lineHeight: 1.5,
-        }}
-      >
+      <div className={`${cardTight} ${mutedXs} leading-normal`}>
         Hivesigner connects to Hive through a managed pool of nodes and fails
         over automatically, so there is no node to configure here.
       </div>

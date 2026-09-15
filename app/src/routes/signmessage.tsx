@@ -1,6 +1,18 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { type CSSProperties, type ReactNode, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  alertError,
+  btnPrimary,
+  card,
+  field,
+  fieldBase,
+  h1,
+  mono,
+  muted,
+  mutedXs,
+  page,
+} from '@/components/ui';
 import { getKeys } from '@/lib/accounts';
 import type { KeyRole } from '@/lib/hive';
 import {
@@ -17,20 +29,13 @@ export const Route = createFileRoute('/signmessage')({
   component: SignMessage,
 });
 
-const fld: CSSProperties = {
-  width: '100%',
-  boxSizing: 'border-box',
-  padding: 12,
-  border: '1px solid #d1d9e0',
-  borderRadius: 8,
-  fontSize: 15,
-};
-const card: CSSProperties = {
-  background: '#fff',
-  border: '1px solid #d1d9e0',
-  borderRadius: 12,
-  padding: 16,
-};
+// The label wrapper is deliberately not the shared `label` recipe: that recipe
+// carries the muted caption colour, and preflight makes form controls inherit
+// `color`, so it would tint the typed message and the authority select grey.
+// `sm:max-w-md` keeps the form a readable column in the now-wider shell instead
+// of stretching the inputs across the whole page.
+const labelStack = 'flex flex-col gap-1.5 sm:max-w-md';
+const labelText = 'text-[13px] font-semibold';
 
 function SignMessage() {
   const { t } = useTranslation();
@@ -55,20 +60,9 @@ function SignMessage() {
 
   if (!isUnlocked || heldRoles.length === 0) {
     return (
-      <section
-        style={{
-          padding: 20,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 12,
-        }}
-      >
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-          {t('message_signing.title')}
-        </h1>
-        <p style={{ fontSize: 14, color: '#59636e' }}>
-          {t('message_signing.login_prompt')}
-        </p>
+      <section className={page}>
+        <h1 className={h1}>{t('message_signing.title')}</h1>
+        <p className={muted}>{t('message_signing.login_prompt')}</p>
         <Link to="/accounts">{t('footer.login')}</Link>
       </section>
     );
@@ -98,38 +92,32 @@ function SignMessage() {
     : '';
 
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}
-    >
+    <section className={page}>
       <div>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-          {t('message_signing.title')}
-        </h1>
-        <p style={{ margin: '4px 0 0', fontSize: 13, color: '#59636e' }}>
-          {t('message_signing.description')}
-        </p>
+        <h1 className={h1}>{t('message_signing.title')}</h1>
+        <p className={`${muted} mt-1`}>{t('message_signing.description')}</p>
       </div>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 600 }}>
-          {t('message_signing.message_label')}
-        </span>
+      <label className={labelStack}>
+        <span className={labelText}>{t('message_signing.message_label')}</span>
+        {/* `field` pins a 44px control height, which would flatten a 4-row
+            textarea, so the height is released back to the `rows` attribute. */}
         <textarea
           name="message"
           rows={4}
-          style={fld}
+          className={`${fieldBase} py-3`}
           value={message}
           placeholder={t('message_signing.message_placeholder')}
           onChange={(e) => setMessage(e.target.value)}
         />
       </label>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 600 }}>
+      <label className={labelStack}>
+        <span className={labelText}>
           {t('message_signing.authority_label')}
         </span>
         <select
-          style={fld}
+          className={field}
           value={effectiveRole}
           onChange={(e) => setRole(e.target.value as KeyRole)}
         >
@@ -141,35 +129,25 @@ function SignMessage() {
         </select>
       </label>
 
+      {/* Full width on a phone, sized to its own label from `sm` up. */}
       <button
         type="button"
         onClick={sign}
         disabled={message.trim().length === 0}
-        style={{
-          height: 48,
-          border: 'none',
-          borderRadius: 10,
-          background: message.trim() ? '#E31337' : '#f0a5b3',
-          color: '#fff',
-          fontSize: 15,
-          fontWeight: 600,
-          cursor: message.trim() ? 'pointer' : 'not-allowed',
-        }}
+        className={`${btnPrimary} cursor-pointer sm:self-start`}
       >
         {t('message_signing.sign_button')}
       </button>
 
       {error && (
-        <div role="alert" style={{ fontSize: 13, color: '#cf222e' }}>
+        <div role="alert" className={alertError}>
           {error}
         </div>
       )}
 
       {payload && (
-        <div
-          style={{ ...card, display: 'flex', flexDirection: 'column', gap: 10 }}
-        >
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#59636e' }}>
+        <div className={`${card} flex flex-col gap-2.5`}>
+          <div className="text-[13px] font-bold text-[#59636e]">
             {t('message_signing.summary')}
           </div>
           <Field label={t('message_signing.author')}>
@@ -179,12 +157,11 @@ function SignMessage() {
             {payload.authority}
           </Field>
           <Field label={t('message_signing.verification_token')}>
-            <code style={{ wordBreak: 'break-all', fontSize: 11 }}>
-              {token}
-            </code>
+            {/* `mono` keeps the deliberate break-all on rendered values. */}
+            <code className={`${mono} text-[11px]`}>{token}</code>
           </Field>
           <Field label={t('message_signing.verification_link')}>
-            <code style={{ wordBreak: 'break-all', fontSize: 11 }}>{link}</code>
+            <code className={`${mono} text-[11px]`}>{link}</code>
           </Field>
         </div>
       )}
@@ -196,9 +173,9 @@ function SignMessage() {
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <span style={{ fontSize: 12, color: '#59636e' }}>{label}</span>
-      <div style={{ fontSize: 13 }}>{children}</div>
+    <div className="flex flex-col gap-0.5">
+      <span className={mutedXs}>{label}</span>
+      <div className="text-[13px]">{children}</div>
     </div>
   );
 }

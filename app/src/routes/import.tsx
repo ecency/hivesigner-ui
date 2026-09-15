@@ -1,6 +1,17 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { type CSSProperties, type FormEvent, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  alertError,
+  btnPrimary,
+  field,
+  formColumn,
+  h1,
+  label,
+  muted,
+  mutedXs,
+  page,
+} from '@/components/ui';
 import { addAccount, selectAccount } from '@/lib/accounts';
 import { getAccount, resolveCredential } from '@/lib/hive';
 import { resolveInternalPath } from '@/lib/internal-path';
@@ -19,16 +30,6 @@ export const Route = createFileRoute('/import')({
 });
 
 const USERNAME_RE = /^[a-z][a-z0-9.-]{2,15}$/;
-
-const fld: CSSProperties = {
-  width: '100%',
-  boxSizing: 'border-box',
-  height: 48,
-  padding: '0 12px',
-  border: '1px solid #d1d9e0',
-  borderRadius: 8,
-  fontSize: 15,
-};
 
 function Import() {
   const { t } = useTranslation();
@@ -103,32 +104,22 @@ function Import() {
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 18 }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-          {t('import.add_account')}
-        </h1>
-        <p
-          style={{
-            margin: 0,
-            fontSize: 12.5,
-            lineHeight: 1.45,
-            color: '#59636e',
-          }}
-        >
+    // A form stays one readable column: the shell widens on a desktop, but
+    // stretching these inputs across it would only make them harder to read.
+    <form onSubmit={onSubmit} className={`${page} ${formColumn}`}>
+      <div className="flex flex-col gap-1">
+        <h1 className={h1}>{t('import.add_account')}</h1>
+        <p className={`${mutedXs} m-0 leading-[1.45]`}>
           {t('import.add_account_hint')}
         </p>
       </div>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 600 }}>
+      <label className={label}>
+        <span className="text-[13px] font-semibold text-[#1f2328]">
           {t('import.username')}
         </span>
         <input
-          style={fld}
+          className={field}
           name="username"
           autoComplete="username"
           value={username}
@@ -137,31 +128,24 @@ function Import() {
         />
       </label>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 600 }}>
+      <label className={label}>
+        <span className="text-[13px] font-semibold text-[#1f2328]">
           {t('import.private_key')}
         </span>
         <input
-          style={{ ...fld, fontFamily: 'ui-monospace, monospace' }}
+          className={`${field} font-mono`}
           name="password"
           type="password"
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
         />
-        <span style={{ fontSize: 12, color: '#59636e' }}>
+        <span className={mutedXs}>
           A posting key covers daily use. It is stored only on this device.
         </span>
       </label>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            fontSize: 13.5,
-          }}
-        >
+      <div className="flex flex-col gap-2.5">
+        <label className="flex items-center gap-2 text-[13.5px]">
           <input
             type="checkbox"
             checked={usePasscode}
@@ -171,7 +155,7 @@ function Import() {
         </label>
         {usePasscode && (
           <input
-            style={fld}
+            className={field}
             name="passcode"
             type="password"
             placeholder="Passcode"
@@ -182,40 +166,22 @@ function Import() {
       </div>
 
       {error && (
-        <div
-          role="alert"
-          style={{
-            padding: '10px 12px',
-            borderRadius: 8,
-            background: '#ffebe9',
-            border: '1px solid #f0b3b3',
-            color: '#cf222e',
-            fontSize: 13,
-          }}
-        >
+        <div role="alert" className={alertError}>
           {error}
         </div>
       )}
 
+      {/* Full width under the thumb on a phone, its own size once there is room. */}
       <button
         type="submit"
         disabled={!canSubmit}
-        style={{
-          height: 50,
-          border: 'none',
-          borderRadius: 10,
-          background: canSubmit ? '#E31337' : '#f0a5b3',
-          color: '#fff',
-          fontSize: 16,
-          fontWeight: 600,
-          cursor: canSubmit ? 'pointer' : 'not-allowed',
-        }}
+        className={`${btnPrimary} cursor-pointer sm:self-start`}
       >
         {busy ? '…' : t('import.add_account')}
       </button>
 
       {usernames.length > 0 && (
-        <p style={{ margin: 0, fontSize: 13, color: '#59636e' }}>
+        <p className={`${muted} m-0`}>
           {usernames.length} account{usernames.length > 1 ? 's' : ''} on this
           device.
         </p>

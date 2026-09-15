@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { type CSSProperties, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { alertError, btnPrimary, card, h1, page } from '@/components/ui';
 import { getKeys } from '@/lib/accounts';
 import {
   buildGrantOperation,
@@ -14,26 +15,6 @@ import { useAccounts } from '@/lib/use-accounts';
 
 // Shared screen for /authorize/:username and /revoke/:username. Grant or revoke
 // the app's posting authority with the selected account's ACTIVE key.
-const card: CSSProperties = {
-  background: '#fff',
-  border: '1px solid #d1d9e0',
-  borderRadius: 12,
-  padding: 16,
-};
-const btn = (enabled: boolean): CSSProperties => ({
-  height: 50,
-  border: 'none',
-  borderRadius: 10,
-  background: enabled ? '#E31337' : '#f0a5b3',
-  color: '#fff',
-  fontSize: 16,
-  fontWeight: 600,
-  cursor: enabled ? 'pointer' : 'not-allowed',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  textDecoration: 'none',
-});
 
 export function GrantAction({
   appName,
@@ -88,18 +69,20 @@ export function GrantAction({
   const verb = mode === 'grant' ? t('authorize.authorize') : t('revoke.revoke');
 
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}
-    >
-      <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>
+    // A confirm-and-act screen, so it stays one readable column instead of
+    // stretching the sentence across the widened shell.
+    <section className={`${page} sm:max-w-xl`}>
+      {/* `appName` is a rendered value taken from the URL, so let it wrap
+          rather than push the page sideways at 320px. */}
+      <h1 className={`${h1} break-words`}>
         {verb} @{appName}
       </h1>
 
-      <div style={{ ...card, fontSize: 14 }}>
+      <div className={`${card} text-sm break-words`}>
         {mode === 'grant'
           ? `@${appName} will be able to post, comment, vote and follow as @${selectedAccount}.`
           : `@${appName} will no longer be able to act as @${selectedAccount}.`}
-        <div style={{ marginTop: 8, fontSize: 12.5, color: '#7a5300' }}>
+        <div className="mt-2 text-[12.5px] text-[#7a5300]">
           {t('authorize.requires_active_key', { authority: 'active' }).replace(
             /<\/?b>/g,
             '',
@@ -108,17 +91,9 @@ export function GrantAction({
       </div>
 
       {status === 'done' || alreadyDone ? (
-        <output
-          style={{
-            ...card,
-            display: 'block',
-            background: '#e6f4ea',
-            borderColor: '#a7dab8',
-            color: '#1a5c2b',
-            fontSize: 14,
-            fontWeight: 600,
-          }}
-        >
+        // No success recipe exists in ui.ts; these are the card metrics with
+        // the existing green palette, kept verbatim.
+        <output className="block rounded-xl border border-[#a7dab8] bg-[#e6f4ea] p-4 text-sm font-semibold break-words text-[#1a5c2b]">
           {mode === 'grant'
             ? `@${appName} is authorized.`
             : `@${appName} is revoked.`}
@@ -126,31 +101,24 @@ export function GrantAction({
       ) : null}
 
       {status === 'error' && (
-        <div
-          role="alert"
-          style={{
-            ...card,
-            background: '#ffebe9',
-            borderColor: '#f0b3b3',
-            color: '#cf222e',
-            fontSize: 13,
-          }}
-        >
+        <div role="alert" className={`${alertError} break-words`}>
           {error}
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {/* Full-width actions on a phone; from sm they sit inline at their own
+          width with the cancel link beside them. */}
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
         {!selectedAccount ? (
-          <Link to="/import" style={btn(true)}>
+          <Link to="/import" className={btnPrimary}>
             {t('common.continue')}
           </Link>
         ) : !isUnlocked || !activeKey ? (
-          <Link to="/accounts" style={btn(true)}>
+          <Link to="/accounts" className={btnPrimary}>
             {t('accounts.unlock')} @{selectedAccount}
           </Link>
         ) : alreadyDone || status === 'done' ? (
-          <Link to="/accounts" style={btn(true)}>
+          <Link to="/accounts" className={btnPrimary}>
             {t('common.continue')}
           </Link>
         ) : (
@@ -158,15 +126,12 @@ export function GrantAction({
             type="button"
             onClick={submit}
             disabled={status === 'busy'}
-            style={{ ...btn(status !== 'busy'), border: 'none' }}
+            className={`${btnPrimary} cursor-pointer`}
           >
             {status === 'busy' ? '…' : verb}
           </button>
         )}
-        <Link
-          to="/accounts"
-          style={{ textAlign: 'center', fontSize: 13, color: '#59636e' }}
-        >
+        <Link to="/accounts" className="text-center text-[13px] text-[#59636e]">
           {t('common.cancel')}
         </Link>
       </div>

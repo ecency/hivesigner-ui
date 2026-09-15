@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthorizeConsent } from '@/components/AuthorizeConsent';
+import { formColumn, h1, muted, page } from '@/components/ui';
 import { resolveInternalPath } from '@/lib/internal-path';
 import {
   isLocalLoginRequest,
@@ -59,30 +60,32 @@ function LocalLogin({ next }: { next?: string }) {
   }, [isUnlocked, dest.pathname, dest.search, navigate]);
 
   if (isUnlocked) {
-    return <section style={{ padding: 20 }}>…</section>;
+    return <section className={page}>…</section>;
   }
 
   const target = `${dest.pathname}${dest.search}`;
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}
-    >
-      <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-        {t('footer.login')}
-      </h1>
-      <p style={{ margin: 0, fontSize: 14, color: '#59636e' }}>
-        Unlock an account to continue to <b>{target}</b>.
+    // Not a form, but the same reading rule applies: one column that stops at a
+    // comfortable measure instead of stretching across the widened shell.
+    <section className={`${page} ${formColumn} sm:max-w-md`}>
+      <h1 className={h1}>{t('footer.login')}</h1>
+      {/* `target` is built from the redirect param, so it is a rendered value:
+          isolate it and let it break instead of pushing the page sideways at
+          320px. */}
+      <p className={`${muted} m-0 break-words`}>
+        Unlock an account to continue to{' '}
+        <b className="break-all [unicode-bidi:isolate]">{target}</b>.
       </p>
       {usernames.length === 0 ? (
         <Link
           to="/import"
           search={{ next: window.location.pathname + window.location.search }}
-          style={{ fontSize: 14 }}
+          className="text-sm"
         >
           {t('accounts.add_another')}
         </Link>
       ) : (
-        <Link to="/accounts" search={{ next: target }} style={{ fontSize: 14 }}>
+        <Link to="/accounts" search={{ next: target }} className="text-sm">
           {t('accounts.unlock')}
         </Link>
       )}

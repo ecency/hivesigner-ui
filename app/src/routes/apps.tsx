@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { cardGrid, cardTight, field, h1, muted, page } from '@/components/ui';
 import { getTopApps } from '@/lib/hive';
 
 // A lightweight directory of apps that integrate Hivesigner (the curated
@@ -25,76 +26,46 @@ function Apps() {
   }, [apps, search]);
 
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}
-    >
-      <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-        {t('apps.store')}
-      </h1>
+    <section className={page}>
+      <h1 className={h1}>{t('apps.store')}</h1>
 
+      {/* Full width on a phone, but capped from `sm` up: the shell is wider now
+          and a search box stretched to the full width reads badly. Only the
+          results below it use the extra room. */}
       <input
         aria-label={t('apps.search_placeholder')}
         placeholder={t('apps.search_placeholder')}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        style={{
-          width: '100%',
-          boxSizing: 'border-box',
-          height: 44,
-          padding: '0 12px',
-          border: '1px solid #d1d9e0',
-          borderRadius: 8,
-          fontSize: 15,
-        }}
+        className={`${field} sm:max-w-md`}
       />
 
       {isLoading ? (
-        <p style={{ fontSize: 14, color: '#59636e' }}>…</p>
+        <p className={muted}>…</p>
       ) : filtered.length === 0 ? (
-        <p style={{ fontSize: 14, color: '#59636e' }}>
+        <p className={muted}>
           {search ? t('apps.empty_search', { search }) : t('apps.apps')}
         </p>
       ) : (
-        <div
-          style={{
-            background: '#fff',
-            border: '1px solid #d1d9e0',
-            borderRadius: 12,
-            padding: 4,
-          }}
-        >
-          {filtered.map((app, i) => (
+        // The directory was a single panel of stacked rows, which on a desktop
+        // left most of the width empty. One card per app instead: a column on a
+        // phone, two from `sm` and three from `lg`.
+        <div className={cardGrid}>
+          {filtered.map((app) => (
             <Link
               key={app}
               to="/authorize/$username"
               params={{ username: app }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: 14,
-                borderTop: i === 0 ? 'none' : '1px solid #eef1f4',
-                textDecoration: 'none',
-                color: '#1f2328',
-              }}
+              className={`${cardTight} flex items-center gap-3 text-[#1f2328] no-underline`}
             >
-              <div
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 8,
-                  background: '#ffe3e8',
-                  color: '#b90f2e',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                }}
-              >
+              <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg bg-[#ffe3e8] font-bold uppercase text-[#b90f2e]">
                 {app[0]}
               </div>
-              <span style={{ fontWeight: 600, fontSize: 15 }}>@{app}</span>
+              {/* Account names come off-chain from the curated list: break them
+                  rather than let one overflow the card at 320px. */}
+              <span className="break-all text-[15px] font-semibold">
+                @{app}
+              </span>
             </Link>
           ))}
         </div>

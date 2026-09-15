@@ -1,6 +1,17 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { type CSSProperties, useState } from 'react';
+import clsx from 'clsx';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  btnPrimary,
+  cardGrid,
+  cardTight,
+  field,
+  h1,
+  muted,
+  mutedXs,
+  page,
+} from '@/components/ui';
 import {
   accountIsEncrypted,
   isUnlocked,
@@ -23,16 +34,6 @@ export const Route = createFileRoute('/accounts')({
   validateSearch: (search: Record<string, unknown>): { next?: string } =>
     typeof search.next === 'string' ? { next: search.next } : {},
 });
-
-const fld: CSSProperties = {
-  width: '100%',
-  boxSizing: 'border-box',
-  height: 44,
-  padding: '0 12px',
-  border: '1px solid #d1d9e0',
-  borderRadius: 8,
-  fontSize: 15,
-};
 
 function AccountRow({
   username,
@@ -113,48 +114,25 @@ function AccountRow({
   }
 
   return (
+    // `bg-[#fff5f6]!` wins over the recipe's own `bg-white`: two background
+    // utilities on one element are otherwise resolved by stylesheet order, not
+    // by the order they appear here.
     <div
-      style={{
-        padding: 12,
-        borderRadius: 10,
-        background: current ? '#fff5f6' : '#fff',
-        border: '1px solid #d1d9e0',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
-      }}
+      className={clsx(
+        cardTight,
+        'flex flex-col gap-2.5',
+        current && 'bg-[#fff5f6]!',
+      )}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            background: '#ffe3e8',
-            color: '#b90f2e',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 700,
-            flex: 'none',
-            textTransform: 'uppercase',
-          }}
-        >
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[#ffe3e8] font-bold uppercase text-[#b90f2e]">
           {username[0]}
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 600, fontSize: 15 }}>@{username}</div>
-          <div
-            style={{
-              fontSize: 12,
-              color: '#59636e',
-              display: 'flex',
-              gap: 6,
-              marginTop: 2,
-            }}
-          >
+        <div className="min-w-0 flex-1">
+          <div className="text-[15px] font-semibold break-all">@{username}</div>
+          <div className={`${mutedXs} mt-0.5 flex gap-1.5`}>
             {current && (
-              <span style={{ color: '#b90f2e', fontWeight: 600 }}>Current</span>
+              <span className="font-semibold text-[#b90f2e]">Current</span>
             )}
             {encrypted ? (unlocked ? 'Unlocked' : 'Protected') : 'No passcode'}
           </div>
@@ -164,14 +142,7 @@ function AccountRow({
             type="button"
             onClick={activate}
             disabled={busy}
-            style={{
-              border: 'none',
-              background: 'none',
-              color: '#b90f2e',
-              fontWeight: 600,
-              fontSize: 13,
-              cursor: busy ? 'not-allowed' : 'pointer',
-            }}
+            className="cursor-pointer border-none bg-transparent text-[13px] font-semibold text-[#b90f2e] disabled:cursor-not-allowed"
           >
             {!unlocked ? t('accounts.unlock') : t('login.switch_an_account')}
           </button>
@@ -196,12 +167,7 @@ function AccountRow({
               }
             }
           }}
-          style={{
-            border: 'none',
-            background: 'none',
-            color: '#59636e',
-            cursor: 'pointer',
-          }}
+          className="cursor-pointer border-none bg-transparent text-[#59636e]"
         >
           ✕
         </button>
@@ -210,15 +176,15 @@ function AccountRow({
       {/* A plaintext unlock failure never opens the passcode form, so its error
           has to render outside it or the row just goes quiet. */}
       {error && !unlocking && (
-        <div role="alert" style={{ fontSize: 12.5, color: '#cf222e' }}>
+        <div role="alert" className="text-[12.5px] text-[#cf222e]">
           {error}
         </div>
       )}
 
       {unlocking && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="flex flex-col gap-2">
           <input
-            style={fld}
+            className={field}
             type="password"
             name={`passcode-${username}`}
             placeholder="Passcode"
@@ -228,23 +194,17 @@ function AccountRow({
             autoFocus
           />
           {error && (
-            <div role="alert" style={{ fontSize: 12.5, color: '#cf222e' }}>
+            <div role="alert" className="text-[12.5px] text-[#cf222e]">
               {error}
             </div>
           )}
+          {/* The button is disabled on exactly the condition that used to paint
+              it `#f0a5b3`, so the recipe's `disabled:` styling covers it. */}
           <button
             type="button"
             onClick={submitUnlock}
             disabled={busy || passcode.length === 0}
-            style={{
-              height: 44,
-              border: 'none',
-              borderRadius: 8,
-              background: busy || !passcode ? '#f0a5b3' : '#E31337',
-              color: '#fff',
-              fontWeight: 600,
-              cursor: busy || !passcode ? 'not-allowed' : 'pointer',
-            }}
+            className={`${btnPrimary} cursor-pointer`}
           >
             {t('accounts.unlock')}
           </button>
@@ -260,19 +220,17 @@ function Accounts() {
   const { next } = Route.useSearch();
 
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}
-    >
-      <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-        {t('accounts.accounts')}
-      </h1>
+    <section className={page}>
+      <h1 className={h1}>{t('accounts.accounts')}</h1>
 
       {usernames.length === 0 ? (
-        <p style={{ fontSize: 14, color: '#59636e' }}>
+        <p className={muted}>
           <Link to="/import">{t('accounts.add_another')}</Link>
         </p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        // One column on a phone, two from `sm` and three from `lg`: the shell is
+        // no longer a 480px strip, so the account list uses the width.
+        <div className={cardGrid}>
           {usernames.map((u) => (
             <AccountRow
               key={u}
@@ -284,20 +242,11 @@ function Accounts() {
         </div>
       )}
 
+      {/* Not `btnSecondary`: the dashed, transparent "add" affordance is a
+          different control, so it keeps its own class string. */}
       <Link
         to="/import"
-        style={{
-          alignSelf: 'flex-start',
-          height: 44,
-          padding: '0 16px',
-          display: 'inline-flex',
-          alignItems: 'center',
-          borderRadius: 8,
-          border: '1px dashed #c4ccd4',
-          color: '#1f2328',
-          fontWeight: 600,
-          textDecoration: 'none',
-        }}
+        className="inline-flex h-11 max-w-full items-center justify-center self-start rounded-lg border border-dashed border-[#c4ccd4] px-4 font-semibold text-[#1f2328] no-underline"
       >
         + {t('accounts.add_another')}
       </Link>

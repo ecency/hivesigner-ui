@@ -1,6 +1,19 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { type CSSProperties, type ReactNode, useEffect, useState } from 'react';
+import clsx from 'clsx';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  alertError,
+  btnPrimary,
+  card,
+  fieldBase,
+  h1,
+  label,
+  mono,
+  muted,
+  mutedXs,
+  page,
+} from '@/components/ui';
 import { getAccount } from '@/lib/hive';
 import { decodeToken, matchAuthority } from '@/lib/message-token';
 
@@ -12,21 +25,10 @@ export const Route = createFileRoute('/verifymessage')({
   validateSearch: (s: Record<string, unknown>) => s as { payload?: string },
 });
 
-const fld: CSSProperties = {
-  width: '100%',
-  boxSizing: 'border-box',
-  padding: 12,
-  border: '1px solid #d1d9e0',
-  borderRadius: 8,
-  fontSize: 14,
-  fontFamily: 'ui-monospace, monospace',
-};
-const card: CSSProperties = {
-  background: '#fff',
-  border: '1px solid #d1d9e0',
-  borderRadius: 12,
-  padding: 16,
-};
+// The shared vocabulary has no success panel, only `alertError`. This mirrors
+// that recipe's metrics with the existing green palette.
+const alertOk =
+  'rounded-xl border border-[#a7dab8] bg-[#e6f4ea] p-4 text-[13px] text-[#1a5c2b]';
 
 interface Result {
   ok: boolean;
@@ -104,46 +106,39 @@ function VerifyMessage() {
   }, [linkPayload]);
 
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}
-    >
+    <section className={page}>
       <div>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-          {t('message_verification.title')}
-        </h1>
-        <p style={{ margin: '4px 0 0', fontSize: 13, color: '#59636e' }}>
+        <h1 className={h1}>{t('message_verification.title')}</h1>
+        <p className={`${muted} mt-1 mb-0`}>
           {t('message_verification.description')}
         </p>
       </div>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 600 }}>
+      {/* The token field stays a single readable column on a wide screen. */}
+      <label className={`${label} w-full sm:max-w-xl`}>
+        <span className="text-[13px] font-semibold text-[#1f2328]">
           {t('message_verification.payload_label')}
         </span>
+        {/* `field` is sized for a one-line control; `h-auto` keeps the four
+            rows and `py-3` restores the vertical padding it gave up. The ink
+            colour is explicit because a textarea inherits colour, and `label`
+            is muted. */}
         <textarea
           name="payload"
           rows={4}
-          style={fld}
+          className={`${fieldBase} py-3 font-mono text-[#1f2328]`}
           value={token}
           placeholder={t('message_verification.payload_placeholder')}
           onChange={(e) => setToken(e.target.value)}
         />
       </label>
 
+      {/* Full width on a phone, sized to its label once there is room. */}
       <button
         type="button"
         onClick={() => verify(token)}
         disabled={busy}
-        style={{
-          height: 48,
-          border: 'none',
-          borderRadius: 10,
-          background: '#E31337',
-          color: '#fff',
-          fontSize: 15,
-          fontWeight: 600,
-          cursor: busy ? 'not-allowed' : 'pointer',
-        }}
+        className={`${btnPrimary} w-full sm:w-auto sm:self-start`}
       >
         {busy
           ? t('message_verification.verifying')
@@ -153,34 +148,23 @@ function VerifyMessage() {
       {result && (
         <div
           role="alert"
-          style={{
-            ...card,
-            background: result.ok ? '#e6f4ea' : '#ffebe9',
-            border: `1px solid ${result.ok ? '#a7dab8' : '#f0b3b3'}`,
-            color: result.ok ? '#1a5c2b' : '#cf222e',
-            fontWeight: 600,
-            fontSize: 14,
-          }}
+          className={clsx(result.ok ? alertOk : alertError, 'font-semibold')}
         >
           {result.text}
         </div>
       )}
 
       {result?.signer && (
+        // One column on a phone; two on a wider viewport, so the recovered
+        // details use the shell's width instead of a long thin list.
         <div
-          style={{
-            ...card,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 8,
-            fontSize: 13,
-          }}
+          className={`${card} flex flex-col gap-2 text-[13px] sm:grid sm:grid-cols-2 sm:gap-x-6`}
         >
           <Row label={t('message_verification.author')}>@{result.author}</Row>
           <Row label={t('message_verification.recovered_key')}>
-            <code style={{ wordBreak: 'break-all', fontSize: 11 }}>
-              {result.signer}
-            </code>
+            {/* break-all is deliberate: it stops a crafted key from running
+                off the line. `mono` carries it. */}
+            <code className={`${mono} text-[11px]`}>{result.signer}</code>
           </Row>
           <Row label={t('message_verification.matched_authority')}>
             {result.authority ?? t('message_verification.unknown_authority')}
@@ -198,9 +182,11 @@ function VerifyMessage() {
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <span style={{ fontSize: 12, color: '#59636e' }}>{label}</span>
-      <div>{children}</div>
+    <div className="flex flex-col gap-0.5">
+      <span className={mutedXs}>{label}</span>
+      {/* The value comes from the token, so it may be one long unbroken run:
+          wrap it rather than let it push the page sideways at 320px. */}
+      <div className="break-words">{children}</div>
     </div>
   );
 }
