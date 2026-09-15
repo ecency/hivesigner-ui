@@ -123,7 +123,8 @@ export default {
     password_placeholder: 'Hive private key, e.g. Owner, Active, Posting, Memo keys',
     passcode: 'Passcode',
     protect_with_passcode: 'Protect with a passcode (recommended)',
-    private_key_hint: 'A posting key covers daily use. It is stored only on this device.',
+    private_key_hint: 'A posting key covers everyday actions. Use an active or owner key, or your master password, only if you need to. The key is stored on this device and never sent anywhere.',
+    passcode_hint: 'A local password, separate from your Hive keys. It encrypts the key on this device and unlocks it again. It is not your Hive password and cannot be recovered.',
     accounts_on_device_one: '{count} account on this device.',
     accounts_on_device_other: '{count} accounts on this device.',
     hs_placeholder: 'Your Hivesigner password'

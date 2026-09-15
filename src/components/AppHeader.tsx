@@ -27,7 +27,13 @@ export function AppHeader() {
 
   return (
     <header className="border-b border-line bg-surface">
-      <div className={`${gutter} flex items-center justify-between gap-3 py-3`}>
+      {/* `flex-wrap` and `min-w-0` on BOTH sides: the hostname is now whatever
+          host the page is served from, not a fixed 14 characters, and the
+          right-hand group used to be `shrink-0`, so a long host pushed the
+          brand to nothing and then overflowed the bar. */}
+      <div
+        className={`${gutter} flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-3`}
+      >
         <Link
           to="/"
           className="flex min-w-0 items-center gap-2 text-ink no-underline"
@@ -56,7 +62,7 @@ export function AppHeader() {
           <span className="truncate text-base font-bold">Hivesigner</span>
         </Link>
 
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           {host && (
             <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted">
               <svg
@@ -82,10 +88,14 @@ export function AppHeader() {
                   strokeWidth="1.7"
                 />
               </svg>
-              {/* isolate: a hostname is attacker-influenced text in the phishing
+              {/* NOT truncated: `truncate` cuts the END of the string, which is
+                  exactly the registrable domain a user needs to read -
+                  "hivesigner.com.attacker..." would render as "hivesigner.com…".
+                  A long host wraps instead, so the cue is always shown in full.
+                  isolate: a hostname is attacker-influenced text in the very
                   case this cue exists for, and a bidi override inside it could
-                  otherwise reorder the surrounding bar. */}
-              <span className="truncate font-mono [unicode-bidi:isolate]">
+                  otherwise reorder the bar around it. */}
+              <span className="font-mono break-all [unicode-bidi:isolate]">
                 {host}
               </span>
             </div>

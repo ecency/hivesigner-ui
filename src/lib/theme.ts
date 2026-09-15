@@ -16,7 +16,18 @@ function isTheme(v: unknown): v is Theme {
   return typeof v === 'string' && (themes as readonly string[]).includes(v);
 }
 
+// The choice made THIS SESSION. It exists because storage can refuse to be
+// written (a private window, blocked site data, quota): without it setTheme
+// would paint the page dark, getTheme would keep answering 'system', and the
+// header button would show the system icon and offer to switch to light while
+// the page in front of the user was already dark. Clicking then cycled from a
+// state that was never true, so the user could not reach the one they could see.
+let sessionTheme: Theme | null = null;
+
 export function getTheme(): Theme {
+  // The session choice wins: it is the most recent thing the user actually did,
+  // and on a working browser it was written to storage anyway.
+  if (sessionTheme) return sessionTheme;
   try {
     const v = localStorage.getItem(THEME_KEY);
     if (isTheme(v)) return v;
@@ -56,10 +67,13 @@ export function subscribeTheme(fn: () => void): () => void {
 }
 
 export function setTheme(theme: Theme): void {
+  // Recorded BEFORE the write is attempted, so a storage failure still leaves
+  // the controls agreeing with the page for the rest of this page load.
+  sessionTheme = theme;
   try {
     localStorage.setItem(THEME_KEY, theme);
   } catch {
-    // best effort: the attribute below still applies for this page load
+    // Not remembered past this page load; sessionTheme carries it until then.
   }
   applyTheme(theme);
   for (const fn of listeners) fn();
@@ -105,4 +119,9 @@ export function readSnapshot(snapshot: string): {
     theme: isTheme(theme) ? theme : 'system',
     isDark: mode === 'dark',
   };
+}
+
+/** Test seam: forget the session choice (not storage, not the attribute). */
+export function _resetSessionTheme(): void {
+  sessionTheme = null;
 }

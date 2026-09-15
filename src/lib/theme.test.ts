@@ -1,7 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { applyTheme, getTheme, initTheme, isDarkNow, setTheme } from './theme';
+import {
+  _resetSessionTheme,
+  applyTheme,
+  getTheme,
+  initTheme,
+  isDarkNow,
+  setTheme,
+} from './theme';
 
 function matchMedia(dark: boolean) {
   vi.stubGlobal(
@@ -13,8 +20,12 @@ function matchMedia(dark: boolean) {
 describe('theme preference', () => {
   beforeEach(() => {
     localStorage.clear();
+    _resetSessionTheme();
     document.documentElement.removeAttribute('data-theme');
     vi.unstubAllGlobals();
+    // A test that fails partway never reaches its own mockRestore, and a leaked
+    // Storage spy then fails the NEXT test for the wrong reason.
+    vi.restoreAllMocks();
   });
 
   it('defaults to system', () => {
@@ -42,7 +53,13 @@ describe('theme preference', () => {
     expect(getTheme()).toBe('system');
   });
 
-  it('survives storage being unavailable', () => {
+  // Blocked storage must not make the CONTROLS disagree with the page. The
+  // first version of this test only checked that setTheme did not throw and
+  // that the attribute landed, which passed while getTheme still answered
+  // 'system': the header showed the system icon and offered "switch to light"
+  // over an already-dark page, and cycling started from a state that was never
+  // true. Assert the readback, not just the mechanism.
+  it('keeps the choice readable for this page load when storage is blocked', () => {
     const get = vi
       .spyOn(Storage.prototype, 'getItem')
       .mockImplementation(() => {
@@ -53,10 +70,17 @@ describe('theme preference', () => {
       .mockImplementation(() => {
         throw new Error('blocked');
       });
+
     expect(getTheme()).toBe('system');
-    // Still applies for this page load even though it cannot be remembered.
-    expect(() => setTheme('dark')).not.toThrow();
+    setTheme('dark');
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(getTheme()).toBe('dark');
+
+    // And the next step of the cycle is computed from the real state.
+    setTheme('system');
+    expect(getTheme()).toBe('system');
+    expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
+
     get.mockRestore();
     set.mockRestore();
   });
@@ -93,6 +117,32 @@ describe('startup wiring', () => {
   // the control claimed a mode the page was not in. Nothing in the unit tests
   // noticed, because every one of them called initTheme itself.
   const entry = readFileSync(resolve(process.cwd(), 'src/index.tsx'), 'utf8');
+
+  // The bundle runs only AFTER the page has painted, so initTheme alone means a
+  // saved dark choice on a light machine shows a white page first, every load.
+  // public/theme-boot.js is render-blocking and fixes that; it is referenced by
+  // filename from template.html, so a rename would silently drop it.
+  it('a render-blocking bootstrap applies the theme before the bundle', () => {
+    const template = readFileSync(
+      resolve(process.cwd(), 'template.html'),
+      'utf8',
+    );
+    const boot = readFileSync(
+      resolve(process.cwd(), 'public/theme-boot.js'),
+      'utf8',
+    );
+    expect(template).toContain('src="/theme-boot.js"');
+    // Must come before the app's own scripts, and must not be deferred.
+    expect(template).not.toMatch(/theme-boot\.js"[^>]*\b(defer|async)\b/);
+    // It reads the same storage key theme.ts writes. These are two separate
+    // files with no shared constant, so drift here is silent.
+    expect(boot).toContain("'hs_theme'");
+    const themeSource = readFileSync(
+      resolve(process.cwd(), 'src/lib/theme.ts'),
+      'utf8',
+    );
+    expect(themeSource).toContain("const THEME_KEY = 'hs_theme'");
+  });
 
   it('the entry point applies the stored theme before rendering', () => {
     // Anchored to the start of a line so a commented-out call does not satisfy

@@ -163,6 +163,11 @@ function Import() {
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
             />
+            {/* Which secret this is has to be said out loud. Three different
+                things could plausibly go in a password box on this screen - a
+                Hive key, the Hive master password, or a local passcode - and
+                the field only said "Passcode". */}
+            <span className={mutedXs}>{t('import.passcode_hint')}</span>
           </label>
         )}
       </div>
