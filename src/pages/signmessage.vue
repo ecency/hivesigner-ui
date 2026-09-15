@@ -139,7 +139,6 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'nuxt-property-decorator'
-import Bugsnag from '~/plugins/bugsnag'
 import SinglePageLayout from '~/components/Layouts/SinglePageLayout.vue'
 import FormControl from '~/components/UI/Form/FormControl.vue'
 import Loader from '~/components/UI/Loader.vue'
@@ -245,8 +244,6 @@ export default class SignMessage extends Vue {
     } catch (err) {
       console.error('Failed to sign message', err)
       this.error = err.message || (this.$t('errors.something_wrong') as string)
-
-      Bugsnag.notify(err)
     }
     this.signing = false
   }

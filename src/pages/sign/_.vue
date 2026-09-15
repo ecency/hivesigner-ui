@@ -59,7 +59,6 @@
 import * as hiveuri from 'hive-uri'
 import { Component, Vue, Watch } from 'nuxt-property-decorator'
 import { DecodeResult } from 'hive-uri'
-import Bugsnag from '../../plugins/bugsnag'
 import TransactionStatus from '../../components/TransactionStatus.vue'
 import {
   buildSearchParams,
@@ -154,7 +153,6 @@ export default class Sign extends Vue {
       this.uriIsValid = true
     } catch (err) {
       console.error('Failed to process transaction', err)
-      Bugsnag.notify(err)
       this.uriIsValid = false
       this.parsed = null
     }
@@ -173,8 +171,6 @@ export default class Sign extends Vue {
     } catch (err) {
       this.error = err.message
       console.error('Failed to resolve and sign transaction', err)
-
-      Bugsnag.notify(err)
     }
     if (!sig) {
       this.transactionId = ''
@@ -192,8 +188,6 @@ export default class Sign extends Vue {
         console.error('Failed to broadcast transaction', err)
         this.transactionId = ''
         this.failed = true
-
-        Bugsnag.notify(err)
       }
     }
     // Use redirect uri

@@ -35,7 +35,6 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    '~/plugins/bugsnag.ts',
     '~/plugins/transform-old-keychain.ts',
     '~/plugins/idle-detector.ts',
     '~/plugins/hivesigner.ts',
@@ -74,8 +73,7 @@ export default {
   i18n,
 
   env: {
-    BROADCAST_NETWORK: process.env.BROADCAST_NETWORK || 'mainnet',
-    BUGSNAG_API_KEY: process.env.BUGSNAG_API_KEY || ''
+    BROADCAST_NETWORK: process.env.BROADCAST_NETWORK || 'mainnet'
   },
 
   // router

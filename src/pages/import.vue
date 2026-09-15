@@ -56,7 +56,6 @@
 import PasswordValidator from 'password-validator'
 import { Component, Ref, Vue, Watch } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
-import Bugsnag from '../plugins/bugsnag'
 import BasePageLayout from '../components/Layouts/BasePageLayout.vue'
 import { buildSearchParams, client, confirmPostingGrant, encrypt, getAuthority, hasPostingGrant, isValidUrl } from '~/utils'
 import { AccountsModule, AuthModule, PersistentFormsModule } from '~/store'
@@ -264,8 +263,6 @@ export default class Import extends Vue {
         }
       } catch (e) {
         console.log('Failed to parse app account', e)
-
-        Bugsnag.notify(e)
       }
     } else {
       this.failed = true
@@ -358,8 +355,6 @@ export default class Import extends Vue {
           this.failed = true
           this.loading = false
           this.showLoading = false
-
-          Bugsnag.notify(err)
         }
       }
     } catch (err) {
@@ -401,8 +396,6 @@ export default class Import extends Vue {
       await this.startLogin()
     } catch (e) {
       this.isLoading = false
-
-      Bugsnag.notify(e)
     }
   }
 }

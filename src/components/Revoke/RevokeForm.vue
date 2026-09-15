@@ -43,7 +43,6 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'nuxt-property-decorator'
 import { Account } from '@hiveio/dhive'
-import Bugsnag from '../../plugins/bugsnag'
 import { Authority } from '../../enums'
 import { AccountsModule, AuthModule } from '~/store'
 
@@ -124,7 +123,6 @@ export default class RevokeForm extends Vue {
       console.error('Failed to broadcast transaction', err)
       this.$emit('failed', true)
       this.$emit('loading', false)
-      Bugsnag.notify(err)
     }
   }
 

@@ -113,7 +113,6 @@
 <script lang="ts">
 import { Account, Signature, cryptoUtils } from '@hiveio/dhive'
 import { Component, Vue, Watch } from 'nuxt-property-decorator'
-import Bugsnag from '~/plugins/bugsnag'
 import SinglePageLayout from '~/components/Layouts/SinglePageLayout.vue'
 import FormControl from '~/components/UI/Form/FormControl.vue'
 import Loader from '~/components/UI/Loader.vue'
@@ -192,8 +191,6 @@ export default class VerifyMessage extends Vue {
     } catch (err) {
       console.error('Failed to verify message', err)
       this.error = err.message || (this.$t('errors.something_wrong') as string)
-
-      Bugsnag.notify(err)
     }
     this.verifying = false
   }

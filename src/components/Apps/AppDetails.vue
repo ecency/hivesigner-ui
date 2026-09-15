@@ -59,7 +59,6 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator'
-import Bugsnag from '../../plugins/bugsnag'
 import Icon from '../UI/Icons/Icon.vue'
 import Loader from '../UI/Loader.vue'
 import { client, isValidUrl } from '~/utils'
@@ -94,7 +93,6 @@ export default class AppDetails extends Vue {
         }
       } catch (e) {
         console.error('Failed to parse app account', e)
-        Bugsnag.notify(e)
       }
     }
 
