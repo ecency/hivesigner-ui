@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { type CSSProperties, type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { addAccount } from '@/lib/accounts';
+import { addAccount, selectAccount } from '@/lib/accounts';
 import { getAccount, resolveCredential } from '@/lib/hive';
 import { resolveInternalPath } from '@/lib/internal-path';
 import { parseSearch } from '@/lib/search';
@@ -73,6 +73,12 @@ function Import() {
         return;
       }
       await addAccount(name, keys, usePasscode ? passcode : undefined);
+      // Make the account the user just imported the current one. addAccount only
+      // selects when NOTHING is selected, so importing Bob while Alice was
+      // selected left Alice current: returning to a consent request would then
+      // still use Alice and, if Alice lacks the required key, prompt for an
+      // import again in a loop.
+      selectAccount(name);
       // Return to the flow that sent the user here (an OAuth consent request
       // would otherwise be lost and the app would have to start over), falling
       // back to the accounts screen.

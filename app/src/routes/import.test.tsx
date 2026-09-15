@@ -30,7 +30,7 @@ vi.mock('@/lib/hive', async () => {
   return { ...actual, getAccount };
 });
 
-import { getKeys, isUnlocked } from '@/lib/accounts';
+import { addAccount, getKeys, getState, isUnlocked } from '@/lib/accounts';
 import { Route } from './import';
 
 const Import = (Route as unknown as { component: ComponentType }).component;
@@ -159,6 +159,34 @@ describe('import carries the flow it was sent from', () => {
     await fillAndSubmit();
     await waitFor(() =>
       expect(navigate).toHaveBeenCalledWith({ to: '/accounts' }),
+    );
+  });
+});
+
+describe('the imported account becomes current', () => {
+  it('selects the account just imported, even when another was selected', async () => {
+    // Importing Bob to satisfy a consent request that Alice cannot sign must
+    // switch to Bob, or returning to the request still uses Alice and prompts
+    // for an import again.
+    await addAccount('alice', { posting: '5Kother' });
+    expect(getState().selectedAccount).toBe('alice');
+
+    getAccount.mockResolvedValue(account());
+    const user = userEvent.setup();
+    render(<Import />);
+    await user.type(
+      screen.getByRole('textbox', { name: /username/i }),
+      'hivesignertest',
+    );
+    await user.type(
+      document.querySelector('input[name="password"]')!,
+      POSTING_WIF,
+    );
+    await user.click(screen.getByRole('checkbox'));
+    await user.click(screen.getByRole('button'));
+
+    await waitFor(() =>
+      expect(getState().selectedAccount).toBe('hivesignertest'),
     );
   });
 });

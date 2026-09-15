@@ -240,3 +240,49 @@ describe('normalizeLoginRequest (legacy /login contract)', () => {
     expect(r.responseType).toBe('token');
   });
 });
+
+describe('buildRedirectUrl and callback fragments', () => {
+  const req: AuthRequest = { scope: 'posting', responseType: 'token' };
+
+  it('inserts params BEFORE a fragment, so the server actually receives them', () => {
+    // Appending after '#' put the whole token inside the fragment, which a
+    // browser never sends upstream: the app received no parameters at all.
+    const url = buildRedirectUrl(
+      'https://app.example/cb#done',
+      'TOKEN',
+      req,
+      'alice',
+    );
+    const parsed = new URL(url);
+    expect(parsed.searchParams.get('access_token')).toBe('TOKEN');
+    expect(parsed.searchParams.get('username')).toBe('alice');
+    expect(parsed.hash).toBe('#done');
+    // The token must not be hiding in the fragment.
+    expect(parsed.hash).not.toContain('TOKEN');
+  });
+
+  it('handles a fragment on a callback that already has a query', () => {
+    const url = buildRedirectUrl(
+      'https://app.example/cb?tenant=1#done',
+      'TOKEN',
+      req,
+      'alice',
+    );
+    const parsed = new URL(url);
+    expect(parsed.searchParams.get('tenant')).toBe('1');
+    expect(parsed.searchParams.get('access_token')).toBe('TOKEN');
+    expect(parsed.hash).toBe('#done');
+  });
+
+  it('still preserves the registered callback bytes exactly', () => {
+    // Round-tripping through URL rewrote the app's own query (%20 -> +, a
+    // valueless flag gaining '='), so a byte-comparing app saw a different URL.
+    const url = buildRedirectUrl(
+      'https://app.example/cb?q=%20x&flag',
+      'TOKEN',
+      req,
+      'alice',
+    );
+    expect(url.startsWith('https://app.example/cb?q=%20x&flag&')).toBe(true);
+  });
+});

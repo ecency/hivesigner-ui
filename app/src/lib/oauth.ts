@@ -269,9 +269,17 @@ export function buildRedirectUrl(
   // Append to the callback's own STRING rather than round-tripping it through
   // URL: searchParams re-serialises the app's existing query (`q=%20x` becomes
   // `q=+x`, a valueless `flag` becomes `flag=`), and an app that byte-compares
-  // its own callback would see a different URL than it registered. Choosing the
-  // separator still fixes the second '?' this used to emit.
-  return `${callback}${callback.includes('?') ? '&' : '?'}${params.toString()}`;
+  // its own callback would see a different URL than it registered.
+  //
+  // The params go BEFORE any fragment. A registered callback may end in one
+  // (`https://app.example/cb#done`), and appending after it put the whole token
+  // inside the fragment, which a browser never sends to the server, so the app
+  // received no parameters at all.
+  const hash = callback.indexOf('#');
+  const base = hash === -1 ? callback : callback.slice(0, hash);
+  const fragment = hash === -1 ? '' : callback.slice(hash);
+  const separator = base.includes('?') ? '&' : '?';
+  return `${base}${separator}${params.toString()}${fragment}`;
 }
 
 export type { Account };
