@@ -48,9 +48,14 @@ export function Avatar({
   size?: AvatarSize;
   className?: string;
 }) {
-  const [failed, setFailed] = useState(false);
+  // Which image failed, not merely THAT one did. React reuses this component
+  // when the route param or the selected account changes, so a plain boolean
+  // stayed true and pinned the next account to its letter without ever trying
+  // its picture. Deriving from props needs no effect and cannot go stale.
+  const [failedFor, setFailedFor] = useState<string | null>(null);
+  const id = `${username}|${size}`;
   const { px, text } = SIZES[size];
-  const url = failed ? null : avatarUrl(username, size);
+  const url = failedFor === id ? null : avatarUrl(username, size);
   const box = `flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-soft ${className}`;
 
   if (!url) {
@@ -73,7 +78,7 @@ export function Avatar({
       height={px}
       loading="lazy"
       decoding="async"
-      onError={() => setFailed(true)}
+      onError={() => setFailedFor(id)}
       className={box}
       style={{ width: px, height: px }}
     />

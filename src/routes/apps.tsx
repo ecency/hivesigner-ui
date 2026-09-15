@@ -1,9 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
 import {
+  alertError,
   btnGhost,
   cardGrid,
   cardTight,
@@ -91,7 +92,12 @@ function Apps() {
     queryFn: getTopApps,
     staleTime: 10 * 60_000,
   });
-  const { data: all = [], isLoading } = useQuery({
+  const {
+    data: all = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['all-apps'],
     queryFn: getAllApps,
     staleTime: 10 * 60_000,
@@ -110,17 +116,43 @@ function Apps() {
   const visible = matches.slice(0, limit);
 
   // Profiles for the cards ON SCREEN only. Fetching all ~900 accounts to show a
-  // name and a line of description would cost megabytes; this is one call.
-  const shown = useMemo(
-    () => [...new Set([...featured, ...visible])],
-    [featured, visible],
-  );
-  const { data: profiles = {} } = useQuery({
-    queryKey: ['app-profiles', shown.join(',')],
-    queryFn: () => getProfiles(shown),
-    enabled: shown.length > 0,
+  // name and a line of description would cost megabytes.
+  //
+  // Split into FIXED slices rather than one query over everything visible.
+  // Keying a single query on the whole visible set meant every "show more"
+  // produced a new key and re-downloaded every profile already on screen, so
+  // revealing the directory cost O(n^2) transfers. Slice boundaries are fixed
+  // at multiples of PAGE_SIZE, so a slice already fetched keeps its key and
+  // comes straight from the cache; only the newly revealed slice is fetched.
+  const slices = useMemo(() => {
+    const out: string[][] = [];
+    for (let i = 0; i < visible.length; i += PAGE_SIZE) {
+      out.push(visible.slice(i, i + PAGE_SIZE));
+    }
+    return out;
+  }, [visible]);
+
+  const profileQuery = (names: string[]) => ({
+    queryKey: ['app-profiles', names.join(',')],
+    queryFn: () => getProfiles(names),
+    enabled: names.length > 0,
     staleTime: 10 * 60_000,
   });
+
+  // `featured` is its own query rather than part of the slices: it arrives
+  // asynchronously, and folding it into the front of the list would shift every
+  // slice boundary the moment it landed, refetching all of them once.
+  const results = useQueries({
+    queries: [featured, ...slices].map(profileQuery),
+  });
+
+  // Not memoised on purpose: useQueries hands back a fresh array every render,
+  // so any dependency list built from it would miss every time anyway. Merging
+  // a handful of small objects is cheaper than pretending otherwise.
+  const profiles: Record<string, Profile> = Object.assign(
+    {},
+    ...results.map((r) => r.data ?? {}),
+  );
 
   return (
     <section className={page}>
@@ -156,10 +188,16 @@ function Apps() {
 
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className={h2}>
+          {/* min-w-0 + break-all + isolate: this echoes the user's own query,
+              and a long unbroken one expanded a 320px viewport to 1328px. */}
+          <h2 className={`${h2} min-w-0 break-all [unicode-bidi:isolate]`}>
             {query ? t('apps.search_for', { search }) : t('apps.all_apps')}
           </h2>
-          {!isLoading && (
+          {/* `!isError` matters as much as `!isLoading`: on a failed load
+              `matches` is empty, so this rendered "0 apps" directly beside the
+              message saying the directory could not be reached - restating the
+              exact false claim the error state exists to avoid. */}
+          {!isLoading && !isError && (
             <span className={mutedXs}>
               {t('apps.count', { count: matches.length })}
             </span>
@@ -168,8 +206,24 @@ function Apps() {
 
         {isLoading ? (
           <p className={muted}>{t('apps.loading')}</p>
+        ) : isError ? (
+          // NOT the empty state. "There are no apps" is a very different claim
+          // from "we could not reach a node", and the directory coming back
+          // empty because of an outage used to read as the former.
+          <div role="alert" className={`${alertError} flex flex-col gap-3`}>
+            <span>{t('apps.directory_unavailable')}</span>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className={`${btnGhost} self-start`}
+            >
+              {t('common.try_again')}
+            </button>
+          </div>
         ) : matches.length === 0 ? (
-          <p className={muted}>{t('apps.empty_search', { search })}</p>
+          <p className={`${muted} break-all [unicode-bidi:isolate]`}>
+            {t('apps.empty_search', { search })}
+          </p>
         ) : (
           <>
             <div className={cardGrid}>

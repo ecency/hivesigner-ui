@@ -99,37 +99,43 @@ interface FollowRow {
  * standing between the page size and nine duplicate cards in a ~900-entry
  * directory, so it is not tidying.
  *
- * A failed page returns what was collected rather than throwing: a partial
- * directory is worth more than an empty one, and the caller cannot tell the
- * difference anyway.
+ * A LATER page failing keeps what arrived: a partial directory is worth more
+ * than none. The FIRST page failing rethrows, so React Query can retry it and
+ * the screen can say the directory is unavailable. Returning [] there instead
+ * rendered a node outage as "there are no apps", which is a different and much
+ * more alarming claim.
  */
 export async function getAllApps(): Promise<string[]> {
   const STEP = 100;
-  // 20 pages is ~2000 accounts, well past the current ~900. It exists so a node
-  // that ignores `start` cannot spin this loop forever.
-  const MAX_PAGES = 20;
+  // Purely a runaway guard for a node that ignores `start`; the no-progress
+  // check and a short page are what actually end this loop. Set far above any
+  // plausible directory (~900 today) so it never silently truncates the list
+  // and reports the remainder as the whole of it.
+  const MAX_PAGES = 200;
   const names: string[] = [];
   let start = '';
 
-  try {
-    for (let page = 0; page < MAX_PAGES; page++) {
-      const rows = (await callRPC('condenser_api.get_following', [
+  for (let page = 0; page < MAX_PAGES; page++) {
+    let rows: FollowRow[];
+    try {
+      rows = (await callRPC('condenser_api.get_following', [
         ORACLE,
         start,
         'blog',
         STEP,
       ])) as FollowRow[];
-      if (!Array.isArray(rows) || rows.length === 0) break;
-      names.push(...rows.map((r) => r?.following).filter(isUsername));
-      if (rows.length < STEP) break;
-      const last = names[names.length - 1];
-      // No forward progress (a node that ignored `start`): stop rather than
-      // request the same page forever.
-      if (!last || last === start) break;
-      start = last;
+    } catch (e) {
+      if (names.length === 0) throw e;
+      break;
     }
-  } catch {
-    // keep what arrived
+    if (!Array.isArray(rows) || rows.length === 0) break;
+    names.push(...rows.map((r) => r?.following).filter(isUsername));
+    if (rows.length < STEP) break;
+    const last = names[names.length - 1];
+    // No forward progress (a node that ignored `start`): stop rather than
+    // request the same page forever.
+    if (!last || last === start) break;
+    start = last;
   }
 
   return [...new Set(names)];

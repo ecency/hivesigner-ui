@@ -64,4 +64,29 @@ describe('Avatar', () => {
     expect(container.querySelector('img')).toBeNull();
     expect(screen.getByText('e')).toBeInTheDocument();
   });
+
+  // React reuses this component when the route param or the selected account
+  // changes. A plain `failed` boolean stayed true across that change, so the
+  // NEXT account was pinned to its letter without its picture ever being tried.
+  it('tries again for a different account after one image fails', () => {
+    const { container, rerender } = render(<Avatar username="ecency.app" />);
+    const img = container.querySelector('img');
+    if (img) fireEvent.error(img);
+    expect(container.querySelector('img')).toBeNull();
+
+    rerender(<Avatar username="peakd.app" />);
+    expect(container.querySelector('img')).toHaveAttribute(
+      'src',
+      avatarUrl('peakd.app'),
+    );
+  });
+
+  it('keeps the fallback for the account that actually failed', () => {
+    const { container, rerender } = render(<Avatar username="ecency.app" />);
+    const img = container.querySelector('img');
+    if (img) fireEvent.error(img);
+    rerender(<Avatar username="peakd.app" />);
+    rerender(<Avatar username="ecency.app" />);
+    expect(container.querySelector('img')).toBeNull();
+  });
 });

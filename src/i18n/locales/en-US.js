@@ -59,6 +59,7 @@ export default {
     successfully_logged_in: 'Logged in successfully!'
   },
   apps: {
+    directory_unavailable: 'Could not load the app directory. A Hive node may be unreachable.',
     directory_hint: 'Every app that uses Hivesigner to sign people in.',
     featured: 'Featured',
     all_apps: 'All apps',

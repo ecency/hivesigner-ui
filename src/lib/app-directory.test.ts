@@ -59,9 +59,12 @@ describe('getAllApps', () => {
     await expect(getAllApps()).resolves.toHaveLength(100);
   });
 
-  it('returns an empty list when the very first page fails', async () => {
+  // Returning [] here rendered a node outage as "there are no apps", a
+  // different and much more alarming claim, and it denied React Query anything
+  // to retry. The failure has to reach the caller.
+  it('rethrows when the very first page fails, rather than reporting no apps', async () => {
     callRPC.mockRejectedValueOnce(new Error('node down'));
-    await expect(getAllApps()).resolves.toEqual([]);
+    await expect(getAllApps()).rejects.toThrow('node down');
   });
 
   // A node that ignores `start` hands back the same full page forever. The
@@ -75,6 +78,21 @@ describe('getAllApps', () => {
     const all = await getAllApps();
     expect(all).toHaveLength(100);
     expect(callRPC).toHaveBeenCalledTimes(2);
+  });
+
+  // The cap is a runaway guard, not a directory size limit. It used to be 20
+  // pages, which would have silently dropped everything past ~2000 accounts and
+  // presented the remainder as the complete list.
+  it('pages well past the size of the directory today', async () => {
+    // 30 full, progressing pages: more than the old cap allowed.
+    for (let p = 0; p < 30; p++) {
+      callRPC.mockResolvedValueOnce(
+        rows(Array.from({ length: 100 }, (_, i) => name(p * 100 + i))),
+      );
+    }
+    callRPC.mockResolvedValueOnce(rows([name(3000)]));
+    const all = await getAllApps();
+    expect(all).toHaveLength(3001);
   });
 
   it('refuses rows that are not valid account names', async () => {
