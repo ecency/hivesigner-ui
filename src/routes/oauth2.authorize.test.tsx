@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { type ComponentType, StrictMode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { oauthAppProfileKey } from '@/lib/query-keys';
 
 // Regression tests for the OAuth consent screen. The two findings these pin:
 //  - cancelling while the pre-grant account refetch is in flight must NOT go on
@@ -35,9 +36,14 @@ vi.mock('@tanstack/react-router', () => ({
   Link: ({ children }: { children: unknown }) => children,
 }));
 // Two queries run here (app profile, selected account); dispatch on queryKey.
+//
+// Through the BUILDER, not a hardcoded string. A literal here silently sent the
+// profile query down the account branch when the real key was renamed, handing
+// the component an account object where it expected an app profile - the same
+// stringly-typed hazard that crashed the consent screen in production.
 vi.mock('@tanstack/react-query', () => ({
   useQuery: (opts: { queryKey: unknown[] }) =>
-    opts.queryKey[0] === 'app-profile'
+    opts.queryKey[0] === oauthAppProfileKey('x')[0]
       ? { data: h.profile, isLoading: false }
       : { data: h.account, refetch: h.refetchAccount },
 }));

@@ -14,6 +14,7 @@ import {
   page,
 } from '@/components/ui';
 import { getTopApps } from '@/lib/hive';
+import { topAppsKey } from '@/lib/query-keys';
 import { useAccounts } from '@/lib/use-accounts';
 
 export const Route = createFileRoute('/')({
@@ -64,7 +65,7 @@ function Home() {
   const primary = usernames.length > 0 ? '/accounts' : '/import';
 
   const { data: featured = [] } = useQuery({
-    queryKey: ['top-apps'],
+    queryKey: topAppsKey(),
     queryFn: getTopApps,
     staleTime: 10 * 60_000,
   });

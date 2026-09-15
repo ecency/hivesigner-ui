@@ -16,6 +16,7 @@ import {
 import { getKeys } from '@/lib/accounts';
 import { authorizedApps, buildRevokeOperation } from '@/lib/grant';
 import { type Account, getAccount } from '@/lib/hive';
+import { accountKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
 
@@ -37,7 +38,7 @@ function AuthorizedApps() {
   const [error, setError] = useState<string | null>(null);
 
   const { data: account } = useQuery({
-    queryKey: ['account', selectedAccount],
+    queryKey: accountKey(selectedAccount),
     queryFn: (): Promise<Account | null> =>
       selectedAccount ? getAccount(selectedAccount) : Promise.resolve(null),
     enabled: !!selectedAccount,
@@ -64,7 +65,7 @@ function AuthorizedApps() {
     try {
       const op = buildRevokeOperation(account, app);
       if (op) await broadcastOperations([op], activeKey, account.name);
-      await qc.invalidateQueries({ queryKey: ['account', selectedAccount] });
+      await qc.invalidateQueries({ queryKey: accountKey(selectedAccount) });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {

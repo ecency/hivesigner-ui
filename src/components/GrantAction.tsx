@@ -20,6 +20,7 @@ import {
   hasGrant,
 } from '@/lib/grant';
 import { type Account, getAccount } from '@/lib/hive';
+import { accountKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
 
@@ -41,7 +42,7 @@ export function GrantAction({
   const [error, setError] = useState('');
 
   const { data: account, refetch } = useQuery({
-    queryKey: ['account', selectedAccount],
+    queryKey: accountKey(selectedAccount),
     queryFn: (): Promise<Account | null> =>
       selectedAccount ? getAccount(selectedAccount) : Promise.resolve(null),
     enabled: !!selectedAccount,
