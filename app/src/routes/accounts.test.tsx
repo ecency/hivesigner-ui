@@ -3,7 +3,10 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const rs = vi.hoisted(() => ({ search: {} as { next?: string } }));
+const rs = vi.hoisted(() => ({
+  search: {} as { next?: string },
+  navigate: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => (opts: unknown) => ({
@@ -11,6 +14,7 @@ vi.mock('@tanstack/react-router', () => ({
     useSearch: () => rs.search,
   }),
   Link: ({ children }: { children: unknown }) => children,
+  useNavigate: () => rs.navigate,
 }));
 
 import {
@@ -83,8 +87,14 @@ describe('returning to the flow that required an unlock', () => {
 
   beforeEach(() => {
     rs.search = {};
+    rs.navigate.mockReset();
     assign.mockReset();
-    vi.stubGlobal('location', { assign, pathname: '/accounts', search: '' });
+    vi.stubGlobal('location', {
+      assign,
+      origin: 'https://signer.example',
+      pathname: '/accounts',
+      search: '',
+    });
   });
 
   /** alice selected, bob present but not in memory (as after a reload). */
@@ -95,31 +105,60 @@ describe('returning to the flow that required an unlock', () => {
     lockAccount('bob');
   }
 
-  it('returns to an internal next path after unlocking', async () => {
-    // The OAuth consent screen sends the user here and must get them back, or
-    // the authorization request is lost and the app has to start over.
+  it('returns CLIENT-SIDE, so the just-unlocked keys survive', async () => {
+    // Decrypted keys are in memory only. A document navigation would reload the
+    // app, re-lock the account and bounce the user back here forever, so this
+    // must never touch window.location.
     rs.search = { next: '/oauth2/authorize?client_id=theapp' };
     await twoAccounts();
     render(<Accounts />);
     await userEvent.click(screen.getByRole('button', { name: /unlock/i }));
-    await waitFor(() => expect(getState().selectedAccount).toBe('bob'));
-    await waitFor(() =>
-      expect(assign).toHaveBeenCalledWith('/oauth2/authorize?client_id=theapp'),
-    );
+    await waitFor(() => expect(rs.navigate).toHaveBeenCalled());
+    expect(rs.navigate).toHaveBeenCalledWith({
+      to: '/oauth2/authorize',
+      search: { client_id: 'theapp' },
+    });
+    expect(assign).not.toHaveBeenCalled();
+    expect(isUnlocked('bob')).toBe(true);
   });
 
-  it('refuses an off-site next, which would be an open redirect', async () => {
-    for (const bad of ['https://evil.example/x', '//evil.example/x']) {
+  it('refuses every off-site next, including backslash forms', async () => {
+    // `/\\evil.example/x` and `\\/evil.example` resolve to an EXTERNAL origin
+    // even though they start with a single '/', so a startsWith check is not
+    // enough; `/..//evil.example` stays same-origin but resolves to a
+    // protocol-relative path.
+    for (const bad of [
+      'https://evil.example/x',
+      '//evil.example/x',
+      '/\\evil.example/after-unlock',
+      '\\/evil.example',
+      '/..//evil.example',
+    ]) {
       localStorage.clear();
       _resetKeyCache();
       rs.search = { next: bad };
+      rs.navigate.mockReset();
       assign.mockReset();
       await twoAccounts();
       const view = render(<Accounts />);
       await userEvent.click(screen.getByRole('button', { name: /unlock/i }));
       await waitFor(() => expect(getState().selectedAccount).toBe('bob'));
-      expect(assign).not.toHaveBeenCalled();
+      expect(rs.navigate, `next=${bad}`).not.toHaveBeenCalled();
+      expect(assign, `next=${bad}`).not.toHaveBeenCalled();
       view.unmount();
     }
+  });
+
+  it('still returns for a plain internal path with no query', async () => {
+    rs.search = { next: '/authorized-apps' };
+    await twoAccounts();
+    render(<Accounts />);
+    await userEvent.click(screen.getByRole('button', { name: /unlock/i }));
+    await waitFor(() =>
+      expect(rs.navigate).toHaveBeenCalledWith({
+        to: '/authorized-apps',
+        search: {},
+      }),
+    );
   });
 });

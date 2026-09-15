@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { type CSSProperties, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -8,6 +8,7 @@ import {
   selectAccount,
   unlockAccount,
 } from '@/lib/accounts';
+import { parseSearch } from '@/lib/search';
 import { useAccounts } from '@/lib/use-accounts';
 
 // The account switcher (#106 pain #5): every stored account with its state,
@@ -23,13 +24,27 @@ export const Route = createFileRoute('/accounts')({
 });
 
 /**
- * Where to return after unlocking. Only a same-origin ABSOLUTE PATH is accepted:
- * anything with a scheme or protocol-relative form would turn this into an open
- * redirect, and the caller of this screen is the OAuth consent flow.
+ * Where to return after unlocking, as a resolved pathname + search, or null.
+ *
+ * Resolve against our own origin and compare origins rather than pattern-matching
+ * the string: a browser reads `/\\evil.example/x` (and `\\/evil.example`) as
+ * protocol-relative, so a startsWith('//') check lets an off-site target through.
+ * The RESOLVED parts are returned, which also neutralises `/..//evil.example`,
+ * whose path resolves to a protocol-relative form even though its origin is ours.
  */
-function safeNext(next: string | undefined): string | null {
-  if (!next || !next.startsWith('/') || next.startsWith('//')) return null;
-  return next;
+function safeNext(
+  next: string | undefined,
+): { pathname: string; search: string } | null {
+  if (!next) return null;
+  try {
+    const origin = window.location.origin;
+    const url = new URL(next, origin);
+    if (url.origin !== origin) return null;
+    if (url.pathname.startsWith('//')) return null;
+    return { pathname: url.pathname, search: url.search };
+  } catch {
+    return null;
+  }
 }
 
 const fld: CSSProperties = {
@@ -58,12 +73,24 @@ function AccountRow({
   const [passcode, setPasscode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const navigate = useNavigate();
 
   function done() {
     // Return to the flow that sent the user here (an OAuth consent request
     // would otherwise be lost, forcing the app to start over).
     const back = safeNext(next);
-    if (back) window.location.assign(back);
+    if (!back) return;
+    // CLIENT-SIDE navigation only. Decrypted keys live in memory and are never
+    // persisted, so a document navigation (window.location.assign) would reload
+    // the app, drop the key cache, re-lock the account that was just unlocked,
+    // and the consent screen would send the user straight back here forever.
+    // The target is a runtime string, so the typed router cannot model it; the
+    // cast is at this boundary only. safeNext has already constrained it to a
+    // same-origin path.
+    navigate({
+      to: back.pathname,
+      search: back.search ? parseSearch(back.search) : {},
+    } as never);
   }
 
   async function activate() {
