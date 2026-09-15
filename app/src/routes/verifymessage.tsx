@@ -119,10 +119,9 @@ function VerifyMessage() {
         <span className="text-[13px] font-semibold text-[#1f2328]">
           {t('message_verification.payload_label')}
         </span>
-        {/* `field` is sized for a one-line control; `h-auto` keeps the four
-            rows and `py-3` restores the vertical padding it gave up. The ink
-            colour is explicit because a textarea inherits colour, and `label`
-            is muted. */}
+        {/* `fieldBase` carries no height, so the rows attribute decides it. Using
+            `field` (which is h-11) plus `h-auto` would make the height depend on
+            which utility Tailwind emits last. */}
         <textarea
           name="payload"
           rows={4}

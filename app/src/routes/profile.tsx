@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import {
   alertError,
   btnPrimary,
+  fieldBase,
   field as fieldClass,
   formColumn,
   h1,
@@ -184,7 +185,7 @@ function Profile() {
         <textarea
           id={`profile-${key}`}
           rows={4}
-          className={`${fieldClass} h-auto p-3`}
+          className={`${fieldBase} p-3`}
           value={current[key]}
           onChange={(e) => set(key, e.target.value)}
         />
