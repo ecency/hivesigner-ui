@@ -9,9 +9,11 @@ on:
       - feature/react-rewrite
     paths:
       - 'app/**'
+      - '.github/workflows/ui-ci.yml'
   pull_request:
     paths:
       - 'app/**'
+      - '.github/workflows/ui-ci.yml'
 
 jobs:
   build:
