@@ -85,6 +85,41 @@ function absoluteRedirect(value: string | undefined): string | undefined {
 }
 
 /**
+ * A legacy /login request whose real parameters are NESTED inside its `redirect`.
+ *
+ * login.vue built `hive://login-request/<clientId>?<the whole /login query>` and
+ * sent the user through the grant detour carrying it as `redirect`, so the client
+ * id lives in that URL's PATH and the callback and scope live in its query.
+ * Passing the outer query straight to the consent screen produced an AuthRequest
+ * with no client id and no callback, so authorization could not complete.
+ *
+ * Outer params win where both define one: the outer query is the live request and
+ * the nested copy is what was captured when the detour was built.
+ */
+export function unpackLoginRequest(query: Record<string, string>): {
+  query: Record<string, string>;
+  pathClientId?: string;
+} {
+  const redirect = query.redirect;
+  if (!redirect?.includes('/login-request')) return { query };
+  try {
+    const url = new URL(redirect, window.location.origin);
+    const segments = url.pathname.split('/').filter(Boolean);
+    const at = segments.indexOf('login-request');
+    const pathClientId = at >= 0 ? segments[at + 1] : undefined;
+    const nested: Record<string, string> = {};
+    url.searchParams.forEach((value, key) => {
+      nested[key] = value;
+    });
+    // Drop the consumed `redirect` so the merged query is judged on its own.
+    const { redirect: _consumed, ...outer } = query;
+    return { query: { ...nested, ...outer }, pathClientId };
+  } catch {
+    return { query };
+  }
+}
+
+/**
  * Whether a legacy /login request is the LOCAL login-and-return flow rather than
  * app consent: no client id and no absolute callback. A bare /login is local too
  * (login.vue sent it to '/'), and a `redirect` pointing at /login-request is the

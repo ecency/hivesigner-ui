@@ -228,3 +228,36 @@ describe('when localStorage refuses to persist', () => {
     }
   });
 });
+
+describe('selection precedence when a write fails mid-session', () => {
+  it("this session's choice wins over the stale persisted one", async () => {
+    // Alice is persisted and selected. Storage then starts failing. Clicking Bob
+    // must actually switch: on a signer, selectedAccount is the account you sign
+    // as, so silently keeping Alice is signing as the wrong account.
+    await addAccount('alice', { posting: '5Ka' });
+    expect(getState().selectedAccount).toBe('alice');
+
+    const setItem = vi
+      .spyOn(Storage.prototype, 'setItem')
+      .mockImplementation(() => {
+        throw new Error('blocked');
+      });
+    try {
+      await addAccount('bob', { posting: '5Kb' });
+      selectAccount('bob');
+      expect(getState().selectedAccount).toBe('bob');
+      expect(getKeys('bob')).toEqual({ posting: '5Kb' });
+    } finally {
+      setItem.mockRestore();
+    }
+  });
+
+  it('a fresh session still honours the persisted selection', async () => {
+    await addAccount('alice', { posting: '5Ka' });
+    await addAccount('bob', { posting: '5Kb' });
+    selectAccount('bob');
+    // Simulate a reload: volatile state gone, storage intact.
+    _resetKeyCache();
+    expect(getState().selectedAccount).toBe('bob');
+  });
+});

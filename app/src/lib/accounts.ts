@@ -103,9 +103,12 @@ export function getState(): AccountsState {
       : null;
   snapshot = {
     usernames,
-    // Persisted choice wins so a reload is stable; the session choice covers the
-    // unpersisted case above.
-    selectedAccount: persistedChoice ?? sessionChoice,
+    // THIS SESSION'S choice wins. sessionSelected is only ever set by an
+    // explicit action in this session, and it starts null on a fresh load, so
+    // the persisted value still governs a reload. Preferring the persisted value
+    // instead meant that once a write started failing, clicking Bob silently
+    // kept Alice selected - and on a signer that is the account you sign as.
+    selectedAccount: sessionChoice ?? persistedChoice,
     unlocked: [...keyCache.keys()],
   };
   return snapshot;

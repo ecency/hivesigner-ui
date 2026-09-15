@@ -3,7 +3,11 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthorizeConsent } from '@/components/AuthorizeConsent';
 import { resolveInternalPath } from '@/lib/internal-path';
-import { isLocalLoginRequest, normalizeLoginRequest } from '@/lib/oauth';
+import {
+  isLocalLoginRequest,
+  normalizeLoginRequest,
+  unpackLoginRequest,
+} from '@/lib/oauth';
 import { parseSearch } from '@/lib/search';
 import { useAccounts } from '@/lib/use-accounts';
 
@@ -25,8 +29,13 @@ export const Route = createFileRoute('/login')({
 
 function Login() {
   const search = Route.useSearch();
-  if (isLocalLoginRequest(search)) return <LocalLogin next={search.redirect} />;
-  return <AuthorizeConsent req={normalizeLoginRequest(search)} />;
+  // A `redirect` pointing at /login-request carries the real request nested
+  // inside it (client id in the path, callback and scope in its query), so unpack
+  // it before deciding anything.
+  const { query, pathClientId } = unpackLoginRequest(search);
+  if (isLocalLoginRequest(query) && !pathClientId)
+    return <LocalLogin next={query.redirect} />;
+  return <AuthorizeConsent req={normalizeLoginRequest(query, pathClientId)} />;
 }
 
 /** Log in, then continue to an internal page (default the home screen). */

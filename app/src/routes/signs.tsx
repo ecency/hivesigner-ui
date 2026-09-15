@@ -31,9 +31,24 @@ const card: CSSProperties = {
   padding: '12px 14px',
 };
 
-/** Whether a schema field carries JSON rather than a scalar. */
+/**
+ * A field whose on-chain value is a real list or map, so its text must be parsed.
+ * NOT `json`: those fields (custom_json.json, json_metadata,
+ * posting_json_metadata) carry a JSON STRING on chain, so parsing one would make
+ * the serializer write an object where the caller asked for a string.
+ */
 function isStructured(type: string): boolean {
-  return type === 'array' || type === 'object' || type === 'json';
+  return type === 'array' || type === 'object';
+}
+
+/** A field that holds JSON text: validate the syntax, keep the string. */
+function isJsonText(type: string): boolean {
+  return type === 'json';
+}
+
+/** Either kind gets a textarea and a JSON hint. */
+function isJsonEntry(type: string): boolean {
+  return isStructured(type) || isJsonText(type);
 }
 
 /**
@@ -68,20 +83,27 @@ function OperationForm({ name }: { name: string }) {
     const payload: Record<string, unknown> = {};
     for (const [field, raw] of Object.entries(form)) {
       const type = schema[field]?.type ?? 'string';
-      if (!isStructured(type)) {
-        payload[field] = raw;
+      const text = raw.trim();
+      if (isJsonEntry(type)) {
+        // A blank entry is OMITTED, never coerced to {} or []. account_update's
+        // owner/active/posting are optional objects, and substituting {} made
+        // operationAuthority's present() check true, which escalated the request
+        // to the OWNER key and sent an authority object with no threshold or
+        // auths. Omitting lets processValue apply the schema default, which is
+        // exactly what any other /sign entry point produces.
+        if (text === '') continue;
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          setError(`${field} must be valid JSON for this ${type} field.`);
+          return;
+        }
+        // Structured fields send the parsed value; json fields send the text.
+        payload[field] = isStructured(type) ? parsed : raw;
         continue;
       }
-      if (raw.trim() === '') {
-        payload[field] = type === 'array' ? [] : {};
-        continue;
-      }
-      try {
-        payload[field] = JSON.parse(raw);
-      } catch {
-        setError(`${field} must be valid JSON for this ${type} field.`);
-        return;
-      }
+      payload[field] = raw;
     }
     setError(null);
     // Same handoff as the Nuxt page: encode the operation and let the /sign
@@ -114,9 +136,9 @@ function OperationForm({ name }: { name: string }) {
             style={{ fontSize: 12, color: '#59636e' }}
           >
             {field}
-            {isStructured(schema[field].type) ? ' (JSON)' : ''}
+            {isJsonEntry(schema[field].type) ? ' (JSON)' : ''}
           </label>
-          {isStructured(schema[field].type) ? (
+          {isJsonEntry(schema[field].type) ? (
             <textarea
               id={`${name}-${field}`}
               style={{

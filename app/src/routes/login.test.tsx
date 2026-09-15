@@ -144,3 +144,34 @@ describe('/login flow selection', () => {
     expect(screen.getByText('CONSENT SCREEN')).toBeInTheDocument();
   });
 });
+
+describe('/login nested legacy request', () => {
+  it('unpacks a redirect that carries the real request inside it', async () => {
+    // login.vue built hive://login-request/<clientId>?<query> and carried it as
+    // `redirect` through the grant detour, so the client id is in that PATH and
+    // the callback and scope are in its query. Without unpacking, consent got an
+    // empty AuthRequest and authorization could not complete.
+    h.search = {
+      redirect:
+        '/login-request/theapp?scope=posting&redirect_uri=https://app.example/cb&state=xyz',
+    };
+    render(<Login />);
+    expect(screen.getByText('CONSENT SCREEN')).toBeInTheDocument();
+    const req = h.consent.mock.calls[0][0].req;
+    expect(req.clientId).toBe('theapp');
+    expect(req.redirectUri).toBe('https://app.example/cb');
+    expect(req.scope).toBe('posting');
+    expect(req.state).toBe('xyz');
+  });
+
+  it('lets an outer param override the nested copy', async () => {
+    h.search = {
+      redirect: '/login-request/theapp?redirect_uri=https://stale.example/cb',
+      redirect_uri: 'https://live.example/cb',
+    };
+    render(<Login />);
+    expect(h.consent.mock.calls[0][0].req.redirectUri).toBe(
+      'https://live.example/cb',
+    );
+  });
+});
