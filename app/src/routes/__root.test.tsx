@@ -21,8 +21,15 @@ import { Route } from './__root';
 
 const RootLayout = (Route as unknown as { component: ComponentType }).component;
 
-/** Every responsive `hidden` utility that could remove an element at a width. */
-const HIDES_AT_BREAKPOINT = /(?:^|\s)(?:sm|md|lg|xl|2xl):hidden(?:\s|$)/;
+/**
+ * Ways a utility class can remove an element at some viewport width. The first
+ * version of this test matched only `sm:hidden`, and a review showed it missed
+ * `max-sm:hidden` (hidden BELOW the breakpoint), `sm:invisible`, `sm:sr-only`,
+ * `sm:h-0 sm:overflow-hidden` and arbitrary-media variants such as
+ * `min-[640px]:hidden`. Any of these would reintroduce the same bug invisibly.
+ */
+const HIDING_UTILITY =
+  /(?:^|\s)(?:(?:max-)?(?:sm|md|lg|xl|2xl)|min-\[[^\]]+\]|\[@media[^\]]*\]):(?:hidden|invisible|sr-only|h-0|w-0|opacity-0|scale-0)(?:\s|$)/;
 
 describe('persistent navigation', () => {
   it('renders the nav with the destinations the Nuxt app offered', () => {
@@ -45,7 +52,7 @@ describe('persistent navigation', () => {
     while (el) {
       const cls = el.className || '';
       expect(
-        HIDES_AT_BREAKPOINT.test(cls),
+        HIDING_UTILITY.test(cls),
         `navigation is hidden at a breakpoint by "${cls}"`,
       ).toBe(false);
       expect(/(?:^|\s)hidden(?:\s|$)/.test(cls), `hidden by "${cls}"`).toBe(

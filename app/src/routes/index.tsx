@@ -26,12 +26,13 @@ function Home() {
       <Link to={primary} className={`${btnPrimary} self-start`}>
         {t('index.get_started')}
       </Link>
-      <nav className="flex flex-wrap gap-3.5 text-[13.5px]">
-        <Link to="/accounts">{t('footer.accounts')}</Link>
-        <Link to="/apps">{t('footer.apps')}</Link>
+      {/* NOT a <nav>: AppNav in the shell is the navigation landmark, and a
+          second one here made the landing page report two. Only the link AppNav
+          does not carry is kept. */}
+      <div className="flex flex-wrap gap-3.5 text-[13.5px]">
         <Link to="/signmessage">{t('footer.sign_message')}</Link>
-        <Link to="/about">{t('footer.about')}</Link>
-      </nav>
+        <Link to="/verifymessage">{t('footer.verify_message')}</Link>
+      </div>
     </section>
   );
 }

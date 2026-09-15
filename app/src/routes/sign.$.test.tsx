@@ -130,3 +130,44 @@ describe('sign route', () => {
     ).toBeInTheDocument();
   });
 });
+
+describe('untrusted text cannot push the layout sideways', () => {
+  // A real browser measurement found three overflows here: a long permlink in the
+  // TITLE pushed the authority badge ~3000px off-screen, an encrypted memo (one
+  // unbroken base58 run) made the page 7x the viewport, and a long custom_json
+  // KEY pushed its own value out of view. jsdom cannot measure layout, so these
+  // assert the wrapping classes that prevent it instead.
+  const WRAPS = /\b(break-all|break-words)\b/;
+
+  it('wraps the operation title and lets the header row wrap', async () => {
+    h.splat = 'vote';
+    h.search = { author: 'alice', permlink: 'a'.repeat(250), weight: '10000' };
+    render(<Sign />);
+    const title = await screen.findByText(/Upvote @alice/);
+    expect(WRAPS.test(title.className), title.className).toBe(true);
+    // min-w-0 is what actually lets a flex child shrink below min-content.
+    expect(title.className).toContain('min-w-0');
+    expect(title.parentElement?.className).toContain('flex-wrap');
+  });
+
+  it('wraps the detail line, which carries the memo', async () => {
+    h.splat = 'transfer';
+    h.search = { to: 'bob', amount: '1.000 HIVE', memo: `#${'A'.repeat(300)}` };
+    render(<Sign />);
+    const detail = await screen.findByText(/^Memo: #A+$/);
+    expect(WRAPS.test(detail.className), detail.className).toBe(true);
+  });
+
+  it('wraps BOTH the label and the value of every field row', async () => {
+    h.splat = 'transfer';
+    h.search = { from: 'treasury', to: 'bob', amount: '1.000 HIVE' };
+    render(<Sign />);
+    const label = await screen.findByText('From:');
+    expect(WRAPS.test(label.className), `label: ${label.className}`).toBe(true);
+    // The label is attacker-controlled too (a custom_json path), so it must not
+    // stay flex-none: that is what pushed the value off-screen.
+    expect(label.className).not.toContain('flex-none');
+    const value = label.nextElementSibling as HTMLElement;
+    expect(WRAPS.test(value.className), `value: ${value.className}`).toBe(true);
+  });
+});

@@ -224,8 +224,8 @@ function Sign() {
         const opAuthority = requiredAuthority([op]);
         return (
           <div key={`${op[0]}-${i}`} className={`${card} flex flex-col gap-2`}>
-            <div className="flex items-baseline gap-2">
-              <div className="flex-1 text-lg font-bold">
+            <div className="flex flex-wrap items-baseline gap-2">
+              <div className="min-w-0 flex-1 break-words text-lg font-bold">
                 {displayOps.length > 1 ? `${i + 1}. ` : ''}
                 {s.title}
               </div>
@@ -241,7 +241,9 @@ function Sign() {
               </span>
             </div>
             {s.detail && (
-              <div className="text-[13px] text-[#59636e]">{s.detail}</div>
+              <div className="break-all text-[13px] text-[#59636e]">
+                {s.detail}
+              </div>
             )}
             {/* Show the material fields inline so nothing dangerous is hidden. */}
             {fields.map((f, fi) => (
@@ -251,7 +253,7 @@ function Sign() {
                 className="flex gap-1.5 text-[12.5px]"
               >
                 {/* isolate the LABEL too: a JSON key can carry bidi controls. */}
-                <span className="flex-none text-[#59636e] [unicode-bidi:isolate]">
+                <span className="break-all text-[#59636e] [unicode-bidi:isolate]">
                   {f.label}:
                 </span>
                 {/* isolate: a value cannot reorder the text around it. */}
@@ -265,7 +267,7 @@ function Sign() {
       })}
 
       {req.preservedTx && (
-        <div className={`${card} text-[12.5px] text-[#59636e]`}>
+        <div className={`${card} text-[12.5px] break-words text-[#59636e]`}>
           This request supplied its own transaction header. Expires:{' '}
           <b>{safeText(String(req.preservedTx.expiration))}</b>
           {Array.isArray(req.preservedTx.signatures) &&

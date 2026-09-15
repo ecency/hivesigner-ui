@@ -42,7 +42,7 @@ function Settings() {
 
       {/* The control itself stays a comfortable field width on a desktop. */}
       <label className={`${label} max-w-sm`}>
-        <span className="font-semibold">
+        <span className="text-[13px] font-semibold text-[#1f2328]">
           {t('footer.network', { network: 'Language' })}
         </span>
         <select

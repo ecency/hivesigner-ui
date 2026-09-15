@@ -33,12 +33,15 @@ export const muted = 'm-0 text-sm break-words text-[#59636e]';
 export const mutedXs = 'm-0 text-xs break-words text-[#59636e]';
 
 /** Full-width primary action. */
+// `cursor-pointer` belongs in the recipe: the inline styles it replaced set it,
+// and Tailwind's preflight sets no cursor on a button, so every caller that
+// forgot it silently lost the affordance.
 export const btnPrimary =
-  'inline-flex h-[50px] items-center justify-center rounded-[10px] border-none bg-[#E31337] px-5 text-base font-semibold text-white no-underline hover:bg-[#c8102f] disabled:cursor-not-allowed disabled:bg-[#f0a5b3]';
+  'inline-flex h-[50px] cursor-pointer items-center justify-center rounded-[10px] border-none bg-[#E31337] px-5 text-base font-semibold text-white no-underline hover:bg-[#c8102f] disabled:cursor-not-allowed disabled:bg-[#f0a5b3]';
 
 /** Secondary action, same metrics as the primary. */
 export const btnSecondary =
-  'inline-flex h-[50px] items-center justify-center rounded-[10px] border border-[#d1d9e0] bg-white px-5 text-base font-semibold text-[#1f2328] no-underline hover:bg-[#f6f8fa]';
+  'inline-flex h-[50px] cursor-pointer items-center justify-center rounded-[10px] border border-[#d1d9e0] bg-white px-5 text-base font-semibold text-[#1f2328] no-underline hover:bg-[#f6f8fa]';
 
 /** Everything a field needs EXCEPT a height. Use for a textarea or any control
  * that sizes itself: `${fieldBase} py-2` rather than `${field} h-auto`, which

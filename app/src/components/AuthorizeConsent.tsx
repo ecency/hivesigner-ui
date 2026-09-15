@@ -22,6 +22,7 @@ import {
   isRegisteredRedirect,
   loadAppProfile,
 } from '@/lib/oauth';
+import { safeText } from '@/lib/operation-summary';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
 
@@ -177,7 +178,10 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     return <section className={page}>…</section>;
   }
 
-  const appName = profile?.name ?? req.clientId ?? 'This site';
+  // Attacker-controlled: profile.name is the app account's own on-chain
+  // metadata and clientId comes from the URL. Strip control and bidi characters
+  // for the same reason the confirm screen does.
+  const appName = safeText(profile?.name ?? req.clientId ?? 'This site');
   const unregistered =
     !!req.clientId && !!callback && profile != null && !registered;
 
@@ -187,8 +191,9 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E31337] text-2xl font-extrabold uppercase text-white">
           {appName[0]}
         </div>
-        <h1 className="m-0 text-[19px] font-bold sm:text-xl">
-          <b>{appName}</b> {t('authorize.request_access')}
+        <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
+          <b className="[unicode-bidi:isolate]">{appName}</b>{' '}
+          {t('authorize.request_access')}
         </h1>
         {/* profile.name is the app account's OWN self-declared metadata, so an
             account like `ecency-login` can call itself "Ecency". Always show the
@@ -268,7 +273,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
               Authorizing as <b>@{selectedAccount}</b>
             </div>
             {grantNeeded && (
-              <div className={`${alertWarn} text-[12.5px]`}>
+              <div className={alertWarn}>
                 First-time authorization: this adds <b>@{req.clientId}</b> to
                 your posting authority on-chain and needs your active key once.
                 That account will be able to post as you until you revoke it.
