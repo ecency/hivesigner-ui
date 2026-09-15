@@ -28,7 +28,7 @@ export const Route = createFileRoute('/verifymessage')({
 // The shared vocabulary has no success panel, only `alertError`. This mirrors
 // that recipe's metrics with the existing green palette.
 const alertOk =
-  'rounded-xl border border-[#a7dab8] bg-[#e6f4ea] p-4 text-[13px] text-[#1a5c2b]';
+  'rounded-xl border border-ok-line bg-ok-bg p-4 text-[13px] text-ok';
 
 interface Result {
   ok: boolean;
@@ -116,7 +116,7 @@ function VerifyMessage() {
 
       {/* The token field stays a single readable column on a wide screen. */}
       <label className={`${label} w-full sm:max-w-xl`}>
-        <span className="text-[13px] font-semibold text-[#1f2328]">
+        <span className="text-[13px] font-semibold text-ink">
           {t('message_verification.payload_label')}
         </span>
         {/* `fieldBase` carries no height, so the rows attribute decides it. Using
@@ -125,7 +125,7 @@ function VerifyMessage() {
         <textarea
           name="payload"
           rows={4}
-          className={`${fieldBase} py-3 font-mono text-[#1f2328]`}
+          className={`${fieldBase} py-3 font-mono text-ink`}
           value={token}
           placeholder={t('message_verification.payload_placeholder')}
           onChange={(e) => setToken(e.target.value)}

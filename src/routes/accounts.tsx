@@ -8,6 +8,8 @@ import {
   cardTight,
   field,
   h1,
+  label,
+  labelText,
   muted,
   mutedXs,
   page,
@@ -114,27 +116,33 @@ function AccountRow({
   }
 
   return (
-    // `bg-[#fff5f6]!` wins over the recipe's own `bg-white`: two background
+    // `bg-brand-tint!` wins over the recipe's own `bg-surface`: two background
     // utilities on one element are otherwise resolved by stylesheet order, not
     // by the order they appear here.
     <div
       className={clsx(
         cardTight,
         'flex flex-col gap-2.5',
-        current && 'bg-[#fff5f6]!',
+        current && 'bg-brand-tint!',
       )}
     >
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[#ffe3e8] font-bold uppercase text-[#b90f2e]">
+        <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-brand-soft font-bold uppercase text-brand-ink">
           {username[0]}
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-[15px] font-semibold break-all">@{username}</div>
           <div className={`${mutedXs} mt-0.5 flex gap-1.5`}>
             {current && (
-              <span className="font-semibold text-[#b90f2e]">Current</span>
+              <span className="font-semibold text-brand-ink">
+                {t('accounts.current')}
+              </span>
             )}
-            {encrypted ? (unlocked ? 'Unlocked' : 'Protected') : 'No passcode'}
+            {encrypted
+              ? unlocked
+                ? t('accounts.unlocked')
+                : t('accounts.protected')
+              : t('accounts.no_passcode')}
           </div>
         </div>
         {(!current || !unlocked) && (
@@ -142,7 +150,7 @@ function AccountRow({
             type="button"
             onClick={activate}
             disabled={busy}
-            className="cursor-pointer border-none bg-transparent text-[13px] font-semibold text-[#b90f2e] disabled:cursor-not-allowed"
+            className="cursor-pointer border-none bg-transparent text-[13px] font-semibold text-brand-ink disabled:cursor-not-allowed"
           >
             {!unlocked ? t('accounts.unlock') : t('login.switch_an_account')}
           </button>
@@ -152,22 +160,16 @@ function AccountRow({
           aria-label={`${t('accounts.delete')} @${username}`}
           onClick={() => {
             // Removing wipes the only copy of the keys on this device; confirm.
-            if (
-              window.confirm(
-                `Remove @${username} from this device? Its keys here will be deleted.`,
-              )
-            ) {
+            if (window.confirm(t('accounts.remove_confirm', { username }))) {
               // The confirm promised the keys would be deleted. If the write did
               // not reach storage the record comes back on reload, so say so
               // instead of silently leaving a false impression.
               if (!removeAccount(username)) {
-                setError(
-                  'Removed for this session only: storage is unavailable, so this account will return when you reload.',
-                );
+                setError(t('accounts.remove_failed'));
               }
             }
           }}
-          className="cursor-pointer border-none bg-transparent text-[#59636e]"
+          className="cursor-pointer border-none bg-transparent text-muted"
         >
           ✕
         </button>
@@ -176,30 +178,40 @@ function AccountRow({
       {/* A plaintext unlock failure never opens the passcode form, so its error
           has to render outside it or the row just goes quiet. */}
       {error && !unlocking && (
-        <div role="alert" className="text-[12.5px] text-[#cf222e]">
+        <div role="alert" className="text-[12.5px] text-danger">
           {error}
         </div>
       )}
 
       {unlocking && (
         <div className="flex flex-col gap-2">
-          <input
-            className={field}
-            type="password"
-            name={`passcode-${username}`}
-            placeholder="Passcode"
-            value={passcode}
-            onChange={(e) => setPasscode(e.target.value)}
-            // biome-ignore lint/a11y/noAutofocus: focus the field the user just opened
-            autoFocus
-          />
+          {/* A real <label>, not a placeholder. A placeholder is not an
+              accessible name, and it disappears the moment the user types, so
+              this field had nothing naming it at all - for a screen reader, or
+              for anyone who looked away mid-entry. It is per-row, so the name
+              carries the account it unlocks. */}
+          <label className={label}>
+            <span className={labelText}>
+              {t('accounts.passcode')} · @{username}
+            </span>
+            <input
+              className={field}
+              type="password"
+              name={`passcode-${username}`}
+              autoComplete="current-password"
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+              // biome-ignore lint/a11y/noAutofocus: focus the field the user just opened
+              autoFocus
+            />
+          </label>
           {error && (
-            <div role="alert" className="text-[12.5px] text-[#cf222e]">
+            <div role="alert" className="text-[12.5px] text-danger">
               {error}
             </div>
           )}
           {/* The button is disabled on exactly the condition that used to paint
-              it `#f0a5b3`, so the recipe's `disabled:` styling covers it. */}
+              it `bg-brand-muted`, so the recipe's `disabled:` styling covers it. */}
           <button
             type="button"
             onClick={submitUnlock}
@@ -246,7 +258,7 @@ function Accounts() {
           different control, so it keeps its own class string. */}
       <Link
         to="/import"
-        className="inline-flex h-11 max-w-full items-center justify-center self-start rounded-lg border border-dashed border-[#c4ccd4] px-4 font-semibold text-[#1f2328] no-underline"
+        className="inline-flex h-11 max-w-full items-center justify-center self-start rounded-lg border border-dashed border-line-strong px-4 font-semibold text-ink no-underline"
       >
         + {t('accounts.add_another')}
       </Link>

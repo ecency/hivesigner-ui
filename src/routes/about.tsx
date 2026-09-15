@@ -19,15 +19,15 @@ function About() {
       {/* Full width on a phone; shrinks to its content and centres from `sm`,
           rather than becoming a mostly empty band on a wide screen. */}
       <div
-        className={`${card} mt-1 text-center text-sm text-[#1f2328] sm:w-auto sm:self-center`}
+        className={`${card} mt-1 text-center text-sm text-ink sm:w-auto sm:self-center`}
       >
         <div>
-          Built with <span className="text-[#E31337]">♥</span> by the{' '}
+          Built with <span className="text-brand">♥</span> by the{' '}
           <a
             href="https://ecency.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-semibold text-[#b90f2e]"
+            className="font-semibold text-brand-ink"
           >
             Ecency
           </a>{' '}

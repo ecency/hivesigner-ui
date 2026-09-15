@@ -212,7 +212,7 @@ function Sign() {
       )}
 
       {displayOps.length > 1 && (
-        <div className="text-[13px] text-[#59636e]">
+        <div className="text-[13px] text-muted">
           This request contains <b>{displayOps.length} operations</b>. Review
           every one before approving.
         </div>
@@ -233,17 +233,15 @@ function Sign() {
               <span
                 className={`flex-none rounded-md px-1.5 py-0.5 text-[11px] font-semibold uppercase ${
                   opAuthority === 'posting'
-                    ? 'bg-[#eaf5ea] text-[#1a7f37]'
-                    : 'bg-[#ffebe9] text-[#cf222e]'
+                    ? 'bg-ok-bg text-ok'
+                    : 'bg-danger-bg text-danger'
                 }`}
               >
                 {opAuthority ?? 'unknown'}
               </span>
             </div>
             {s.detail && (
-              <div className="break-all text-[13px] text-[#59636e]">
-                {s.detail}
-              </div>
+              <div className="break-all text-[13px] text-muted">{s.detail}</div>
             )}
             {/* Show the material fields inline so nothing dangerous is hidden. */}
             {fields.map((f, fi) => (
@@ -253,7 +251,7 @@ function Sign() {
                 className="flex gap-1.5 text-[12.5px]"
               >
                 {/* isolate the LABEL too: a JSON key can carry bidi controls. */}
-                <span className="break-all text-[#59636e] [unicode-bidi:isolate]">
+                <span className="break-all text-muted [unicode-bidi:isolate]">
                   {f.label}:
                 </span>
                 {/* isolate: a value cannot reorder the text around it. */}
@@ -267,7 +265,7 @@ function Sign() {
       })}
 
       {req.preservedTx && (
-        <div className={`${card} text-[12.5px] break-words text-[#59636e]`}>
+        <div className={`${card} text-[12.5px] break-words text-muted`}>
           This request supplied its own transaction header. Expires:{' '}
           <b>{safeText(String(req.preservedTx.expiration))}</b>
           {Array.isArray(req.preservedTx.signatures) &&
@@ -287,7 +285,7 @@ function Sign() {
             Signed with your <b>{authority}</b> key
           </span>
         ) : (
-          <span className="text-[#7a5300]">
+          <span className="text-warn">
             This transaction needs more than one authority and cannot be signed
             with a single key.
           </span>
@@ -295,10 +293,10 @@ function Sign() {
       </div>
 
       <details className={`${card} px-3.5 py-3`}>
-        <summary className="cursor-pointer text-[13.5px] font-semibold text-[#59636e]">
+        <summary className="cursor-pointer text-[13.5px] font-semibold text-muted">
           Show raw operation{displayOps.length > 1 ? 's' : ''}
         </summary>
-        <pre className="mt-3 overflow-x-auto font-mono text-xs text-[#1f2328]">
+        <pre className="mt-3 overflow-x-auto font-mono text-xs text-ink">
           {/* The resolved ops: exactly the bytes that will be signed. */}
           {JSON.stringify(displayOps, null, 2)}
         </pre>
@@ -316,7 +314,7 @@ function Sign() {
       <div className="flex flex-col gap-2.5">
         {!authority ? null : signerMismatch ? (
           <>
-            <div className="text-[13px] text-[#7a5300]">
+            <div className="text-[13px] text-warn">
               This request must be signed by <b>@{req.signer}</b>. Switch to
               that account.
             </div>
@@ -334,7 +332,7 @@ function Sign() {
           </Link>
         ) : !signingKey ? (
           <>
-            <div className="text-[13px] text-[#7a5300]">
+            <div className="text-[13px] text-warn">
               This needs your <b>{authority}</b> key, which @{selectedAccount}{' '}
               does not have here.
             </div>
@@ -345,7 +343,7 @@ function Sign() {
         ) : (
           <>
             {rateBlocked && (
-              <div className="text-[13px] text-[#7a5300]">
+              <div className="text-[13px] text-warn">
                 Loading the current HIVE Power rate…
               </div>
             )}

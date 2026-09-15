@@ -188,7 +188,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   return (
     <section className={page}>
       <div className="flex flex-col gap-2 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E31337] text-2xl font-extrabold uppercase text-white">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand text-2xl font-extrabold uppercase text-white">
           {appName[0]}
         </div>
         <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
@@ -212,17 +212,16 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
 
       {unregistered && (
         <div className={alertError}>
-          This app's redirect URL is not registered. For your safety, sign-in is
-          blocked.
+          {t('authorize.redirect_not_registered')}
         </div>
       )}
 
       <div className={`${card} text-sm`}>
-        <div className="text-xs text-[#59636e]">Scope</div>
+        <div className="text-xs text-muted">{t('authorize.scope')}</div>
         <div className="font-semibold">
           {req.scope === 'login'
-            ? 'View your account username'
-            : 'Post, comment, vote and follow on your behalf'}
+            ? t('authorize.scope_login')
+            : t('authorize.scope_posting')}
         </div>
       </div>
 
@@ -289,7 +288,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             </button>
           </>
         )}
-        <Link to="/accounts" className="text-center text-[13px] text-[#59636e]">
+        <Link to="/accounts" className="text-center text-[13px] text-muted">
           {t('common.cancel')}
         </Link>
       </div>

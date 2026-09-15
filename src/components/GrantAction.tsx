@@ -89,7 +89,7 @@ export function GrantAction({
         {mode === 'grant'
           ? `@${appName} will be able to post, comment, vote and follow as @${selectedAccount}.`
           : `@${appName} will no longer be able to act as @${selectedAccount}.`}
-        <div className="mt-2 text-[12.5px] text-[#7a5300]">
+        <div className="mt-2 text-[12.5px] text-warn">
           {t('authorize.requires_active_key', { authority: 'active' }).replace(
             /<\/?b>/g,
             '',
@@ -100,7 +100,7 @@ export function GrantAction({
       {status === 'done' || alreadyDone ? (
         // No success recipe exists in ui.ts; these are the card metrics with
         // the existing green palette, kept verbatim.
-        <output className="block rounded-xl border border-[#a7dab8] bg-[#e6f4ea] p-4 text-sm font-semibold break-words text-[#1a5c2b]">
+        <output className="block rounded-xl border border-ok-line bg-ok-bg p-4 text-sm font-semibold break-words text-ok">
           {mode === 'grant'
             ? `@${appName} is authorized.`
             : `@${appName} is revoked.`}
@@ -138,7 +138,7 @@ export function GrantAction({
             {status === 'busy' ? '…' : verb}
           </button>
         )}
-        <Link to="/accounts" className="text-center text-[13px] text-[#59636e]">
+        <Link to="/accounts" className="text-center text-[13px] text-muted">
           {t('common.cancel')}
         </Link>
       </div>

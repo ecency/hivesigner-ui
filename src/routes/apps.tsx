@@ -56,9 +56,9 @@ function Apps() {
               key={app}
               to="/authorize/$username"
               params={{ username: app }}
-              className={`${cardTight} flex items-center gap-3 text-[#1f2328] no-underline`}
+              className={`${cardTight} flex items-center gap-3 text-ink no-underline`}
             >
-              <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg bg-[#ffe3e8] font-bold uppercase text-[#b90f2e]">
+              <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg bg-brand-soft font-bold uppercase text-brand-ink">
                 {app[0]}
               </div>
               {/* Account names come off-chain from the curated list: break them
