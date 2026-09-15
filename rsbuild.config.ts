@@ -13,6 +13,12 @@ export default defineConfig({
       // does not carry it. Empty means reporting is off, which is the default
       // for local builds.
       __SENTRY_DSN__: JSON.stringify(process.env.SENTRY_DSN || ''),
+      // The Hivesigner API, which serves the ranked app directory. Public and
+      // unauthenticated. Overridable so a deployment can point elsewhere; the
+      // app falls back to reading the directory off the chain if it is down.
+      __API_URL__: JSON.stringify(
+        process.env.API_URL || 'https://api.hivesigner.com',
+      ),
     },
   },
   html: {
