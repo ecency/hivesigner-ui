@@ -82,6 +82,9 @@ export default {
     require_hs_password: `The Hivesigner password will be required to unlock your account for usage.`,
     import_account: 'Import account',
     username: 'Username',
+    add_account: 'Add account',
+    add_account_hint: 'Unlock your Hive account on this device. Your keys are encrypted and never leave this browser.',
+
     import_encryption_key: `This is a new custom password to encrypt your credentials. This is not your Hive private key.`,
     master_password: 'Private key',
     master_key: 'You need to use master or at least {authority} key to login.',

@@ -1,0 +1,192 @@
+// The account store: which accounts are on this device, which is selected, and
+// (in memory only) the keys of unlocked accounts.
+//
+// Persistence uses the same localStorage shape the Nuxt app wrote
+// (`vuex__accounts` = { accountsKeychains: { <user>: { password } }, selectedAccount }),
+// so a user who already had accounts keeps them. Unlike the old app, decrypted
+// private keys are NOT persisted (the old app kept plaintext WIFs in
+// vuex__auth); they live in memory for the session only. On first unlock a
+// legacy triplesec account is transparently re-encrypted into the v1 envelope.
+import {
+  isEncrypted as fieldIsEncrypted,
+  type Keys,
+  needsUpgrade,
+  readKeys,
+  writeKeys,
+} from './keystore';
+
+const STORAGE_KEY = 'vuex__accounts';
+
+interface PersistedAccount {
+  password: string; // keystore field: plain | triplesec | v1
+}
+interface PersistedState {
+  accountsKeychains: Record<string, PersistedAccount>;
+  selectedAccount: string;
+}
+
+export interface AccountsState {
+  usernames: string[];
+  selectedAccount: string | null;
+  /** Usernames currently unlocked this session. */
+  unlocked: string[];
+}
+
+// In-memory only. Never persisted.
+const keyCache = new Map<string, Keys>();
+
+function readPersisted(): PersistedState {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { accountsKeychains: {}, selectedAccount: '' };
+    const parsed = JSON.parse(raw) as Partial<PersistedState>;
+    return {
+      accountsKeychains: parsed.accountsKeychains ?? {},
+      selectedAccount: parsed.selectedAccount ?? '',
+    };
+  } catch {
+    return { accountsKeychains: {}, selectedAccount: '' };
+  }
+}
+
+function writePersisted(state: PersistedState): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // A private window or blocked storage: the session still works from
+    // keyCache; it just will not persist. Never throw from the store.
+  }
+}
+
+// --- subscription (for useSyncExternalStore) ---------------------------------
+
+const listeners = new Set<() => void>();
+
+// useSyncExternalStore requires a STABLE snapshot reference between changes:
+// returning a fresh object from getState() every call makes it see a change on
+// every render and loop forever. Cache the snapshot and rebuild only on emit().
+let snapshot: AccountsState | null = null;
+
+function emit() {
+  snapshot = null; // invalidate; next getState() rebuilds
+  for (const l of listeners) l();
+}
+export function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function getState(): AccountsState {
+  if (snapshot) return snapshot;
+  const { accountsKeychains, selectedAccount } = readPersisted();
+  const usernames = Object.keys(accountsKeychains);
+  snapshot = {
+    usernames,
+    selectedAccount:
+      selectedAccount && usernames.includes(selectedAccount)
+        ? selectedAccount
+        : null,
+    unlocked: [...keyCache.keys()],
+  };
+  return snapshot;
+}
+
+// --- queries -----------------------------------------------------------------
+
+export function hasAccounts(): boolean {
+  return Object.keys(readPersisted().accountsKeychains).length > 0;
+}
+
+/** Whether unlocking this account needs a passcode (encrypted at rest). */
+export function accountIsEncrypted(username: string): boolean {
+  const field = readPersisted().accountsKeychains[username]?.password;
+  return field ? fieldIsEncrypted(field) : false;
+}
+
+export function isUnlocked(username: string): boolean {
+  return keyCache.has(username);
+}
+
+/** The unlocked keys for an account, or null if it is locked this session. */
+export function getKeys(username: string): Keys | null {
+  return keyCache.get(username) ?? null;
+}
+
+// --- mutations ---------------------------------------------------------------
+
+/**
+ * Add (or replace) an account. `keys` are stored via the keystore: encrypted
+ * under `passcode`, or as the legacy plaintext form when no passcode is given.
+ * The account is left unlocked in memory and becomes selected if none was.
+ */
+export async function addAccount(
+  username: string,
+  keys: Keys,
+  passcode?: string,
+): Promise<void> {
+  const field = await writeKeys(keys, passcode);
+  const state = readPersisted();
+  state.accountsKeychains[username] = { password: field };
+  if (!state.selectedAccount) state.selectedAccount = username;
+  writePersisted(state);
+  keyCache.set(username, keys);
+  emit();
+}
+
+/**
+ * Unlock a stored account. `passcode` is required for an encrypted account.
+ * Throws (keystore error) on a wrong passcode. A legacy triplesec account is
+ * re-encrypted into the v1 envelope on success.
+ */
+export async function unlockAccount(
+  username: string,
+  passcode?: string,
+): Promise<Keys> {
+  const state = readPersisted();
+  const field = state.accountsKeychains[username]?.password;
+  if (!field) throw new Error(`accounts: no such account ${username}`);
+
+  const keys = await readKeys(field, passcode);
+  keyCache.set(username, keys);
+
+  if (needsUpgrade(field) && passcode) {
+    // Migrate the old triplesec blob to the new v1 envelope, same passcode.
+    state.accountsKeychains[username] = {
+      password: await writeKeys(keys, passcode),
+    };
+    writePersisted(state);
+  }
+  emit();
+  return keys;
+}
+
+export function selectAccount(username: string): void {
+  const state = readPersisted();
+  if (!state.accountsKeychains[username]) return;
+  state.selectedAccount = username;
+  writePersisted(state);
+  emit();
+}
+
+export function removeAccount(username: string): void {
+  const state = readPersisted();
+  delete state.accountsKeychains[username];
+  if (state.selectedAccount === username) {
+    state.selectedAccount = Object.keys(state.accountsKeychains)[0] ?? '';
+  }
+  writePersisted(state);
+  keyCache.delete(username);
+  emit();
+}
+
+/** Lock an account (drop its in-memory keys) without removing it. */
+export function lockAccount(username: string): void {
+  keyCache.delete(username);
+  emit();
+}
+
+/** Test seam: clear in-memory keys and the cached snapshot (not storage). */
+export function _resetKeyCache(): void {
+  keyCache.clear();
+  snapshot = null;
+}
