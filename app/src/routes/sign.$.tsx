@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { call } from '@/lib/hive-rpc';
+import { getVestsToSp } from '@/lib/hive';
 import { requiredAuthority, summarizeOperation } from '@/lib/operation-summary';
 import { parseSignRequest } from '@/lib/parse-sign-request';
 
@@ -15,22 +15,13 @@ export const Route = createFileRoute('/sign/$')({
     search as Record<string, string>,
 });
 
-interface Dgp {
-  total_vesting_fund_hive: string;
-  total_vesting_shares: string;
-}
-
 function useVestsToSp(): number {
   const { data } = useQuery({
-    queryKey: ['dgp'],
-    queryFn: () => call<Dgp>('condenser_api.get_dynamic_global_properties'),
+    queryKey: ['vests-to-sp'],
+    queryFn: getVestsToSp,
     staleTime: 60_000,
   });
-  if (!data) return 1;
-  const sp =
-    Number.parseFloat(data.total_vesting_fund_hive) /
-    Number.parseFloat(data.total_vesting_shares);
-  return Number.isFinite(sp) && sp > 0 ? sp : 1;
+  return data ?? 1;
 }
 
 function callbackHost(callback: string): string | null {
