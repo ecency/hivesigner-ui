@@ -1,0 +1,6 @@
+# pnpm 11 reads project settings from here (no longer the package.json "pnpm" field).
+# core-js (pulled transitively by @rsbuild/core) ships a postinstall that only
+# prints a funding notice. Recording the decision (do not run it) keeps install
+# from stopping on an unapproved build script.
+allowBuilds:
+  core-js: false

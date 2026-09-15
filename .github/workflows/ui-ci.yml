@@ -1,0 +1,44 @@
+name: UI CI
+
+# Lint, test and build the UI app in app/. Runs only when app/ changes, so it
+# does not interfere with the Staging/Master workflows (which deploy on push to
+# development/main). No deploy step until cutover.
+on:
+  push:
+    branches:
+      - feature/react-rewrite
+    paths:
+      - 'app/**'
+      - '.github/workflows/ui-ci.yml'
+  pull_request:
+    paths:
+      - 'app/**'
+      - '.github/workflows/ui-ci.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          # The React app's package.json carries packageManager; the repo-root
+          # package.json is the Nuxt app's and has none.
+          package_json_file: app/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint:ci
+      # build first: it generates src/routeTree.gen.ts (gitignored), which the
+      # typecheck needs for the route registry. It also runs the node-globals guard.
+      - run: pnpm build
+        env:
+          GIT_SHA: ${{ github.sha }}
+      - run: pnpm typecheck
+      - run: pnpm test
