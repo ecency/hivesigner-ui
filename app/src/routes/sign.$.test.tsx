@@ -33,7 +33,11 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/lib/hive', () => ({ getVestsToSp: vi.fn() }));
 vi.mock('@/lib/use-accounts', () => ({ useAccounts: () => h.accounts }));
 vi.mock('@/lib/accounts', () => ({ getKeys: () => h.keys }));
-vi.mock('@/lib/sign-tx', () => ({
+// Mock only the signing/broadcast calls. resolveSigner stays REAL: the route
+// uses it to resolve __signer for display, and the whole point is that display
+// and signing share one resolver, so stubbing it would hide a divergence.
+vi.mock('@/lib/sign-tx', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/sign-tx')>()),
   signOperations: h.signOperations,
   broadcastOperations: h.broadcastOperations,
 }));
@@ -83,6 +87,34 @@ describe('sign route', () => {
     await user.click(screen.getByRole('button', { name: /sign/i }));
     await waitFor(() => expect(h.signOperations).toHaveBeenCalled());
     expect(h.broadcastOperations).not.toHaveBeenCalled();
+  });
+
+  it('warns when the request acts as an account other than the selected one', async () => {
+    // A transfer whose `from` is a treasury the user co-manages: without this
+    // warning it reads as the user spending their own funds.
+    h.splat = 'transfer';
+    h.search = { from: 'treasury', to: 'attacker', amount: '10.000 HIVE' };
+    render(<Sign />);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/@treasury/);
+    expect(screen.getByRole('alert')).toHaveTextContent(/not @alice/);
+  });
+
+  it('shows no actor warning when the operation acts as the selected account', async () => {
+    h.splat = 'transfer';
+    h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
+    render(<Sign />);
+    await screen.findByRole('button', { name: /approve/i });
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('resolves __signer in the rendered summary instead of showing the token', async () => {
+    // No `from` given: the schema defaults it to __signer.
+    h.splat = 'transfer';
+    h.search = { to: 'bob', amount: '2.000 HIVE' };
+    render(<Sign />);
+    await screen.findByRole('button', { name: /approve/i });
+    expect(document.body.textContent).not.toContain('__signer');
+    expect(document.body.textContent).toContain('@alice');
   });
 
   it('blocks approval of an HP request until the rate has loaded', async () => {

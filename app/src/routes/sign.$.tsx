@@ -6,6 +6,7 @@ import { getKeys } from '@/lib/accounts';
 import { getVestsToSp } from '@/lib/hive';
 import { resolveCallback } from '@/lib/hive-uri';
 import {
+  operationActors,
   operationFields,
   requiredAuthority,
   summarizeOperation,
@@ -14,6 +15,7 @@ import { parseSignRequest } from '@/lib/parse-sign-request';
 import {
   type BroadcastOutcome,
   broadcastOperations,
+  resolveSigner,
   signOperations,
 } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
@@ -128,6 +130,26 @@ function Sign() {
   const signerMismatch =
     !!req.signer && !!selectedAccount && req.signer !== selectedAccount;
 
+  // Resolve `__signer` ONCE, with the SAME resolver the signer uses, and render
+  // from the result. Resolving per-row instead let the placeholder leak into the
+  // summary line and risked display and signing applying different rules - the
+  // one divergence that would let a user sign something they did not read.
+  const displaySigner = selectedAccount ?? req.signer ?? '';
+  const displayOps = displaySigner
+    ? resolveSigner(req.operations, displaySigner)
+    : req.operations;
+  // An operation may act AS an account other than the one signing (a treasury
+  // the user co-manages). The rows name it; warn about it up front too.
+  const foreignActors = selectedAccount
+    ? [
+        ...new Set(
+          displayOps
+            .flatMap(operationActors)
+            .filter((a) => a !== selectedAccount),
+        ),
+      ]
+    : [];
+
   async function approve() {
     if (!selectedAccount || !signingKey || rateBlocked || signerMismatch)
       return;
@@ -136,15 +158,18 @@ function Sign() {
       // A no_broadcast request only wants a signature; never broadcast it.
       // preservedTx keeps a pre-built /sign/tx transaction's ref-block fields and
       // expiration intact so the signature matches the caller's exact tx id.
+      // displayOps is the exact array the cards above rendered, already resolved
+      // with the same resolver the signer uses (resolving again is a no-op), so
+      // what is signed is literally what was shown.
       const result = req.noBroadcast
         ? await signOperations(
-            req.operations,
+            displayOps,
             signingKey,
             selectedAccount,
             req.preservedTx,
           )
         : await broadcastOperations(
-            req.operations,
+            displayOps,
             signingKey,
             selectedAccount,
             req.preservedTx,
@@ -216,11 +241,36 @@ function Sign() {
         </div>
       )}
 
-      {request.operations.map((op, i) => {
+      {foreignActors.length > 0 && (
+        <div
+          role="alert"
+          style={{
+            ...card,
+            background: '#fff8e6',
+            border: '1px solid #f0d38a',
+            color: '#7a5300',
+            fontSize: 13,
+          }}
+        >
+          This acts as{' '}
+          {foreignActors.map((a) => (
+            <b key={a}>@{a} </b>
+          ))}
+          , not @{selectedAccount}. Only continue if you manage that account.
+        </div>
+      )}
+
+      {displayOps.length > 1 && (
+        <div style={{ fontSize: 13, color: '#59636e' }}>
+          This request contains <b>{displayOps.length} operations</b>. Review
+          every one before approving.
+        </div>
+      )}
+
+      {displayOps.map((op, i) => {
         const s = summarizeOperation(op);
-        // Resolve __signer to the account that will sign (or the request's named
-        // signer before one is selected) so no row shows the raw placeholder.
-        const fields = operationFields(op, selectedAccount ?? req.signer ?? '');
+        const fields = operationFields(op);
+        const opAuthority = requiredAuthority([op]);
         return (
           <div
             key={`${op[0]}-${i}`}
@@ -231,25 +281,66 @@ function Sign() {
               gap: 8,
             }}
           >
-            <div style={{ fontSize: 18, fontWeight: 700 }}>{s.title}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <div style={{ fontSize: 18, fontWeight: 700, flex: 1 }}>
+                {displayOps.length > 1 ? `${i + 1}. ` : ''}
+                {s.title}
+              </div>
+              {/* Per-op authority, so one active-key op among posting ops shows. */}
+              <span
+                style={{
+                  flex: 'none',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  padding: '2px 6px',
+                  borderRadius: 6,
+                  background: opAuthority === 'posting' ? '#eaf5ea' : '#ffebe9',
+                  color: opAuthority === 'posting' ? '#1a7f37' : '#cf222e',
+                }}
+              >
+                {opAuthority ?? 'unknown'}
+              </span>
+            </div>
             {s.detail && (
               <div style={{ fontSize: 13, color: '#59636e' }}>{s.detail}</div>
             )}
             {/* Show the material fields inline so nothing dangerous is hidden. */}
-            {fields.map((f) => (
+            {fields.map((f, fi) => (
               <div
-                key={f.label}
+                // Keyed by position: two distinct leaves can share a label.
+                key={`${f.label}-${fi}`}
                 style={{ fontSize: 12.5, display: 'flex', gap: 6 }}
               >
                 <span style={{ color: '#59636e', flex: 'none' }}>
                   {f.label}:
                 </span>
-                <span style={{ wordBreak: 'break-all' }}>{f.value}</span>
+                {/* isolate: a value cannot reorder the text around it. */}
+                <span
+                  style={{ wordBreak: 'break-all', unicodeBidi: 'isolate' }}
+                >
+                  {f.value}
+                </span>
               </div>
             ))}
           </div>
         );
       })}
+
+      {req.preservedTx && (
+        <div style={{ ...card, fontSize: 12.5, color: '#59636e' }}>
+          This request supplied its own transaction header. Expires:{' '}
+          <b>{String(req.preservedTx.expiration)}</b>
+          {Array.isArray(req.preservedTx.signatures) &&
+            req.preservedTx.signatures.length > 0 && (
+              <>
+                {' '}
+                and it already carries{' '}
+                <b>{req.preservedTx.signatures.length}</b> signature(s).
+              </>
+            )}
+        </div>
+      )}
 
       <div
         style={{
@@ -281,7 +372,7 @@ function Sign() {
             color: '#59636e',
           }}
         >
-          Show raw operation{request.operations.length > 1 ? 's' : ''}
+          Show raw operation{displayOps.length > 1 ? 's' : ''}
         </summary>
         <pre
           style={{
@@ -292,7 +383,8 @@ function Sign() {
             color: '#1f2328',
           }}
         >
-          {JSON.stringify(request.operations, null, 2)}
+          {/* The resolved ops: exactly the bytes that will be signed. */}
+          {JSON.stringify(displayOps, null, 2)}
         </pre>
       </details>
 

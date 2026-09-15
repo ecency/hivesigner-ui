@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   type Operation,
+  operationActors,
   operationAuthority,
   operationFields,
   requiredAuthority,
   summarizeOperation,
 } from './operation-summary';
+import { resolveSigner } from './sign-tx';
 
 describe('summarizeOperation', () => {
   it('renders a transfer with amount, recipient and memo', () => {
@@ -199,34 +201,55 @@ describe('authority resolution', () => {
     expect(rows.every((r) => !r.value.endsWith('…'))).toBe(true);
   });
 
-  it('falls back to the whole raw json when it does not parse', () => {
-    const rows = operationFields([
-      'custom_json',
-      { id: 'sm', json: 'not json {' },
-    ]);
-    expect(rows.find((r) => r.label === 'JSON')?.value).toBe('not json {');
+  it('falls back to the WHOLE raw json when it does not parse', () => {
+    // Long enough that the old 400-char truncation would have cut it, so this
+    // test fails if the truncation ever comes back.
+    const raw = `not json { ${'y'.repeat(600)}`;
+    const rows = operationFields(['custom_json', { id: 'sm', json: raw }]);
+    expect(rows.find((r) => r.label === 'json')?.value).toBe(raw);
   });
 
-  it('resolves the __signer placeholder to the signing account in fields', () => {
-    // A follow custom_json embeds __signer inside the json string.
+  it('renders the signer placeholder resolved, in the title as well as the rows', () => {
+    // One resolver runs before display (the same one the signer uses), so NO
+    // rendered string may still contain the raw placeholder.
     const json = '["follow",{"follower":"__signer","following":"bob"}]';
-    const rows = operationFields(
+    const [op] = resolveSigner(
       [
-        'custom_json',
-        { id: 'follow', required_posting_auths: ['__signer'], json },
+        [
+          'custom_json',
+          { id: 'follow', required_posting_auths: ['__signer'], json },
+        ],
       ],
       'alice',
     );
+    const rows = operationFields(op);
     expect(rows.find((r) => r.label === 'Posting auths')?.value).toBe('alice');
     expect(rows.find((r) => r.label === 'json.[1].follower')?.value).toBe(
       'alice',
     );
-    // Default-branch rows resolve it too.
-    const custom = operationFields(
-      ['custom_op', { account: '__signer' }],
+    // The summary line is the most-read text on the screen: it must resolve too.
+    const [transfer] = resolveSigner(
+      [
+        [
+          'transfer',
+          { from: '__signer', to: '__signer', amount: '1.000 HIVE' },
+        ],
+      ],
       'alice',
     );
-    expect(custom.find((r) => r.label === 'account')?.value).toBe('alice');
+    const s = summarizeOperation(transfer);
+    expect(s.title).toBe('Send 1.000 HIVE to @alice');
+    expect(s.title).not.toContain('__signer');
+    expect(
+      operationFields(transfer).every((r) => !r.value.includes('__signer')),
+    ).toBe(true);
+  });
+
+  it('does not let a $ pattern in the signer name corrupt the substitution', () => {
+    // `signer` can come from the caller-supplied `s` param, so a string
+    // replacement would reinterpret $& / $1.
+    const [op] = resolveSigner([['vote', { voter: '__signer' }]], '$&$&');
+    expect(op[1].voter).toBe('$&$&');
   });
 
   it('shows the account_update weight_threshold so a lockout is not invisible', () => {
@@ -244,6 +267,115 @@ describe('authority resolution', () => {
     expect(rows.find((r) => r.label === 'owner authority')?.value).toContain(
       'threshold 9',
     );
+  });
+
+  it('shows a threshold sent as a STRING, which the chain still signs as a number', () => {
+    // The bypass: a typeof === 'number' check renders no threshold at all, so a
+    // co-control authority looks identical to a no-op.
+    const rows = operationFields([
+      'account_update',
+      {
+        account: 'victim',
+        posting: {
+          weight_threshold: '2',
+          account_auths: [['attacker', 1]],
+          key_auths: [['STM_victim', 1]],
+        },
+      },
+    ]);
+    const row = rows.find((r) => r.label === 'posting authority')?.value;
+    expect(row).toContain('threshold 2');
+    expect(row).toContain('@attacker');
+  });
+
+  it('calls out a MISSING weight_threshold instead of omitting the row', () => {
+    const rows = operationFields([
+      'account_update',
+      { account: 'victim', owner: { account_auths: [], key_auths: [] } },
+    ]);
+    expect(rows.find((r) => r.label === 'owner authority')?.value).toContain(
+      'NOT SET',
+    );
+  });
+
+  it('flattens account metadata instead of describing it, so a redirect_uris rewrite is visible', () => {
+    // posting_json_metadata carries `profile.redirect_uris`, which the OAuth
+    // screen trusts as an app's registered callbacks. "profile metadata changes"
+    // hid the whole payload.
+    const rows = operationFields([
+      'account_update2',
+      {
+        account: 'victim',
+        posting_json_metadata: JSON.stringify({
+          profile: { redirect_uris: ['https://attacker.example/cb'] },
+        }),
+      },
+    ]);
+    expect(
+      rows.find((r) => r.label === 'Profile.profile.redirect_uris[0]')?.value,
+    ).toBe('https://attacker.example/cb');
+  });
+
+  it('names the account an operation acts AS, so signing for another account is not silent', () => {
+    // The user co-manages @treasury; without a From row this reads as their own
+    // 10 HIVE. `s` never covered this case.
+    const rows = operationFields([
+      'transfer',
+      { from: 'treasury', to: 'attacker', amount: '10.000 HIVE' },
+    ]);
+    expect(rows.find((r) => r.label === 'From')?.value).toBe('@treasury');
+    expect(operationActors(['transfer', { from: 'treasury' }])).toEqual([
+      'treasury',
+    ]);
+    expect(operationActors(['vote', { voter: 'alice' }])).toEqual(['alice']);
+    expect(
+      operationActors(['custom_json', { required_posting_auths: ['alice'] }]),
+    ).toEqual(['alice']);
+  });
+
+  it('strips bidi and control characters that make a value read as something else', () => {
+    // U+202E (RLO) visually reverses the text that follows it.
+    const s = summarizeOperation([
+      'transfer',
+      { to: 'bob', amount: '1.000 HIVE', memo: 'pay ‮0001 ot' },
+    ]);
+    expect(s.detail).not.toContain('‮');
+    const rows = operationFields([
+      'custom_json',
+      { id: 'x', json: JSON.stringify({ note: 'a​b\nc' }) },
+    ]);
+    const note = rows.find((r) => r.label === 'json.note')?.value ?? '';
+    expect(note).not.toContain('​');
+    expect(note).not.toContain('\n');
+  });
+
+  it('distinguishes JSON leaves that would otherwise render as the same path', () => {
+    const rows = operationFields([
+      'custom_json',
+      {
+        id: 'x',
+        json: JSON.stringify({
+          contractPayload: { to: 'friend' },
+          'contractPayload.to': 'attacker',
+        }),
+      },
+    ]);
+    const labels = rows.map((r) => r.label);
+    expect(new Set(labels).size).toBe(labels.length);
+    expect(rows.find((r) => r.value === 'attacker')?.label).not.toBe(
+      rows.find((r) => r.value === 'friend')?.label,
+    );
+  });
+
+  it('renders null and empty containers as themselves, not as blank or nothing', () => {
+    const rows = operationFields([
+      'custom_json',
+      { id: 'x', json: JSON.stringify({ n: null, e: {}, a: [], s: '' }) },
+    ]);
+    expect(rows.find((r) => r.label === 'json.n')?.value).toBe('null');
+    expect(rows.find((r) => r.label === 'json.e')?.value).toBe('{}');
+    expect(rows.find((r) => r.label === 'json.a')?.value).toBe('[]');
+    expect(rows.find((r) => r.label === 'json.s')?.value).toBe('');
   });
 
   it('exposes a comment permlink, body and metadata (not just the title)', () => {
@@ -266,7 +398,8 @@ describe('authority resolution', () => {
     expect(rows.find((r) => r.label === 'Body')?.value).toBe(
       'the full body text',
     );
-    expect(rows.find((r) => r.label === 'Metadata')?.value).toBe('{"app":"x"}');
+    // Metadata is flattened, not summarised away.
+    expect(rows.find((r) => r.label === 'Metadata.app')?.value).toBe('x');
   });
 
   it('returns no extra fields for a fully-summarized transfer/vote', () => {

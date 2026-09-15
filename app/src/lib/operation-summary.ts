@@ -21,6 +21,40 @@ function str(value: unknown): string {
   return typeof value === 'string' ? value : String(value ?? '');
 }
 
+// Characters that let a value RENDER as something other than what it is: bidi
+// overrides and isolates (U+202A-U+202E, U+2066-U+2069, LRM/RLM, ALM),
+// zero-width marks and C0/C1 controls. Every value here is attacker-controlled
+// text on a confirm screen, so a memo reading "pay 0001 ot" must not be able to
+// hide that the bytes say something else. Tabs and newlines collapse to a space
+// so a value cannot push the rest of a row out of view.
+function isUnsafeDisplayChar(cp: number): boolean {
+  return (
+    cp <= 0x1f || // C0 controls
+    (cp >= 0x7f && cp <= 0x9f) || // DEL + C1 controls
+    cp === 0x61c || // ARABIC LETTER MARK
+    (cp >= 0x200b && cp <= 0x200f) || // zero-width marks + LRM/RLM
+    (cp >= 0x202a && cp <= 0x202e) || // bidi embeddings and overrides
+    (cp >= 0x2066 && cp <= 0x2069) || // bidi isolates
+    cp === 0xfeff // BOM / zero-width no-break space
+  );
+}
+
+/** A string safe to render on the confirm screen (see isUnsafeDisplayChar). */
+export function safeText(value: string): string {
+  let out = '';
+  // Iterating a string yields whole code points, so an astral character is
+  // never split into lone surrogates.
+  for (const ch of value.replace(/[\t\n\r]+/g, ' ')) {
+    out += isUnsafeDisplayChar(ch.codePointAt(0) ?? 0) ? '\ufffd' : ch;
+  }
+  return out;
+}
+
+/** str() plus display sanitisation. Use for every attacker-controlled value. */
+function txt(value: unknown): string {
+  return safeText(str(value));
+}
+
 function humanizeName(name: string): string {
   return name.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
 }
@@ -94,14 +128,14 @@ export function summarizeOperation(op: Operation): OperationSummary {
   switch (name) {
     case 'transfer':
       return {
-        title: `Send ${str(p.amount)} to @${str(p.to)}`,
-        detail: p.memo ? `Memo: ${str(p.memo)}` : undefined,
+        title: `Send ${txt(p.amount)} to @${txt(p.to)}`,
+        detail: p.memo ? `Memo: ${txt(p.memo)}` : undefined,
         authority,
       };
     case 'vote': {
       const weight = Number(p.weight ?? 0);
       const pct = Math.round(weight / 100);
-      const target = `@${str(p.author)}/${str(p.permlink)}`;
+      const target = `@${txt(p.author)}/${txt(p.permlink)}`;
       if (weight === 0)
         return { title: `Remove vote from ${target}`, authority };
       const verb = weight < 0 ? 'Downvote' : 'Upvote';
@@ -111,13 +145,13 @@ export function summarizeOperation(op: Operation): OperationSummary {
       const isReply = str(p.parent_author) !== '';
       return {
         title: isReply
-          ? `Reply to @${str(p.parent_author)}/${str(p.parent_permlink)}`
-          : `Publish post "${str(p.title) || str(p.permlink)}"`,
+          ? `Reply to @${txt(p.parent_author)}/${txt(p.parent_permlink)}`
+          : `Publish post "${txt(p.title) || txt(p.permlink)}"`,
         authority,
       };
     }
     case 'custom_json':
-      return { title: `Custom action (${str(p.id)})`, authority };
+      return { title: `Custom action (${txt(p.id)})`, authority };
     case 'account_update':
     case 'account_update2':
       return { title: 'Update account authorities', authority };
@@ -133,50 +167,127 @@ export interface OperationField {
 
 function describeAuthority(value: unknown): string {
   const a = value as {
-    weight_threshold?: number;
+    weight_threshold?: unknown;
     key_auths?: [string, number][];
     account_auths?: [string, number][];
   } | null;
   if (!a || typeof a !== 'object') return '';
-  const keys = (a.key_auths ?? []).map(([k, w]) => `${k} (${w})`);
-  const accts = (a.account_auths ?? []).map(([n, w]) => `@${n} (${w})`);
+  const keys = (a.key_auths ?? []).map(([k, w]) => `${txt(k)} (${txt(w)})`);
+  const accts = (a.account_auths ?? []).map(
+    ([n, w]) => `@${txt(n)} (${txt(w)})`,
+  );
+  // The threshold is material: raising it above the total weight (or an
+  // account_auths swap that keeps the same shape) can lock the owner out. Print
+  // it for ANY present value, not only a number - the chain coerces a string
+  // ("2") or a missing field (signs as 0) just the same, so a typeof check here
+  // would let a phishing payload hide exactly the field this row exists to show.
+  const threshold = present(a.weight_threshold)
+    ? `threshold ${txt(a.weight_threshold)}`
+    : 'threshold NOT SET (signs as 0)';
   const parts = [
-    // The threshold is material: raising it above the total weight (or an
-    // account_auths swap that keeps the same shape) can lock the owner out, and
-    // omitting it made a lockout op look like a no-op.
-    typeof a.weight_threshold === 'number'
-      ? `threshold ${a.weight_threshold}`
-      : '',
+    threshold,
     keys.length ? `keys: ${keys.join(', ')}` : '',
     accts.length ? `accounts: ${accts.join(', ')}` : '',
   ].filter(Boolean);
-  return parts.length ? parts.join('; ') : '(cleared)';
+  return parts.join('; ');
 }
 
-/** Replace the __signer placeholder with the signing account for display. */
-function resolveSignerStr(value: string, signer: string): string {
-  return signer ? value.replace(/__signer/g, signer) : value;
+/** A JSON path segment, quoted when it is not a plain identifier so two
+ * distinct paths (`a.b` nested vs a literal `"a.b"` key) never render alike. */
+function segment(key: string): string {
+  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(key) ? key : JSON.stringify(key);
 }
 
 /**
- * Flatten a parsed JSON value into dotted-path leaf rows so a custom_json
- * payload is shown in full: a truncated inline view could push the harmful part
- * (a token transfer, a different account) past the cut. Arrays index by [i],
- * objects by key; primitives at the root return a single value row.
+ * Flatten a parsed JSON value into path-addressed leaf rows so a JSON payload is
+ * shown in full: a truncated inline view could push the harmful part (a token
+ * transfer, a different account) past the cut. Arrays index by [i], objects by
+ * key. `null` and an empty object/array render as themselves rather than as an
+ * empty string or vanishing - clearing a list is a material change.
  */
 function flattenJson(value: unknown, prefix = ''): OperationField[] {
-  if (value === null || typeof value !== 'object') {
-    return [{ label: prefix, value: str(value) }];
-  }
-  const rows: OperationField[] = [];
-  const entries: [string, unknown][] = Array.isArray(value)
-    ? value.map((v, i) => [`[${i}]`, v])
+  if (value === null) return [{ label: prefix, value: 'null' }];
+  if (typeof value !== 'object') return [{ label: prefix, value: txt(value) }];
+  const isArray = Array.isArray(value);
+  const entries: [string, unknown][] = isArray
+    ? (value as unknown[]).map((v, i) => [String(i), v])
     : Object.entries(value);
+  if (!entries.length) return [{ label: prefix, value: isArray ? '[]' : '{}' }];
+  const rows: OperationField[] = [];
   for (const [k, v] of entries) {
-    const isIndex = k.startsWith('[');
-    const path = prefix ? (isIndex ? `${prefix}${k}` : `${prefix}.${k}`) : k;
-    if (v !== null && typeof v === 'object') rows.push(...flattenJson(v, path));
-    else rows.push({ label: path, value: str(v) });
+    const path = isArray
+      ? `${prefix}[${k}]`
+      : prefix
+        ? `${prefix}.${segment(k)}`
+        : segment(k);
+    rows.push(...flattenJson(v, path));
+  }
+  return rows;
+}
+
+/**
+ * Push one row per JSON leaf of `raw` under `label`, or the whole raw string
+ * when it will not parse. Used for every schema `json` field (custom_json's
+ * payload and the account metadata fields) so none of them is summarised away.
+ */
+function pushJsonRows(
+  rows: OperationField[],
+  label: string,
+  raw: string,
+): void {
+  let leaves: OperationField[] = [];
+  try {
+    leaves = flattenJson(JSON.parse(raw));
+  } catch {
+    leaves = [];
+  }
+  if (!leaves.length) {
+    rows.push({ label, value: safeText(raw) });
+    return;
+  }
+  for (const leaf of leaves)
+    rows.push({
+      label: leaf.label ? `${label}.${leaf.label}` : label,
+      value: leaf.value,
+    });
+}
+
+/**
+ * The account(s) an operation acts AS: the fields the schema defaults to
+ * `__signer`. A request may name a DIFFERENT account there, which signs on
+ * behalf of an account the user merely co-manages (a treasury or community
+ * account whose authority lists them). The old `s` param never covered this, so
+ * the confirm screen names the actor and the route warns when it is not the
+ * selected account.
+ */
+export function operationActors(op: Operation): string[] {
+  const [name, p] = op;
+  const out: string[] = [];
+  for (const [field, spec] of Object.entries(OPERATIONS[name]?.schema ?? {})) {
+    if (spec.defaultValue !== '__signer') continue;
+    const v = str(p[field]);
+    if (v) out.push(v);
+  }
+  // custom_json has no schema signer slot; its actor is whoever it requires.
+  if (name === 'custom_json')
+    for (const key of ['required_auths', 'required_posting_auths'] as const) {
+      const list = p[key];
+      if (Array.isArray(list))
+        for (const a of list) {
+          const v = str(a);
+          if (v) out.push(v);
+        }
+    }
+  return [...new Set(out)];
+}
+
+/** Rows naming the account(s) the operation acts as (the schema signer slot). */
+function actorRows(name: string, p: Record<string, unknown>): OperationField[] {
+  const rows: OperationField[] = [];
+  for (const [field, spec] of Object.entries(OPERATIONS[name]?.schema ?? {})) {
+    if (spec.defaultValue !== '__signer') continue;
+    const v = str(p[field]);
+    if (v) rows.push({ label: humanizeName(field), value: `@${safeText(v)}` });
   }
   return rows;
 }
@@ -190,83 +301,70 @@ function flattenJson(value: unknown, prefix = ''): OperationField[] {
  * will sign) resolves the `__signer` placeholder so a row never shows the raw
  * token instead of the account it stands for.
  */
-export function operationFields(op: Operation, signer = ''): OperationField[] {
+export function operationFields(op: Operation): OperationField[] {
   const [name, p] = op;
-  const rows: OperationField[] = [];
-  const resolve = (v: string) => resolveSignerStr(v, signer);
+  // Name the account being acted AS for every op that has a signer slot, so
+  // signing on behalf of another account is never silent (see operationActors).
+  const rows: OperationField[] = actorRows(name, p);
   switch (name) {
     case 'transfer':
     case 'vote':
-      return [];
+      return rows;
     case 'comment': {
       // The summary states post-vs-reply and the target; permlink, body and
       // json_metadata are otherwise hidden, so a comment op could carry content
       // (or metadata) the user never sees. Show them here.
       if (str(p.permlink))
-        rows.push({ label: 'Permlink', value: str(p.permlink) });
+        rows.push({ label: 'Permlink', value: txt(p.permlink) });
       // For a top-level post parent_permlink is the primary tag/community.
       if (str(p.parent_author) === '' && str(p.parent_permlink))
-        rows.push({ label: 'Community/tag', value: str(p.parent_permlink) });
-      if (str(p.body)) rows.push({ label: 'Body', value: str(p.body) });
+        rows.push({ label: 'Community/tag', value: txt(p.parent_permlink) });
+      if (str(p.body)) rows.push({ label: 'Body', value: txt(p.body) });
       if (str(p.json_metadata))
-        rows.push({ label: 'Metadata', value: str(p.json_metadata) });
+        pushJsonRows(rows, 'Metadata', str(p.json_metadata));
       return rows;
     }
     case 'account_update':
     case 'account_update2': {
-      if (p.account)
-        rows.push({ label: 'Account', value: `@${resolve(str(p.account))}` });
       for (const role of ['owner', 'active', 'posting'] as const) {
         if (p[role] !== undefined)
           rows.push({
             label: `${role} authority`,
-            value: resolve(describeAuthority(p[role])),
+            value: describeAuthority(p[role]),
           });
       }
       if (str(p.memo_key))
-        rows.push({ label: 'Memo key', value: str(p.memo_key) });
+        rows.push({ label: 'Memo key', value: txt(p.memo_key) });
+      // Flatten the metadata rather than describing it. posting_json_metadata
+      // holds the profile AND, for an app account, `redirect_uris`, which the
+      // OAuth screen trusts as that app's registered callbacks - so "profile
+      // metadata changes" could hide registering an attacker's callback.
       if (str(p.json_metadata))
-        rows.push({ label: 'Metadata', value: 'account metadata changes' });
+        pushJsonRows(rows, 'Metadata', str(p.json_metadata));
       if (str(p.posting_json_metadata))
-        rows.push({ label: 'Profile', value: 'profile metadata changes' });
+        pushJsonRows(rows, 'Profile', str(p.posting_json_metadata));
       return rows;
     }
     case 'custom_json': {
-      rows.push({ label: 'ID', value: str(p.id) });
+      rows.push({ label: 'ID', value: txt(p.id) });
       const active = p.required_auths;
       if (Array.isArray(active) && active.length)
-        rows.push({ label: 'Active auths', value: resolve(active.join(', ')) });
+        rows.push({ label: 'Active auths', value: txt(active.join(', ')) });
       const posting = p.required_posting_auths;
       if (Array.isArray(posting) && posting.length)
-        rows.push({
-          label: 'Posting auths',
-          value: resolve(posting.join(', ')),
-        });
+        rows.push({ label: 'Posting auths', value: txt(posting.join(', ')) });
       // Flatten the JSON so every leaf is visible instead of cutting the string
-      // at a fixed length (which could hide a transfer amount past the cut). On
-      // unparseable JSON fall back to the whole raw string (the card wraps it).
-      const json = str(p.json);
-      let leaves: OperationField[] = [];
-      try {
-        leaves = flattenJson(JSON.parse(json));
-      } catch {
-        leaves = [];
-      }
-      if (leaves.length)
-        for (const leaf of leaves)
-          rows.push({
-            label: leaf.label ? `json.${leaf.label}` : 'json',
-            value: resolve(leaf.value),
-          });
-      else rows.push({ label: 'JSON', value: resolve(json) });
+      // at a fixed length (which could hide a transfer amount past the cut).
+      if (str(p.json)) pushJsonRows(rows, 'json', str(p.json));
       return rows;
     }
     default:
       for (const [k, v] of Object.entries(p)) {
-        rows.push({
-          label: k,
-          value: resolve(typeof v === 'string' ? v : JSON.stringify(v)),
-        });
+        // Skip the signer-slot fields actorRows already named.
+        if (rows.some((r) => r.label === humanizeName(k))) continue;
+        if (typeof v === 'object' && v !== null)
+          pushJsonRows(rows, k, JSON.stringify(v));
+        else rows.push({ label: k, value: txt(v) });
       }
       return rows;
   }

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { type CSSProperties, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getKeys } from '@/lib/accounts';
 import { buildGrantOperation, hasGrant } from '@/lib/grant';
@@ -77,6 +77,15 @@ function Authorize() {
 
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Set when this screen is left, so an in-flight approve() cannot redirect
+  // after the user withdrew consent.
+  const abandoned = useRef(false);
+  useEffect(
+    () => () => {
+      abandoned.current = true;
+    },
+    [],
+  );
 
   const authority = authorityForScope(req.scope);
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
@@ -84,6 +93,13 @@ function Authorize() {
   const signingKey = keys?.[authority];
   const callback = req.redirectUri ?? '';
   const registered = profile ? isRegisteredRedirect(profile, callback) : false;
+  const callbackHost = (() => {
+    try {
+      return new URL(callback).host;
+    } catch {
+      return null;
+    }
+  })();
 
   // A posting-scope request needs the app to hold posting authority on-chain.
   const postingScope = req.scope !== 'login' && !!req.clientId;
@@ -135,6 +151,10 @@ function Authorize() {
           await refetchAccount();
         }
       }
+      // The grant poll can run for up to 16s. If the user left the consent
+      // screen in the meantime (Cancel, or navigating away), do NOT hand the app
+      // a token and redirect them - they withdrew consent mid-flow.
+      if (abandoned.current) return;
       const token = buildAuthToken(req, selectedAccount, signingKey, authority);
       window.location.assign(
         buildRedirectUrl(callback, token, req, selectedAccount),
@@ -187,6 +207,19 @@ function Authorize() {
         <h1 style={{ margin: 0, fontSize: 19, fontWeight: 700 }}>
           <b>{appName}</b> {t('authorize.request_access')}
         </h1>
+        {/* profile.name is the app account's OWN self-declared metadata, so an
+            account like `ecency-login` can call itself "Ecency". Always show the
+            real client_id and the callback host: those are what the grant and
+            the redirect actually use, and they cannot be renamed. */}
+        <div style={{ fontSize: 12.5, color: '#59636e' }}>
+          Hive account <b>@{req.clientId}</b>
+          {callbackHost && (
+            <>
+              {' '}
+              · sends you to <b>{callbackHost}</b>
+            </>
+          )}
+        </div>
       </div>
 
       {unregistered && (
@@ -254,8 +287,9 @@ function Authorize() {
           <>
             {grantNeeded && (
               <div style={{ fontSize: 12.5, color: '#7a5300' }}>
-                First-time authorization: this grants posting access on-chain
-                and needs your active key once.
+                First-time authorization: this adds <b>@{req.clientId}</b> to
+                your posting authority on-chain and needs your active key once.
+                That account will be able to post as you until you revoke it.
               </div>
             )}
             <button

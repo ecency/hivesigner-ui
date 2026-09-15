@@ -61,8 +61,12 @@ function Import() {
       }
       await addAccount(name, keys, usePasscode ? passcode : undefined);
       navigate({ to: '/accounts' });
-    } catch {
-      setError(t('common.try_again'));
+    } catch (e) {
+      // Surface keystore/accounts messages verbatim: a wrong passcode on an
+      // already-protected account now throws here, and telling the user to "try
+      // again later" would send them into retrying the same wrong passcode.
+      const msg = e instanceof Error ? e.message : '';
+      setError(/passcode|protected/i.test(msg) ? msg : t('common.try_again'));
     } finally {
       setBusy(false);
     }

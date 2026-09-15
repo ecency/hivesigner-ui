@@ -35,13 +35,24 @@ export function normalizeAuthRequest(
   }
   return {
     clientId: query.client_id || query.clientId,
+    // A malformed escape (a stray `%`) makes decodeURIComponent throw; fall back
+    // to the raw value so the consent screen still renders and then fails the
+    // registration check, rather than breaking on an attacker-shaped URL.
     redirectUri: query.redirect_uri
-      ? decodeURIComponent(query.redirect_uri)
+      ? safeDecode(query.redirect_uri)
       : undefined,
     scope,
     responseType,
     state: query.state,
   };
+}
+
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
 
 /** An http(s) URL only - a `javascript:`/other-scheme redirect is never valid. */

@@ -18,7 +18,9 @@ const SIGNER = /__signer/g;
  * string (e.g. {"follower":"__signer",...}), which an exact-match would miss.
  */
 function resolvePlaceholders(value: unknown, username: string): unknown {
-  if (typeof value === 'string') return value.replace(SIGNER, username);
+  // A function replacer: a string replacement would reinterpret `$&` / `$1`
+  // patterns, and `username` can come from the caller-supplied `s` param.
+  if (typeof value === 'string') return value.replace(SIGNER, () => username);
   if (Array.isArray(value))
     return value.map((v) => resolvePlaceholders(v, username));
   if (value && typeof value === 'object') {
@@ -57,11 +59,20 @@ export interface BroadcastOutcome {
 /**
  * Build an unsigned transaction. `operations` are the PROCESSED operations that
  * the confirm screen displays; they are always what gets signed, so the user
- * signs exactly what they saw. For a /sign/tx request `preservedTx` supplies the
- * caller's own ref_block_num / ref_block_prefix / expiration (so the resulting
- * tx id matches the caller's, e.g. for multisig) while the operations still come
- * from the displayed set - never the raw, unprocessed ops. For op/ops/legacy
- * forms there is no header to preserve and the SDK fills ref/expiry.
+ * signs exactly what they saw.
+ *
+ * For a /sign/tx request `preservedTx` supplies the caller's own
+ * ref_block_num / ref_block_prefix / expiration, so a co-signer's signature
+ * applies to the caller's TAPOS window. Only those three fields plus any
+ * existing `signatures` are taken: the caller's object is attacker-controlled
+ * and anything else in it (notably `extensions`, which the serializer DOES
+ * include in the signed digest) would be signed without ever being displayed.
+ * `extensions` is therefore forced empty.
+ *
+ * Note the resulting tx id matches the caller's only when schema processing
+ * changed nothing; processing normalises amounts, truncates memos and injects
+ * defaults, so a multisig integrator must read the id back from the result
+ * rather than assume it equals the id of the tx they sent.
  */
 async function buildTx(
   operations: Operation[],
@@ -69,7 +80,21 @@ async function buildTx(
   preservedTx?: UnresolvedTx,
 ): Promise<Transaction> {
   if (preservedTx) {
-    const tx = resolveTx({ ...preservedTx, operations }, username);
+    const existing = preservedTx.signatures;
+    const tx = resolveTx(
+      {
+        ref_block_num: preservedTx.ref_block_num,
+        ref_block_prefix: preservedTx.ref_block_prefix,
+        expiration: preservedTx.expiration,
+        extensions: [],
+        operations,
+        ...(Array.isArray(existing) &&
+        existing.every((s) => typeof s === 'string')
+          ? { signatures: existing }
+          : {}),
+      },
+      username,
+    );
     return new Transaction({ transaction: tx as never });
   }
   const tx = new Transaction();

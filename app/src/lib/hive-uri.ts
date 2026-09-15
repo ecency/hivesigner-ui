@@ -15,6 +15,9 @@ export interface UnresolvedTx {
   expiration: string;
   extensions: unknown[];
   operations: Operation[];
+  /** A /sign/tx caller may send a partially-signed tx for us to co-sign. Not
+   * part of the signed digest, so carrying it cannot change the tx id. */
+  signatures?: unknown[];
 }
 
 export interface DecodeParams {

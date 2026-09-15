@@ -155,3 +155,37 @@ describe('selecting and removing', () => {
     expect(isUnlocked('alice')).toBe(false);
   });
 });
+
+describe('adding a key to an encrypted account (key-loss guards)', () => {
+  it('a WRONG passcode throws and leaves the stored keys intact', async () => {
+    await addAccount('carol', { posting: '5Kposting' }, 'right');
+    _resetKeyCache(); // simulate a reload: only the encrypted record remains
+
+    await expect(
+      addAccount('carol', { active: '5Kactive' }, 'wrong'),
+    ).rejects.toThrow();
+
+    // The record must still open with the ORIGINAL passcode and still hold the
+    // original key. Catching the error and re-saving used to overwrite it.
+    const keys = await unlockAccount('carol', 'right');
+    expect(keys).toEqual({ posting: '5Kposting' });
+    expect(accountIsEncrypted('carol')).toBe(true);
+  });
+
+  it('the RIGHT passcode merges the new key into the stored ones', async () => {
+    await addAccount('dave', { posting: '5Kposting' }, 'pw');
+    _resetKeyCache();
+    await addAccount('dave', { active: '5Kactive' }, 'pw');
+    expect(await unlockAccount('dave', 'pw')).toEqual({
+      posting: '5Kposting',
+      active: '5Kactive',
+    });
+  });
+
+  it('refuses to add without a passcode rather than downgrading to plaintext', async () => {
+    await addAccount('erin', { posting: '5Kposting' }, 'pw');
+    _resetKeyCache();
+    await expect(addAccount('erin', { active: '5Kactive' })).rejects.toThrow();
+    expect(accountIsEncrypted('erin')).toBe(true);
+  });
+});

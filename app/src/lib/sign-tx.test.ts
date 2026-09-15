@@ -1,6 +1,7 @@
+import { PrivateKey, Transaction } from '@ecency/sdk/hive';
 import { describe, expect, it } from 'vitest';
 import type { Operation } from './hive-uri';
-import { resolveSigner } from './sign-tx';
+import { resolveSigner, signOperations } from './sign-tx';
 
 describe('resolveSigner', () => {
   it('replaces __signer with the account name in a vote', () => {
@@ -52,5 +53,90 @@ describe('resolveSigner', () => {
       ['vote', { voter: 'someone', author: 'a', permlink: 'p', weight: 1 }],
     ];
     expect(resolveSigner(ops, 'alice')).toEqual(ops);
+  });
+});
+
+describe('signing a /sign/tx request (preserved header)', () => {
+  // A preserved header supplies ref_block/expiration, so this path needs no
+  // chain read and the real SDK can sign it in a unit test.
+  const header = {
+    ref_block_num: 1234,
+    ref_block_prefix: 987654321,
+    expiration: '2035-01-01T00:00:00',
+    extensions: [] as unknown[],
+  };
+  const ops: Operation[] = [
+    [
+      'vote',
+      { voter: '__signer', author: 'alice', permlink: 'p', weight: 10000 },
+    ],
+  ];
+  const wif = PrivateKey.fromLogin(
+    'hivesignertest',
+    'password123',
+    'posting',
+  ).toString();
+
+  /** The tx id of the same operations under a clean, extension-free header. */
+  function expectedTxId(): string {
+    const tx = new Transaction({
+      transaction: {
+        ...header,
+        operations: resolveSigner(ops, 'alice'),
+      } as never,
+    });
+    return tx.digest().txId;
+  }
+
+  it('signs the DISPLAYED operations, not the raw ones the caller sent', async () => {
+    const out = await signOperations(
+      resolveSigner(ops, 'alice'),
+      wif,
+      'alice',
+      {
+        ...header,
+        // The caller's own (unprocessed) operations differ from the displayed set.
+        operations: [
+          [
+            'vote',
+            { voter: '__signer', author: 'attacker', permlink: 'x', weight: 1 },
+          ],
+        ],
+      } as never,
+    );
+    expect(out.id).toBe(expectedTxId());
+    expect(out.signature).toBeTruthy();
+  });
+
+  it('never signs caller-supplied transaction extensions', async () => {
+    // extensions ARE part of the signed digest, so if they survived, the tx id
+    // would differ from the clean-header id.
+    const out = await signOperations(
+      resolveSigner(ops, 'alice'),
+      wif,
+      'alice',
+      {
+        ...header,
+        extensions: ['attacker-controlled-bytes'],
+        operations: ops,
+      } as never,
+    );
+    expect(out.id).toBe(expectedTxId());
+  });
+
+  it('returns the signature THIS key added, not a co-signer already on the tx', async () => {
+    const other = 'deadbeef'.repeat(16);
+    const out = await signOperations(
+      resolveSigner(ops, 'alice'),
+      wif,
+      'alice',
+      {
+        ...header,
+        signatures: [other],
+        operations: ops,
+      } as never,
+    );
+    expect(out.signature).toBeTruthy();
+    expect(out.signature).not.toBe(other);
   });
 });
