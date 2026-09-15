@@ -50,6 +50,26 @@ export function getDynamicGlobalProperties(): Promise<DynamicGlobalProperties> {
   return callRPC('condenser_api.get_dynamic_global_properties', []);
 }
 
+interface Content {
+  json_metadata: string;
+}
+
+/** The curated top-apps list published on the @hivesigner/top-apps post. */
+export async function getTopApps(): Promise<string[]> {
+  try {
+    const content = (await callRPC('condenser_api.get_content', [
+      'hivesigner',
+      'top-apps',
+    ])) as Content;
+    const data = JSON.parse(content.json_metadata || '{}').data;
+    return Array.isArray(data)
+      ? data.filter((x): x is string => typeof x === 'string')
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 /** SP-per-VEST, for rendering HP amounts. Falls back to 1 when unavailable. */
 export async function getVestsToSp(): Promise<number> {
   try {
