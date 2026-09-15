@@ -133,6 +133,7 @@ export interface OperationField {
 
 function describeAuthority(value: unknown): string {
   const a = value as {
+    weight_threshold?: number;
     key_auths?: [string, number][];
     account_auths?: [string, number][];
   } | null;
@@ -140,10 +141,44 @@ function describeAuthority(value: unknown): string {
   const keys = (a.key_auths ?? []).map(([k, w]) => `${k} (${w})`);
   const accts = (a.account_auths ?? []).map(([n, w]) => `@${n} (${w})`);
   const parts = [
+    // The threshold is material: raising it above the total weight (or an
+    // account_auths swap that keeps the same shape) can lock the owner out, and
+    // omitting it made a lockout op look like a no-op.
+    typeof a.weight_threshold === 'number'
+      ? `threshold ${a.weight_threshold}`
+      : '',
     keys.length ? `keys: ${keys.join(', ')}` : '',
     accts.length ? `accounts: ${accts.join(', ')}` : '',
   ].filter(Boolean);
   return parts.length ? parts.join('; ') : '(cleared)';
+}
+
+/** Replace the __signer placeholder with the signing account for display. */
+function resolveSignerStr(value: string, signer: string): string {
+  return signer ? value.replace(/__signer/g, signer) : value;
+}
+
+/**
+ * Flatten a parsed JSON value into dotted-path leaf rows so a custom_json
+ * payload is shown in full: a truncated inline view could push the harmful part
+ * (a token transfer, a different account) past the cut. Arrays index by [i],
+ * objects by key; primitives at the root return a single value row.
+ */
+function flattenJson(value: unknown, prefix = ''): OperationField[] {
+  if (value === null || typeof value !== 'object') {
+    return [{ label: prefix, value: str(value) }];
+  }
+  const rows: OperationField[] = [];
+  const entries: [string, unknown][] = Array.isArray(value)
+    ? value.map((v, i) => [`[${i}]`, v])
+    : Object.entries(value);
+  for (const [k, v] of entries) {
+    const isIndex = k.startsWith('[');
+    const path = prefix ? (isIndex ? `${prefix}${k}` : `${prefix}.${k}`) : k;
+    if (v !== null && typeof v === 'object') rows.push(...flattenJson(v, path));
+    else rows.push({ label: path, value: str(v) });
+  }
+  return rows;
 }
 
 /**
@@ -151,25 +186,41 @@ function describeAuthority(value: unknown): string {
  * capture them. This exists so a dangerous op (account_update giving away an
  * authority, a custom_json token transfer, or any op with no curated summary) is
  * never hidden behind a collapsed JSON block - the user sees what they approve.
- * Returns [] for the fully-summarized transfer/vote/comment.
+ * Returns [] for the fully-summarized transfer/vote. `signer` (the account that
+ * will sign) resolves the `__signer` placeholder so a row never shows the raw
+ * token instead of the account it stands for.
  */
-export function operationFields(op: Operation): OperationField[] {
+export function operationFields(op: Operation, signer = ''): OperationField[] {
   const [name, p] = op;
   const rows: OperationField[] = [];
+  const resolve = (v: string) => resolveSignerStr(v, signer);
   switch (name) {
     case 'transfer':
     case 'vote':
-    case 'comment':
       return [];
+    case 'comment': {
+      // The summary states post-vs-reply and the target; permlink, body and
+      // json_metadata are otherwise hidden, so a comment op could carry content
+      // (or metadata) the user never sees. Show them here.
+      if (str(p.permlink))
+        rows.push({ label: 'Permlink', value: str(p.permlink) });
+      // For a top-level post parent_permlink is the primary tag/community.
+      if (str(p.parent_author) === '' && str(p.parent_permlink))
+        rows.push({ label: 'Community/tag', value: str(p.parent_permlink) });
+      if (str(p.body)) rows.push({ label: 'Body', value: str(p.body) });
+      if (str(p.json_metadata))
+        rows.push({ label: 'Metadata', value: str(p.json_metadata) });
+      return rows;
+    }
     case 'account_update':
     case 'account_update2': {
       if (p.account)
-        rows.push({ label: 'Account', value: `@${str(p.account)}` });
+        rows.push({ label: 'Account', value: `@${resolve(str(p.account))}` });
       for (const role of ['owner', 'active', 'posting'] as const) {
         if (p[role] !== undefined)
           rows.push({
             label: `${role} authority`,
-            value: describeAuthority(p[role]),
+            value: resolve(describeAuthority(p[role])),
           });
       }
       if (str(p.memo_key))
@@ -182,22 +233,39 @@ export function operationFields(op: Operation): OperationField[] {
     }
     case 'custom_json': {
       rows.push({ label: 'ID', value: str(p.id) });
-      const required = p.required_auths;
-      if (Array.isArray(required) && required.length) {
-        rows.push({ label: 'Active auths', value: required.join(', ') });
-      }
+      const active = p.required_auths;
+      if (Array.isArray(active) && active.length)
+        rows.push({ label: 'Active auths', value: resolve(active.join(', ')) });
+      const posting = p.required_posting_auths;
+      if (Array.isArray(posting) && posting.length)
+        rows.push({
+          label: 'Posting auths',
+          value: resolve(posting.join(', ')),
+        });
+      // Flatten the JSON so every leaf is visible instead of cutting the string
+      // at a fixed length (which could hide a transfer amount past the cut). On
+      // unparseable JSON fall back to the whole raw string (the card wraps it).
       const json = str(p.json);
-      rows.push({
-        label: 'JSON',
-        value: json.length > 400 ? `${json.slice(0, 400)}…` : json,
-      });
+      let leaves: OperationField[] = [];
+      try {
+        leaves = flattenJson(JSON.parse(json));
+      } catch {
+        leaves = [];
+      }
+      if (leaves.length)
+        for (const leaf of leaves)
+          rows.push({
+            label: leaf.label ? `json.${leaf.label}` : 'json',
+            value: resolve(leaf.value),
+          });
+      else rows.push({ label: 'JSON', value: resolve(json) });
       return rows;
     }
     default:
       for (const [k, v] of Object.entries(p)) {
         rows.push({
           label: k,
-          value: typeof v === 'string' ? v : JSON.stringify(v),
+          value: resolve(typeof v === 'string' ? v : JSON.stringify(v)),
         });
       }
       return rows;

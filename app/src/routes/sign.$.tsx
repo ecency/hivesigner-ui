@@ -218,7 +218,9 @@ function Sign() {
 
       {request.operations.map((op, i) => {
         const s = summarizeOperation(op);
-        const fields = operationFields(op);
+        // Resolve __signer to the account that will sign (or the request's named
+        // signer before one is selected) so no row shows the raw placeholder.
+        const fields = operationFields(op, selectedAccount ?? req.signer ?? '');
         return (
           <div
             key={`${op[0]}-${i}`}

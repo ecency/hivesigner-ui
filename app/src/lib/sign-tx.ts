@@ -55,38 +55,43 @@ export interface BroadcastOutcome {
 }
 
 /**
- * Build and sign a transaction (no broadcast). When `preservedTx` is given (a
- * pre-built /sign/tx request), it is signed EXACTLY as supplied - its
- * ref_block_num / ref_block_prefix / expiration are kept, so the signature
- * matches the caller's own transaction id (needed for multisig collection).
- * Otherwise the operations are assembled fresh and the SDK fills the ref/expiry.
+ * Build an unsigned transaction. `operations` are the PROCESSED operations that
+ * the confirm screen displays; they are always what gets signed, so the user
+ * signs exactly what they saw. For a /sign/tx request `preservedTx` supplies the
+ * caller's own ref_block_num / ref_block_prefix / expiration (so the resulting
+ * tx id matches the caller's, e.g. for multisig) while the operations still come
+ * from the displayed set - never the raw, unprocessed ops. For op/ops/legacy
+ * forms there is no header to preserve and the SDK fills ref/expiry.
  */
-async function buildSigned(
+async function buildTx(
   operations: Operation[],
-  wif: string,
   username: string,
   preservedTx?: UnresolvedTx,
 ): Promise<Transaction> {
-  let tx: Transaction;
   if (preservedTx) {
-    tx = new Transaction({
-      transaction: resolveTx(preservedTx, username) as never,
-    });
-  } else {
-    tx = new Transaction();
-    for (const [name, payload] of resolveSigner(operations, username)) {
-      // The SDK types operation names/payloads narrowly; our ops come from a
-      // decoded URL, so cast at this boundary.
-      await tx.addOperation(name as never, payload as never);
-    }
+    const tx = resolveTx({ ...preservedTx, operations }, username);
+    return new Transaction({ transaction: tx as never });
   }
-  tx.sign(PrivateKey.fromString(wif));
+  const tx = new Transaction();
+  for (const [name, payload] of resolveSigner(operations, username)) {
+    // The SDK types operation names/payloads narrowly; our ops come from a
+    // decoded URL, so cast at this boundary.
+    await tx.addOperation(name as never, payload as never);
+  }
   return tx;
+}
+
+function signatures(tx: Transaction): string[] {
+  const inner = tx.transaction as { signatures?: string[] };
+  if (!inner.signatures) inner.signatures = [];
+  return inner.signatures;
 }
 
 /**
  * Sign WITHOUT broadcasting (a no_broadcast / `nb` request): the caller asked
- * only for a signature. Returns the tx id and the signature.
+ * only for a signature. Returns the tx id and the signature THIS key added
+ * (not signatures[0], which for a partially-signed multisig tx is another
+ * party's signature).
  */
 export async function signOperations(
   operations: Operation[],
@@ -94,9 +99,10 @@ export async function signOperations(
   username: string,
   preservedTx?: UnresolvedTx,
 ): Promise<BroadcastOutcome> {
-  const tx = await buildSigned(operations, wif, username, preservedTx);
-  const signed = tx.transaction as { signatures?: string[] };
-  return { id: tx.digest().txId, signature: signed.signatures?.[0] };
+  const tx = await buildTx(operations, username, preservedTx);
+  const before = signatures(tx).length;
+  tx.sign(PrivateKey.fromString(wif));
+  return { id: tx.digest().txId, signature: signatures(tx)[before] };
 }
 
 /**
@@ -109,7 +115,8 @@ export async function broadcastOperations(
   username: string,
   preservedTx?: UnresolvedTx,
 ): Promise<BroadcastOutcome> {
-  const tx = await buildSigned(operations, wif, username, preservedTx);
+  const tx = await buildTx(operations, username, preservedTx);
+  tx.sign(PrivateKey.fromString(wif));
   const result = (await tx.broadcast()) as {
     id?: string;
     tx_id?: string;

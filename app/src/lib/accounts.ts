@@ -131,20 +131,26 @@ export async function addAccount(
   // new import stands on its own rather than pretending to merge.
   const state = readPersisted();
   const existingField = state.accountsKeychains[username]?.password;
-  // Never silently downgrade a protected account to plaintext storage: if it is
-  // stored encrypted and no passcode was given, refuse rather than write the
-  // keys in the clear (and rather than orphan the existing encrypted keys).
-  if (existingField && fieldIsEncrypted(existingField) && !passcode) {
-    throw new Error(
-      'accounts: this account is protected; enter its passcode to add a key',
-    );
-  }
   let stored: Keys = {};
   if (existingField) {
-    try {
+    if (fieldIsEncrypted(existingField)) {
+      // Never silently downgrade a protected account to plaintext.
+      if (!passcode) {
+        throw new Error(
+          'accounts: this account is protected; enter its passcode to add a key',
+        );
+      }
+      // A WRONG passcode must fail loudly, not be swallowed: catching here would
+      // drop the existing keys and re-save the record under the mistyped
+      // passcode. readKeys throws on a bad passcode; let it propagate.
       stored = await readKeys(existingField, passcode);
-    } catch {
-      stored = {};
+    } else {
+      // Plaintext existing record: tolerate a corrupt blob and start fresh.
+      try {
+        stored = await readKeys(existingField);
+      } catch {
+        stored = {};
+      }
     }
   }
   const merged: Keys = {

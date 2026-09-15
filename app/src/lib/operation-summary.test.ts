@@ -176,9 +176,97 @@ describe('authority resolution', () => {
       'custom_json',
       { id: 'ssc-mainnet-hive', json: '{"to":"attacker"}' },
     ]);
-    expect(cj.find((r) => r.label === 'JSON')?.value).toContain('attacker');
+    expect(cj.find((r) => r.label === 'json.to')?.value).toBe('attacker');
     const unknown = operationFields(['some_new_op', { foo: 'bar', n: 5 }]);
     expect(unknown.map((r) => r.label)).toEqual(['foo', 'n']);
+  });
+
+  it('flattens every leaf of a custom_json so nothing is hidden past a cut', () => {
+    // A long token-transfer payload: the harmful amount used to sit past the
+    // 400-char inline truncation. Every leaf must now be its own visible row.
+    const pad = 'x'.repeat(500);
+    const json = JSON.stringify([
+      'transfer',
+      { note: pad, to: 'attacker', amount: '999.000 HIVE' },
+    ]);
+    const rows = operationFields(['custom_json', { id: 'sm', json }]);
+    expect(rows.find((r) => r.label === 'json.[0]')?.value).toBe('transfer');
+    expect(rows.find((r) => r.label === 'json.[1].to')?.value).toBe('attacker');
+    expect(rows.find((r) => r.label === 'json.[1].amount')?.value).toBe(
+      '999.000 HIVE',
+    );
+    // No row is truncated with an ellipsis.
+    expect(rows.every((r) => !r.value.endsWith('…'))).toBe(true);
+  });
+
+  it('falls back to the whole raw json when it does not parse', () => {
+    const rows = operationFields([
+      'custom_json',
+      { id: 'sm', json: 'not json {' },
+    ]);
+    expect(rows.find((r) => r.label === 'JSON')?.value).toBe('not json {');
+  });
+
+  it('resolves the __signer placeholder to the signing account in fields', () => {
+    // A follow custom_json embeds __signer inside the json string.
+    const json = '["follow",{"follower":"__signer","following":"bob"}]';
+    const rows = operationFields(
+      [
+        'custom_json',
+        { id: 'follow', required_posting_auths: ['__signer'], json },
+      ],
+      'alice',
+    );
+    expect(rows.find((r) => r.label === 'Posting auths')?.value).toBe('alice');
+    expect(rows.find((r) => r.label === 'json.[1].follower')?.value).toBe(
+      'alice',
+    );
+    // Default-branch rows resolve it too.
+    const custom = operationFields(
+      ['custom_op', { account: '__signer' }],
+      'alice',
+    );
+    expect(custom.find((r) => r.label === 'account')?.value).toBe('alice');
+  });
+
+  it('shows the account_update weight_threshold so a lockout is not invisible', () => {
+    const rows = operationFields([
+      'account_update',
+      {
+        account: 'victim',
+        owner: {
+          weight_threshold: 9,
+          account_auths: [],
+          key_auths: [['STM_x', 1]],
+        },
+      },
+    ]);
+    expect(rows.find((r) => r.label === 'owner authority')?.value).toContain(
+      'threshold 9',
+    );
+  });
+
+  it('exposes a comment permlink, body and metadata (not just the title)', () => {
+    const rows = operationFields([
+      'comment',
+      {
+        parent_author: '',
+        parent_permlink: 'hive-123',
+        author: 'alice',
+        permlink: 'my-post',
+        title: 'Hello',
+        body: 'the full body text',
+        json_metadata: '{"app":"x"}',
+      },
+    ]);
+    expect(rows.find((r) => r.label === 'Permlink')?.value).toBe('my-post');
+    expect(rows.find((r) => r.label === 'Community/tag')?.value).toBe(
+      'hive-123',
+    );
+    expect(rows.find((r) => r.label === 'Body')?.value).toBe(
+      'the full body text',
+    );
+    expect(rows.find((r) => r.label === 'Metadata')?.value).toBe('{"app":"x"}');
   });
 
   it('returns no extra fields for a fully-summarized transfer/vote', () => {

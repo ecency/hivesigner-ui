@@ -33,6 +33,29 @@ const card: CSSProperties = {
   padding: 16,
 };
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Poll the chain until the app holds posting authority, or the budget runs out.
+ * A broadcast returns before block inclusion and reads can lag, so a single
+ * immediate refetch would wrongly report failure and a retry would re-broadcast.
+ */
+async function waitForGrant(
+  username: string,
+  clientId: string,
+): Promise<boolean> {
+  for (let i = 0; i < 8; i++) {
+    await sleep(2000);
+    try {
+      const acc = await getAccount(username);
+      if (acc && hasGrant(acc.posting, clientId)) return true;
+    } catch {
+      // transient read failure; keep polling within the budget
+    }
+  }
+  return false;
+}
+
 function Authorize() {
   const { t } = useTranslation();
   const search = Route.useSearch();
@@ -87,25 +110,29 @@ function Authorize() {
       // unloaded account, and confirm the grant on the REFRESHED account after
       // granting rather than trusting the broadcast optimistically.
       if (postingScope && req.clientId) {
-        if (!account) {
+        // Refetch fresh first, so a retry after a grant that already landed sees
+        // the authority and does not broadcast a second account_update.
+        const loaded = (await refetchAccount()).data ?? account;
+        if (!loaded) {
           setError(t('common.try_again'));
           return;
         }
-        let current = account;
-        if (!hasGrant(current.posting, req.clientId)) {
+        if (!hasGrant(loaded.posting, req.clientId)) {
           const activeKey = keys?.active;
           if (!activeKey) {
             setError(t('login.need_import', { authority: 'active' }));
             return;
           }
-          const op = buildGrantOperation(current, req.clientId);
-          if (op) await broadcastOperations([op], activeKey, current.name);
-          const fresh = (await refetchAccount()).data;
-          if (!fresh || !hasGrant(fresh.posting, req.clientId)) {
-            setError(t('sign.failure_title'));
+          const op = buildGrantOperation(loaded, req.clientId);
+          if (op) await broadcastOperations([op], activeKey, loaded.name);
+          // Wait for the grant to be visible on-chain before issuing the token.
+          if (!(await waitForGrant(loaded.name, req.clientId))) {
+            setError(
+              'Authorization was submitted but is still confirming. Please try again in a moment.',
+            );
             return;
           }
-          current = fresh;
+          await refetchAccount();
         }
       }
       const token = buildAuthToken(req, selectedAccount, signingKey, authority);
