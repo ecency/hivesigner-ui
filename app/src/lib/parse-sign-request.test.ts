@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { encodeOp } from './hive-uri';
+import { encodeOp, encodeTx } from './hive-uri';
 import { parseSignRequest } from './parse-sign-request';
 
 describe('parseSignRequest — legacy /sign/<op>?params', () => {
@@ -120,6 +120,34 @@ describe('parseSignRequest — /sign/op/<b64>', () => {
     expect(req?.operations[0][1].weight).toBe(0);
   });
 
+  it('drops a non-http(s) callback (javascript:) so it is never redirected to', () => {
+    const uri = encodeOp(['vote', { author: 'a', permlink: 'p', weight: 1 }], {
+      callback: 'javascript:alert(1)',
+    });
+    const path = uri.replace('hive://sign/', '');
+    const [p, qs] = path.split('?');
+    const req = parseSignRequest(
+      p,
+      Object.fromEntries(new URLSearchParams(qs)),
+      1,
+    );
+    expect(req?.callback).toBeUndefined();
+  });
+
+  it('keeps an https callback', () => {
+    const uri = encodeOp(['vote', { author: 'a', permlink: 'p', weight: 1 }], {
+      callback: 'https://ecency.com/cb',
+    });
+    const path = uri.replace('hive://sign/', '');
+    const [p, qs] = path.split('?');
+    const req = parseSignRequest(
+      p,
+      Object.fromEntries(new URLSearchParams(qs)),
+      1,
+    );
+    expect(req?.callback).toBe('https://ecency.com/cb');
+  });
+
   it('preserves an owner change on an encoded account_update2', () => {
     const owner = {
       weight_threshold: 1,
@@ -131,5 +159,32 @@ describe('parseSignRequest — /sign/op/<b64>', () => {
     const req = parseSignRequest(path, {}, 1);
     // The owner field survives schema processing (it is no longer dropped).
     expect(req?.operations[0][1].owner).toEqual(owner);
+  });
+});
+
+describe('parseSignRequest — /sign/tx preserved envelope', () => {
+  it('exposes preservedTx for a tx form (real ref fields), not for op form', () => {
+    const tx = {
+      ref_block_num: 1234,
+      ref_block_prefix: 5678,
+      expiration: '2030-01-01T00:00:00',
+      extensions: [],
+      operations: [
+        ['vote', { voter: 'alice', author: 'a', permlink: 'p', weight: 1 }],
+      ],
+    };
+    const uri: string = encodeTx(tx);
+    const path = uri.replace('hive://sign/', '');
+    const req = parseSignRequest(path, {}, 1);
+    expect(req?.preservedTx?.ref_block_num).toBe(1234);
+    expect(req?.preservedTx?.expiration).toBe('2030-01-01T00:00:00');
+
+    // An op form has no preserved tx (its ref fields are placeholders).
+    const opReq = parseSignRequest(
+      'vote',
+      { author: 'a', permlink: 'p', weight: '1' },
+      1,
+    );
+    expect(opReq?.preservedTx).toBeUndefined();
   });
 });

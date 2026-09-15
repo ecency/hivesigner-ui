@@ -60,6 +60,25 @@ describe('adding and reading accounts', () => {
       active: '5Kactive',
     });
   });
+
+  it('merges from STORED keys when importing into a locked encrypted account', async () => {
+    await addAccount('alice', { posting: '5Kposting' }, 'pass');
+    _resetKeyCache(); // simulate reload: locked, keyCache empty
+    await addAccount('alice', { active: '5Kactive' }, 'pass');
+    expect(getKeys('alice')).toEqual({
+      posting: '5Kposting',
+      active: '5Kactive',
+    });
+  });
+
+  it('refuses to downgrade an encrypted account to plaintext (no passcode)', async () => {
+    await addAccount('alice', { posting: '5Kposting' }, 'pass');
+    _resetKeyCache();
+    await expect(addAccount('alice', { active: '5Kactive' })).rejects.toThrow(
+      /protected/,
+    );
+    expect(accountIsEncrypted('alice')).toBe(true);
+  });
 });
 
 describe('autoUnlockPlaintext', () => {

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   type Operation,
   operationAuthority,
+  operationFields,
   requiredAuthority,
   summarizeOperation,
 } from './operation-summary';
@@ -152,6 +153,41 @@ describe('authority resolution', () => {
         { account: 'a', json_metadata: '', posting_json_metadata: '{"p":1}' },
       ]),
     ).toBe('posting');
+  });
+
+  it('exposes the attacker key of an account_update as a visible field (anti-phishing)', () => {
+    const rows = operationFields([
+      'account_update',
+      {
+        account: 'victim',
+        active: {
+          weight_threshold: 1,
+          account_auths: [],
+          key_auths: [['STM_ATTACKER', 1]],
+        },
+      },
+    ]);
+    const activeRow = rows.find((r) => r.label === 'active authority');
+    expect(activeRow?.value).toContain('STM_ATTACKER');
+  });
+
+  it('shows the json body of a custom_json and every field of an unmapped op', () => {
+    const cj = operationFields([
+      'custom_json',
+      { id: 'ssc-mainnet-hive', json: '{"to":"attacker"}' },
+    ]);
+    expect(cj.find((r) => r.label === 'JSON')?.value).toContain('attacker');
+    const unknown = operationFields(['some_new_op', { foo: 'bar', n: 5 }]);
+    expect(unknown.map((r) => r.label)).toEqual(['foo', 'n']);
+  });
+
+  it('returns no extra fields for a fully-summarized transfer/vote', () => {
+    expect(
+      operationFields(['transfer', { to: 'b', amount: '1.000 HIVE' }]),
+    ).toEqual([]);
+    expect(
+      operationFields(['vote', { author: 'a', permlink: 'p', weight: 1 }]),
+    ).toEqual([]);
   });
 
   it('account_update2 needs active for an active/posting/memo-key change, owner for an owner change', () => {

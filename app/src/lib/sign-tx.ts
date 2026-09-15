@@ -7,7 +7,7 @@
 // Transaction.addOperation (it fetches dynamic global properties via the
 // failover callRPC), so this module does not touch them.
 import { PrivateKey, Transaction } from '@ecency/sdk/hive';
-import type { Operation } from './hive-uri';
+import type { Operation, UnresolvedTx } from './hive-uri';
 
 const SIGNER = /__signer/g;
 
@@ -41,6 +41,11 @@ export function resolveSigner(
   ]);
 }
 
+/** A whole pre-built transaction with `__signer` resolved throughout. */
+function resolveTx(tx: UnresolvedTx, username: string): UnresolvedTx {
+  return resolvePlaceholders(tx, username) as UnresolvedTx;
+}
+
 export interface BroadcastOutcome {
   id: string;
   blockNum?: number;
@@ -49,33 +54,47 @@ export interface BroadcastOutcome {
   signature?: string;
 }
 
-/** Build a transaction from the operations and sign it (no broadcast). */
+/**
+ * Build and sign a transaction (no broadcast). When `preservedTx` is given (a
+ * pre-built /sign/tx request), it is signed EXACTLY as supplied - its
+ * ref_block_num / ref_block_prefix / expiration are kept, so the signature
+ * matches the caller's own transaction id (needed for multisig collection).
+ * Otherwise the operations are assembled fresh and the SDK fills the ref/expiry.
+ */
 async function buildSigned(
   operations: Operation[],
   wif: string,
   username: string,
+  preservedTx?: UnresolvedTx,
 ): Promise<Transaction> {
-  const resolved = resolveSigner(operations, username);
-  const tx = new Transaction();
-  for (const [name, payload] of resolved) {
-    // The SDK types operation names/payloads narrowly; our ops come from a
-    // decoded URL, so cast at this boundary.
-    await tx.addOperation(name as never, payload as never);
+  let tx: Transaction;
+  if (preservedTx) {
+    tx = new Transaction({
+      transaction: resolveTx(preservedTx, username) as never,
+    });
+  } else {
+    tx = new Transaction();
+    for (const [name, payload] of resolveSigner(operations, username)) {
+      // The SDK types operation names/payloads narrowly; our ops come from a
+      // decoded URL, so cast at this boundary.
+      await tx.addOperation(name as never, payload as never);
+    }
   }
   tx.sign(PrivateKey.fromString(wif));
   return tx;
 }
 
 /**
- * Sign the operations WITHOUT broadcasting (a no_broadcast / `nb` request): the
- * caller asked only for a signature. Returns the tx id and the signature.
+ * Sign WITHOUT broadcasting (a no_broadcast / `nb` request): the caller asked
+ * only for a signature. Returns the tx id and the signature.
  */
 export async function signOperations(
   operations: Operation[],
   wif: string,
   username: string,
+  preservedTx?: UnresolvedTx,
 ): Promise<BroadcastOutcome> {
-  const tx = await buildSigned(operations, wif, username);
+  const tx = await buildSigned(operations, wif, username, preservedTx);
   const signed = tx.transaction as { signatures?: string[] };
   return { id: tx.digest().txId, signature: signed.signatures?.[0] };
 }
@@ -88,8 +107,9 @@ export async function broadcastOperations(
   operations: Operation[],
   wif: string,
   username: string,
+  preservedTx?: UnresolvedTx,
 ): Promise<BroadcastOutcome> {
-  const tx = await buildSigned(operations, wif, username);
+  const tx = await buildSigned(operations, wif, username, preservedTx);
   const result = (await tx.broadcast()) as {
     id?: string;
     tx_id?: string;

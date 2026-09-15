@@ -63,11 +63,14 @@ function Authorize() {
   const registered = profile ? isRegisteredRedirect(profile, callback) : false;
 
   // A posting-scope request needs the app to hold posting authority on-chain.
+  const postingScope = req.scope !== 'login' && !!req.clientId;
+  // The account must be loaded before we can judge the grant; undefined = still
+  // loading (null = not found). Approval waits for it on a posting-scope request.
+  const accountLoaded = account !== undefined;
   const grantNeeded =
-    req.scope !== 'login' &&
-    !!req.clientId &&
+    postingScope &&
     !!account &&
-    !hasGrant(account.posting, req.clientId);
+    !hasGrant(account.posting, req.clientId as string);
 
   async function approve() {
     setError(null);
@@ -79,17 +82,31 @@ function Authorize() {
     }
     setBusy(true);
     try {
-      // Establish the on-chain grant first when missing (needs the active key),
-      // so the token we issue can actually broadcast.
-      if (grantNeeded && account && req.clientId) {
-        const activeKey = keys?.active;
-        if (!activeKey) {
-          setError(t('login.need_import', { authority: 'active' }));
+      // For a posting-scope request, the app MUST hold the on-chain grant before
+      // we issue a token, or the token cannot broadcast (#95). Never issue on an
+      // unloaded account, and confirm the grant on the REFRESHED account after
+      // granting rather than trusting the broadcast optimistically.
+      if (postingScope && req.clientId) {
+        if (!account) {
+          setError(t('common.try_again'));
           return;
         }
-        const op = buildGrantOperation(account, req.clientId);
-        if (op) await broadcastOperations([op], activeKey, account.name);
-        await refetchAccount();
+        let current = account;
+        if (!hasGrant(current.posting, req.clientId)) {
+          const activeKey = keys?.active;
+          if (!activeKey) {
+            setError(t('login.need_import', { authority: 'active' }));
+            return;
+          }
+          const op = buildGrantOperation(current, req.clientId);
+          if (op) await broadcastOperations([op], activeKey, current.name);
+          const fresh = (await refetchAccount()).data;
+          if (!fresh || !hasGrant(fresh.posting, req.clientId)) {
+            setError(t('sign.failure_title'));
+            return;
+          }
+          current = fresh;
+        }
       }
       const token = buildAuthToken(req, selectedAccount, signingKey, authority);
       window.location.assign(
@@ -197,6 +214,15 @@ function Authorize() {
           <Link to="/import" style={btn(true)}>
             {t('login.need_import', { authority })}
           </Link>
+        ) : postingScope && !accountLoaded ? (
+          // Never issue a posting token before we can confirm the on-chain grant.
+          <button
+            type="button"
+            disabled
+            style={{ ...btn(false), border: 'none' }}
+          >
+            …
+          </button>
         ) : (
           <>
             {grantNeeded && (

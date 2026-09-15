@@ -124,11 +124,35 @@ export async function addAccount(
   keys: Keys,
   passcode?: string,
 ): Promise<void> {
-  // Merge with any keys already unlocked for this account, so importing a second
-  // key (e.g. active after posting) adds to the set rather than replacing it.
-  const merged: Keys = { ...(keyCache.get(username) ?? {}), ...keys };
-  const field = await writeKeys(merged, passcode);
+  // Merge with the account's existing keys so importing a second key (e.g.
+  // active after posting) ADDS to the set instead of replacing it - even for an
+  // account that is only in storage (locked after a reload), read with the same
+  // passcode. If the stored record cannot be read (a different passcode), the
+  // new import stands on its own rather than pretending to merge.
   const state = readPersisted();
+  const existingField = state.accountsKeychains[username]?.password;
+  // Never silently downgrade a protected account to plaintext storage: if it is
+  // stored encrypted and no passcode was given, refuse rather than write the
+  // keys in the clear (and rather than orphan the existing encrypted keys).
+  if (existingField && fieldIsEncrypted(existingField) && !passcode) {
+    throw new Error(
+      'accounts: this account is protected; enter its passcode to add a key',
+    );
+  }
+  let stored: Keys = {};
+  if (existingField) {
+    try {
+      stored = await readKeys(existingField, passcode);
+    } catch {
+      stored = {};
+    }
+  }
+  const merged: Keys = {
+    ...stored,
+    ...(keyCache.get(username) ?? {}),
+    ...keys,
+  };
+  const field = await writeKeys(merged, passcode);
   state.accountsKeychains[username] = { password: field };
   if (!state.selectedAccount) state.selectedAccount = username;
   writePersisted(state);
@@ -153,11 +177,18 @@ export async function unlockAccount(
   keyCache.set(username, keys);
 
   if (needsUpgrade(field) && passcode) {
-    // Migrate the old triplesec blob to the new v1 envelope, same passcode.
-    state.accountsKeychains[username] = {
-      password: await writeKeys(keys, passcode),
-    };
-    writePersisted(state);
+    // Migrate the old triplesec blob to the new v1 envelope, same passcode. This
+    // must not fail the unlock: the keys are already cached, so a failed
+    // re-encrypt (e.g. crypto.subtle unavailable) should leave the account
+    // unlocked with the old blob, not surface as a wrong-passcode error.
+    try {
+      state.accountsKeychains[username] = {
+        password: await writeKeys(keys, passcode),
+      };
+      writePersisted(state);
+    } catch {
+      // keep the legacy blob; the account is unlocked for this session
+    }
   }
   emit();
   return keys;

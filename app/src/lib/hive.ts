@@ -6,10 +6,12 @@
 // verified against dhive vectors in hive.test.ts. This module is the single
 // import point for chain reads, key derivation, credential checks and message
 // signing; the rest of the app never imports the SDK directly.
-import { callRPC, type KeyRole, PrivateKey, Signature } from '@ecency/sdk/hive';
+import { callRPC, PrivateKey, Signature } from '@ecency/sdk/hive';
 import { sha256 } from '@noble/hashes/sha2.js';
 
-export type { KeyRole };
+// Defined locally: @ecency/sdk/hive does not re-export the KeyRole type from its
+// entry, though PrivateKey.fromLogin accepts this exact union structurally.
+export type KeyRole = 'owner' | 'active' | 'posting' | 'memo';
 
 // --- reads (with SDK failover) -----------------------------------------------
 
@@ -70,17 +72,21 @@ export async function getTopApps(): Promise<string[]> {
   }
 }
 
-/** SP-per-VEST, for rendering HP amounts. Falls back to 1 when unavailable. */
+/**
+ * SP-per-VEST, for converting HP amounts. REJECTS on RPC failure or a nonsense
+ * rate rather than returning a fallback, so a caller (React Query) can tell a
+ * real, validated rate from "unknown" and refuse to sign an HP amount without
+ * one. Do not swallow the error here.
+ */
 export async function getVestsToSp(): Promise<number> {
-  try {
-    const p = await getDynamicGlobalProperties();
-    const sp =
-      Number.parseFloat(p.total_vesting_fund_hive) /
-      Number.parseFloat(p.total_vesting_shares);
-    return Number.isFinite(sp) && sp > 0 ? sp : 1;
-  } catch {
-    return 1;
+  const p = await getDynamicGlobalProperties();
+  const sp =
+    Number.parseFloat(p.total_vesting_fund_hive) /
+    Number.parseFloat(p.total_vesting_shares);
+  if (!Number.isFinite(sp) || sp <= 0) {
+    throw new Error('Invalid vesting rate from node');
   }
+  return sp;
 }
 
 // --- keys --------------------------------------------------------------------

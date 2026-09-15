@@ -89,6 +89,9 @@ function VerifyMessage() {
         authority: role,
         message: msg,
       });
+    } catch {
+      // An RPC failure while looking up the account must not strand the UI.
+      setResult({ ok: false, text: t('common.try_again') });
     } finally {
       setBusy(false);
     }

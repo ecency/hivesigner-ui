@@ -10,6 +10,7 @@ import {
   decode,
   encodeOps,
   type Operation,
+  type UnresolvedTx,
 } from './hive-uri';
 import { OPERATIONS } from './operations';
 import { processValue } from './process-value';
@@ -25,6 +26,28 @@ export interface SignRequest {
    * until a real rate has loaded (a fallback rate would submit the wrong VESTS).
    */
   hpDependent: boolean;
+  /**
+   * The original decoded transaction for a `/sign/tx/<b64>` request (which
+   * carries the caller's own ref_block/expiration). When set, signing must
+   * preserve it exactly - not rebuild - so the signature matches the caller's
+   * transaction id. Absent for the op/ops/legacy forms.
+   */
+  preservedTx?: UnresolvedTx;
+}
+
+/**
+ * A callback is usable only if it is an http(s) URL. A `javascript:` (or other
+ * scheme) callback must never reach window.location.assign - dropping it here
+ * means no redirect happens for such a request (defense in depth beyond the CSP).
+ */
+function safeCallback(cb: string | undefined): string | undefined {
+  if (!cb) return undefined;
+  try {
+    const u = new URL(cb);
+    return u.protocol === 'https:' || u.protocol === 'http:' ? cb : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** camelCase / kebab-case operation name to snake_case (transferToVesting -> transfer_to_vesting). */
@@ -121,12 +144,19 @@ export function parseSignRequest(
       }
       return [name, processed];
     });
+    // A `tx` form carries the caller's real ref_block_num (a number); op/ops use
+    // the placeholder string. Preserve the original tx so signing keeps its id.
+    const isTxForm = typeof decoded.tx.ref_block_num === 'number';
     return {
+      // Honour `cb` (any form) and fall back to a `redirect_uri` query param
+      // (the old page did this for every form, not only the legacy one), but
+      // only when it is an http(s) URL.
       operations,
-      callback: decoded.params.callback,
+      callback: safeCallback(decoded.params.callback ?? query.redirect_uri),
       noBroadcast: decoded.params.no_broadcast === true,
       signer: decoded.params.signer,
       hpDependent,
+      preservedTx: isTxForm ? decoded.tx : undefined,
     };
   } catch {
     return null;

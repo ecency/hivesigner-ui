@@ -10,6 +10,7 @@
     "build": "rsbuild build && node scripts/check-node-globals.mjs",
     "preview": "rsbuild preview",
     "test": "vitest run",
+    "typecheck": "tsc --noEmit",
     "check": "biome check --write",
     "lint:ci": "biome ci",
     "format": "biome format --write",

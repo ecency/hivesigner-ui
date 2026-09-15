@@ -42,6 +42,16 @@ function fromHex(hex: string): Uint8Array {
   return out;
 }
 
+// WebCrypto's BufferSource type (TS 5.7+) rejects a Uint8Array whose buffer is
+// only known to be ArrayBufferLike (it could be a SharedArrayBuffer). Ours are
+// always ArrayBuffer-backed (scrypt / @scure/base / getRandomValues), so this
+// re-views them with the concrete type, copying only in the unexpected case.
+function buf(u: Uint8Array): Uint8Array<ArrayBuffer> {
+  return (
+    u.buffer instanceof ArrayBuffer ? u : new Uint8Array(u)
+  ) as Uint8Array<ArrayBuffer>;
+}
+
 function parseKeys(json: string): Keys {
   const parsed = JSON.parse(json);
   if (!parsed || typeof parsed !== 'object')
@@ -85,10 +95,13 @@ async function deriveAesKey(
   p: number,
 ) {
   const keyBytes = scrypt(encodeUtf8(passcode), salt, { N, r, p, dkLen: 32 });
-  return crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, [
-    'encrypt',
-    'decrypt',
-  ]);
+  return crypto.subtle.importKey(
+    'raw',
+    buf(keyBytes),
+    { name: 'AES-GCM' },
+    false,
+    ['encrypt', 'decrypt'],
+  );
 }
 
 export async function encryptKeys(
@@ -100,9 +113,9 @@ export async function encryptKeys(
   const key = await deriveAesKey(passcode, salt, KDF.N, KDF.r, KDF.p);
   const ct = new Uint8Array(
     await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
+      { name: 'AES-GCM', iv: buf(iv) },
       key,
-      encodeUtf8(JSON.stringify(keys)),
+      buf(encodeUtf8(JSON.stringify(keys))),
     ),
   );
   const envelope: EnvelopeV1 = {
@@ -129,9 +142,9 @@ async function decryptV1(field: string, passcode: string): Promise<Keys> {
   let pt: ArrayBuffer;
   try {
     pt = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: base64.decode(env.iv) },
+      { name: 'AES-GCM', iv: buf(base64.decode(env.iv)) },
       key,
-      base64.decode(env.ct),
+      buf(base64.decode(env.ct)),
     );
   } catch {
     throw new Error('keystore: wrong passcode');

@@ -125,3 +125,81 @@ export function summarizeOperation(op: Operation): OperationSummary {
       return { title: humanizeName(name), authority };
   }
 }
+
+export interface OperationField {
+  label: string;
+  value: string;
+}
+
+function describeAuthority(value: unknown): string {
+  const a = value as {
+    key_auths?: [string, number][];
+    account_auths?: [string, number][];
+  } | null;
+  if (!a || typeof a !== 'object') return '';
+  const keys = (a.key_auths ?? []).map(([k, w]) => `${k} (${w})`);
+  const accts = (a.account_auths ?? []).map(([n, w]) => `@${n} (${w})`);
+  const parts = [
+    keys.length ? `keys: ${keys.join(', ')}` : '',
+    accts.length ? `accounts: ${accts.join(', ')}` : '',
+  ].filter(Boolean);
+  return parts.length ? parts.join('; ') : '(cleared)';
+}
+
+/**
+ * The material fields to display for an operation whose title does not already
+ * capture them. This exists so a dangerous op (account_update giving away an
+ * authority, a custom_json token transfer, or any op with no curated summary) is
+ * never hidden behind a collapsed JSON block - the user sees what they approve.
+ * Returns [] for the fully-summarized transfer/vote/comment.
+ */
+export function operationFields(op: Operation): OperationField[] {
+  const [name, p] = op;
+  const rows: OperationField[] = [];
+  switch (name) {
+    case 'transfer':
+    case 'vote':
+    case 'comment':
+      return [];
+    case 'account_update':
+    case 'account_update2': {
+      if (p.account)
+        rows.push({ label: 'Account', value: `@${str(p.account)}` });
+      for (const role of ['owner', 'active', 'posting'] as const) {
+        if (p[role] !== undefined)
+          rows.push({
+            label: `${role} authority`,
+            value: describeAuthority(p[role]),
+          });
+      }
+      if (str(p.memo_key))
+        rows.push({ label: 'Memo key', value: str(p.memo_key) });
+      if (str(p.json_metadata))
+        rows.push({ label: 'Metadata', value: 'account metadata changes' });
+      if (str(p.posting_json_metadata))
+        rows.push({ label: 'Profile', value: 'profile metadata changes' });
+      return rows;
+    }
+    case 'custom_json': {
+      rows.push({ label: 'ID', value: str(p.id) });
+      const required = p.required_auths;
+      if (Array.isArray(required) && required.length) {
+        rows.push({ label: 'Active auths', value: required.join(', ') });
+      }
+      const json = str(p.json);
+      rows.push({
+        label: 'JSON',
+        value: json.length > 400 ? `${json.slice(0, 400)}…` : json,
+      });
+      return rows;
+    }
+    default:
+      for (const [k, v] of Object.entries(p)) {
+        rows.push({
+          label: k,
+          value: typeof v === 'string' ? v : JSON.stringify(v),
+        });
+      }
+      return rows;
+  }
+}

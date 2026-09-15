@@ -5,7 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { getKeys } from '@/lib/accounts';
 import { getVestsToSp } from '@/lib/hive';
 import { resolveCallback } from '@/lib/hive-uri';
-import { requiredAuthority, summarizeOperation } from '@/lib/operation-summary';
+import {
+  operationFields,
+  requiredAuthority,
+  summarizeOperation,
+} from '@/lib/operation-summary';
 import { parseSignRequest } from '@/lib/parse-sign-request';
 import {
   type BroadcastOutcome,
@@ -109,30 +113,45 @@ function Sign() {
     );
   }
 
-  const authority = requiredAuthority(request.operations);
-  const host = request.callback ? callbackHost(request.callback) : null;
+  // Non-null after the guard above; capture it so the async closure narrows too.
+  const req = request;
+  const authority = requiredAuthority(req.operations);
+  const host = req.callback ? callbackHost(req.callback) : null;
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
   const keys = selectedAccount ? getKeys(selectedAccount) : null;
   const signingKey = authority && keys ? keys[authority] : undefined;
   // An HP amount needs the live SP-per-VEST rate; block approval until it loads
   // so a fallback rate never signs the wrong VESTS amount.
-  const rateBlocked = request.hpDependent && !vestsToSp.ready;
+  const rateBlocked = req.hpDependent && !vestsToSp.ready;
+  // The `s` param names the account the request must be signed by. Refuse to
+  // sign it from a different selected account (the old app threw here).
+  const signerMismatch =
+    !!req.signer && !!selectedAccount && req.signer !== selectedAccount;
 
   async function approve() {
-    if (!selectedAccount || !signingKey || rateBlocked) return;
+    if (!selectedAccount || !signingKey || rateBlocked || signerMismatch)
+      return;
     setStatus('signing');
     try {
       // A no_broadcast request only wants a signature; never broadcast it.
-      const result = request.noBroadcast
-        ? await signOperations(request.operations, signingKey, selectedAccount)
-        : await broadcastOperations(
-            request.operations,
+      // preservedTx keeps a pre-built /sign/tx transaction's ref-block fields and
+      // expiration intact so the signature matches the caller's exact tx id.
+      const result = req.noBroadcast
+        ? await signOperations(
+            req.operations,
             signingKey,
             selectedAccount,
+            req.preservedTx,
+          )
+        : await broadcastOperations(
+            req.operations,
+            signingKey,
+            selectedAccount,
+            req.preservedTx,
           );
       setOutcome(result);
       setStatus('done');
-      if (request.callback) redirectToCallback(request.callback, result);
+      if (req.callback) redirectToCallback(req.callback, result);
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : String(e));
       setStatus('error');
@@ -199,6 +218,7 @@ function Sign() {
 
       {request.operations.map((op, i) => {
         const s = summarizeOperation(op);
+        const fields = operationFields(op);
         return (
           <div
             key={`${op[0]}-${i}`}
@@ -213,6 +233,18 @@ function Sign() {
             {s.detail && (
               <div style={{ fontSize: 13, color: '#59636e' }}>{s.detail}</div>
             )}
+            {/* Show the material fields inline so nothing dangerous is hidden. */}
+            {fields.map((f) => (
+              <div
+                key={f.label}
+                style={{ fontSize: 12.5, display: 'flex', gap: 6 }}
+              >
+                <span style={{ color: '#59636e', flex: 'none' }}>
+                  {f.label}:
+                </span>
+                <span style={{ wordBreak: 'break-all' }}>{f.value}</span>
+              </div>
+            ))}
           </div>
         );
       })}
@@ -281,7 +313,26 @@ function Sign() {
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {!authority ? null : !selectedAccount ? (
+        {!authority ? null : signerMismatch ? (
+          <>
+            <div style={{ fontSize: 13, color: '#7a5300' }}>
+              This request must be signed by <b>@{req.signer}</b>. Switch to
+              that account.
+            </div>
+            <Link
+              to="/accounts"
+              style={{
+                ...primaryBtn(true),
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textDecoration: 'none',
+              }}
+            >
+              {t('login.switch_an_account')}
+            </Link>
+          </>
+        ) : !selectedAccount ? (
           <Link
             to="/import"
             style={{

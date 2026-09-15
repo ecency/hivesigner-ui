@@ -79,7 +79,14 @@ export function buildProfileMetadata(
     .split('\n')
     .map((u) => u.trim())
     .filter(Boolean);
-  if (uris.length > 0) profile.redirect_uris = uris;
+  // Empty means "no registered callbacks": remove the key so an app owner can
+  // actually de-register a compromised URL (keeping the old list would leave it
+  // active). Only omit the field entirely for a profile that never had it.
+  if (uris.length > 0) {
+    profile.redirect_uris = uris;
+  } else {
+    delete profile.redirect_uris;
+  }
   return JSON.stringify({ ...existing, profile });
 }
 

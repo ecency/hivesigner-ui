@@ -145,7 +145,16 @@ function AccountRow({
         <button
           type="button"
           aria-label={`${t('accounts.delete')} @${username}`}
-          onClick={() => removeAccount(username)}
+          onClick={() => {
+            // Removing wipes the only copy of the keys on this device; confirm.
+            if (
+              window.confirm(
+                `Remove @${username} from this device? Its keys here will be deleted.`,
+              )
+            ) {
+              removeAccount(username);
+            }
+          }}
           style={{
             border: 'none',
             background: 'none',

@@ -44,10 +44,11 @@ export function normalizeAuthRequest(
   };
 }
 
+/** An http(s) URL only - a `javascript:`/other-scheme redirect is never valid. */
 function isValidUrl(value: string): boolean {
   try {
-    new URL(value);
-    return true;
+    const u = new URL(value);
+    return u.protocol === 'https:' || u.protocol === 'http:';
   } catch {
     return false;
   }
