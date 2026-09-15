@@ -8,6 +8,7 @@ import {
   card,
   cardTight,
   h2,
+  link,
   muted,
   mutedXs,
   page,
@@ -167,8 +168,12 @@ function Home() {
       {/* NOT a <nav>: AppNav in the shell is the navigation landmark, and a
           second one here made the landing page report two. */}
       <div className="flex flex-wrap gap-3.5 text-[13.5px]">
-        <Link to="/signmessage">{t('footer.sign_message')}</Link>
-        <Link to="/verifymessage">{t('footer.verify_message')}</Link>
+        <Link to="/signmessage" className={link}>
+          {t('footer.sign_message')}
+        </Link>
+        <Link to="/verifymessage" className={link}>
+          {t('footer.verify_message')}
+        </Link>
       </div>
     </section>
   );

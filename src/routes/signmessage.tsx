@@ -8,6 +8,7 @@ import {
   field,
   fieldBase,
   h1,
+  link as linkClass,
   mono,
   muted,
   mutedXs,
@@ -63,7 +64,9 @@ function SignMessage() {
       <section className={page}>
         <h1 className={h1}>{t('message_signing.title')}</h1>
         <p className={muted}>{t('message_signing.login_prompt')}</p>
-        <Link to="/accounts">{t('footer.login')}</Link>
+        <Link to="/accounts" className={linkClass}>
+          {t('footer.login')}
+        </Link>
       </section>
     );
   }
@@ -166,7 +169,9 @@ function SignMessage() {
         </div>
       )}
 
-      <Link to="/verifymessage">{t('message_signing.go_to_verify')}</Link>
+      <Link to="/verifymessage" className={linkClass}>
+        {t('message_signing.go_to_verify')}
+      </Link>
     </section>
   );
 }

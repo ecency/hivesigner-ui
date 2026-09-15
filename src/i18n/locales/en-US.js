@@ -59,6 +59,7 @@ export default {
     successfully_logged_in: 'Logged in successfully!'
   },
   apps: {
+    website_disclaimer: 'The website is published by the app account itself. Check it before you grant anything.',
     directory_unavailable: 'Could not load the app directory. A Hive node may be unreachable.',
     directory_hint: 'Every app that uses Hivesigner to sign people in.',
     featured: 'Featured',
@@ -108,6 +109,7 @@ export default {
     redirect_not_registered: `This app's redirect URL is not registered. For your safety, sign-in is blocked.`,
     hive_account: 'Hive account',
     sends_you_to: 'sends you to',
+    grant_explain_no_account: '@{app} is asking to post, comment, vote and follow on your behalf. Add an account to continue.',
     grant_explain: '@{app} will be able to post, comment, vote and follow as @{account}.',
     granted: '@{app} is authorized.',
     scope: 'Scope',

@@ -8,6 +8,7 @@ import {
   cardGrid,
   cardTight,
   h1,
+  link,
   muted,
   mutedXs,
   page,
@@ -45,7 +46,9 @@ function AuthorizedApps() {
   if (!selectedAccount) {
     return (
       <section className={page}>
-        <Link to="/accounts">{t('footer.login')}</Link>
+        <Link to="/accounts" className={link}>
+          {t('footer.login')}
+        </Link>
       </section>
     );
   }

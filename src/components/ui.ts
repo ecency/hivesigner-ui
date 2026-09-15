@@ -87,6 +87,21 @@ export const cardGrid = 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3';
 export const row =
   'flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[12.5px]';
 
+/** A link that should LOOK like a link. */
+// Tailwind's preflight resets anchors to `color: inherit` and
+// `text-decoration: inherit`, so any <a>/<Link> with no class of its own is
+// indistinguishable from the text beside it - the transaction id on the sign
+// success screen read as plain text, and so did every "go to ..." link.
+//
+// Deliberately a RECIPE rather than a global `a {}` rule: a base rule's :hover
+// sits at higher specificity than a Tailwind text utility, so it would
+// recolour the nav and card links that are meant to look like plain text (this
+// exact trap cost vision-web a hover-invisible button). No hover colour change
+// either, because brand-ink and brand invert their relative lightness between
+// the two themes; the underline thickens instead.
+export const link =
+  'font-semibold text-brand-ink underline underline-offset-2 hover:decoration-2';
+
 /** Monospace, for keys, ids and signatures. */
 export const mono = 'font-mono break-all';
 

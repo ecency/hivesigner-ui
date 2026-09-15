@@ -9,6 +9,7 @@ import {
   field as fieldClass,
   formColumn,
   h1,
+  link,
   mutedXs,
   page,
 } from '@/components/ui';
@@ -169,7 +170,9 @@ function Profile() {
       // `items-start` so the link keeps its own width instead of stretching its
       // hit area across the column.
       <section className={`${page} items-start`}>
-        <Link to="/accounts">{t('footer.login')}</Link>
+        <Link to="/accounts" className={link}>
+          {t('footer.login')}
+        </Link>
       </section>
     );
   }
