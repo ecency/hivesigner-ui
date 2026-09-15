@@ -1,7 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { type CSSProperties, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  alertError,
+  alertWarn,
+  btnPrimary,
+  card,
+  h1,
+  page,
+} from '@/components/ui';
 import { getKeys } from '@/lib/accounts';
 import { getVestsToSp } from '@/lib/hive';
 import { resolveCallback } from '@/lib/hive-uri';
@@ -65,23 +73,6 @@ function redirectToCallback(callback: string, outcome: BroadcastOutcome): void {
   window.location.assign(url);
 }
 
-const card: CSSProperties = {
-  background: '#fff',
-  border: '1px solid #d1d9e0',
-  borderRadius: 12,
-  padding: 16,
-};
-const primaryBtn = (enabled: boolean): CSSProperties => ({
-  height: 50,
-  border: 'none',
-  borderRadius: 10,
-  background: enabled ? '#E31337' : '#f0a5b3',
-  color: '#fff',
-  fontSize: 16,
-  fontWeight: 600,
-  cursor: enabled ? 'pointer' : 'not-allowed',
-});
-
 function Sign() {
   const { t } = useTranslation();
   const { _splat } = Route.useParams();
@@ -99,19 +90,8 @@ function Sign() {
 
   if (!request) {
     return (
-      <section style={{ padding: 20 }}>
-        <div
-          style={{
-            padding: 16,
-            borderRadius: 10,
-            background: '#ffebe9',
-            border: '1px solid #f0b3b3',
-            color: '#cf222e',
-            fontSize: 14,
-          }}
-        >
-          {t('errors.unknown')}
-        </div>
+      <section className={page}>
+        <div className={alertError}>{t('errors.unknown')}</div>
       </section>
     );
   }
@@ -186,26 +166,17 @@ function Sign() {
 
   if (status === 'done' && outcome) {
     return (
-      <section
-        style={{
-          padding: 20,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 16,
-        }}
-      >
-        <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>
+      <section className={page}>
+        <h1 className={h1}>
           {request.noBroadcast ? t('sign.sign') : t('sign.success_title')}
         </h1>
         {request.noBroadcast ? (
-          <div style={{ ...card, fontSize: 13 }}>
+          <div className={`${card} text-[13px]`}>
             {t('message_signing.signature')}:{' '}
-            <code style={{ wordBreak: 'break-all', fontSize: 11 }}>
-              {outcome.signature}
-            </code>
+            <code className="break-all text-[11px]">{outcome.signature}</code>
           </div>
         ) : (
-          <div style={{ ...card, fontSize: 14 }}>
+          <div className={`${card} text-sm`}>
             {t('sign.transaction_id')}:{' '}
             <a
               href={`https://hivexplorer.com/tx/${outcome.id}`}
@@ -221,38 +192,17 @@ function Sign() {
   }
 
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}
-    >
-      <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>
-        {t('sign.confirm_transaction')}
-      </h1>
+    <section className={page}>
+      <h1 className={h1}>{t('sign.confirm_transaction')}</h1>
 
       {host && (
-        <div
-          style={{
-            ...card,
-            background: '#fff8e6',
-            border: '1px solid #f0d38a',
-            color: '#7a5300',
-            fontSize: 13,
-          }}
-        >
+        <div className={alertWarn}>
           {t('sign.going_redirect_to')} <b>{host}</b>.
         </div>
       )}
 
       {foreignActors.length > 0 && (
-        <div
-          role="alert"
-          style={{
-            ...card,
-            background: '#fff8e6',
-            border: '1px solid #f0d38a',
-            color: '#7a5300',
-            fontSize: 13,
-          }}
-        >
+        <div role="alert" className={alertWarn}>
           This acts as{' '}
           {foreignActors.map((a) => (
             <b key={a}>@{a} </b>
@@ -262,7 +212,7 @@ function Sign() {
       )}
 
       {displayOps.length > 1 && (
-        <div style={{ fontSize: 13, color: '#59636e' }}>
+        <div className="text-[13px] text-[#59636e]">
           This request contains <b>{displayOps.length} operations</b>. Review
           every one before approving.
         </div>
@@ -273,60 +223,41 @@ function Sign() {
         const fields = operationFields(op);
         const opAuthority = requiredAuthority([op]);
         return (
-          <div
-            key={`${op[0]}-${i}`}
-            style={{
-              ...card,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 8,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-              <div style={{ fontSize: 18, fontWeight: 700, flex: 1 }}>
+          <div key={`${op[0]}-${i}`} className={`${card} flex flex-col gap-2`}>
+            <div className="flex flex-wrap items-baseline gap-2">
+              <div className="min-w-0 flex-1 break-words text-lg font-bold">
                 {displayOps.length > 1 ? `${i + 1}. ` : ''}
                 {s.title}
               </div>
               {/* Per-op authority, so one active-key op among posting ops shows. */}
               <span
-                style={{
-                  flex: 'none',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  padding: '2px 6px',
-                  borderRadius: 6,
-                  background: opAuthority === 'posting' ? '#eaf5ea' : '#ffebe9',
-                  color: opAuthority === 'posting' ? '#1a7f37' : '#cf222e',
-                }}
+                className={`flex-none rounded-md px-1.5 py-0.5 text-[11px] font-semibold uppercase ${
+                  opAuthority === 'posting'
+                    ? 'bg-[#eaf5ea] text-[#1a7f37]'
+                    : 'bg-[#ffebe9] text-[#cf222e]'
+                }`}
               >
                 {opAuthority ?? 'unknown'}
               </span>
             </div>
             {s.detail && (
-              <div style={{ fontSize: 13, color: '#59636e' }}>{s.detail}</div>
+              <div className="break-all text-[13px] text-[#59636e]">
+                {s.detail}
+              </div>
             )}
             {/* Show the material fields inline so nothing dangerous is hidden. */}
             {fields.map((f, fi) => (
               <div
                 // Keyed by position: two distinct leaves can share a label.
                 key={`${f.label}-${fi}`}
-                style={{ fontSize: 12.5, display: 'flex', gap: 6 }}
+                className="flex gap-1.5 text-[12.5px]"
               >
                 {/* isolate the LABEL too: a JSON key can carry bidi controls. */}
-                <span
-                  style={{
-                    color: '#59636e',
-                    flex: 'none',
-                    unicodeBidi: 'isolate',
-                  }}
-                >
+                <span className="break-all text-[#59636e] [unicode-bidi:isolate]">
                   {f.label}:
                 </span>
                 {/* isolate: a value cannot reorder the text around it. */}
-                <span
-                  style={{ wordBreak: 'break-all', unicodeBidi: 'isolate' }}
-                >
+                <span className="break-all [unicode-bidi:isolate]">
                   {f.value}
                 </span>
               </div>
@@ -336,7 +267,7 @@ function Sign() {
       })}
 
       {req.preservedTx && (
-        <div style={{ ...card, fontSize: 12.5, color: '#59636e' }}>
+        <div className={`${card} text-[12.5px] break-words text-[#59636e]`}>
           This request supplied its own transaction header. Expires:{' '}
           <b>{safeText(String(req.preservedTx.expiration))}</b>
           {Array.isArray(req.preservedTx.signatures) &&
@@ -350,139 +281,71 @@ function Sign() {
         </div>
       )}
 
-      <div
-        style={{
-          ...card,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          fontSize: 13.5,
-        }}
-      >
+      <div className={`${card} flex items-center gap-2 text-[13.5px]`}>
         {authority ? (
           <span>
             Signed with your <b>{authority}</b> key
           </span>
         ) : (
-          <span style={{ color: '#7a5300' }}>
+          <span className="text-[#7a5300]">
             This transaction needs more than one authority and cannot be signed
             with a single key.
           </span>
         )}
       </div>
 
-      <details style={{ ...card, padding: '12px 14px' }}>
-        <summary
-          style={{
-            cursor: 'pointer',
-            fontSize: 13.5,
-            fontWeight: 600,
-            color: '#59636e',
-          }}
-        >
+      <details className={`${card} px-3.5 py-3`}>
+        <summary className="cursor-pointer text-[13.5px] font-semibold text-[#59636e]">
           Show raw operation{displayOps.length > 1 ? 's' : ''}
         </summary>
-        <pre
-          style={{
-            marginTop: 12,
-            overflowX: 'auto',
-            fontSize: 12,
-            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-            color: '#1f2328',
-          }}
-        >
+        <pre className="mt-3 overflow-x-auto font-mono text-xs text-[#1f2328]">
           {/* The resolved ops: exactly the bytes that will be signed. */}
           {JSON.stringify(displayOps, null, 2)}
         </pre>
       </details>
 
       {status === 'error' && (
-        <div
-          role="alert"
-          style={{
-            ...card,
-            background: '#ffebe9',
-            border: '1px solid #f0b3b3',
-            color: '#cf222e',
-            fontSize: 13,
-          }}
-        >
-          <div style={{ fontWeight: 600 }}>{t('sign.failure_title')}</div>
-          <div style={{ marginTop: 4 }}>
+        <div role="alert" className={alertError}>
+          <div className="font-semibold">{t('sign.failure_title')}</div>
+          <div className="mt-1">
             {t('sign.error_message')}: {errorMsg}
           </div>
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="flex flex-col gap-2.5">
         {!authority ? null : signerMismatch ? (
           <>
-            <div style={{ fontSize: 13, color: '#7a5300' }}>
+            <div className="text-[13px] text-[#7a5300]">
               This request must be signed by <b>@{req.signer}</b>. Switch to
               that account.
             </div>
-            <Link
-              to="/accounts"
-              style={{
-                ...primaryBtn(true),
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textDecoration: 'none',
-              }}
-            >
+            <Link to="/accounts" className={btnPrimary}>
               {t('login.switch_an_account')}
             </Link>
           </>
         ) : !selectedAccount ? (
-          <Link
-            to="/import"
-            style={{
-              ...primaryBtn(true),
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textDecoration: 'none',
-            }}
-          >
+          <Link to="/import" className={btnPrimary}>
             {t('common.continue')}
           </Link>
         ) : !isUnlocked ? (
-          <Link
-            to="/accounts"
-            style={{
-              ...primaryBtn(true),
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textDecoration: 'none',
-            }}
-          >
+          <Link to="/accounts" className={btnPrimary}>
             {t('accounts.unlock')} @{selectedAccount}
           </Link>
         ) : !signingKey ? (
           <>
-            <div style={{ fontSize: 13, color: '#7a5300' }}>
+            <div className="text-[13px] text-[#7a5300]">
               This needs your <b>{authority}</b> key, which @{selectedAccount}{' '}
               does not have here.
             </div>
-            <Link
-              to="/import"
-              style={{
-                ...primaryBtn(true),
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textDecoration: 'none',
-              }}
-            >
+            <Link to="/import" className={btnPrimary}>
               {t('accounts.add_another')}
             </Link>
           </>
         ) : (
           <>
             {rateBlocked && (
-              <div style={{ fontSize: 13, color: '#7a5300' }}>
+              <div className="text-[13px] text-[#7a5300]">
                 Loading the current HIVE Power rate…
               </div>
             )}
@@ -490,7 +353,7 @@ function Sign() {
               type="button"
               onClick={approve}
               disabled={status === 'signing' || rateBlocked}
-              style={primaryBtn(status !== 'signing' && !rateBlocked)}
+              className={btnPrimary}
             >
               {status === 'signing'
                 ? '…'

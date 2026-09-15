@@ -1,6 +1,18 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { type CSSProperties, useState } from 'react';
+import clsx from 'clsx';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  alertError,
+  btnPrimary,
+  cardGrid,
+  cardTight,
+  field,
+  h1,
+  muted,
+  mutedXs,
+  page,
+} from '@/components/ui';
 import { encodeOp } from '@/lib/hive-uri';
 import { OPERATIONS } from '@/lib/operations';
 
@@ -13,23 +25,6 @@ import { OPERATIONS } from '@/lib/operations';
 export const Route = createFileRoute('/signs')({
   component: Signs,
 });
-
-const fld: CSSProperties = {
-  width: '100%',
-  boxSizing: 'border-box',
-  height: 40,
-  padding: '0 12px',
-  border: '1px solid #d1d9e0',
-  borderRadius: 8,
-  fontSize: 14,
-};
-
-const card: CSSProperties = {
-  background: '#fff',
-  border: '1px solid #d1d9e0',
-  borderRadius: 12,
-  padding: '12px 14px',
-};
 
 /**
  * A field whose on-chain value is a real list or map, so its text must be parsed.
@@ -119,65 +114,47 @@ function OperationForm({ name }: { name: string }) {
         e.preventDefault();
         submit();
       }}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-        marginTop: 10,
-      }}
+      className="mt-2.5 flex flex-col gap-2"
     >
-      {Object.keys(schema).map((field) => (
-        <div
-          key={field}
-          style={{ display: 'flex', flexDirection: 'column', gap: 4 }}
-        >
-          <label
-            htmlFor={`${name}-${field}`}
-            style={{ fontSize: 12, color: '#59636e' }}
-          >
-            {field}
-            {isJsonEntry(schema[field].type) ? ' (JSON)' : ''}
+      {Object.keys(schema).map((fieldName) => (
+        <div key={fieldName} className="flex flex-col gap-1">
+          <label htmlFor={`${name}-${fieldName}`} className={mutedXs}>
+            {fieldName}
+            {isJsonEntry(schema[fieldName].type) ? ' (JSON)' : ''}
           </label>
-          {isJsonEntry(schema[field].type) ? (
+          {isJsonEntry(schema[fieldName].type) ? (
+            // The `field` recipe is a single-line 44px control; a JSON entry box
+            // keeps the same frame but is taller, monospace and evenly padded,
+            // so it gets its own string rather than fighting the recipe.
             <textarea
-              id={`${name}-${field}`}
-              style={{
-                ...fld,
-                height: 68,
-                padding: 8,
-                fontFamily: 'ui-monospace, monospace',
-              }}
-              value={form[field]}
-              onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+              id={`${name}-${fieldName}`}
+              className="box-border h-[68px] w-full rounded-lg border border-[#d1d9e0] p-2 font-mono text-sm"
+              value={form[fieldName]}
+              onChange={(e) =>
+                setForm({ ...form, [fieldName]: e.target.value })
+              }
             />
           ) : (
             <input
-              id={`${name}-${field}`}
-              style={fld}
-              value={form[field]}
-              onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+              id={`${name}-${fieldName}`}
+              className={field}
+              value={form[fieldName]}
+              onChange={(e) =>
+                setForm({ ...form, [fieldName]: e.target.value })
+              }
             />
           )}
         </div>
       ))}
       {error && (
-        <div role="alert" style={{ fontSize: 12.5, color: '#cf222e' }}>
+        <div role="alert" className={alertError}>
           {error}
         </div>
       )}
+      {/* Sized to its label rather than stretched by the column. */}
       <button
         type="submit"
-        style={{
-          height: 42,
-          border: 'none',
-          borderRadius: 8,
-          background: '#E31337',
-          color: '#fff',
-          fontWeight: 600,
-          cursor: 'pointer',
-          alignSelf: 'flex-start',
-          padding: '0 20px',
-        }}
+        className={`${btnPrimary} cursor-pointer self-start`}
       >
         {t('signs.sign')}
       </button>
@@ -206,68 +183,54 @@ function Signs() {
   });
 
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}
-    >
-      <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-        {t('signs.title')}
-      </h1>
+    <section className={page}>
+      <h1 className={h1}>{t('signs.title')}</h1>
+      {/* A search box is a form control: it stays a readable width instead of
+          growing to the full desktop shell. */}
       <input
-        style={fld}
+        className={`${field} sm:max-w-md`}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder={t('signs.search_placeholder')}
       />
 
       {messageOps.map((op) => (
-        <Link key={op.to} to={op.to} style={{ fontSize: 14 }}>
+        <Link key={op.to} to={op.to} className="text-sm">
           {op.name}
         </Link>
       ))}
 
       {operations.length === 0 && messageOps.length === 0 && (
-        <p style={{ fontSize: 13.5, color: '#59636e', margin: 0 }}>
-          Nothing matches that.
-        </p>
+        <p className={`${muted} m-0`}>Nothing matches that.</p>
       )}
 
-      {operations.map((name) => (
-        <details key={name} style={card}>
-          <summary
-            style={{
-              cursor: 'pointer',
-              fontSize: 14,
-              display: 'flex',
-              gap: 8,
-              alignItems: 'baseline',
-            }}
-          >
-            <span style={{ fontWeight: 600, flex: 1 }}>
-              {OPERATIONS[name].name}
-            </span>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                padding: '2px 6px',
-                borderRadius: 6,
-                background:
-                  OPERATIONS[name].authority === 'posting'
-                    ? '#eaf5ea'
-                    : '#ffebe9',
-                color:
-                  OPERATIONS[name].authority === 'posting'
-                    ? '#1a7f37'
-                    : '#cf222e',
-              }}
-            >
-              {OPERATIONS[name].authority}
-            </span>
-          </summary>
-          <OperationForm name={name} />
-        </details>
-      ))}
+      {/* The operation directory is a list of cards, so it uses the width the
+          shell now has: two columns from `sm`, three from `lg`. `items-start`
+          keeps an expanded operation from stretching its neighbours. */}
+      {operations.length > 0 && (
+        <div className={`${cardGrid} items-start`}>
+          {operations.map((name) => (
+            <details key={name} className={cardTight}>
+              <summary className="flex cursor-pointer items-baseline gap-2 text-sm">
+                <span className="min-w-0 flex-1 font-semibold">
+                  {OPERATIONS[name].name}
+                </span>
+                <span
+                  className={clsx(
+                    'shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-semibold uppercase',
+                    OPERATIONS[name].authority === 'posting'
+                      ? 'bg-[#eaf5ea] text-[#1a7f37]'
+                      : 'bg-[#ffebe9] text-[#cf222e]',
+                  )}
+                >
+                  {OPERATIONS[name].authority}
+                </span>
+              </summary>
+              <OperationForm name={name} />
+            </details>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

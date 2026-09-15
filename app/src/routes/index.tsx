@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { btnPrimary, h1, muted, page } from '@/components/ui';
 import { useAccounts } from '@/lib/use-accounts';
 
 export const Route = createFileRoute('/')({
@@ -14,40 +15,24 @@ function Home() {
   // which left the landing screen with no route into the app at all.
   const primary = usernames.length > 0 ? '/accounts' : '/import';
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}
-    >
-      <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-        {t('index.title')}
-      </h1>
-      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: '#59636e' }}>
+    <section className={page}>
+      <h1 className={h1}>{t('index.title')}</h1>
+      {/* Capped so the line length stays readable once the shell widens. */}
+      <p className={`${muted} m-0 max-w-2xl leading-normal`}>
         {t('index.secure_way_sign_in')}
       </p>
-      <Link
-        to={primary}
-        style={{
-          alignSelf: 'flex-start',
-          height: 44,
-          padding: '0 18px',
-          display: 'inline-flex',
-          alignItems: 'center',
-          borderRadius: 8,
-          background: '#E31337',
-          color: '#fff',
-          fontWeight: 600,
-          textDecoration: 'none',
-        }}
-      >
+      {/* Sized to its label at every width, as before, rather than stretching
+          into a full-bleed band on a wide screen. */}
+      <Link to={primary} className={`${btnPrimary} self-start`}>
         {t('index.get_started')}
       </Link>
-      <nav
-        style={{ display: 'flex', gap: 14, fontSize: 13.5, flexWrap: 'wrap' }}
-      >
-        <Link to="/accounts">{t('footer.accounts')}</Link>
-        <Link to="/apps">{t('footer.apps')}</Link>
+      {/* NOT a <nav>: AppNav in the shell is the navigation landmark, and a
+          second one here made the landing page report two. Only the link AppNav
+          does not carry is kept. */}
+      <div className="flex flex-wrap gap-3.5 text-[13.5px]">
         <Link to="/signmessage">{t('footer.sign_message')}</Link>
-        <Link to="/about">{t('footer.about')}</Link>
-      </nav>
+        <Link to="/verifymessage">{t('footer.verify_message')}</Link>
+      </div>
     </section>
   );
 }

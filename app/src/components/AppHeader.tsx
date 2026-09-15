@@ -3,17 +3,8 @@
 // real site from a lookalike), carried over from the approved redesign mockups.
 export function AppHeader() {
   return (
-    <header
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '14px 20px',
-        borderBottom: '1px solid #d1d9e0',
-        background: '#fff',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <header className="flex items-center justify-between gap-4 border-b border-[#d1d9e0] bg-white px-5 py-3.5">
+      <div className="flex items-center gap-2">
         <svg
           width="22"
           height="22"
@@ -33,17 +24,9 @@ export function AppHeader() {
             strokeLinejoin="round"
           />
         </svg>
-        <span style={{ fontWeight: 700, fontSize: 16 }}>Hivesigner</span>
+        <span className="text-base font-bold">Hivesigner</span>
       </div>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 5,
-          fontSize: 12,
-          color: '#59636e',
-        }}
-      >
+      <div className="flex items-center gap-1.5 text-xs text-[#59636e]">
         <svg
           width="13"
           height="13"
@@ -66,13 +49,7 @@ export function AppHeader() {
             strokeWidth="1.7"
           />
         </svg>
-        <span
-          style={{
-            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-          }}
-        >
-          hivesigner.com
-        </span>
+        <span className="font-mono">hivesigner.com</span>
       </div>
     </header>
   );

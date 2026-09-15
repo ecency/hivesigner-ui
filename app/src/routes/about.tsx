@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { card, h1, muted, page } from '@/components/ui';
 
 export const Route = createFileRoute('/about')({
   component: About,
@@ -8,35 +9,25 @@ export const Route = createFileRoute('/about')({
 function About() {
   const { t } = useTranslation();
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}
-    >
-      <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-        {t('about.about')} Hivesigner
-      </h1>
-      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5, color: '#59636e' }}>
+    <section className={page}>
+      <h1 className={h1}>{t('about.about')} Hivesigner</h1>
+      {/* Capped so the line length stays readable once the shell widens. */}
+      <p className={`${muted} m-0 max-w-2xl leading-normal`}>
         {t('index.description')}
       </p>
 
+      {/* Full width on a phone; shrinks to its content and centres from `sm`,
+          rather than becoming a mostly empty band on a wide screen. */}
       <div
-        style={{
-          marginTop: 4,
-          padding: 16,
-          background: '#fff',
-          border: '1px solid #d1d9e0',
-          borderRadius: 12,
-          fontSize: 14,
-          color: '#1f2328',
-          textAlign: 'center',
-        }}
+        className={`${card} mt-1 text-center text-sm text-[#1f2328] sm:w-auto sm:self-center`}
       >
         <div>
-          Built with <span style={{ color: '#E31337' }}>♥</span> by the{' '}
+          Built with <span className="text-[#E31337]">♥</span> by the{' '}
           <a
             href="https://ecency.com"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ color: '#b90f2e', fontWeight: 600 }}
+            className="font-semibold text-[#b90f2e]"
           >
             Ecency
           </a>{' '}

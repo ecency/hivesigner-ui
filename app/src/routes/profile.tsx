@@ -1,7 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { type CSSProperties, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  alertError,
+  btnPrimary,
+  fieldBase,
+  field as fieldClass,
+  formColumn,
+  h1,
+  mutedXs,
+  page,
+} from '@/components/ui';
 import { getKeys } from '@/lib/accounts';
 import { type Account, getAccount } from '@/lib/hive';
 import { isValidRedirectUri } from '@/lib/oauth';
@@ -14,16 +24,6 @@ import { useAccounts } from '@/lib/use-accounts';
 export const Route = createFileRoute('/profile')({
   component: Profile,
 });
-
-const fld: CSSProperties = {
-  width: '100%',
-  boxSizing: 'border-box',
-  height: 44,
-  padding: '0 12px',
-  border: '1px solid #d1d9e0',
-  borderRadius: 8,
-  fontSize: 15,
-};
 
 interface ProfileForm {
   name: string;
@@ -166,32 +166,33 @@ function Profile() {
 
   if (!selectedAccount) {
     return (
-      <section style={{ padding: 20 }}>
+      // `items-start` so the link keeps its own width instead of stretching its
+      // hit area across the column.
+      <section className={`${page} items-start`}>
         <Link to="/accounts">{t('footer.login')}</Link>
       </section>
     );
   }
 
   const field = (key: keyof ProfileForm, label: string, multiline = false) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label
-        htmlFor={`profile-${key}`}
-        style={{ fontSize: 13, fontWeight: 600 }}
-      >
+    // Not the shared `label` recipe: it greys its whole subtree and a form
+    // control inherits that colour, which would fade the values being edited.
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={`profile-${key}`} className="text-[13px] font-semibold">
         {label}
       </label>
       {multiline ? (
         <textarea
           id={`profile-${key}`}
           rows={4}
-          style={{ ...fld, height: 'auto', padding: 12 }}
+          className={`${fieldBase} p-3`}
           value={current[key]}
           onChange={(e) => set(key, e.target.value)}
         />
       ) : (
         <input
           id={`profile-${key}`}
-          style={fld}
+          className={fieldClass}
           value={current[key]}
           onChange={(e) => set(key, e.target.value)}
         />
@@ -200,10 +201,10 @@ function Profile() {
   );
 
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}
-    >
-      <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
+    // A form, so it stays one readable column: the shell widens on a desktop,
+    // but stretching these inputs across it would only make them harder to read.
+    <section className={`${page} ${formColumn} sm:max-w-xl`}>
+      <h1 className={h1}>
         {t('profile.profile')} · @{selectedAccount}
       </h1>
 
@@ -214,36 +215,22 @@ function Profile() {
       {field('profile_image', t('profile.profile_pic'))}
       {field('cover_image', t('profile.cover_pic'))}
       {field('redirect_uris', t('profile.redirect_uris'), true)}
-      <p style={{ margin: 0, fontSize: 12, color: '#59636e' }}>
-        {t('profile.one_uri_line')}
-      </p>
+      <p className={`${mutedXs} m-0`}>{t('profile.one_uri_line')}</p>
 
       {status === 'error' && (
-        <div role="alert" style={{ fontSize: 13, color: '#cf222e' }}>
+        <div role="alert" className={alertError}>
           {error}
         </div>
       )}
       {status === 'done' && (
-        <output style={{ display: 'block', fontSize: 13, color: '#1a5c2b' }}>
+        <output className="block text-[13px] text-[#1a5c2b]">
           {t('settings.saved')}
         </output>
       )}
 
+      {/* Full width under the thumb on a phone, its own size once there is room. */}
       {!isUnlocked || !postingKey ? (
-        <Link
-          to="/accounts"
-          style={{
-            height: 48,
-            borderRadius: 10,
-            background: '#E31337',
-            color: '#fff',
-            fontWeight: 600,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textDecoration: 'none',
-          }}
-        >
+        <Link to="/accounts" className={`${btnPrimary} sm:self-start`}>
           {t('accounts.unlock')} @{selectedAccount}
         </Link>
       ) : (
@@ -251,16 +238,7 @@ function Profile() {
           type="button"
           onClick={save}
           disabled={status === 'busy'}
-          style={{
-            height: 48,
-            border: 'none',
-            borderRadius: 10,
-            background: status === 'busy' ? '#f0a5b3' : '#E31337',
-            color: '#fff',
-            fontSize: 15,
-            fontWeight: 600,
-            cursor: status === 'busy' ? 'not-allowed' : 'pointer',
-          }}
+          className={`${btnPrimary} cursor-pointer sm:self-start`}
         >
           {status === 'busy' ? '…' : t('common.save')}
         </button>

@@ -1,7 +1,16 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { type CSSProperties, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  alertError,
+  cardGrid,
+  cardTight,
+  h1,
+  muted,
+  mutedXs,
+  page,
+} from '@/components/ui';
 import { getKeys } from '@/lib/accounts';
 import { authorizedApps, buildRevokeOperation } from '@/lib/grant';
 import { type Account, getAccount } from '@/lib/hive';
@@ -15,11 +24,8 @@ export const Route = createFileRoute('/authorized-apps')({
   component: AuthorizedApps,
 });
 
-const card: CSSProperties = {
-  background: '#fff',
-  border: '1px solid #d1d9e0',
-  borderRadius: 12,
-};
+const revokeButton =
+  'inline-flex h-[34px] shrink-0 cursor-pointer items-center justify-center rounded-lg border border-[#d1d9e0] bg-white px-3.5 text-[13px] font-semibold text-[#cf222e] disabled:cursor-not-allowed';
 
 function AuthorizedApps() {
   const { t } = useTranslation();
@@ -37,7 +43,7 @@ function AuthorizedApps() {
 
   if (!selectedAccount) {
     return (
-      <section style={{ padding: 20 }}>
+      <section className={page}>
         <Link to="/accounts">{t('footer.login')}</Link>
       </section>
     );
@@ -63,60 +69,33 @@ function AuthorizedApps() {
   }
 
   return (
-    <section
-      style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}
-    >
+    <section className={page}>
       <div>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-          {t('footer.apps')}
-        </h1>
-        <p style={{ margin: '4px 0 0', fontSize: 13, color: '#59636e' }}>
+        <h1 className={h1}>{t('footer.apps')}</h1>
+        <p className={`${muted} mt-1`}>
           Apps that can post as <b>@{selectedAccount}</b>.
         </p>
       </div>
 
       {error && (
-        <div
-          role="alert"
-          style={{
-            ...card,
-            padding: 12,
-            background: '#ffebe9',
-            borderColor: '#f0b3b3',
-            color: '#cf222e',
-            fontSize: 13,
-          }}
-        >
+        <div role="alert" className={alertError}>
           {error}
         </div>
       )}
 
       {apps.length === 0 ? (
-        <p style={{ fontSize: 14, color: '#59636e' }}>
-          No apps are authorized.
-        </p>
+        <p className={muted}>No apps are authorized.</p>
       ) : (
-        <div style={{ ...card, padding: 4 }}>
-          {apps.map((app, i) => (
-            <div
-              key={app}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: 14,
-                borderTop: i === 0 ? 'none' : '1px solid #eef1f4',
-              }}
-            >
-              <div
-                style={{ flex: 1, minWidth: 0, fontWeight: 600, fontSize: 15 }}
-              >
+        <div className={cardGrid}>
+          {apps.map((app) => (
+            <div key={app} className={`${cardTight} flex items-center gap-3`}>
+              <div className="min-w-0 flex-1 break-all text-[15px] font-semibold">
                 @{app}
               </div>
               {!isUnlocked || !activeKey ? (
                 <Link
                   to="/accounts"
-                  style={{ fontSize: 13, color: '#b90f2e', fontWeight: 600 }}
+                  className="shrink-0 text-[13px] font-semibold text-[#b90f2e]"
                 >
                   {t('accounts.unlock')}
                 </Link>
@@ -125,17 +104,7 @@ function AuthorizedApps() {
                   type="button"
                   onClick={() => revoke(app)}
                   disabled={busyApp === app}
-                  style={{
-                    border: '1px solid #d1d9e0',
-                    background: '#fff',
-                    color: '#cf222e',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    height: 34,
-                    padding: '0 14px',
-                    borderRadius: 8,
-                    cursor: busyApp === app ? 'not-allowed' : 'pointer',
-                  }}
+                  className={revokeButton}
                 >
                   {busyApp === app ? '…' : t('revoke.revoke')}
                 </button>
@@ -145,7 +114,7 @@ function AuthorizedApps() {
         </div>
       )}
 
-      <p style={{ fontSize: 12, color: '#59636e' }}>
+      <p className={mutedXs}>
         Revoking is an on-chain change and needs your active key once.
       </p>
     </section>
