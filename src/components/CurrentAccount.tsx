@@ -17,12 +17,20 @@ export function CurrentAccount({
   username,
   label,
   next,
+  busy = false,
 }: {
   username: string;
   /** "Authorizing as" / "Signing as": the verb this screen is about. */
   label: string;
   /** The current request, path plus query, to come back to after switching. */
   next: string;
+  /**
+   * The screen is signing or broadcasting: the row keeps naming the account
+   * but the switch link goes away, because the operation in flight will
+   * still redirect to the app's callback when it completes, and a user who
+   * had moved to the account list would be pulled away from it.
+   */
+  busy?: boolean;
 }) {
   const { t } = useTranslation();
   return (
@@ -33,17 +41,22 @@ export function CurrentAccount({
       <Avatar username={username} size="md" />
       <div className="min-w-0 flex-1">
         <div className="text-[11px] text-muted">{label}</div>
-        <div className="truncate text-[15px] font-semibold text-ink">
+        {/* break-all, never truncate: the row exists so the user can check
+            the EXACT account, and a 16-character name at 320px would lose
+            the suffix that tells two similar accounts apart. */}
+        <div className="break-all text-[15px] font-semibold text-ink">
           @{username}
         </div>
       </div>
-      <Link
-        to="/accounts"
-        search={{ next }}
-        className={`${link} shrink-0 text-[13px]`}
-      >
-        {t('login.switch_an_account')}
-      </Link>
+      {!busy && (
+        <Link
+          to="/accounts"
+          search={{ next }}
+          className={`${link} shrink-0 text-[13px]`}
+        >
+          {t('login.switch_an_account')}
+        </Link>
+      )}
     </div>
   );
 }

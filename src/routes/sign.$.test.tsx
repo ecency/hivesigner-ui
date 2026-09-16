@@ -248,6 +248,47 @@ describe('the signing account is visible', () => {
     );
   });
 
+  it('calls the account "selected", not "signing", when the request needs someone else', async () => {
+    h.splat = 'vote';
+    h.search = {
+      voter: 'bob',
+      author: 'a',
+      permlink: 'p',
+      weight: '1',
+      s: 'bob',
+    };
+    render(<Sign />);
+    const chip = await screen.findByTestId('current-account');
+    expect(chip).toHaveTextContent(/selected account/i);
+    expect(chip).not.toHaveTextContent(/signing as/i);
+    expect(chip).toHaveTextContent('@alice');
+    // The warning still names who has to sign.
+    expect(document.body.textContent).toMatch(/signed by @bob/i);
+  });
+
+  it('removes the switch link while the operation is in flight', async () => {
+    h.splat = 'transfer';
+    h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
+    let finish: (v: unknown) => void = () => {};
+    h.broadcastOperations.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const user = userEvent.setup();
+    render(<Sign />);
+    expect(
+      await screen.findByRole('link', { name: /switch/i }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /approve/i }));
+    await waitFor(() =>
+      expect(screen.queryByRole('link', { name: /switch/i })).toBeNull(),
+    );
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@alice');
+    finish({ id: 'tx' });
+  });
+
   it('names nobody when no account is selected', async () => {
     h.splat = 'transfer';
     h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };

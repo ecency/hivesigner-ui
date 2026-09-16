@@ -370,10 +370,16 @@ function Sign() {
 
       <div className="flex flex-col gap-2.5">
         {authority && selectedAccount && (
+          // Under a signer mismatch the selected account is NOT signing, so
+          // the row must not say it is; it names the selection and the warning
+          // below names who has to sign.
           <CurrentAccount
             username={selectedAccount}
-            label={t('sign.signing_as')}
+            label={
+              signerMismatch ? t('sign.selected_account') : t('sign.signing_as')
+            }
             next={here()}
+            busy={status === 'signing'}
           />
         )}
         {!authority ? null : signerMismatch ? (

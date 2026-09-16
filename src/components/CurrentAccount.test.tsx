@@ -31,6 +31,27 @@ describe('CurrentAccount', () => {
     });
   });
 
+  it('drops the switch link while the screen is busy, but keeps naming the account', () => {
+    render(
+      <CurrentAccount username="stid" label="Signing as" next="/sign/x" busy />,
+    );
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@stid');
+    expect(screen.queryByRole('link', { name: /switch/i })).toBeNull();
+  });
+
+  it('wraps a long name rather than cutting off the part that tells accounts apart', () => {
+    render(
+      <CurrentAccount
+        username="abcdefghijklmnop"
+        label="Signing as"
+        next="/sign/x"
+      />,
+    );
+    const name = screen.getByText('@abcdefghijklmnop');
+    expect(name.className).toContain('break-all');
+    expect(name.className).not.toContain('truncate');
+  });
+
   it('still names the account when the name cannot have an avatar', () => {
     render(<CurrentAccount username="x" label="Signing as" next="/sign/x" />);
     const chip = screen.getByTestId('current-account');

@@ -13,7 +13,19 @@ vi.mock('@tanstack/react-router', () => ({
     ...(opts as object),
     useSearch: () => rs.search,
   }),
-  Link: ({ children }: { children: unknown }) => children,
+  Link: ({
+    children,
+    to,
+    search,
+  }: {
+    children: unknown;
+    to: string;
+    search?: Record<string, string>;
+  }) => (
+    <a href={to} data-search={search ? JSON.stringify(search) : undefined}>
+      {children as never}
+    </a>
+  ),
   useNavigate: () => rs.navigate,
 }));
 
@@ -160,6 +172,45 @@ describe('returning to the flow that required an unlock', () => {
         search: {},
       }),
     );
+  });
+});
+
+describe('adding an account from a request keeps the request', () => {
+  // A user who came here from a consent or sign request to switch accounts,
+  // and finds the one they want is not on the device, follows "Add another
+  // account". Without `next` on that link the import finished on the account
+  // list and the request was gone.
+  it('both add-account links carry next when there is one', async () => {
+    await addAccount('alice', { posting: '5Ka' });
+    rs.search = { next: '/sign/vote?voter=alice' };
+    render(<Accounts />);
+    const links = screen.getAllByRole('link', { name: /add another/i });
+    expect(links.length).toBeGreaterThan(0);
+    for (const l of links) {
+      expect(l).toHaveAttribute('href', '/import');
+      expect(JSON.parse(l.getAttribute('data-search') ?? '{}')).toEqual({
+        next: '/sign/vote?voter=alice',
+      });
+    }
+  });
+
+  it('with no accounts at all, the only link still carries next', () => {
+    rs.search = { next: '/oauth2/authorize?client_id=theapp' };
+    render(<Accounts />);
+    for (const l of screen.getAllByRole('link', { name: /add another/i })) {
+      expect(JSON.parse(l.getAttribute('data-search') ?? '{}').next).toBe(
+        '/oauth2/authorize?client_id=theapp',
+      );
+    }
+  });
+
+  it('adds no next key when there is nothing to return to', async () => {
+    await addAccount('alice', { posting: '5Ka' });
+    rs.search = {};
+    render(<Accounts />);
+    for (const l of screen.getAllByRole('link', { name: /add another/i })) {
+      expect(JSON.parse(l.getAttribute('data-search') ?? '{}')).toEqual({});
+    }
   });
 });
 

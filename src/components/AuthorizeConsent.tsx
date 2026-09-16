@@ -340,6 +340,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             username={selectedAccount}
             label={t('authorize.authorizing_as')}
             next={window.location.pathname + window.location.search}
+            busy={busy}
           />
         )}
         {!selectedAccount ? (

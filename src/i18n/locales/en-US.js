@@ -316,6 +316,7 @@ export default {
     going_redirect_to: 'You are going to get redirected to',
     confirm_transaction: 'Confirm transaction',
     signing_as: 'Signing as',
+    selected_account: 'Selected account',
     success_title: 'Transaction has been successfully broadcasted',
     failure_title: 'Your transaction was not successfully broadcasted',
     back_to_sign: 'Back to Signer',
