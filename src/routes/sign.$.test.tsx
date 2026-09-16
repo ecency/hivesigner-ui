@@ -131,6 +131,16 @@ describe('sign route', () => {
   });
 });
 
+describe('an unknown operation', () => {
+  it('shows an announced error and nothing to approve', () => {
+    h.splat = 'not-a-real-op';
+    h.search = { foo: 'bar' };
+    render(<Sign />);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+});
+
 describe('untrusted text cannot push the layout sideways', () => {
   // A real browser measurement found three overflows here: a long permlink in the
   // TITLE pushed the authority badge ~3000px off-screen, an encrypted memo (one
