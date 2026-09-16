@@ -14,8 +14,9 @@ export default defineConfig({
       // for local builds.
       __SENTRY_DSN__: JSON.stringify(process.env.SENTRY_DSN || ''),
       // The Hivesigner API, which serves the ranked app directory. Public and
-      // unauthenticated. Overridable so a deployment can point elsewhere; the
-      // app falls back to reading the directory off the chain if it is down.
+      // unauthenticated. Overridable so a deployment can point elsewhere. There
+      // is no fallback: if it is down the directory reports unreachable and
+      // offers a retry (#116 removed the on-chain list).
       __API_URL__: JSON.stringify(
         process.env.API_URL || 'https://api.hivesigner.com',
       ),

@@ -81,3 +81,33 @@ jobs:
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
           docker pull ecency/hivesigner:development
           docker stack deploy -c docker-compose.yml -c docker-compose.staging.yml hivesigner-staging
+          # `stack deploy` returns once the update is ACCEPTED, so without a wait
+          # the workflow reports success over tasks that never start. Wait for
+          # every replica to be Running on the image THIS deploy asked for: the
+          # spec's image carries the digest swarm resolved, and under start-first
+          # the outgoing tasks still run the previous one, so they cannot
+          # satisfy the count. The nginx image has no HEALTHCHECK, so Running is
+          # the strongest signal available here.
+          SERVICE=hivesigner-staging_app
+          want=$(docker service inspect "$SERVICE" --format '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
+          replicas=$(docker service inspect "$SERVICE" --format '{{.Spec.Mode.Replicated.Replicas}}')
+          for i in $(seq 1 40); do
+            state=$(docker service inspect "$SERVICE" --format '{{if .UpdateStatus}}{{.UpdateStatus.State}}{{else}}none{{end}}' 2>/dev/null || echo unknown)
+            case "$state" in
+              rollback_started|rollback_completed|rollback_paused|paused)
+                echo "update did not take: $state"
+                docker service ps "$SERVICE" --no-trunc | head -8
+                exit 1 ;;
+            esac
+            running=$(docker service ps "$SERVICE" --no-trunc --filter desired-state=running \
+              --format '{{.CurrentState}} {{.Image}}' 2>/dev/null \
+              | awk -v want="$want" '$1 == "Running" && index($0, want)' | wc -l)
+            if [ "$running" -ge "$replicas" ]; then
+              echo "deploy ok: $running/$replicas replicas running $want (update state: $state)"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "service did not reach $replicas running replicas on $want in time:"
+          docker service ps "$SERVICE" --no-trunc | head -8
+          exit 1

@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
+import { PostingAbilities } from '@/components/PostingAbilities';
 import {
   alertError,
   alertWarn,
@@ -196,13 +197,16 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
         </div>
       )}
 
+      {/* The scope, in the words the landing page uses. A posting request
+          lists what the app will be able to do and says it is one grant; a
+          login request is one line, because that is all it is. */}
       <div className={`${card} text-sm`}>
-        <div className="text-xs text-muted">{t('authorize.scope')}</div>
-        <div className="font-semibold">
-          {req.scope === 'login'
-            ? t('authorize.scope_login')
-            : t('authorize.scope_posting')}
-        </div>
+        <div className="mb-1 text-xs text-muted">{t('authorize.scope')}</div>
+        {req.scope === 'login' ? (
+          <div className="font-semibold">{t('authorize.scope_login')}</div>
+        ) : (
+          <PostingAbilities app={req.clientId ?? ''} compact />
+        )}
       </div>
 
       {error && (
