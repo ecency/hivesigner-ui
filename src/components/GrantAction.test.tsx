@@ -53,13 +53,16 @@ import { GrantAction } from './GrantAction';
 const detour =
   '/login-request/ecency.app?client_id=ecency.app&redirect_uri=https%3A%2F%2Fecency.com%2Fauth&response_type=code&scope=posting';
 
-function renderWith(query: Record<string, string>) {
+function renderWith(
+  query: Record<string, string>,
+  mode: 'grant' | 'revoke' = 'grant',
+) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
   return render(
     <QueryClientProvider client={client}>
-      <GrantAction appName="ecency.app" mode="grant" query={query} />
+      <GrantAction appName="ecency.app" mode={mode} query={query} />
     </QueryClientProvider>,
   );
 }
@@ -78,5 +81,16 @@ describe('GrantAction with a callback', () => {
     renderWith({});
     const link = await screen.findByRole('link', { name: /continue/i });
     expect(link).toHaveAttribute('href', '/accounts');
+  });
+
+  // A revoke that carried the same callback would otherwise land on a posting
+  // consent for the app just revoked, whose approval re-grants it.
+  it('ignores a callback on revoke and goes to the authorized apps list', async () => {
+    renderWith({ redirect_uri: detour }, 'revoke');
+    const cancel = await screen.findByRole('link', { name: /cancel/i });
+    expect(cancel).toHaveAttribute('href', '/authorized-apps');
+    for (const a of screen.getAllByRole('link')) {
+      expect(a).not.toHaveAttribute('href', '/login');
+    }
   });
 });

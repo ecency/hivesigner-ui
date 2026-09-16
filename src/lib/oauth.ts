@@ -307,11 +307,22 @@ export type { Account };
  * rewrite dropped the callback entirely: a user sent through the detour
  * granted authority and then landed on their account list, and the login
  * they started was simply lost.
+ *
+ * Two refusals that the Nuxt page did not make:
+ *  - REVOKE never gets a target. Both branches end on a posting consent for
+ *    the same app, whose approval would put back the authority the user just
+ *    removed. A revoke callback is dropped and the page goes to the list of
+ *    authorized apps.
+ *  - a nested login-request must name THIS app. `/authorize/app-a?redirect_uri=
+ *    /login-request/app-b?...` would grant app-a and then open consent for
+ *    app-b, which is not the flow anyone linked to.
  */
 export function grantReturnTarget(
   appName: string,
   query: Record<string, string | undefined>,
+  mode: 'grant' | 'revoke' = 'grant',
 ): { to: '/login'; search: Record<string, string> } | null {
+  if (mode === 'revoke') return null;
   const callback = query.redirect_uri || query.redirect;
   if (!callback) return null;
   if (isAbsoluteHttpUrl(callback)) {
@@ -325,5 +336,10 @@ export function grantReturnTarget(
     return { to: '/login', search };
   }
   if (!resolveInternalPath(callback)) return null;
+  const nested = loginRequestUrl(callback);
+  if (nested) {
+    const nestedClient = nested.pathname.split('/').filter(Boolean)[1];
+    if (nestedClient !== appName) return null;
+  }
   return { to: '/login', search: { redirect: callback } };
 }

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppProfile } from '@/components/AppProfile';
 import { Avatar } from '@/components/Avatar';
@@ -18,6 +18,7 @@ import {
   buildGrantOperation,
   buildRevokeOperation,
   hasGrant,
+  waitForGrant,
 } from '@/lib/grant';
 import { type Account, getAccount } from '@/lib/hive';
 import { grantReturnTarget } from '@/lib/oauth';
@@ -42,8 +43,21 @@ export function GrantAction({
   const { selectedAccount, unlocked } = useAccounts();
   const navigate = useNavigate();
   // Where to go once the broadcast has landed, if this page was reached with a
-  // callback. Null means "no callback": the account list, as before.
-  const returnTarget = grantReturnTarget(appName, query);
+  // callback. Null means "no callback", or a revoke: the list screen.
+  const returnTarget = grantReturnTarget(appName, query, mode);
+  const listTo = mode === 'grant' ? '/accounts' : '/authorized-apps';
+  // Set when this screen is left, so an in-flight submit() cannot navigate
+  // after the user pressed Cancel. Setup clears it: Strict Mode runs
+  // setup -> cleanup -> setup, so a cleanup-only effect would leave the latch
+  // stuck on in development.
+  const abandoned = useRef(false);
+  useEffect(() => {
+    abandoned.current = false;
+    return () => {
+      abandoned.current = true;
+    };
+  }, []);
+  const [confirming, setConfirming] = useState(false);
   const [status, setStatus] = useState<'idle' | 'busy' | 'done' | 'error'>(
     'idle',
   );
@@ -78,11 +92,24 @@ export function GrantAction({
     try {
       await broadcastOperations([op], activeKey, account.name);
       setStatus('done');
-      await refetch();
       // The Nuxt page continued to the callback by itself after the broadcast,
       // and the login that brought the user here is waiting on it. Automatic
       // only when there IS a callback; with none the page shows its result.
-      if (returnTarget) navigate(returnTarget as never);
+      //
+      // Not before the grant is VISIBLE. A read straight after the broadcast
+      // can lag block inclusion, and the consent screen at the callback
+      // re-checks the authority: arriving early, it would ask for the grant
+      // again and broadcast a second account_update.
+      if (returnTarget && mode === 'grant') {
+        setConfirming(true);
+        const visible = await waitForGrant(account.name, appName);
+        setConfirming(false);
+        await refetch();
+        if (abandoned.current) return;
+        if (visible) navigate(returnTarget as never);
+        return;
+      }
+      await refetch();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setStatus('error');
@@ -145,6 +172,10 @@ export function GrantAction({
           {mode === 'grant'
             ? t('authorize.granted', { app: appName })
             : t('revoke.revoked', { app: appName })}
+          {/* Granted but not yet readable from the chain: say so, and leave
+              Continue in place. The consent screen it leads to re-checks the
+              authority itself. */}
+          {status === 'done' && confirming ? ' …' : null}
         </output>
       ) : null}
 
@@ -169,7 +200,7 @@ export function GrantAction({
           // Already granted, or just granted: continue to the callback that
           // brought the user here, or to the account list when there is none.
           <Link
-            to={returnTarget ? returnTarget.to : '/accounts'}
+            to={returnTarget ? returnTarget.to : listTo}
             search={returnTarget ? returnTarget.search : {}}
             className={btnPrimary}
           >
@@ -185,7 +216,10 @@ export function GrantAction({
             {status === 'busy' ? '…' : verb}
           </button>
         )}
-        <Link to="/accounts" className="text-center text-[13px] text-muted">
+        {/* Cancel stays live while the broadcast is in flight: it cannot undo
+            an irreversible write, but it does stop the automatic navigation
+            (the latch above), so the user is not pulled away later. */}
+        <Link to={listTo} className="text-center text-[13px] text-muted">
           {t('common.cancel')}
         </Link>
       </div>

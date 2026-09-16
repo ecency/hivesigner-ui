@@ -12,7 +12,7 @@ import {
   page,
 } from '@/components/ui';
 import { getKeys } from '@/lib/accounts';
-import { buildGrantOperation, hasGrant } from '@/lib/grant';
+import { buildGrantOperation, hasGrant, waitForGrant } from '@/lib/grant';
 import { type Account, getAccount } from '@/lib/hive';
 import {
   type AppProfile,
@@ -37,29 +37,6 @@ import { useAccounts } from '@/lib/use-accounts';
 // their query is normalised into an AuthRequest. Keeping one implementation is
 // the point: the grant confirmation, the cancellation latch and the client_id
 // disclosure must not drift between the two entry points.
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-/**
- * Poll the chain until the app holds posting authority, or the budget runs out.
- * A broadcast returns before block inclusion and reads can lag, so a single
- * immediate refetch would wrongly report failure and a retry would re-broadcast.
- */
-async function waitForGrant(
-  username: string,
-  clientId: string,
-): Promise<boolean> {
-  for (let i = 0; i < 8; i++) {
-    await sleep(2000);
-    try {
-      const acc = await getAccount(username);
-      if (acc && hasGrant(acc.posting, clientId)) return true;
-    } catch {
-      // transient read failure; keep polling within the budget
-    }
-  }
-  return false;
-}
 
 export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const { t } = useTranslation();

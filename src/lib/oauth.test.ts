@@ -351,3 +351,37 @@ describe('grantReturnTarget', () => {
     expect(grantReturnTarget('a', {})).toBeNull();
   });
 });
+
+describe('grantReturnTarget refusals from review', () => {
+  it('never builds a target for a revoke: it would lead to a re-grant', async () => {
+    const { grantReturnTarget } = await import('./oauth');
+    expect(
+      grantReturnTarget(
+        'ecency.app',
+        { redirect_uri: 'https://ecency.com/auth' },
+        'revoke',
+      ),
+    ).toBeNull();
+    expect(
+      grantReturnTarget(
+        'ecency.app',
+        { redirect_uri: '/login-request/ecency.app?x=1' },
+        'revoke',
+      ),
+    ).toBeNull();
+  });
+
+  it('refuses a nested login-request for a DIFFERENT app', async () => {
+    const { grantReturnTarget } = await import('./oauth');
+    expect(
+      grantReturnTarget('app-a', {
+        redirect_uri: '/login-request/app-b?client_id=app-b',
+      }),
+    ).toBeNull();
+    expect(
+      grantReturnTarget('app-a', {
+        redirect_uri: '/login-request/app-a?client_id=app-a',
+      }),
+    ).not.toBeNull();
+  });
+});
