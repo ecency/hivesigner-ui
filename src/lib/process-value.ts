@@ -12,16 +12,54 @@
 // the type the chain will serialize.
 import type { OperationField } from './operations';
 
+/**
+ * The integer range each int field is SERIALIZED into. The SDK's serializer
+ * wraps rather than throws, so a value outside its type came back on chain as
+ * a different number than the confirm screen showed: recurrence 65560 signed
+ * as 24, weight 40000 as -25536, orderid 4294967296 as 0. Every int field the
+ * schema has is listed; anything else gets int32.
+ */
+const INT_RANGE: Record<string, [number, number]> = {
+  weight: [-10000, 10000], // vote weight, int16 on chain, ±100.00%
+  percent: [0, 10000], // set_withdraw_vesting_route, uint16 as basis points
+  percent_hbd: [0, 10000], // comment_options
+  recurrence: [0, 65535], // recurrent_transfer, uint16 hours
+  executions: [0, 65535], // recurrent_transfer, uint16
+  request_id: [0, 4294967295], // savings, uint32
+  requestid: [0, 4294967295], // convert, uint32
+  orderid: [0, 4294967295], // limit orders, uint32
+  proposal_id: [0, Number.MAX_SAFE_INTEGER], // int64
+};
+const INT32: [number, number] = [-2147483648, 2147483647];
+
+/** An integer written as digits only, inside the field's range. */
+function toInt(value: unknown, fieldName?: string): number {
+  const text = String(value).trim();
+  // Digits only: "12abc" and "1e3" parsed to 12 and 1 and were signed as such.
+  if (!/^-?\d+$/.test(text)) throw new Error(`not an integer: ${text}`);
+  const n = Number(text);
+  const [min, max] = (fieldName && INT_RANGE[fieldName]) || INT32;
+  if (!Number.isSafeInteger(n) || n < min || n > max) {
+    throw new Error(`out of range for ${fieldName ?? 'int'}: ${text}`);
+  }
+  return n;
+}
+
 const isPlainObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** A list element: an integer written as text becomes a number (proposal
  * ids), anything else is kept. Account names cannot be all digits, so an
  * account list is never touched by this. */
-function listElement(v: unknown): unknown {
-  return typeof v === 'string' && /^-?\d+$/.test(v.trim())
-    ? Number(v.trim())
-    : v;
+function listElement(v: unknown, fieldName?: string): unknown {
+  const isDigits = typeof v === 'string' && /^-?\d+$/.test(v.trim());
+  if (!isDigits && typeof v !== 'number') return v;
+  // A proposal id list gets the same range check as the scalar proposal_id:
+  // an id above 2^53 was rounded by Number() and could name another proposal.
+  if (fieldName === 'proposal_ids') return toInt(v, 'proposal_id');
+  const n = typeof v === 'number' ? v : Number((v as string).trim());
+  if (!Number.isSafeInteger(n)) throw new Error(`not a safe integer: ${v}`);
+  return n;
 }
 
 /**
@@ -29,28 +67,36 @@ function listElement(v: unknown): unknown {
  * a JSON list, a bare scalar (`379`), a comma-separated list (`379,380`),
  * or an actual array from an encoded op.
  */
-function toArray(value: unknown): unknown[] {
-  if (Array.isArray(value)) return value.map(listElement);
-  if (typeof value === 'number' || typeof value === 'boolean') return [value];
+function toArray(value: unknown, fieldName?: string): unknown[] {
+  if (Array.isArray(value)) return value.map((e) => listElement(e, fieldName));
+  if (typeof value === 'number') return [listElement(value, fieldName)];
+  if (typeof value === 'boolean') return [value];
   if (typeof value === 'string') {
     const s = value.trim();
     if (s === '') return [];
+    // Parse first, then convert. A conversion error raised INSIDE the parse
+    // try-block was swallowed as "not JSON", and the raw text came back as a
+    // single string element: `[-1]` became the list ["[-1]"].
+    let parsed: unknown;
+    let isJson = true;
     try {
-      const parsed: unknown = JSON.parse(s);
-      if (Array.isArray(parsed)) return parsed.map(listElement);
-      if (typeof parsed === 'number' || typeof parsed === 'string') {
-        return [listElement(parsed)];
-      }
-      if (isPlainObject(parsed)) throw new Error('expected a list');
-    } catch (e) {
-      if (e instanceof Error && e.message === 'expected a list') throw e;
-      // Not JSON: a bare word or a comma-separated list.
+      parsed = JSON.parse(s);
+    } catch {
+      isJson = false;
     }
+    if (isJson) {
+      if (Array.isArray(parsed))
+        return parsed.map((e) => listElement(e, fieldName));
+      if (typeof parsed === 'number' || typeof parsed === 'string')
+        return [listElement(parsed, fieldName)];
+      throw new Error('expected a list');
+    }
+    // Not JSON: a bare word or a comma-separated list.
     return s
       .split(',')
       .map((x) => x.trim())
       .filter((x) => x !== '')
-      .map(listElement);
+      .map((e) => listElement(e, fieldName));
   }
   throw new Error('expected a list');
 }
@@ -95,6 +141,7 @@ export function processValue(
   field: OperationField,
   value: unknown,
   vestsToSP: number,
+  fieldName?: string,
 ): unknown {
   const { type, defaultValue, maxLength } = field;
   // Apply the default only for a genuinely missing value. A plain `!value` here
@@ -112,16 +159,19 @@ export function processValue(
   switch (type) {
     case 'amount': {
       const s = String(realValue);
-      if (s.includes('VESTS'))
-        return `${Number.parseFloat(s).toFixed(6)} VESTS`;
-      if (s.includes('HP'))
-        return `${(Number.parseFloat(s) / vestsToSP).toFixed(6)} VESTS`;
-      if (s.includes('HIVE')) return `${Number.parseFloat(s).toFixed(3)} HIVE`;
-      if (s.includes('HBD')) return `${Number.parseFloat(s).toFixed(3)} HBD`;
+      const n = Number.parseFloat(s);
+      // "abc HIVE" parsed to NaN and the screen read "Send NaN HIVE" over an
+      // enabled Approve; the serializer would have refused it, but the screen
+      // is the contract. Refuse here.
+      if (!Number.isFinite(n)) throw new Error(`not an amount: ${s}`);
+      if (s.includes('VESTS')) return `${n.toFixed(6)} VESTS`;
+      if (s.includes('HP')) return `${(n / vestsToSP).toFixed(6)} VESTS`;
+      if (s.includes('HIVE')) return `${n.toFixed(3)} HIVE`;
+      if (s.includes('HBD')) return `${n.toFixed(3)} HBD`;
       return s;
     }
     case 'int':
-      return Number.parseInt(String(realValue), 10);
+      return toInt(realValue, fieldName);
     case 'bool': {
       // Search params are raw STRINGS (lib/search.ts keeps them unparsed), so a
       // cast would leave "true"/"0" as truthy strings and the serializer would
@@ -137,7 +187,7 @@ export function processValue(
       }
       return String(realValue);
     case 'array':
-      return toArray(realValue);
+      return toArray(realValue, fieldName);
     case 'object':
       return toObject(realValue);
     case 'json':

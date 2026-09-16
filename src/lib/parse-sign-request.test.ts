@@ -280,3 +280,29 @@ describe('array fields reach the chain as arrays', () => {
     expect(payload.json).toBe('["follow",{"follower":"alice"}]');
   });
 });
+
+describe('legacy /sign/<op> form keeps nb and s', () => {
+  it('a sign-only legacy link does not broadcast, and a signer pin is kept', () => {
+    const req = parseSignRequest(
+      'vote',
+      { author: 'a', permlink: 'p', weight: '100', nb: '', s: 'carol' },
+      1,
+    );
+    expect(req?.noBroadcast).toBe(true);
+    expect(req?.signer).toBe('carol');
+  });
+  it('refuses a recurrent transfer whose recurrence would wrap on chain', () => {
+    expect(
+      parseSignRequest(
+        'recurrent_transfer',
+        {
+          to: 'bob',
+          amount: '100 HIVE',
+          recurrence: '65560',
+          executions: '10',
+        },
+        1,
+      ),
+    ).toBeNull();
+  });
+});

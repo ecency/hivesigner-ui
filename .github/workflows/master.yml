@@ -78,7 +78,9 @@ jobs:
           cd ~/hivesigner-ui
           git pull origin main
           git checkout main
-          docker system prune -a -f
+          # Dangling layers only. `prune -a` deleted every image not in use by a
+          # container, which included the previous release, the rollback image.
+          docker image prune -f
           export PORT=$PRODUCTION_PORT
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
           docker pull ecency/hivesigner:latest

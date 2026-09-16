@@ -158,6 +158,19 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     return <section className={page}>…</section>;
   }
 
+  // No app or no callback is not a request anyone can approve. The Nuxt page
+  // issued a bare login token for it; this refuses, because a consent screen
+  // for "@" that leads nowhere is not a flow, it is a bug surfaced to the user.
+  if (!req.clientId || !req.redirectUri) {
+    return (
+      <section className={page}>
+        <div role="alert" className={alertError}>
+          {t('errors.invalid_consent_request')}
+        </div>
+      </section>
+    );
+  }
+
   // Attacker-controlled: profile.name is the app account's own on-chain
   // metadata and clientId comes from the URL. Strip control and bidi characters
   // for the same reason the confirm screen does.

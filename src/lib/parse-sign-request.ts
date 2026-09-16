@@ -92,8 +92,15 @@ function legacyToHiveUri(
       }
       opParams[key] = value;
     }
+    // `nb` (sign only) and `s` (required signer) are part of the published
+    // contract for every form; the legacy re-encode used to drop both, so a
+    // legacy sign-only link broadcast, and a signer pin went unchecked.
     return decode(
-      encodeOps([[opName, opParams]], { callback: query.redirect_uri }),
+      encodeOps([[opName, opParams]], {
+        callback: query.redirect_uri,
+        ...('nb' in query ? { no_broadcast: true } : {}),
+        ...(query.s ? { signer: query.s } : {}),
+      }),
     );
   } catch {
     return null;
@@ -149,7 +156,12 @@ export function parseSignRequest(
         ) {
           hpDependent = true;
         }
-        const value = processValue(schema.schema[key], payload[key], vestsToSP);
+        const value = processValue(
+          schema.schema[key],
+          payload[key],
+          vestsToSP,
+          key,
+        );
         // Refuse a non-finite number instead of passing it on. parseInt('abc')
         // is NaN, and the serializer's DataView.setInt16(NaN) writes 0: a
         // `/sign/vote?weight=abc` displayed as "Upvote ... NaN%" would have been

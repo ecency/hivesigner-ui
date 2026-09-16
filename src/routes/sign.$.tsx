@@ -53,6 +53,11 @@ function useVestsToSp(): { rate: number; ready: boolean } {
   return { rate: data ?? 1, ready: isSuccess };
 }
 
+/** This request's own URL, to come back to after import or unlock. */
+function here(): string {
+  return window.location.pathname + window.location.search;
+}
+
 function callbackHost(callback: string): string | null {
   try {
     return new URL(callback).host;
@@ -262,8 +267,15 @@ function Sign() {
                 key={`${f.label}-${fi}`}
                 className="flex gap-1.5 text-[12.5px]"
               >
-                {/* isolate the LABEL too: a JSON key can carry bidi controls. */}
-                <span className="break-all text-muted [unicode-bidi:isolate]">
+                {/* A schema label ("Permlink", "posting authority") keeps its
+                    shape: break-all on it rendered "P/e/r/m/l/i/n/k" at 320px
+                    beside a long value. A label that is a JSON KEY is
+                    caller-chosen, so it may be arbitrarily long and must wrap
+                    instead of pushing the value off-screen; isolate it too,
+                    since it can carry bidi controls. */}
+                <span
+                  className={`${f.untrusted ? 'break-all' : 'shrink-0 whitespace-nowrap'} text-muted [unicode-bidi:isolate]`}
+                >
                   {f.label}:
                 </span>
                 {/* isolate: a value cannot reorder the text around it. */}
@@ -330,16 +342,23 @@ function Sign() {
               This request must be signed by <b>@{req.signer}</b>. Switch to
               that account.
             </div>
-            <Link to="/accounts" className={btnPrimary}>
+            <Link
+              to="/accounts"
+              search={{ next: here() }}
+              className={btnPrimary}
+            >
               {t('login.switch_an_account')}
             </Link>
           </>
         ) : !selectedAccount ? (
-          <Link to="/import" className={btnPrimary}>
+          // `next` carries the request through import and unlock, as the
+          // consent screen does. Without it a passcode user arriving from an
+          // app deep link unlocked and landed on the account list, request gone.
+          <Link to="/import" search={{ next: here() }} className={btnPrimary}>
             {t('common.continue')}
           </Link>
         ) : !isUnlocked ? (
-          <Link to="/accounts" className={btnPrimary}>
+          <Link to="/accounts" search={{ next: here() }} className={btnPrimary}>
             {t('accounts.unlock')} @{selectedAccount}
           </Link>
         ) : !signingKey ? (
@@ -348,7 +367,7 @@ function Sign() {
               This needs your <b>{authority}</b> key, which @{selectedAccount}{' '}
               does not have here.
             </div>
-            <Link to="/import" className={btnPrimary}>
+            <Link to="/import" search={{ next: here() }} className={btnPrimary}>
               {t('accounts.add_another')}
             </Link>
           </>

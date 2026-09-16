@@ -157,6 +157,15 @@ describe('AuthorizeConsent', () => {
     ).toHaveTextContent(/active key once/i);
   });
 
+  it('refuses a request that names no app or no callback', async () => {
+    renderConsent({ clientId: undefined });
+    expect(await screen.findByRole('alert')).toHaveTextContent(/incomplete/i);
+    expect(screen.queryByRole('button')).toBeNull();
+    const { unmount } = renderConsent({ redirectUri: undefined });
+    expect((await screen.findAllByRole('alert')).length).toBeGreaterThan(0);
+    unmount();
+  });
+
   it('sends a visitor without an account to import, carrying the request along', async () => {
     h.accounts = { selectedAccount: '', unlocked: [], usernames: [] } as never;
     renderConsent({});

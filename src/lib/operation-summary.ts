@@ -163,6 +163,8 @@ export function summarizeOperation(op: Operation): OperationSummary {
 export interface OperationField {
   label: string;
   value: string;
+  /** The label is a key from a JSON payload, i.e. chosen by the caller. */
+  untrusted?: boolean;
 }
 
 function describeAuthority(value: unknown): string {
@@ -197,7 +199,11 @@ function describeAuthority(value: unknown): string {
     : 'threshold NOT SET (signs as 0)';
   const parts = [
     threshold,
-    keys.length ? `keys: ${keys.join(', ')}` : '',
+    // An empty key list is the MATERIAL fact when an authority is replaced:
+    // it removes the user's own key. Say it rather than print nothing.
+    keys.length
+      ? `keys: ${keys.join(', ')}`
+      : 'keys: NONE (your key is removed)',
     accts.length ? `accounts: ${accts.join(', ')}` : '',
   ].filter(Boolean);
   return parts.join('; ');
@@ -265,6 +271,7 @@ function pushJsonRows(
     rows.push({
       label: leaf.label ? `${label}.${leaf.label}` : label,
       value: leaf.value,
+      untrusted: !!leaf.label,
     });
 }
 

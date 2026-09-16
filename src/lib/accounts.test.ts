@@ -126,7 +126,9 @@ describe('unlocking', () => {
     expect(keys).toEqual({
       posting: '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL',
     });
-    // Stored field is now the v1 envelope, no longer triplesec.
+    // Stored field is now the v1 envelope, no longer triplesec. (Behind
+    // UPGRADE_TRIPLESEC_ON_UNLOCK: the Nuxt app cannot read v1, so a rollback
+    // after this would need the user to re-import.)
     const stored = JSON.parse(localStorage.getItem('vuex__accounts') ?? '{}');
     expect(stored.accountsKeychains.legacy.password.startsWith('{')).toBe(true);
     // And it still unlocks with the same passcode afterwards.
@@ -259,5 +261,119 @@ describe('selection precedence when a write fails mid-session', () => {
     // Simulate a reload: volatile state gone, storage intact.
     _resetKeyCache();
     expect(getState().selectedAccount).toBe('bob');
+  });
+});
+
+describe('what the Nuxt app left in storage', () => {
+  it('folds plaintext sibling WIFs into the blob and strips them', async () => {
+    const { encodePlain } = await import('./keystore');
+    const { PrivateKey } = await import('@ecency/sdk/hive');
+    const POSTING = PrivateKey.fromSeed('sibling-posting').toString();
+    const ACTIVE = PrivateKey.fromSeed('sibling-active').toString();
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({
+        selectedAccount: 'alice',
+        accountsKeychains: {
+          alice: {
+            password: encodePlain({ posting: POSTING }),
+            // Added later through the old /auths page: stored ONLY here.
+            active: ACTIVE,
+          },
+        },
+      }),
+    );
+    await autoUnlockPlaintext();
+    expect(getKeys('alice')?.active).toBe(ACTIVE);
+    expect(getKeys('alice')?.posting).toBe(POSTING);
+    const stored = JSON.parse(localStorage.getItem('vuex__accounts') ?? '{}');
+    expect(stored.accountsKeychains.alice).not.toHaveProperty('active');
+    // and the folded key is inside the blob: a fresh session still has it
+    _resetKeyCache();
+    await autoUnlockPlaintext();
+    expect(getKeys('alice')?.active).toBe(ACTIVE);
+  });
+
+  it('prefers a sibling over the blob for the same role: the sibling is the newer key', async () => {
+    const { encodePlain } = await import('./keystore');
+    const { PrivateKey } = await import('@ecency/sdk/hive');
+    const OLD = PrivateKey.fromSeed('old-posting').toString();
+    const NEW = PrivateKey.fromSeed('new-posting').toString();
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({
+        selectedAccount: 'alice',
+        accountsKeychains: {
+          // Re-added through the old /auths page: the blob still holds OLD.
+          alice: { password: encodePlain({ posting: OLD }), posting: NEW },
+        },
+      }),
+    );
+    await autoUnlockPlaintext();
+    expect(getKeys('alice')?.posting).toBe(NEW);
+  });
+
+  it('adds a key to a legacy encrypted account by folding everything into one v1 envelope', async () => {
+    const { PrivateKey } = await import('@ecency/sdk/hive');
+    const ACTIVE = PrivateKey.fromSeed('added-active').toString();
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({
+        selectedAccount: 'legacy',
+        accountsKeychains: { legacy: { password: TRIPLESEC_FIELD } },
+      }),
+    );
+    await addAccount('legacy', { active: ACTIVE }, 'unlock-passcode-123');
+    const stored = JSON.parse(localStorage.getItem('vuex__accounts') ?? '{}');
+    expect(stored.accountsKeychains.legacy.password.startsWith('{')).toBe(true);
+    expect(stored.accountsKeychains.legacy).not.toHaveProperty('active');
+    expect(stored.accountsKeychains.legacy).not.toHaveProperty('posting');
+    // and a fresh session reads both keys back out of the envelope
+    _resetKeyCache();
+    const again = await unlockAccount('legacy', 'unlock-passcode-123');
+    expect(again.active).toBe(ACTIVE);
+    expect(again.posting).toBe(
+      '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL',
+    );
+    expect(getKeys('legacy')?.active).toBe(ACTIVE);
+  });
+
+  it('folds a sibling key into the v1 envelope on unlock of a triplesec account', async () => {
+    const { PrivateKey } = await import('@ecency/sdk/hive');
+    const ACTIVE = PrivateKey.fromSeed('sibling-active-2').toString();
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({
+        selectedAccount: 'legacy',
+        accountsKeychains: {
+          legacy: { password: TRIPLESEC_FIELD, active: ACTIVE },
+        },
+      }),
+    );
+    const keys = await unlockAccount('legacy', 'unlock-passcode-123');
+    expect(keys.active).toBe(ACTIVE);
+    expect(keys.posting).toBe(
+      '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL',
+    );
+    const stored = JSON.parse(localStorage.getItem('vuex__accounts') ?? '{}');
+    // One v1 envelope now, no plaintext sibling on disk, and the folded key
+    // survives a fresh session.
+    expect(stored.accountsKeychains.legacy.password.startsWith('{')).toBe(true);
+    expect(stored.accountsKeychains.legacy).not.toHaveProperty('active');
+    _resetKeyCache();
+    expect((await unlockAccount('legacy', 'unlock-passcode-123')).active).toBe(
+      ACTIVE,
+    );
+  });
+
+  it('deletes the old auth store, which held the last login keys in plaintext', async () => {
+    const { removeLegacyAuthStore } = await import('./accounts');
+    localStorage.setItem(
+      'vuex__auth',
+      JSON.stringify({ keys: { posting: '5K...' } }),
+    );
+    expect(removeLegacyAuthStore()).toBe(true);
+    expect(localStorage.getItem('vuex__auth')).toBeNull();
+    expect(removeLegacyAuthStore()).toBe(false);
   });
 });
