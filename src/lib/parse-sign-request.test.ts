@@ -306,3 +306,30 @@ describe('legacy /sign/<op> form keeps nb and s', () => {
     ).toBeNull();
   });
 });
+
+describe('signRequestProblem says why, in safe words', () => {
+  it('names the kind of failure and a schema field, never a value', async () => {
+    const { signRequestProblem } = await import('./parse-sign-request');
+    expect(signRequestProblem('not-a-real-op', { foo: 'bar' }, 1)).toBe(
+      'unknown_operation',
+    );
+    expect(signRequestProblem('op/not-base64!!', {}, 1)).toBe('undecodable');
+    expect(
+      signRequestProblem(
+        'vote',
+        { author: 'a', permlink: 'p', weight: 'SECRETVALUE' },
+        1,
+      ),
+    ).toBe('invalid_field:weight');
+    expect(
+      signRequestProblem('transfer', { to: 'bob', amount: 'abc HIVE' }, 1),
+    ).toBe('invalid_field:amount');
+    expect(
+      signRequestProblem(
+        'vote',
+        { author: 'a', permlink: 'p', weight: '100' },
+        1,
+      ),
+    ).toBe('none');
+  });
+});

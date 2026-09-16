@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
 import { PostingAbilities } from '@/components/PostingAbilities';
+import { ReportIssue } from '@/components/ReportIssue';
 import {
   alertError,
   alertWarn,
@@ -15,6 +16,7 @@ import {
 import { getKeys } from '@/lib/accounts';
 import { buildGrantOperation, hasGrant, waitForGrant } from '@/lib/grant';
 import { type Account, getAccount } from '@/lib/hive';
+import { hostOf, reportIntegrationIssue } from '@/lib/integration-signal';
 import {
   type AppProfile,
   type AuthRequest,
@@ -154,6 +156,22 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     }
   }
 
+  const unregistered =
+    !!req.clientId && !!callback && profile != null && !registered;
+  const appMissing = !!req.clientId && profile === null;
+  // The two integration failures an app author can fix, reported once per
+  // screen: which app, and which callback host. Never the callback itself.
+  useEffect(() => {
+    if (unregistered) {
+      reportIntegrationIssue('redirect_not_registered', {
+        app: req.clientId,
+        callback_host: hostOf(callback),
+      });
+    } else if (appMissing) {
+      reportIntegrationIssue('app_not_found', { app: req.clientId });
+    }
+  }, [unregistered, appMissing, req.clientId, callback]);
+
   if (isLoading) {
     return <section className={page}>…</section>;
   }
@@ -163,11 +181,10 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   // for "@" that leads nowhere is not a flow, it is a bug surfaced to the user.
   if (!req.clientId || !req.redirectUri) {
     return (
-      <section className={page}>
-        <div role="alert" className={alertError}>
-          {t('errors.invalid_consent_request')}
-        </div>
-      </section>
+      <IncompleteRequest
+        app={req.clientId}
+        callbackHost={hostOf(req.redirectUri)}
+      />
     );
   }
 
@@ -175,8 +192,6 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   // metadata and clientId comes from the URL. Strip control and bidi characters
   // for the same reason the confirm screen does.
   const appName = safeText(profile?.name ?? req.clientId ?? 'This site');
-  const unregistered =
-    !!req.clientId && !!callback && profile != null && !registered;
 
   return (
     <section className={page}>
@@ -205,9 +220,15 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
       </div>
 
       {unregistered && (
-        <div className={alertError}>
-          {t('authorize.redirect_not_registered')}
-        </div>
+        <>
+          <div className={alertError}>
+            {t('authorize.redirect_not_registered')}
+          </div>
+          <ReportIssue
+            kind="redirect_not_registered"
+            tags={{ app: req.clientId, callback_host: hostOf(callback) }}
+          />
+        </>
       )}
 
       {/* The scope, in the words the landing page uses. A posting request
@@ -289,6 +310,34 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           {t('common.cancel')}
         </Link>
       </div>
+    </section>
+  );
+}
+
+/** A request naming no app or no callback: refused, reported, reportable. */
+function IncompleteRequest({
+  app,
+  callbackHost,
+}: {
+  app?: string;
+  callbackHost?: string;
+}) {
+  const { t } = useTranslation();
+  useEffect(() => {
+    reportIntegrationIssue('consent_incomplete', {
+      app,
+      callback_host: callbackHost,
+    });
+  }, [app, callbackHost]);
+  return (
+    <section className={page}>
+      <div role="alert" className={alertError}>
+        {t('errors.invalid_consent_request')}
+      </div>
+      <ReportIssue
+        kind="consent_incomplete"
+        tags={{ app, callback_host: callbackHost }}
+      />
     </section>
   );
 }

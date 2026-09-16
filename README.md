@@ -71,3 +71,24 @@ Two build args, both optional:
 ## Environment
 
 `BROADCAST_NETWORK` is `mainnet`. The testnet deployment is discontinued.
+
+## Monitoring what apps and links get wrong
+
+Sentry receives three kinds of signal, all with an `environment` tag
+(production, staging, development):
+
+- **Unhandled errors**, scrubbed before they leave the browser: URLs lose
+  their query, and anything key-, token- or code-shaped is blanked.
+- **Integration signals**, warnings titled `integration: <kind>`, one issue per
+  kind and app (or operation) with a count: `redirect_not_registered` (tags
+  `app`, `callback_host`), `consent_incomplete`, `app_not_found`,
+  `sign_request_invalid` (tags `op`, `reason` such as `unknown_operation` or
+  `invalid_field:weight`), `route_not_found` (tag `path`). Tags carry public
+  facts only, never a URL or a value from a link. An alert rule on new issues
+  titled `integration:` says which app broke its integration before its users
+  write in.
+- **User reports** from the Report button on every error screen, sent as
+  Sentry feedback with tag `report=user`: the link the person opened with
+  secret-shaped values blanked, their note, and for a crashed screen the id of
+  the error event. This is the only path on which a link's query survives,
+  because the person clicking chose to share it.

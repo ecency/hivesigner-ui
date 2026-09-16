@@ -239,3 +239,68 @@ describe('environmentFor', () => {
     expect(environmentFor('evil.example')).toBe('other');
   });
 });
+
+describe('redactSecrets', () => {
+  it('keeps the link and blanks only credential-shaped values', async () => {
+    const { redactSecrets } = await import('./sentry');
+    const out = redactSecrets(
+      '/login?client_id=ecency.app&code=abc.def&redirect_uri=https://ecency.com/auth',
+    );
+    expect(out).toContain('/login?client_id=ecency.app');
+    expect(out).toContain('code=[redacted]');
+    expect(out).toContain('redirect_uri=https://ecency.com/auth');
+  });
+});
+
+describe('redactSecrets, the report path', () => {
+  it('redacts every name in the shared vocabulary, in query and text forms', async () => {
+    const { redactSecrets } = await import('./sentry');
+    const out = redactSecrets(
+      '/x?mnemonic=word1%20word2&seed=abc&private_key=pk1&id_token=idt&authorization=Bearer%20tok&signature=sig1&keep=this',
+    );
+    for (const name of [
+      'mnemonic',
+      'seed',
+      'private_key',
+      'id_token',
+      'authorization',
+      'signature',
+    ]) {
+      expect(out, name).toContain(`${name}=[redacted]`);
+    }
+    for (const v of ['word1', 'abc', 'pk1', 'idt', 'Bearer', 'sig1'])
+      expect(out).not.toContain(v);
+    expect(out).toContain('keep=this');
+    expect(
+      redactSecrets(
+        'note: authorization: Bearer abc.def and private_key: 5K...x',
+      ),
+    ).not.toMatch(/abc\.def|5K\.\.\.x/);
+  });
+
+  it('sees through percent-encoded names, separators and a nested link', async () => {
+    const { redactSecrets } = await import('./sentry');
+    expect(redactSecrets('/login?access%5Ftoken=SECRET1&x=1')).toBe(
+      '/login?access%5Ftoken=[redacted]&x=1',
+    );
+    const nested =
+      '/login?redirect_uri=' +
+      encodeURIComponent('https://app.example/cb?access_token=SECRET2&ok=1');
+    const out = redactSecrets(nested);
+    expect(out).not.toContain('SECRET2');
+    expect(decodeURIComponent(out.split('redirect_uri=')[1])).toBe(
+      'https://app.example/cb?access_token=[redacted]&ok=1',
+    );
+    expect(redactSecrets('a=1&Code=SECRET3&b=2')).toBe(
+      'a=1&Code=[redacted]&b=2',
+    );
+  });
+
+  it('keeps an ordinary link intact', async () => {
+    const { redactSecrets } = await import('./sentry');
+    const link = '/sign/transfer?to=bob&amount=1%20HIVE&memo=hi%20there&nb';
+    expect(redactSecrets(link)).toBe(
+      '/sign/transfer?to=bob&amount=1%20HIVE&memo=[redacted]&nb',
+    );
+  });
+});

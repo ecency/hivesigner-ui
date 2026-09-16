@@ -19,6 +19,15 @@ const h = vi.hoisted(() => ({
   broadcastOperations: vi.fn(),
 }));
 
+const sig = vi.hoisted(() => ({ report: vi.fn() }));
+vi.mock('@/lib/integration-signal', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/integration-signal')>()),
+  reportIntegrationIssue: sig.report,
+}));
+vi.mock('@sentry/browser', () => ({
+  captureFeedback: vi.fn(),
+  getClient: () => undefined,
+}));
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => (opts: unknown) => ({
     ...(opts as object),
@@ -144,12 +153,19 @@ describe('sign route', () => {
 });
 
 describe('an unknown operation', () => {
-  it('shows an announced error and nothing to approve', () => {
+  it('shows an announced error, offers a report, and signals the op and reason', () => {
     h.splat = 'not-a-real-op';
     h.search = { foo: 'bar' };
     render(<Sign />);
     expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.queryByRole('button')).toBeNull();
+    // The only button is the user's Report, not an approve control.
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual([
+      expect.stringMatching(/report/i),
+    ]);
+    expect(sig.report).toHaveBeenCalledWith('sign_request_invalid', {
+      op: 'not-a-real-op',
+      reason: 'unknown_operation',
+    });
   });
 });
 

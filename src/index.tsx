@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import './globals.css';
 import './i18n';
+import { ErrorPage } from './components/ErrorPage';
 import { NotFound } from './components/NotFound';
 import {
   autoUnlockPlaintext,
@@ -41,6 +42,7 @@ autoUnlockPlaintext();
 const router = createRouter({
   routeTree,
   defaultNotFoundComponent: NotFound,
+  defaultErrorComponent: ErrorPage,
   // Hive uses the @author form everywhere; keep it literal rather than
   // percent-encoded, matching the current app's URLs.
   pathParamsAllowedCharacters: ['@'],

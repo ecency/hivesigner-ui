@@ -29,6 +29,16 @@ vi.mock('@/lib/sign-tx', () => ({
   broadcastOperations: h.broadcastOperations,
 }));
 
+const sig = vi.hoisted(() => ({ report: vi.fn() }));
+vi.mock('@/lib/integration-signal', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/integration-signal')>()),
+  reportIntegrationIssue: sig.report,
+}));
+vi.mock('@sentry/browser', () => ({
+  captureFeedback: vi.fn(),
+  getClient: () => undefined,
+}));
+
 import { PrivateKey } from '@ecency/sdk/hive';
 import { decodeToken } from '@/lib/message-token';
 import type { AuthRequest } from '@/lib/oauth';
@@ -116,11 +126,19 @@ describe('AuthorizeConsent', () => {
     expect(screen.queryAllByRole('listitem')).toHaveLength(0);
   });
 
-  it('refuses a callback the app has not registered and disables approval', async () => {
-    renderConsent({ redirectUri: 'https://evil.example/auth' });
+  it('refuses a callback the app has not registered, disables approval, and reports app and host only', async () => {
+    sig.report.mockReset();
+    renderConsent({ redirectUri: 'https://evil.example/auth?state=SECRET' });
     expect(
       await screen.findByText(i18n.t('authorize.redirect_not_registered')),
     ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(sig.report).toHaveBeenCalledWith('redirect_not_registered', {
+        app: 'ecency.app',
+        callback_host: 'evil.example',
+      }),
+    );
+    expect(JSON.stringify(sig.report.mock.calls)).not.toContain('SECRET');
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /authorize/i })).toBeDisabled(),
     );
@@ -160,7 +178,9 @@ describe('AuthorizeConsent', () => {
   it('refuses a request that names no app or no callback', async () => {
     renderConsent({ clientId: undefined });
     expect(await screen.findByRole('alert')).toHaveTextContent(/incomplete/i);
-    expect(screen.queryByRole('button')).toBeNull();
+    // Nothing to approve; the only control is the user's Report button.
+    expect(screen.queryByRole('button', { name: /authorize/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /report/i })).toBeInTheDocument();
     const { unmount } = renderConsent({ redirectUri: undefined });
     expect((await screen.findAllByRole('alert')).length).toBeGreaterThan(0);
     unmount();

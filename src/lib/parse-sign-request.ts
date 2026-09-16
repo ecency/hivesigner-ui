@@ -118,6 +118,41 @@ export function parseSignRequest(
   query: Record<string, string>,
   vestsToSP: number,
 ): SignRequest | null {
+  try {
+    return parseSignRequestOrThrow(splat, query, vestsToSP);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * WHY a link could not be parsed, in words safe to report: `unknown_operation`,
+ * `undecodable`, `extensions_present`, `invalid_field:<schema key>`. Never a
+ * value from the link. For the integration signal on the sign route.
+ */
+export function signRequestProblem(
+  splat: string,
+  query: Record<string, string>,
+  vestsToSP: number,
+): string {
+  try {
+    parseSignRequestOrThrow(splat, query, vestsToSP);
+    return 'none';
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return /^(unknown_operation|undecodable|extensions_present|invalid_field:[a-z_]+)$/.test(
+      msg,
+    )
+      ? msg
+      : 'invalid';
+  }
+}
+
+function parseSignRequestOrThrow(
+  splat: string,
+  query: Record<string, string>,
+  vestsToSP: number,
+): SignRequest {
   const uri = `hive://sign/${splat}${buildSearchParams(query)}`;
   let decoded: DecodeResult | null = null;
   try {
@@ -127,7 +162,15 @@ export function parseSignRequest(
   }
 
   const rawOps = decoded?.tx?.operations;
-  if (!decoded || !Array.isArray(rawOps) || rawOps.length === 0) return null;
+  if (!decoded || !Array.isArray(rawOps) || rawOps.length === 0) {
+    throw new Error(
+      // The legacy form knows an unknown operation from a broken link.
+      OPERATIONS[snakeCase((splat.split('/')[0] ?? '').split('?')[0])] ||
+        /^(op|ops|tx)\//.test(splat)
+        ? 'undecodable'
+        : 'unknown_operation',
+    );
+  }
 
   // Refuse a transaction carrying extensions rather than signing around them.
   // They ARE part of the signed digest but have no display, so signing one would
@@ -139,14 +182,14 @@ export function parseSignRequest(
     Array.isArray(decoded.tx?.extensions) &&
     decoded.tx.extensions.length > 0
   ) {
-    return null;
+    throw new Error('extensions_present');
   }
 
   try {
     let hpDependent = false;
     const operations: Operation[] = rawOps.map(([name, payload]) => {
       const schema = OPERATIONS[name];
-      if (!schema) throw new Error(`Unknown operation '${name}'`);
+      if (!schema) throw new Error('unknown_operation');
       const processed: Record<string, unknown> = {};
       for (const key of Object.keys(schema.schema)) {
         // Detect an HP amount on the RAW value (processValue converts it away).
@@ -156,19 +199,25 @@ export function parseSignRequest(
         ) {
           hpDependent = true;
         }
-        const value = processValue(
-          schema.schema[key],
-          payload[key],
-          vestsToSP,
-          key,
-        );
+        let value: unknown;
+        try {
+          value = processValue(
+            schema.schema[key],
+            payload[key],
+            vestsToSP,
+            key,
+          );
+        } catch (e) {
+          // The field name is a schema key; the message may carry the value.
+          throw new Error(`invalid_field:${key}`, { cause: e });
+        }
         // Refuse a non-finite number instead of passing it on. parseInt('abc')
         // is NaN, and the serializer's DataView.setInt16(NaN) writes 0: a
         // `/sign/vote?weight=abc` displayed as "Upvote ... NaN%" would have been
         // signed as weight 0, which REMOVES an existing vote. Same for
         // percent_hbd, orderid, recurrence and every other int field.
         if (typeof value === 'number' && !Number.isFinite(value)) {
-          throw new Error(`Invalid numeric value for '${key}'`);
+          throw new Error(`invalid_field:${key}`);
         }
         processed[key] = value;
       }
@@ -188,7 +237,7 @@ export function parseSignRequest(
       hpDependent,
       preservedTx: isTxForm ? decoded.tx : undefined,
     };
-  } catch {
-    return null;
+  } catch (e) {
+    throw e instanceof Error ? e : new Error('invalid');
   }
 }
