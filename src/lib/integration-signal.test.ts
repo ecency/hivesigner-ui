@@ -61,6 +61,57 @@ describe('reportIntegrationIssue', () => {
     expect(h.captureMessage.mock.calls[0][1].tags.path).toBe('login-request');
   });
 
+  it('names an unknown operation when the name is a plain word, never when it is key-shaped', () => {
+    reportIntegrationIssue('sign_request_invalid', {
+      op: 'transfer-to-savings-next',
+      reason: 'unknown_operation',
+    });
+    expect(h.captureMessage.mock.calls[0][1].tags).toMatchObject({
+      op: 'unknown',
+      op_name: 'transfer_to_savings_next', // normalised like the parser does
+    });
+    h.captureMessage.mockReset();
+    // A digit anywhere disqualifies the word: it is not an operation name.
+    reportIntegrationIssue('sign_request_invalid', {
+      op: 'transfer-to-savings-v2',
+      reason: 'unknown_operation',
+    });
+    expect(h.captureMessage.mock.calls[0][1].tags.op_name).toBe('other');
+    h.captureMessage.mockReset();
+    // A WIF or token in the path: digits, so `other`, and never the value.
+    const wif = '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL';
+    reportIntegrationIssue('sign_request_invalid', {
+      op: wif,
+      reason: 'unknown_operation',
+    });
+    const tags = h.captureMessage.mock.calls[0][1].tags;
+    expect(tags.op).toBe('unknown');
+    expect(tags.op_name).toBe('other');
+    expect(JSON.stringify(h.captureMessage.mock.calls[0])).not.toContain(
+      wif.slice(0, 10).toLowerCase(),
+    );
+    h.captureMessage.mockReset();
+    // Prototype names are not operations either.
+    reportIntegrationIssue('sign_request_invalid', {
+      op: 'constructor',
+      reason: 'unknown_operation',
+    });
+    expect(h.captureMessage.mock.calls[0][1].tags).toMatchObject({
+      op: 'unknown',
+      op_name: 'constructor',
+    });
+  });
+
+  it('tags a legacy spelling of a known operation with the table name', () => {
+    reportIntegrationIssue('sign_request_invalid', {
+      op: 'transferToVesting',
+      reason: 'invalid_field:amount',
+    });
+    const tags = h.captureMessage.mock.calls[0][1].tags;
+    expect(tags.op).toBe('transfer_to_vesting');
+    expect(tags.op_name).toBeUndefined();
+  });
+
   it('fingerprints an insecure or invalid callback by its host, so sites do not merge', () => {
     reportIntegrationIssue('callback_insecure', { callback_host: 'A.example' });
     const [, opts] = h.captureMessage.mock.calls[0];

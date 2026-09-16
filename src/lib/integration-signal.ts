@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/browser';
-import { isKnownOperation } from './operations';
+import { isKnownOperation, normalizeOperationName } from './operations';
 
 /**
  * Integration signals: the decisions where this app REFUSES something a
@@ -37,6 +37,8 @@ export interface IntegrationTags {
 }
 
 const ACCOUNT = /^[a-z][a-z0-9.-]{2,15}$/;
+// Normalised names carry underscores only (dashes and camelCase are folded).
+const OP_WORD = /^[a-z][a-z_]{2,39}$/;
 const HOST = /^[a-z0-9.-]{1,253}(:\d{1,5})?$/i;
 const REASON =
   /^(unknown_operation|undecodable|extensions_present|invalid_field:[a-z_]{1,40}|invalid|none)$/;
@@ -67,8 +69,22 @@ export function trustedTags(
   if (tags.app && ACCOUNT.test(tags.app)) out.app = tags.app;
   if (tags.callback_host && HOST.test(tags.callback_host))
     out.callback_host = tags.callback_host.toLowerCase();
-  if (tags.op !== undefined)
-    out.op = isKnownOperation(tags.op) ? tags.op : 'unknown';
+  if (tags.op !== undefined) {
+    // The parser accepts legacy camelCase and kebab-case spellings, so the
+    // tag uses the table's name too: a field error on /sign/transferToVesting
+    // is a transfer_to_vesting problem, not an unknown operation.
+    const name = normalizeOperationName(tags.op);
+    if (isKnownOperation(name)) {
+      out.op = name;
+    } else {
+      out.op = 'unknown';
+      // WHICH unknown name, so the app producing the link can be found. Only
+      // a word shaped like an operation name is admitted: letters and
+      // underscores. A token or key pasted into the path carries digits and
+      // becomes `other`, so nothing secret-shaped can ride along.
+      out.op_name = OP_WORD.test(name) ? name : 'other';
+    }
+  }
   if (tags.reason && REASON.test(tags.reason)) out.reason = tags.reason;
   if (tags.path !== undefined)
     out.path = PATHS.has(tags.path.toLowerCase())

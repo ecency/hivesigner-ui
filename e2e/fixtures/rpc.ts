@@ -60,6 +60,11 @@ export async function mockHiveRpc(page: Page, handlers: RpcHandlers) {
   // (i.ecency.com today; images.ecency.com was the older host).
   await page.route('https://i.ecency.com/**', (route) => route.abort());
   await page.route('https://images.ecency.com/**', (route) => route.abort());
+  // Error reporting stays in the browser. The unknown-operation spec is a real
+  // invalid request, and a deployed build carries a Sentry DSN, so without
+  // this every CI run filed an `integration: sign_request_invalid` event and
+  // the alert on that issue fired for test traffic.
+  await page.route('**/*.sentry.io/**', (route) => route.abort());
 }
 
 // Minimal, chain-shaped fixtures ------------------------------------------------
