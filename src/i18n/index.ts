@@ -18,4 +18,14 @@ i18n.use(initReactI18next).init({
   },
 });
 
+// The document language follows the dictionary, for screen readers and for
+// crawlers that read `lang` off the shell.
+i18n.on('languageChanged', (lng) => {
+  try {
+    document.documentElement.lang = lng;
+  } catch {
+    // no document (tests without DOM)
+  }
+});
+
 export default i18n;

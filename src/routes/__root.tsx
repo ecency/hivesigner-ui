@@ -1,13 +1,33 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router';
+import {
+  createRootRoute,
+  Outlet,
+  useRouterState,
+} from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { AppFooter } from '@/components/AppFooter';
 import { AppHeader } from '@/components/AppHeader';
 import { gutter } from '@/components/ui';
+import { applyPageMeta } from '@/lib/page-meta';
 
 export const Route = createRootRoute({
   component: RootLayout,
 });
 
 function RootLayout() {
+  // Title, description, robots and canonical follow the route. One place, so
+  // no screen can forget it; see lib/page-meta.ts for the table.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    // The define is absent under vitest, which has no build step; the page's
+    // own origin is the right answer there and a fine fallback anywhere.
+    applyPageMeta(
+      pathname,
+      typeof __SITE_URL__ === 'string' && __SITE_URL__
+        ? __SITE_URL__
+        : window.location.origin,
+    );
+  }, [pathname]);
+
   return (
     // The bars run the FULL width of the viewport and only their contents are
     // centred. Capping the bars themselves made the whole app read as a narrow

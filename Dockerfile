@@ -26,6 +26,9 @@ ENV SENTRY_DSN=${SENTRY_DSN}
 # that actually builds the image.
 ARG API_URL=""
 ENV API_URL=${API_URL}
+# The public origin, for canonical and Open Graph URLs (absolute by spec).
+ARG SITE_URL=""
+ENV SITE_URL=${SITE_URL}
 RUN pnpm build
 
 # serve the static build

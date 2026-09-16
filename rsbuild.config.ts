@@ -2,6 +2,11 @@ import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { tanstackRouter } from '@tanstack/router-plugin/rspack';
 
+const SITE_URL = (process.env.SITE_URL || 'https://hivesigner.com').replace(
+  /\/+$/,
+  '',
+);
+
 export default defineConfig({
   plugins: [pluginReact()],
   source: {
@@ -20,10 +25,15 @@ export default defineConfig({
       __API_URL__: JSON.stringify(
         process.env.API_URL || 'https://api.hivesigner.com',
       ),
+      // The public origin this build is served from, for canonical and Open
+      // Graph URLs, which must be absolute. Staging builds pass their own so
+      // shared staging links do not advertise production.
+      __SITE_URL__: JSON.stringify(SITE_URL),
     },
   },
   html: {
     template: './template.html',
+    templateParameters: { siteUrl: SITE_URL },
   },
   resolve: {
     alias: {

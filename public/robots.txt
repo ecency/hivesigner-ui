@@ -1,0 +1,23 @@
+# Public pages are indexable. Everything that carries a request, a key or an
+# account is not: those URLs are per-user and often contain a transaction.
+User-agent: *
+Allow: /$
+Allow: /apps
+Allow: /developers
+Allow: /about
+Allow: /signs
+Disallow: /sign/
+Disallow: /login
+Disallow: /login-request/
+Disallow: /oauth2/
+Disallow: /authorize/
+Disallow: /revoke/
+Disallow: /import
+Disallow: /accounts
+Disallow: /auths
+Disallow: /profile
+Disallow: /settings
+Disallow: /authorized-apps
+Disallow: /signmessage
+Disallow: /verifymessage
+Sitemap: https://hivesigner.com/sitemap.xml
