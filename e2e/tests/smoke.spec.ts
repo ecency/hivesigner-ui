@@ -35,17 +35,25 @@ for (const route of appRoutes) {
   })
 }
 
+// The hashed-asset prefix is a build detail: Nuxt served /_nuxt/, Rsbuild
+// serves /static/. The contract is the behaviour, so the prefix is read from
+// the shell rather than assumed.
+async function hashedAssetPrefix(request: Parameters<Parameters<typeof test>[1]>[0]['request']) {
+  const html = await (await request.get('/')).text()
+  const asset = html.match(/(?:src|href)="(\/(?:_nuxt|static)\/[^"]+\.js)"/)?.[1]
+  expect(asset, 'a hashed entry chunk referenced in the shell').toBeTruthy()
+  return { asset: asset!, prefix: asset!.split('/').slice(0, 2).join('/') }
+}
+
 test('missing hashed asset is a 404, not the shell', async ({ request }) => {
-  const res = await request.get('/_nuxt/does-not-exist.js')
+  const { prefix } = await hashedAssetPrefix(request)
+  const res = await request.get(`${prefix}/does-not-exist.js`)
   expect(res.status()).toBe(404)
 })
 
 test('hashed assets are cached for a year', async ({ request }) => {
-  const home = await request.get('/')
-  const html = await home.text()
-  const asset = html.match(/\/_nuxt\/[^"']+\.js/)?.[0]
-  expect(asset, 'entry chunk referenced in the shell').toBeTruthy()
-  const res = await request.get(asset!)
+  const { asset } = await hashedAssetPrefix(request)
+  const res = await request.get(asset)
   expect(res.status()).toBe(200)
   expect(res.headers()['cache-control']).toContain('max-age=31536000')
 })

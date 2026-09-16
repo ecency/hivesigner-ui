@@ -53,5 +53,8 @@ test('a vote sign page needs a posting key and offers Continue when logged out',
 
 test('an unknown operation shows the invalid-data error', async ({ page }) => {
   await page.goto('/sign/not-a-real-op?foo=bar', { waitUntil: 'networkidle' })
-  await expect(page.locator('.alert-error')).toBeVisible()
+  // Nuxt styled it `.alert-error`; the React app marks it role="alert". Either
+  // way there must be an error the user can see and no approve control.
+  await expect(page.locator('[role="alert"], .alert-error').first()).toBeVisible()
+  await expect(page.getByRole('button', { name: /approve|continue|sign/i })).toHaveCount(0)
 })
