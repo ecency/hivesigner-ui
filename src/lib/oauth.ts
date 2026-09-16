@@ -228,11 +228,22 @@ function loopbackMatch(registered: string, callback: string): boolean {
   try {
     const r = new URL(registered);
     const c = new URL(callback);
+    // Only the HOST and PORT may differ, and only for plain http, which is
+    // what RFC 8252 relaxes for a native app's local listener. An https
+    // loopback registration stays an exact match. Path, query, fragment and
+    // userinfo must be identical: buildRedirectUrl keeps the callback's own
+    // query, so a different query would carry the token somewhere the app
+    // never registered.
     return (
+      r.protocol === 'http:' &&
+      c.protocol === 'http:' &&
       isLoopback(r.hostname) &&
       isLoopback(c.hostname) &&
-      r.protocol === c.protocol &&
-      r.pathname === c.pathname
+      r.pathname === c.pathname &&
+      r.search === c.search &&
+      r.hash === c.hash &&
+      r.username === c.username &&
+      r.password === c.password
     );
   } catch {
     return false;

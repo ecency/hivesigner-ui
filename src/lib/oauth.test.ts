@@ -407,10 +407,13 @@ describe('isRegisteredRedirect on loopback (RFC 8252)', () => {
       expect(isRegisteredRedirect(profile, cb), cb).toBe(true);
     }
   });
-  it('still refuses a different path, a non-loopback host, or a scheme change', async () => {
+  it('still refuses a different path, query, fragment, userinfo, host or scheme', async () => {
     const { isRegisteredRedirect } = await import('./oauth');
     for (const cb of [
       'http://127.0.0.1:3000/other',
+      'http://127.0.0.1:3000/auth?tenant=two',
+      'http://127.0.0.1:3000/auth#frag',
+      'http://user:pw@127.0.0.1:3000/auth',
       'http://127.0.0.1.evil.example:3000/auth',
       'http://evil.example/auth',
       'https://127.0.0.1:3000/auth',
@@ -418,6 +421,30 @@ describe('isRegisteredRedirect on loopback (RFC 8252)', () => {
     ]) {
       expect(isRegisteredRedirect(profile, cb), cb).toBe(false);
     }
+    // A registered query must match exactly, and an https loopback
+    // registration is exact only: no host or port relaxation for it.
+    const strict = {
+      name: 'x',
+      redirectUris: [
+        'http://localhost/cb?tenant=one',
+        'https://127.0.0.1:4443/cb',
+      ],
+    };
+    expect(
+      isRegisteredRedirect(strict, 'http://127.0.0.1:5000/cb?tenant=one'),
+    ).toBe(true);
+    expect(
+      isRegisteredRedirect(strict, 'http://127.0.0.1:5000/cb?tenant=two'),
+    ).toBe(false);
+    expect(isRegisteredRedirect(strict, 'https://127.0.0.1:4443/cb')).toBe(
+      true,
+    );
+    expect(isRegisteredRedirect(strict, 'https://localhost:4443/cb')).toBe(
+      false,
+    );
+    expect(isRegisteredRedirect(strict, 'https://127.0.0.1:4444/cb')).toBe(
+      false,
+    );
     // Exact non-loopback registrations are unchanged.
     expect(isRegisteredRedirect(profile, 'https://ecency.com/auth')).toBe(true);
     expect(isRegisteredRedirect(profile, 'https://ecency.com/auth/x')).toBe(
