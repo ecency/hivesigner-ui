@@ -240,7 +240,7 @@ export default {
     verify_message: 'Verify message',
     network: `{network}`,
     login: 'Login',
-    built_by: 'Built with <heart>♥</heart> by the <link>Ecency</link> team',
+    built_by: 'Built with <heart>♥</heart> by the <ecency>Ecency</ecency> team',
     authorized_apps: 'Authorized apps',
     github: 'GitHub',
   },
