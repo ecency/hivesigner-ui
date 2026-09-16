@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
+  attachClientContext,
+  clientFacts,
+  routeFamily,
   sanitizeBreadcrumb,
   sanitizeEvent,
   scrubText,
+  signOperation,
   stripUrl,
+  translatedBy,
+  webviewKind,
 } from './sentry';
 
 // These are the guards that stop a signer uploading its users' credentials to a
@@ -302,5 +308,115 @@ describe('redactSecrets, the report path', () => {
     expect(redactSecrets(link)).toBe(
       '/sign/transfer?to=bob&amount=1%20HIVE&memo=[redacted]&nb',
     );
+  });
+});
+
+describe('coarse client context on every event', () => {
+  // The cutover-day crashes carried no route, browser or OS, because the
+  // HttpContext integration (which would also send the full URL) is off.
+  const CHROME =
+    'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Mobile Safari/537.36';
+
+  it('names the route family, never the path', () => {
+    expect(routeFamily('/')).toBe('home');
+    expect(routeFamily('/oauth2/authorize')).toBe('oauth2');
+    expect(routeFamily('/sign/vote')).toBe('sign');
+    expect(routeFamily('/authorize/ecency.app')).toBe('authorize');
+    expect(routeFamily('/Login-Request/ecency.app')).toBe('login-request');
+    expect(
+      routeFamily('/hs/5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL'),
+    ).toBe('other');
+  });
+
+  it('names a known sign operation and calls everything else unknown', () => {
+    expect(signOperation('/sign/vote')).toBe('vote');
+    expect(signOperation('/sign/update_proposal_votes')).toBe(
+      'update_proposal_votes',
+    );
+    expect(signOperation('/sign/drop%20table')).toBe('unknown');
+    expect(signOperation('/sign')).toBeUndefined();
+    expect(signOperation('/accounts')).toBeUndefined();
+  });
+
+  it('spots a machine-translated document', () => {
+    document.documentElement.className = '';
+    document.body.innerHTML = '';
+    expect(translatedBy(document)).toBe('no');
+    document.documentElement.classList.add('translated-ltr');
+    expect(translatedBy(document)).toBe('chrome');
+    document.documentElement.className = '';
+    document.body.innerHTML = '<font _msttexthash="1">x</font>';
+    expect(translatedBy(document)).toBe('edge');
+    document.body.innerHTML = '<font class="goog-text-highlight">x</font>';
+    expect(translatedBy(document)).toBe('widget');
+    document.body.innerHTML = '';
+  });
+
+  it('classifies embedded web views', () => {
+    expect(webviewKind(CHROME)).toBe('no');
+    expect(webviewKind(CHROME.replace('Chrome/128.0', 'wv Chrome/128.0'))).toBe(
+      'android',
+    );
+    expect(
+      webviewKind(
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+      ),
+    ).toBe('ios');
+    expect(
+      webviewKind(
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
+      ),
+    ).toBe('no');
+    expect(webviewKind(`${CHROME} [FBAN/FB4A;FBAV/400]`)).toBe('app');
+  });
+
+  it('adds only bounded tags and the user agent, never the URL', () => {
+    const out = attachClientContext({ tags: { boundary: 'route' } } as never, {
+      pathname: '/sign/vote',
+      userAgent: CHROME,
+      translated: 'chrome',
+      lang: 'es<script>',
+    });
+    expect(out.tags).toEqual({
+      boundary: 'route',
+      route: 'sign',
+      sign_op: 'vote',
+      translated: 'chrome',
+      webview: 'no',
+      page_lang: 'esscript',
+    });
+    expect(out.request).toEqual({ headers: { 'User-Agent': CHROME } });
+    expect(JSON.stringify(out)).not.toContain('/sign/vote');
+  });
+
+  it('reads the live page without throwing and never carries the query', () => {
+    window.history.replaceState({}, '', '/oauth2/authorize?access_token=S');
+    document.documentElement.classList.add('translated-rtl');
+    document.documentElement.lang = 'ar';
+    const facts = clientFacts();
+    expect(facts.pathname).toBe('/oauth2/authorize');
+    expect(facts.translated).toBe('chrome');
+    expect(facts.lang).toBe('ar');
+    expect(facts.userAgent).toBe(navigator.userAgent);
+    const out = attachClientContext({} as never, facts);
+    expect(out.tags).toMatchObject({
+      route: 'oauth2',
+      translated: 'chrome',
+      page_lang: 'ar',
+    });
+    expect(JSON.stringify(out)).not.toContain('access_token');
+    document.documentElement.className = '';
+    document.documentElement.lang = '';
+    window.history.replaceState({}, '', '/');
+  });
+
+  it('keeps an existing request URL out even if the SDK set one', () => {
+    const out = attachClientContext(
+      { request: { url: 'https://hivesigner.com/x?access_token=S' } } as never,
+      { pathname: '/', userAgent: CHROME, translated: 'no', lang: '' },
+    );
+    expect(out.request?.url).toBeUndefined();
+    expect(JSON.stringify(out)).not.toContain('access_token');
+    expect(out.tags?.page_lang).toBeUndefined();
   });
 });
