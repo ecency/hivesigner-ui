@@ -24,6 +24,12 @@ export const Route = createFileRoute('/')({
 // Hivesigner does, where the keys live, and who already uses it - and SHOWS
 // the thing it is describing, a permission request, rather than only talking
 // about it. Every section stacks on a phone and spreads out from `sm`/`lg`.
+//
+// Each promise is made ONCE. An earlier version said "keys stay on your
+// device / review what you sign / posting only" three times over (a row of
+// chips under the hero, three cards, then the trust strip) and the page read
+// as padding. The lede states them, the illustration shows them and the
+// trust strip at the foot restates them in four words each. Nothing between.
 
 const iconProps = {
   width: 18,
@@ -36,18 +42,6 @@ const iconProps = {
   strokeLinejoin: 'round' as const,
 };
 
-const LockIcon = (
-  <svg {...iconProps} aria-hidden="true">
-    <rect x="4" y="10" width="16" height="10" rx="2" />
-    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-  </svg>
-);
-const EyeIcon = (
-  <svg {...iconProps} aria-hidden="true">
-    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-);
 const ShieldIcon = (
   <svg {...iconProps} aria-hidden="true">
     <path d="M12 3 4 6v5.5c0 4.6 3.2 7.6 8 8.5 4.8-.9 8-3.9 8-8.5V6l-8-3Z" />
@@ -78,39 +72,6 @@ const DocIcon = (
     <path d="M14 3v5h5M10 13h6M10 17h6" />
   </svg>
 );
-
-/** A hero-row point: icon chip and a short label, three across. */
-function MiniPoint({ label, icon }: { label: string; icon: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-ink">
-        {icon}
-      </span>
-      <span className="text-[13.5px] font-semibold leading-tight">{label}</span>
-    </div>
-  );
-}
-
-/** A full point card: icon, title, body. */
-function Point({
-  title,
-  body,
-  icon,
-}: {
-  title: string;
-  body: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className={`${card} flex flex-col gap-2.5 p-5`}>
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-soft text-brand-ink">
-        {icon}
-      </div>
-      <h3 className="m-0 text-[16px] font-semibold">{title}</h3>
-      <p className={`${muted} leading-[1.55]`}>{body}</p>
-    </div>
-  );
-}
 
 /** A trust-strip item: icon, title, one-line body. */
 function TrustItem({
@@ -175,18 +136,17 @@ function Home() {
       <section className="relative isolate -mx-2 overflow-hidden rounded-2xl px-2">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-24 -right-24 -z-10 h-[420px] w-[420px] rounded-full bg-brand/15 blur-3xl"
+          className="pointer-events-none absolute -top-24 -right-24 -z-10 h-[420px] w-[420px] rounded-full bg-brand/10 blur-3xl"
         />
+        {/* The Hive mark, as a faint watermark behind the hero copy. */}
         <svg
           aria-hidden="true"
-          viewBox="0 0 120 120"
-          className="pointer-events-none absolute top-6 right-2 -z-10 h-[260px] w-[260px] text-brand/10 lg:right-[38%]"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="6"
+          viewBox="0 0 220 190"
+          className="pointer-events-none absolute top-8 right-2 -z-10 h-[224px] w-[260px] text-brand/[0.06] lg:right-[38%]"
+          fill="currentColor"
         >
-          <path d="M60 6 106 33v54L60 114 14 87V33L60 6Z" />
-          <path d="M60 34 82 47v26L60 86 38 73V47l22-13Z" />
+          <path d="M157.27 107.26c.73 0 1.18.79.82 1.42l-46.75 80.85a.94.94 0 0 1-.82.47H81.94c-.72 0-1.18-.79-.81-1.42l46.75-80.85a.94.94 0 0 1 .81-.47h28.58ZM129.48 84.09a.94.94 0 0 1-.82-.47L81.13 1.42C80.76.79 81.22 0 81.94 0h28.58c.34 0 .65.18.82.47l47.53 82.2c.36.63-.09 1.42-.82 1.42h-28.57Z" />
+          <path d="M135.13 1.42C134.76.79 135.22 0 135.95 0h28.62c.34 0 .65.18.82.47l54.49 94.06c.17.29.17.65 0 .94l-54.49 94.06a.95.95 0 0 1-.82.47h-28.62c-.73 0-1.18-.79-.82-1.42L189.34 95 135.13 1.42ZM111.87 94.52c.17.3.17.66 0 .95l-54.75 94.06c-.36.63-1.28.63-1.64 0L.13 95.48a.95.95 0 0 1 0-.95L54.87.47c.37-.62 1.28-.63 1.65 0l55.35 94.05Z" />
         </svg>
 
         <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
@@ -223,36 +183,12 @@ function Home() {
                 {t('index.browse_apps')}
               </Link>
             </div>
-            <div className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-3 sm:gap-4">
-              <MiniPoint label={t('index.mini_keys')} icon={LockIcon} />
-              <MiniPoint label={t('index.mini_review')} icon={EyeIcon} />
-              <MiniPoint label={t('index.mini_scope')} icon={ShieldIcon} />
-            </div>
           </div>
 
           <div className="w-full max-w-md lg:ml-auto lg:max-w-none">
             <ConsentPreview />
           </div>
         </div>
-      </section>
-
-      {/* THREE PROMISES, in full. */}
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Point
-          title={t('index.keys_title')}
-          body={t('index.keys_body')}
-          icon={LockIcon}
-        />
-        <Point
-          title={t('index.review_title')}
-          body={t('index.review_body')}
-          icon={EyeIcon}
-        />
-        <Point
-          title={t('index.scope_title')}
-          body={t('index.scope_body')}
-          icon={ShieldIcon}
-        />
       </section>
 
       {/* WHO ALREADY USES IT. Nothing renders while the list is loading or if
