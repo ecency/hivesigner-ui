@@ -23,3 +23,7 @@ yarn-debug.log*
 .vscode/
 .DS_Store
 *.swp
+
+# Playwright output
+e2e/test-results/
+e2e/playwright-report/

@@ -1,8 +1,8 @@
-import { defineConfig, devices } from '@playwright/test'
+import { defineConfig, devices } from '@playwright/test';
 
 // Target under test. Defaults to staging; point BASE_URL at the React build later and the
 // same specs become the parity gate. A local `nuxt generate` served on a port also works.
-const baseURL = process.env.BASE_URL || 'https://staging.hivesigner.com'
+const baseURL = process.env.BASE_URL || 'https://staging.hivesigner.com';
 
 export default defineConfig({
   testDir: './tests',
@@ -25,4 +25,4 @@ export default defineConfig({
       : undefined,
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-})
+});
