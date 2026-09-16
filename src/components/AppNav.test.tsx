@@ -36,7 +36,8 @@ describe('AppNav', () => {
   it('offers every destination', () => {
     render(<AppNav />);
     const labels = screen.getAllByRole('link').map((a) => a.textContent);
-    expect(labels).toHaveLength(6);
+    // Apps, Accounts, Signer, Developers and the external Docs link.
+    expect(labels).toHaveLength(5);
   });
 
   // The active item had NO underline at all in production. Two things caused

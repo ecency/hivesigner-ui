@@ -2,16 +2,15 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
+import { ConsentPreview } from '@/components/ConsentPreview';
 import {
   btnPrimary,
   btnSecondary,
   card,
   cardTight,
   h2,
-  link,
   muted,
   mutedXs,
-  page,
 } from '@/components/ui';
 import { fetchAppDirectory } from '@/lib/app-directory';
 import { appDirectoryKey } from '@/lib/query-keys';
@@ -21,30 +20,10 @@ export const Route = createFileRoute('/')({
   component: Home,
 });
 
-// The landing page was a heading, one sentence and a button, which told a
-// first-time visitor nothing about what Hivesigner is or why the thing asking
-// for their key can be trusted. It now answers three questions: what it does,
-// where the keys live, and who already uses it.
-
-function Point({
-  title,
-  body,
-  icon,
-}: {
-  title: string;
-  body: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className={`${card} flex flex-col gap-2`}>
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand-ink">
-        {icon}
-      </div>
-      <h3 className="m-0 text-[15px] font-semibold">{title}</h3>
-      <p className={`${mutedXs} leading-[1.5]`}>{body}</p>
-    </div>
-  );
-}
+// The landing page answers three questions for a first-time visitor: what
+// Hivesigner does, where the keys live, and who already uses it - and SHOWS
+// the thing it is describing, a permission request, rather than only talking
+// about it. Every section stacks on a phone and spreads out from `sm`/`lg`.
 
 const iconProps = {
   width: 18,
@@ -57,12 +36,122 @@ const iconProps = {
   strokeLinejoin: 'round' as const,
 };
 
+const LockIcon = (
+  <svg {...iconProps} aria-hidden="true">
+    <rect x="4" y="10" width="16" height="10" rx="2" />
+    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+  </svg>
+);
+const EyeIcon = (
+  <svg {...iconProps} aria-hidden="true">
+    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+const ShieldIcon = (
+  <svg {...iconProps} aria-hidden="true">
+    <path d="M12 3 4 6v5.5c0 4.6 3.2 7.6 8 8.5 4.8-.9 8-3.9 8-8.5V6l-8-3Z" />
+  </svg>
+);
+const CodeIcon = (
+  <svg {...iconProps} width={26} height={26} aria-hidden="true">
+    <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
+  </svg>
+);
+const LaptopIcon = (
+  <svg {...iconProps} aria-hidden="true">
+    <rect x="3" y="5" width="18" height="12" rx="2" />
+    <path d="M2 19h20" />
+  </svg>
+);
+const GitIcon = (
+  <svg {...iconProps} aria-hidden="true">
+    <circle cx="6" cy="6" r="2.5" />
+    <circle cx="6" cy="18" r="2.5" />
+    <circle cx="18" cy="8" r="2.5" />
+    <path d="M6 8.5v7M18 10.5c0 3-3 4-6 4.5-2 .3-4 1-5.5 2" />
+  </svg>
+);
+const DocIcon = (
+  <svg {...iconProps} aria-hidden="true">
+    <path d="M7 3h7l5 5v13H7V3Z" />
+    <path d="M14 3v5h5M10 13h6M10 17h6" />
+  </svg>
+);
+
+/** A hero-row point: icon chip and a short label, three across. */
+function MiniPoint({ label, icon }: { label: string; icon: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-ink">
+        {icon}
+      </span>
+      <span className="text-[13.5px] font-semibold leading-tight">{label}</span>
+    </div>
+  );
+}
+
+/** A full point card: icon, title, body. */
+function Point({
+  title,
+  body,
+  icon,
+}: {
+  title: string;
+  body: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className={`${card} flex flex-col gap-2.5 p-5`}>
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-soft text-brand-ink">
+        {icon}
+      </div>
+      <h3 className="m-0 text-[16px] font-semibold">{title}</h3>
+      <p className={`${muted} leading-[1.55]`}>{body}</p>
+    </div>
+  );
+}
+
+/** A trust-strip item: icon, title, one-line body. */
+function TrustItem({
+  title,
+  body,
+  icon,
+  href,
+}: {
+  title: string;
+  body: string;
+  icon: React.ReactNode;
+  href?: string;
+}) {
+  const inner = (
+    <>
+      <span className="mt-0.5 shrink-0 text-ink">{icon}</span>
+      <span className="min-w-0">
+        <span className="block text-[14px] font-semibold text-ink">
+          {title}
+        </span>
+        <span className={`${mutedXs} block`}>{body}</span>
+      </span>
+    </>
+  );
+  const cls = 'flex items-start gap-3 no-underline';
+  return href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
+      {inner}
+    </a>
+  ) : (
+    <div className={cls}>{inner}</div>
+  );
+}
+
 function Home() {
   const { t } = useTranslation();
   const { usernames } = useAccounts();
-  // "Get started" should start something: a first-time visitor goes to key
-  // import, a returning one to their accounts.
-  const primary = usernames.length > 0 ? '/accounts' : '/import';
+  // The primary action should START something: a first-time visitor goes to
+  // key import, a returning one to their accounts.
+  const hasAccounts = usernames.length > 0;
+  const primaryTo = hasAccounts ? '/accounts' : '/import';
 
   // The SAME query as /apps, with no per-route variation. An earlier version
   // passed an option here that made this route fetch a deliberately incomplete
@@ -76,64 +165,101 @@ function Home() {
   const featured = index?.featured ?? [];
 
   return (
-    <section className={page}>
-      {/* Hero. Capped to a readable measure rather than stretched across the
-          full shell on a desktop. */}
-      <div className="flex flex-col gap-4 py-2 sm:py-6">
-        <h1 className="m-0 max-w-3xl text-[28px] leading-[1.15] font-bold sm:text-4xl">
-          {t('index.tagline')}
-        </h1>
-        <p
-          className={`${muted} max-w-2xl text-[15px] leading-[1.6] sm:text-base`}
+    <div className="flex flex-col gap-8 py-6 sm:gap-10 sm:py-10">
+      {/* HERO. Copy left, the illustration right from `lg`; stacked below. The
+          decorative glow is clipped by the section so it can never widen the
+          page: a 320px phone must not scroll sideways because of a gradient. */}
+      {/* `-mx-2 px-2`: the clip edge sits 8px OUTSIDE the text, because a bold
+          glyph can draw a pixel or two left of its origin and the first letter
+          of the eyebrow was losing exactly that to `overflow-hidden`. */}
+      <section className="relative isolate -mx-2 overflow-hidden rounded-2xl px-2">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-24 -right-24 -z-10 h-[420px] w-[420px] rounded-full bg-brand/15 blur-3xl"
+        />
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 120 120"
+          className="pointer-events-none absolute top-6 right-2 -z-10 h-[260px] w-[260px] text-brand/10 lg:right-[38%]"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="6"
         >
-          {t('index.lede')}
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Link to={primary} className={btnPrimary}>
-            {t('index.get_started')}
-          </Link>
-          <Link to="/apps" className={btnSecondary}>
-            {t('index.browse_apps')}
-          </Link>
-        </div>
-      </div>
+          <path d="M60 6 106 33v54L60 114 14 87V33L60 6Z" />
+          <path d="M60 34 82 47v26L60 86 38 73V47l22-13Z" />
+        </svg>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
+          <div className="flex flex-col gap-5">
+            <div className="text-[11.5px] font-semibold tracking-[0.18em] text-muted uppercase">
+              {t('index.eyebrow')}
+            </div>
+            <h1 className="m-0 text-[32px] leading-[1.08] font-bold tracking-tight sm:text-[44px] lg:text-[52px]">
+              {t('index.hero_title')}
+              <br />
+              <span className="text-brand-ink">
+                {t('index.hero_title_accent')}
+              </span>
+            </h1>
+            <p
+              className={`${muted} max-w-xl text-[16px] leading-[1.6] sm:text-[17px]`}
+            >
+              {t('index.lede')}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link to={primaryTo} className={btnPrimary}>
+                {hasAccounts ? t('index.your_accounts') : t('index.set_up')}
+                <svg
+                  {...iconProps}
+                  width={16}
+                  height={16}
+                  className="ml-2"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14m-6-6 6 6-6 6" />
+                </svg>
+              </Link>
+              <Link to="/apps" className={btnSecondary}>
+                {t('index.browse_apps')}
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-3 sm:gap-4">
+              <MiniPoint label={t('index.mini_keys')} icon={LockIcon} />
+              <MiniPoint label={t('index.mini_review')} icon={EyeIcon} />
+              <MiniPoint label={t('index.mini_scope')} icon={ShieldIcon} />
+            </div>
+          </div>
+
+          <div className="w-full max-w-md lg:ml-auto lg:max-w-none">
+            <ConsentPreview />
+          </div>
+        </div>
+      </section>
+
+      {/* THREE PROMISES, in full. */}
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Point
           title={t('index.keys_title')}
           body={t('index.keys_body')}
-          icon={
-            <svg {...iconProps} aria-hidden="true">
-              <rect x="4" y="10" width="16" height="10" rx="2" />
-              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-            </svg>
-          }
+          icon={LockIcon}
         />
         <Point
           title={t('index.review_title')}
           body={t('index.review_body')}
-          icon={
-            <svg {...iconProps} aria-hidden="true">
-              <path d="M4 5h16M4 12h10M4 19h7" />
-              <path d="m15 17 2 2 4-4" />
-            </svg>
-          }
+          icon={EyeIcon}
         />
         <Point
           title={t('index.scope_title')}
           body={t('index.scope_body')}
-          icon={
-            <svg {...iconProps} aria-hidden="true">
-              <path d="M12 3 4 6v5.5c0 4.6 3.2 7.6 8 8.5 4.8-.9 8-3.9 8-8.5V6l-8-3Z" />
-            </svg>
-          }
+          icon={ShieldIcon}
         />
-      </div>
+      </section>
 
-      {/* Who already uses it. Nothing renders while the list is loading or if
-          the RPC fails, rather than an empty box with a heading over it. */}
+      {/* WHO ALREADY USES IT. Nothing renders while the list is loading or if
+          the directory is unreachable, rather than an empty box with a heading
+          over it. */}
       {featured.length > 0 && (
-        <div className="flex flex-col gap-3">
+        <section className="flex flex-col gap-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className={h2}>{t('index.powering')}</h2>
             <Link
@@ -156,31 +282,59 @@ function Home() {
               </Link>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      <div
-        className={`${cardTight} flex flex-wrap items-center justify-between gap-3`}
+      {/* FOR DEVELOPERS. */}
+      <section
+        className={`${card} flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-6`}
       >
-        <span className={mutedXs}>{t('index.developers_cta')}</span>
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-ink">
+          {CodeIcon}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[11.5px] font-semibold tracking-[0.18em] text-muted uppercase">
+            {t('index.dev_eyebrow')}
+          </div>
+          <h2 className="m-0 mt-1 text-[20px] font-bold sm:text-[22px]">
+            {t('index.dev_title')}
+          </h2>
+          <p className={`${muted} mt-1 leading-[1.55]`}>
+            {t('index.dev_body')}
+          </p>
+        </div>
         <Link
           to="/developers"
-          className="text-[13px] font-semibold text-brand-ink"
+          className={`${btnSecondary} h-11 shrink-0 text-[14px]`}
         >
-          {t('footer.developers')}
+          {t('index.dev_cta')}
         </Link>
-      </div>
+      </section>
 
-      {/* NOT a <nav>: AppNav in the shell is the navigation landmark, and a
-          second one here made the landing page report two. */}
-      <div className="flex flex-wrap gap-3.5 text-[13.5px]">
-        <Link to="/signmessage" className={link}>
-          {t('footer.sign_message')}
-        </Link>
-        <Link to="/verifymessage" className={link}>
-          {t('footer.verify_message')}
-        </Link>
-      </div>
-    </section>
+      {/* TRUST STRIP. Two across on a phone, four on a desktop. */}
+      <section className="grid grid-cols-1 gap-5 border-t border-line pt-7 sm:grid-cols-2 lg:grid-cols-4">
+        <TrustItem
+          title={t('index.trust_local_title')}
+          body={t('index.trust_local_body')}
+          icon={LaptopIcon}
+        />
+        <TrustItem
+          title={t('index.trust_open_title')}
+          body={t('index.trust_open_body')}
+          icon={GitIcon}
+          href="https://github.com/ecency/hivesigner-ui"
+        />
+        <TrustItem
+          title={t('index.trust_scope_title')}
+          body={t('index.trust_scope_body')}
+          icon={ShieldIcon}
+        />
+        <TrustItem
+          title={t('index.trust_preview_title')}
+          body={t('index.trust_preview_body')}
+          icon={DocIcon}
+        />
+      </section>
+    </div>
   );
 }
