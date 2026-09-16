@@ -1,30 +1,21 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
-/** The shield mark. One drawing, used by the header, the footer and the
- * consent illustration, so the three cannot drift apart. */
+/**
+ * The Hivesigner logo, the same file the previous app shipped (public/logo.svg,
+ * 110x131), used by the header, the footer and the About download link so
+ * there is one mark everywhere. `size` is the rendered height.
+ */
 export function BrandMark({ size = 22 }: { size?: number }) {
   return (
-    <svg
-      width={size}
+    <img
+      src="/logo.svg"
+      alt=""
+      width={Math.round((size * 110) / 131)}
       height={size}
-      viewBox="0 0 24 24"
-      fill="none"
       className="shrink-0"
       aria-hidden="true"
-    >
-      <path
-        d="M12 2 4 5v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V5l-8-3Z"
-        fill="#E31337"
-      />
-      <path
-        d="m9 12 2 2 4-4"
-        stroke="#fff"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    />
   );
 }
 

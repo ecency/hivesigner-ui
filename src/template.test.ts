@@ -1,11 +1,16 @@
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 // Crawlers and link unfurlers read the shell and run nothing, so the shell
 // alone has to describe the site. The Nuxt app shipped an empty description
 // and the first React shell shipped no icon at all; this pins what a share of
 // hivesigner.com shows.
-const html = readFileSync(new URL('../template.html', import.meta.url), 'utf8');
+//
+// Paths from cwd, not import.meta.url: under jsdom that URL has an http scheme.
+const root = process.cwd();
+const read = (rel: string) => readFileSync(join(root, rel), 'utf8');
+const html = read('template.html');
 const attr = (selector: RegExp) => html.match(selector)?.[1];
 
 describe('template.html', () => {
@@ -49,31 +54,25 @@ describe('template.html', () => {
       '/icons/icon-16.png',
       '/apple-touch-icon.png',
       '/manifest.json',
-      '/og-image.png',
     ]) {
       expect(html, path).toContain(`"${path}"`);
-      expect(
-        () => readFileSync(new URL(`../public${path}`, import.meta.url)),
-        path,
-      ).not.toThrow();
+      expect(() => read(`public${path}`), path).not.toThrow();
     }
-    for (const path of ['/robots.txt', '/sitemap.xml']) {
-      expect(
-        () => readFileSync(new URL(`../public${path}`, import.meta.url)),
-        path,
-      ).not.toThrow();
+    // The share image is referenced through the build-time site URL.
+    expect(html).toContain('/og-image.png"');
+    for (const path of [
+      '/og-image.png',
+      '/robots.txt',
+      '/sitemap.xml',
+      '/logo.svg',
+    ]) {
+      expect(() => read(`public${path}`), path).not.toThrow();
     }
   });
 
   it('keeps robots.txt and the sitemap in agreement with the page table', async () => {
-    const robots = readFileSync(
-      new URL('../public/robots.txt', import.meta.url),
-      'utf8',
-    );
-    const sitemap = readFileSync(
-      new URL('../public/sitemap.xml', import.meta.url),
-      'utf8',
-    );
+    const robots = read('public/robots.txt');
+    const sitemap = read('public/sitemap.xml');
     const { metaFor } = await import('./lib/page-meta');
     for (const p of ['/apps', '/developers', '/about', '/signs']) {
       expect(robots, p).toContain(`Allow: ${p}`);
