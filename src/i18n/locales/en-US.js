@@ -60,8 +60,9 @@ export default {
   },
   apps: {
     self_declared: 'Everything above is published by the app account itself. Hivesigner does not verify any of it.',
-    directory_unavailable: 'Could not load the app directory. A Hive node may be unreachable.',
-    directory_hint: 'Every app that uses Hivesigner to sign people in.',
+    directory_unavailable: 'Could not reach the app directory.',
+    directory_hint: 'Apps that broadcast to Hive through Hivesigner, most used first.',
+    building: 'The directory is still being built. It fills in as apps broadcast through Hivesigner.',
     featured: 'Featured',
     all_apps: 'All apps',
     loading: 'Loading the directory…',

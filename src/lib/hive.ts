@@ -52,93 +52,11 @@ export function getDynamicGlobalProperties(): Promise<DynamicGlobalProperties> {
   return callRPC('condenser_api.get_dynamic_global_properties', []);
 }
 
-interface Content {
-  json_metadata: string;
-}
-
-// The account whose post and follow list define the app directory. Both are
-// curated by the Hivesigner maintainers on-chain, which is why the app needs no
-// directory service of its own.
-const ORACLE = 'hivesigner';
-const TOP_APPS_PERMLINK = 'top-apps';
-
 /** A Hive account name, as the chain allows it. */
 const USERNAME_RE = /^[a-z][a-z0-9.-]{2,15}$/;
 
 function isUsername(value: unknown): value is string {
   return typeof value === 'string' && USERNAME_RE.test(value);
-}
-
-/** The curated top-apps list published on the @hivesigner/top-apps post. */
-export async function getTopApps(): Promise<string[]> {
-  try {
-    const content = (await callRPC('condenser_api.get_content', [
-      ORACLE,
-      TOP_APPS_PERMLINK,
-    ])) as Content;
-    const data = JSON.parse(content.json_metadata || '{}').data;
-    return Array.isArray(data) ? data.filter(isUsername) : [];
-  } catch {
-    return [];
-  }
-}
-
-interface FollowRow {
-  following: string;
-}
-
-/**
- * EVERY app registered with Hivesigner: the accounts @hivesigner follows.
- *
- * This is the directory the Nuxt app had and the rewrite dropped, leaving
- * /apps showing only the eight curated entries. It is ~900 accounts, so it
- * pages 100 at a time.
- *
- * `start` is the last name seen and the node ECHOES it as the first row of the
- * next page, so the result is deduplicated at the end. That is the ONE thing
- * standing between the page size and nine duplicate cards in a ~900-entry
- * directory, so it is not tidying.
- *
- * A LATER page failing keeps what arrived: a partial directory is worth more
- * than none. The FIRST page failing rethrows, so React Query can retry it and
- * the screen can say the directory is unavailable. Returning [] there instead
- * rendered a node outage as "there are no apps", which is a different and much
- * more alarming claim.
- */
-export async function getAllApps(): Promise<string[]> {
-  const STEP = 100;
-  // Purely a runaway guard for a node that ignores `start`; the no-progress
-  // check and a short page are what actually end this loop. Set far above any
-  // plausible directory (~900 today) so it never silently truncates the list
-  // and reports the remainder as the whole of it.
-  const MAX_PAGES = 200;
-  const names: string[] = [];
-  let start = '';
-
-  for (let page = 0; page < MAX_PAGES; page++) {
-    let rows: FollowRow[];
-    try {
-      rows = (await callRPC('condenser_api.get_following', [
-        ORACLE,
-        start,
-        'blog',
-        STEP,
-      ])) as FollowRow[];
-    } catch (e) {
-      if (names.length === 0) throw e;
-      break;
-    }
-    if (!Array.isArray(rows) || rows.length === 0) break;
-    names.push(...rows.map((r) => r?.following).filter(isUsername));
-    if (rows.length < STEP) break;
-    const last = names[names.length - 1];
-    // No forward progress (a node that ignored `start`): stop rather than
-    // request the same page forever.
-    if (!last || last === start) break;
-    start = last;
-  }
-
-  return [...new Set(names)];
 }
 
 /** The public profile an app publishes in its posting_json_metadata. */

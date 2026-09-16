@@ -20,12 +20,11 @@ describe('query keys', () => {
   it('no two builders produce the same key for the same account', () => {
     const seen = new Map<string, string>();
     for (const [label, build] of Object.entries(ALL_KEY_BUILDERS)) {
-      // Every builder takes 0 or 1 argument; an account name covers both the
-      // single-name and the batch case.
+      // Every builder takes 0 or 1 argument, and an account name serves for all
+      // of them. It used to special-case the batch builder's array argument;
+      // that builder is gone with the chain-read directory it belonged to.
       const key = JSON.stringify(
-        (build as (arg?: unknown) => readonly unknown[])(
-          label === 'directoryProfileBatchKey' ? [NAME] : NAME,
-        ),
+        (build as (arg?: unknown) => readonly unknown[])(NAME),
       );
       const clash = seen.get(key);
       expect(clash, `${label} and ${clash} both build ${key}`).toBeUndefined();
@@ -121,6 +120,43 @@ describe('cache keys are not hand-written', () => {
     expect(
       offenders,
       `build these through lib/query-keys instead:\n${offenders.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  /**
+   * And the register may not accumulate keys for caches that no longer exist.
+   *
+   * The collision test above passes happily on a dead builder, so three of them
+   * outlived the code that used them: `topAppsKey` and `allAppsKey` addressed
+   * the chain-read directory this app no longer has, and
+   * `directoryProfileBatchKey` addressed the profile batching that went with it.
+   * Dead keys are not harmless here. They are the vocabulary someone reaches for
+   * when adding a cache, so a stale one invites a second shape under a name that
+   * once meant something else, which is the crash this whole file exists for.
+   */
+  it('every builder in ALL_KEY_BUILDERS is actually used', () => {
+    const used = new Set<string>();
+    for (const file of files(SRC)) {
+      // ALL test files are excluded here, which is the OPPOSITE of the scan
+      // above, and deliberately so. There, a key literal inside a mock is the
+      // hazard, so tests must be read. Here the question is whether anything
+      // the app RUNS still addresses this cache, and a test that calls a
+      // builder answers no such thing: review pointed out that a builder whose
+      // production consumer is deleted would keep counting as live purely on
+      // its own test. Reproduced by pointing AuthorizeConsent at a different
+      // builder, which left oauthAppProfileKey with only a test use and this
+      // check still green.
+      if (/\.test\.tsx?$/.test(file) || /query-keys\.tsx?$/.test(file))
+        continue;
+      const src = readFileSync(file, 'utf8');
+      for (const name of BUILDERS) {
+        if (new RegExp(`\\b${name}\\s*\\(`).test(src)) used.add(name);
+      }
+    }
+    const dead = BUILDERS.filter((name) => !used.has(name));
+    expect(
+      dead,
+      `these key builders address nothing; delete them from lib/query-keys:\n${dead.join('\n')}`,
     ).toEqual([]);
   });
 });
