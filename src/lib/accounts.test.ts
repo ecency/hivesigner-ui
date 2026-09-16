@@ -324,7 +324,10 @@ describe('what the Nuxt app left in storage', () => {
     const stored = JSON.parse(localStorage.getItem('vuex__accounts') ?? '{}');
     expect(stored.accountsKeychains.legacy.password).toBe(TRIPLESEC_FIELD);
     expect(stored.accountsKeychains.legacy.active).toBe(ACTIVE);
-    expect(stored.accountsKeychains.legacy.posting).toBe(
+    // The posting key lives in the ENCRYPTED blob and must not be copied out
+    // as a plaintext sibling: only the added key is written beside the blob.
+    expect(stored.accountsKeychains.legacy).not.toHaveProperty('posting');
+    expect(getKeys('legacy')?.posting).toBe(
       '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL',
     );
     expect(getKeys('legacy')?.active).toBe(ACTIVE);
