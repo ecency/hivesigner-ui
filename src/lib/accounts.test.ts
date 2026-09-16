@@ -265,7 +265,7 @@ describe('selection precedence when a write fails mid-session', () => {
 });
 
 describe('what the Nuxt app left in storage', () => {
-  it('folds plaintext sibling WIFs into a plaintext account and strips them', async () => {
+  it('reads plaintext sibling WIFs into memory and leaves the record as Nuxt wrote it', async () => {
     const { encodePlain } = await import('./keystore');
     const { PrivateKey } = await import('@ecency/sdk/hive');
     const POSTING = PrivateKey.fromSeed('sibling-posting').toString();
@@ -283,18 +283,35 @@ describe('what the Nuxt app left in storage', () => {
         },
       }),
     );
-    await autoUnlockPlaintext();
-    expect(getKeys('alice')?.active).toBe(ACTIVE);
-    const stored = JSON.parse(localStorage.getItem('vuex__accounts') ?? '{}');
-    expect(stored.accountsKeychains.alice).not.toHaveProperty('active');
-    // and the merged key is now inside the blob
-    _resetKeyCache();
+    const before = localStorage.getItem('vuex__accounts');
     await autoUnlockPlaintext();
     expect(getKeys('alice')?.active).toBe(ACTIVE);
     expect(getKeys('alice')?.posting).toBe(POSTING);
+    // Nuxt reads authority keys from the siblings: untouched during the window.
+    expect(localStorage.getItem('vuex__accounts')).toBe(before);
   });
 
-  it('folds a sibling key into memory on unlock of a triplesec account and strips it from disk', async () => {
+  it('adds a key to a legacy account the way the old /auths page did: as a sibling, blob unchanged', async () => {
+    const { PrivateKey } = await import('@ecency/sdk/hive');
+    const ACTIVE = PrivateKey.fromSeed('added-active').toString();
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({
+        selectedAccount: 'legacy',
+        accountsKeychains: { legacy: { password: TRIPLESEC_FIELD } },
+      }),
+    );
+    await addAccount('legacy', { active: ACTIVE }, 'unlock-passcode-123');
+    const stored = JSON.parse(localStorage.getItem('vuex__accounts') ?? '{}');
+    expect(stored.accountsKeychains.legacy.password).toBe(TRIPLESEC_FIELD);
+    expect(stored.accountsKeychains.legacy.active).toBe(ACTIVE);
+    expect(stored.accountsKeychains.legacy.posting).toBe(
+      '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL',
+    );
+    expect(getKeys('legacy')?.active).toBe(ACTIVE);
+  });
+
+  it('reads a sibling key into memory on unlock of a triplesec account and leaves the record alone', async () => {
     const { PrivateKey } = await import('@ecency/sdk/hive');
     const ACTIVE = PrivateKey.fromSeed('sibling-active-2').toString();
     localStorage.setItem(
@@ -312,9 +329,9 @@ describe('what the Nuxt app left in storage', () => {
       '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL',
     );
     const stored = JSON.parse(localStorage.getItem('vuex__accounts') ?? '{}');
-    // Blob untouched (old app can still read it), plaintext sibling gone.
+    // Blob AND sibling untouched: after a rollback the old app reads both.
     expect(stored.accountsKeychains.legacy.password).toBe(TRIPLESEC_FIELD);
-    expect(stored.accountsKeychains.legacy).not.toHaveProperty('active');
+    expect(stored.accountsKeychains.legacy.active).toBe(ACTIVE);
   });
 
   it('deletes the old auth store, which held the last login keys in plaintext', async () => {
