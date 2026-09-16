@@ -6,8 +6,8 @@ import { parseSignRequest } from './parse-sign-request';
 
 // EVERY operation in the schema, through every entry point, with the type of
 // every processed field checked against what the chain serializes. A defect in
-// one type (arrays, until the proposal_ids report) is caught for all 34
-// operations rather than for the one somebody happened to try.
+// one type (arrays, until the proposal_ids report) is caught for every
+// operation rather than for the one somebody happened to try.
 
 const VALID_TYPES: FieldType[] = [
   'account',
@@ -27,7 +27,7 @@ function sample(op: string, field: string, type: FieldType): string {
     case 'account':
       return 'alice';
     case 'amount':
-      if (field.includes('vest')) return '1 VESTS';
+      if (field.includes('vest') || field === 'delegation') return '1 VESTS';
       if (field.includes('hbd') || field === 'daily_pay') return '1 HBD';
       return '1 HIVE';
     case 'string':

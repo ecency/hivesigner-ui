@@ -28,6 +28,7 @@ const INT_RANGE: Record<string, [number, number]> = {
   request_id: [0, 4294967295], // savings, uint32
   requestid: [0, 4294967295], // convert, uint32
   orderid: [0, 4294967295], // limit orders, uint32
+  escrow_id: [0, 4294967295], // escrow, uint32
   proposal_id: [0, Number.MAX_SAFE_INTEGER], // int64
 };
 const INT32: [number, number] = [-2147483648, 2147483647];

@@ -63,12 +63,12 @@ describe('reportIntegrationIssue', () => {
 
   it('names an unknown operation only from the protocol vocabulary, never from the link', () => {
     reportIntegrationIssue('sign_request_invalid', {
-      op: 'escrowTransfer',
+      op: 'feedPublish',
       reason: 'unknown_operation',
     });
     expect(h.captureMessage.mock.calls[0][1].tags).toMatchObject({
       op: 'unknown',
-      op_name: 'escrow_transfer',
+      op_name: 'feed_publish',
     });
     // Anything else a link puts in the path is untrusted text: a passphrase,
     // a letters-only token, a key, a prototype name. None of it may reach

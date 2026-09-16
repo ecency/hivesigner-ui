@@ -6,10 +6,15 @@ import {
 } from './operations';
 
 describe('operation table', () => {
-  it('carries the 34 operations the Nuxt app signed, by their chain names', () => {
-    expect(Object.keys(OPERATIONS)).toHaveLength(34);
+  it('carries every supported operation by its chain name', () => {
+    expect(Object.keys(OPERATIONS)).toHaveLength(41);
     for (const name of [
       'vote',
+      'escrow_transfer',
+      'escrow_release',
+      'account_create_with_delegation',
+      'request_account_recovery',
+      'recover_account',
       'comment',
       'transfer',
       'custom_json',

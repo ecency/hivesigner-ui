@@ -40,7 +40,7 @@ so do it deliberately and say so in the release notes.
   and kebab-case operation names, and `/sign/op/<b64u>`. hive-uri 0.2.8 semantics: UTF-8 b64u
   with `.` padding; `nb` present means sign only, no broadcast; `s` names the required signer;
   `cb` is a b64u callback.
-- All 34 operations in `src/data/operations.json` are supported, by their chain names. Anything
+- All 41 operations in `src/data/operations.json` are supported, by their chain names. Anything
   else, an empty operation list, or a field that cannot be coerced to its schema type (an
   integer that is not a number, a malformed amount) is refused with an invalid-request error and
   a Report button, and never signed.

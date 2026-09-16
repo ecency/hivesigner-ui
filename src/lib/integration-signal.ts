@@ -14,7 +14,7 @@ import { isKnownOperation, normalizeOperationName } from './operations';
  * a URL an attacker can write, and a tag is indexed and searchable, so each
  * dimension is admitted only when it has a public, bounded shape: an app is a
  * Hive account NAME (16 lowercase characters at most, so no credential fits),
- * a callback host is a hostname, an operation is one of the 34 known names or
+ * a callback host is a hostname, an operation is one of the known names or
  * `unknown`, a path is one of a short allowlist or `other`, a reason is one of
  * the parser's fixed words. Anything else is dropped, never filtered into
  * shape. That is also what keeps the number of distinct issues bounded.
@@ -46,19 +46,12 @@ const ACCOUNT = /^[a-z][a-z0-9.-]{2,15}$/;
  * operation name from a passphrase. A curated list can.
  */
 const HIVE_OPERATIONS_NOT_SUPPORTED = new Set([
-  'account_create_with_delegation',
   'custom',
   'custom_binary',
   'decline_voting_rights',
-  'escrow_approve',
-  'escrow_dispute',
-  'escrow_release',
-  'escrow_transfer',
   'feed_publish',
   'pow',
   'pow2',
-  'recover_account',
-  'request_account_recovery',
   'reset_account',
   'set_reset_account',
 ]);
