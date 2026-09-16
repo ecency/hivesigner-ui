@@ -54,6 +54,7 @@ jobs:
             GIT_SHA=${{ github.sha }}
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
             API_URL=${{ vars.API_URL }}
+            SITE_URL=https://staging.hivesigner.com
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

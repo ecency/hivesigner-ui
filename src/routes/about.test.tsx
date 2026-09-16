@@ -18,9 +18,19 @@ describe('/about', () => {
       /About Hivesigner/,
     );
     expect(screen.getByText(/secure way to sign/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /ecency/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^ecency$/i })).toHaveAttribute(
       'href',
       'https://ecency.com',
     );
+  });
+
+  it('offers the original logo file and a place to report a bug, as the previous page did', () => {
+    render(<About />);
+    expect(
+      screen.getByRole('link', { name: /download logo/i }),
+    ).toHaveAttribute('href', '/logo.svg');
+    expect(
+      screen.getByRole('link', { name: /report a bug/i }).getAttribute('href'),
+    ).toMatch(/issues/);
   });
 });

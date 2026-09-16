@@ -16,10 +16,12 @@ describe('Brand', () => {
     expect(link).toHaveTextContent('Hivesigner');
   });
 
-  it('draws the mark at the requested size, hidden from assistive tech', () => {
+  it('uses the original logo file at the requested height, hidden from assistive tech', () => {
     const { container } = render(<BrandMark size={40} />);
-    const svg = container.querySelector('svg');
-    expect(svg).toHaveAttribute('width', '40');
-    expect(svg).toHaveAttribute('aria-hidden', 'true');
+    const img = container.querySelector('img');
+    expect(img).toHaveAttribute('src', '/logo.svg');
+    expect(img).toHaveAttribute('height', '40');
+    expect(img).toHaveAttribute('aria-hidden', 'true');
+    expect(img).toHaveAttribute('alt', '');
   });
 });

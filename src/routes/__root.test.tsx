@@ -70,6 +70,11 @@ describe('persistent navigation', () => {
     }
   });
 
+  it('titles the document for the current route', () => {
+    render(<RootLayout />);
+    expect(document.title).toBe('About · Hivesigner');
+  });
+
   it('renders exactly one nav landmark, not a mobile and desktop duplicate', () => {
     render(<RootLayout />);
     expect(screen.getAllByRole('navigation')).toHaveLength(1);

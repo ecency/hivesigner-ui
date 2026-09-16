@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { card, h1, muted, page } from '@/components/ui';
+import { BrandMark } from '@/components/Brand';
+import { card, h1, link, muted, page } from '@/components/ui';
 
 export const Route = createFileRoute('/about')({
   component: About,
@@ -10,7 +11,10 @@ function About() {
   const { t } = useTranslation();
   return (
     <section className={page}>
-      <h1 className={h1}>{t('about.about')} Hivesigner</h1>
+      <h1 className={`${h1} flex items-center gap-3`}>
+        <BrandMark size={32} />
+        <span>{t('about.about')} Hivesigner</span>
+      </h1>
       {/* Capped so the line length stays readable once the shell widens. */}
       <p className={`${muted} m-0 max-w-2xl leading-normal`}>
         {t('index.description')}
@@ -33,6 +37,22 @@ function About() {
           </a>{' '}
           team
         </div>
+      </div>
+
+      {/* The two links the previous About page carried: the logo file itself,
+          and where to report a problem. */}
+      <div className="flex flex-wrap gap-4 text-sm sm:justify-center">
+        <a href="/logo.svg" download="hivesigner-logo.svg" className={link}>
+          {t('about.download_logo')}
+        </a>
+        <a
+          href="https://github.com/ecency/hivesigner-ui/issues"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={link}
+        >
+          {t('about.report_bug')}
+        </a>
       </div>
     </section>
   );
