@@ -115,7 +115,7 @@ describe('AuthorizeConsent', () => {
       screen.getByText(i18n.t('index.preview_one_grant')),
     ).toBeInTheDocument();
     // The account the token will be issued for is named, so a wrong selection is visible.
-    expect(screen.getByText(/authorizing as/i)).toHaveTextContent('@alice');
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@alice');
   });
 
   it('describes a login-only request as exactly that, with no abilities list', async () => {
@@ -268,12 +268,49 @@ describe('AuthorizeConsent', () => {
     expect(screen.getByRole('button', { name: /report/i })).toBeInTheDocument();
   });
 
+  it('shows the selected account with its avatar and a way to switch, keeping the request', async () => {
+    h.getAccount.mockImplementation(async (name: string) =>
+      name === 'ecency.app' ? appAccount : userAccount(['ecency.app']),
+    );
+    renderConsent({});
+    const chip = await screen.findByTestId('current-account');
+    expect(chip).toHaveTextContent(/authorizing as/i);
+    expect(chip).toHaveTextContent('@alice');
+    expect(chip.querySelector('img')).toHaveAttribute(
+      'src',
+      expect.stringContaining('/u/alice/avatar/'),
+    );
+    const link = screen.getByRole('link', { name: /switch/i });
+    expect(link).toHaveAttribute('href', '/accounts');
+    expect(link.getAttribute('data-search')).toContain('/oauth2/authorize');
+  });
+
+  it('shows the account even while it is locked, so the unlock button names the right one', async () => {
+    h.accounts = {
+      selectedAccount: 'alice',
+      unlocked: [],
+      usernames: ['alice'],
+    };
+    renderConsent({});
+    expect(await screen.findByTestId('current-account')).toHaveTextContent(
+      '@alice',
+    );
+    expect(screen.getByRole('link', { name: /unlock/i })).toBeInTheDocument();
+    h.accounts = {
+      selectedAccount: 'alice',
+      unlocked: ['alice'],
+      usernames: ['alice'],
+    };
+  });
+
   it('sends a visitor without an account to import, carrying the request along', async () => {
     h.accounts = { selectedAccount: '', unlocked: [], usernames: [] } as never;
     renderConsent({});
     const link = await screen.findByRole('link', { name: /continue/i });
     expect(link).toHaveAttribute('href', '/import');
     expect(link.getAttribute('data-search')).toContain('/oauth2/authorize');
+    // No account, nothing to name.
+    expect(screen.queryByTestId('current-account')).toBeNull();
     h.accounts = {
       selectedAccount: 'alice',
       unlocked: ['alice'],

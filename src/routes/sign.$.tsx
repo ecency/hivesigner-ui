@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CurrentAccount } from '@/components/CurrentAccount';
 import { ReportIssue } from '@/components/ReportIssue';
 import {
   alertError,
@@ -368,6 +369,13 @@ function Sign() {
       )}
 
       <div className="flex flex-col gap-2.5">
+        {authority && selectedAccount && (
+          <CurrentAccount
+            username={selectedAccount}
+            label={t('sign.signing_as')}
+            next={here()}
+          />
+        )}
         {!authority ? null : signerMismatch ? (
           <>
             <div className="text-[13px] text-warn">

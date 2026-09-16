@@ -146,6 +146,7 @@ export default {
   authorize: {
     authorize: 'Authorize',
     request_access: 'is requesting access to your account.',
+    authorizing_as: 'Authorizing as',
     authorize_active: 'Authorize (active)',
     authority_require: `The <b>{username}</b> requires your <b>{authority}</b> authority in order for
         you to be able to interact with it. By clicking "Continue" you are allowing
@@ -314,6 +315,7 @@ export default {
     approve: 'Approve',
     going_redirect_to: 'You are going to get redirected to',
     confirm_transaction: 'Confirm transaction',
+    signing_as: 'Signing as',
     success_title: 'Transaction has been successfully broadcasted',
     failure_title: 'Your transaction was not successfully broadcasted',
     back_to_sign: 'Back to Signer',

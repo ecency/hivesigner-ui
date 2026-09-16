@@ -229,6 +229,36 @@ describe('untrusted text cannot push the layout sideways', () => {
   });
 });
 
+describe('the signing account is visible', () => {
+  it('names the selected account with its avatar and a switch link carrying the request', async () => {
+    h.splat = 'transfer';
+    h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
+    render(<Sign />);
+    const chip = await screen.findByTestId('current-account');
+    expect(chip).toHaveTextContent(/signing as/i);
+    expect(chip).toHaveTextContent('@alice');
+    expect(chip.querySelector('img')).toHaveAttribute(
+      'src',
+      expect.stringContaining('/u/alice/avatar/'),
+    );
+    const link = screen.getByRole('link', { name: /switch/i });
+    expect(link).toHaveAttribute('href', '/accounts');
+    expect(JSON.parse(link.getAttribute('data-search') ?? '{}').next).toBe(
+      window.location.pathname + window.location.search,
+    );
+  });
+
+  it('names nobody when no account is selected', async () => {
+    h.splat = 'transfer';
+    h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
+    h.accounts = { selectedAccount: '', unlocked: [] } as never;
+    render(<Sign />);
+    await screen.findByRole('link', { name: /continue/i });
+    expect(screen.queryByTestId('current-account')).toBeNull();
+    h.accounts = { selectedAccount: 'alice', unlocked: ['alice'] };
+  });
+});
+
 describe('the request survives import and unlock', () => {
   // A passcode user arriving from an app deep link pressed Unlock, landed on
   // the account list and the request was gone. The consent screen carried

@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
+import { CurrentAccount } from '@/components/CurrentAccount';
 import { PostingAbilities } from '@/components/PostingAbilities';
 import { ReportIssue } from '@/components/ReportIssue';
 import {
@@ -331,6 +332,16 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
       )}
 
       <div className="flex flex-col gap-2.5">
+        {/* Which account this token is for, above every state that has one:
+            locked, missing a key, or ready. A wrong selected account used to
+            be silent until the app received a token for someone else. */}
+        {selectedAccount && (
+          <CurrentAccount
+            username={selectedAccount}
+            label={t('authorize.authorizing_as')}
+            next={window.location.pathname + window.location.search}
+          />
+        )}
         {!selectedAccount ? (
           <Link
             to="/import"
@@ -364,12 +375,6 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           </button>
         ) : (
           <>
-            {/* Name the account being authorized. Without it a user with several
-                accounts cannot see WHICH account's token they are issuing, which
-                is what made a wrong selected account silent. */}
-            <div className={mutedXs}>
-              Authorizing as <b>@{selectedAccount}</b>
-            </div>
             {grantNeeded && (
               <div className={alertWarn}>
                 First-time authorization: this adds <b>@{req.clientId}</b> to
