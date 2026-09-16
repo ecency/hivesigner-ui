@@ -63,6 +63,29 @@ test('a registered app is named in the consent header', async ({ page }) => {
   await expect(page.locator('body')).toContainText('ecency.com');
 });
 
+test('a site with no app account can ask to confirm the username', async ({
+  page,
+}) => {
+  await mockHiveRpc(page, {
+    'condenser_api.get_config': getConfig,
+    'condenser_api.get_dynamic_global_properties': dynamicGlobalProps,
+    'condenser_api.get_accounts': () => [],
+  });
+  // hivesearcher and the like: no client_id, a callback, login only.
+  await page.goto(
+    '/oauth2/authorize?redirect_uri=https%3A%2F%2Fhivesearcher.example%2Fcb&scope=login',
+    { waitUntil: 'networkidle' },
+  );
+  await expect(page.locator('body')).toContainText('hivesearcher.example');
+  await expect(page.locator('body')).toContainText(
+    /confirm your Hive username/i,
+  );
+  await expect(page.locator('body')).toContainText(
+    /view your account username/i,
+  );
+  await expect(page.locator('body')).not.toContainText(/incomplete/i);
+});
+
 // TODO(#100 next batch): token issuance and its redirect shape. Needs a seeded decrypted account
 // (username + hex(JSON(keys))+"decrypted" in vuex__accounts, and get_accounts key_auths matching
 // the WIF's pubkey), plus a frozen clock, to assert the exact

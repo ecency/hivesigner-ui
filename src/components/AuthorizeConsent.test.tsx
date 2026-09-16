@@ -175,15 +175,60 @@ describe('AuthorizeConsent', () => {
     ).toHaveTextContent(/active key once/i);
   });
 
-  it('refuses a request that names no app or no callback', async () => {
-    renderConsent({ clientId: undefined });
+  it('confirms the username for a site with no app account: a bare login token to its callback', async () => {
+    h.getAccount.mockImplementation(async () => userAccount([]));
+    renderConsent({
+      clientId: undefined,
+      redirectUri: 'https://hivesearcher.example/cb',
+      scope: 'posting', // named, but with no app it can only be a login
+      responseType: 'token',
+      state: 's1',
+    });
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      /hivesearcher\.example/,
+    );
+    expect(
+      screen.getByText(i18n.t('authorize.scope_login')),
+    ).toBeInTheDocument();
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+    const button = await screen.findByRole('button', { name: /authorize/i });
+    await waitFor(() => expect(button).toBeEnabled());
+    await userEvent.setup().click(button);
+    await waitFor(() => expect(h.assign).toHaveBeenCalledTimes(1));
+    const url = new URL(h.assign.mock.calls[0][0]);
+    expect(url.origin + url.pathname).toBe('https://hivesearcher.example/cb');
+    expect(url.searchParams.get('username')).toBe('alice');
+    expect(url.searchParams.get('state')).toBe('s1');
+    const decoded = decodeToken(url.searchParams.get('access_token') ?? '');
+    expect(decoded?.payload.signed_message).toEqual({ type: 'login' });
+    expect(decoded?.signer).toBe(posting.createPublic().toString());
+    expect(h.broadcastOperations).not.toHaveBeenCalled();
+  });
+
+  it('refuses a plain-http callback for a site with no app account', async () => {
+    sig.report.mockReset();
+    renderConsent({
+      clientId: undefined,
+      redirectUri: 'http://hivesearcher.example/cb',
+      scope: 'login',
+    });
+    expect(
+      await screen.findByText(i18n.t('authorize.callback_insecure')),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /authorize/i })).toBeDisabled(),
+    );
+    expect(sig.report).toHaveBeenCalledWith('callback_insecure', {
+      callback_host: 'hivesearcher.example',
+    });
+  });
+
+  it('refuses a request that names no callback', async () => {
+    renderConsent({ clientId: undefined, redirectUri: undefined });
     expect(await screen.findByRole('alert')).toHaveTextContent(/incomplete/i);
     // Nothing to approve; the only control is the user's Report button.
     expect(screen.queryByRole('button', { name: /authorize/i })).toBeNull();
     expect(screen.getByRole('button', { name: /report/i })).toBeInTheDocument();
-    const { unmount } = renderConsent({ redirectUri: undefined });
-    expect((await screen.findAllByRole('alert')).length).toBeGreaterThan(0);
-    unmount();
   });
 
   it('sends a visitor without an account to import, carrying the request along', async () => {

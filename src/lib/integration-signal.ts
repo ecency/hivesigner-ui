@@ -14,8 +14,8 @@ import * as Sentry from '@sentry/browser';
  */
 export type IntegrationIssue =
   | 'redirect_not_registered' // callback not in the app's registered list
-  | 'callback_insecure' // registered, but plain http off loopback
-  | 'consent_incomplete' // no client_id or no redirect_uri
+  | 'callback_insecure' // a no-app site's callback is plain http off loopback
+  | 'consent_incomplete' // no redirect_uri
   | 'app_not_found' // client_id names no Hive account
   | 'sign_request_invalid' // a /sign link this app could not parse
   | 'route_not_found'; // a path nothing serves
