@@ -31,15 +31,19 @@ interface PersistedAccount {
 }
 
 /**
- * Whether a legacy triplesec blob is re-encrypted into the v1 envelope on
- * unlock. OFF for the cutover window: the Nuxt app cannot read a v1 envelope,
- * so a passcode user who had unlocked once here would be locked out by a
- * rollback to the previous image. While it is off, records the old app wrote
- * keep their exact shape (see isLegacyShape). Turn on once a rollback is no
- * longer on the table. Accounts first imported here WITH a passcode are v1
- * regardless.
+ * Whether a record the Nuxt app wrote is folded into the v1 envelope on
+ * unlock (and on plaintext startup, and when a key is added). ON: the policy
+ * is to fix forward, not roll back, and the fold is what removes the old
+ * app's plaintext sibling WIFs from disk and gets every key under one
+ * passcode-encrypted envelope.
+ *
+ * What OFF buys, should a rollback ever be needed: the Nuxt app cannot read a
+ * v1 envelope, so a passcode user who has unlocked here since the flip would
+ * have to re-import their key on the old app. Set to false BEFORE a cutover
+ * if that trade is wanted; records then keep the exact shape the old app
+ * reads (see isLegacyShape).
  */
-const UPGRADE_TRIPLESEC_ON_UNLOCK = false;
+const UPGRADE_TRIPLESEC_ON_UNLOCK = true;
 
 const SIBLING_ROLES = ['owner', 'active', 'posting', 'memo'] as const;
 const WIF_RE = /^[5KL][1-9A-HJ-NP-Za-km-z]{50,51}$/;
