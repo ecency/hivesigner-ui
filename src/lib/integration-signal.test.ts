@@ -61,45 +61,41 @@ describe('reportIntegrationIssue', () => {
     expect(h.captureMessage.mock.calls[0][1].tags.path).toBe('login-request');
   });
 
-  it('names an unknown operation when the name is a plain word, never when it is key-shaped', () => {
+  it('names an unknown operation only from the protocol vocabulary, never from the link', () => {
     reportIntegrationIssue('sign_request_invalid', {
-      op: 'transfer-to-savings-next',
+      op: 'escrowTransfer',
       reason: 'unknown_operation',
     });
     expect(h.captureMessage.mock.calls[0][1].tags).toMatchObject({
       op: 'unknown',
-      op_name: 'transfer_to_savings_next', // normalised like the parser does
+      op_name: 'escrow_transfer',
     });
-    h.captureMessage.mockReset();
-    // A digit anywhere disqualifies the word: it is not an operation name.
-    reportIntegrationIssue('sign_request_invalid', {
-      op: 'transfer-to-savings-v2',
-      reason: 'unknown_operation',
-    });
-    expect(h.captureMessage.mock.calls[0][1].tags.op_name).toBe('other');
-    h.captureMessage.mockReset();
-    // A WIF or token in the path: digits, so `other`, and never the value.
-    const wif = '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL';
-    reportIntegrationIssue('sign_request_invalid', {
-      op: wif,
-      reason: 'unknown_operation',
-    });
-    const tags = h.captureMessage.mock.calls[0][1].tags;
-    expect(tags.op).toBe('unknown');
-    expect(tags.op_name).toBe('other');
-    expect(JSON.stringify(h.captureMessage.mock.calls[0])).not.toContain(
-      wif.slice(0, 10).toLowerCase(),
-    );
-    h.captureMessage.mockReset();
-    // Prototype names are not operations either.
-    reportIntegrationIssue('sign_request_invalid', {
-      op: 'constructor',
-      reason: 'unknown_operation',
-    });
-    expect(h.captureMessage.mock.calls[0][1].tags).toMatchObject({
-      op: 'unknown',
-      op_name: 'constructor',
-    });
+    // Anything else a link puts in the path is untrusted text: a passphrase,
+    // a letters-only token, a key, a prototype name. None of it may reach
+    // the call in any form.
+    for (const secret of [
+      'correct-horse-battery-staple',
+      'AbCdEfGhIjKlMnOpQrStUvWxYz',
+      '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL',
+      'constructor',
+      'transfer_to_savings_next',
+    ]) {
+      h.captureMessage.mockReset();
+      reportIntegrationIssue('sign_request_invalid', {
+        op: secret,
+        reason: 'unknown_operation',
+      });
+      const call = h.captureMessage.mock.calls[0];
+      expect(call[1].tags, secret).toMatchObject({
+        op: 'unknown',
+        op_name: 'other',
+      });
+      const json = JSON.stringify(call).toLowerCase();
+      expect(json, secret).not.toContain(secret.toLowerCase());
+      expect(json, secret).not.toContain(
+        secret.toLowerCase().replace(/-/g, '_'),
+      );
+    }
   });
 
   it('tags a legacy spelling of a known operation with the table name', () => {

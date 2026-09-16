@@ -37,8 +37,31 @@ export interface IntegrationTags {
 }
 
 const ACCOUNT = /^[a-z][a-z0-9.-]{2,15}$/;
-// Normalised names carry underscores only (dashes and camelCase are folded).
-const OP_WORD = /^[a-z][a-z_]{2,39}$/;
+/**
+ * Every operation the Hive protocol defines that this app does NOT sign. A
+ * closed, public vocabulary: an unknown-operation signal may name one of
+ * these and nothing else. A shape rule (letters and underscores) was tried
+ * first and refused by review, rightly: `correct-horse-battery-staple`
+ * normalises to a well-formed word, and no character test can tell an
+ * operation name from a passphrase. A curated list can.
+ */
+const HIVE_OPERATIONS_NOT_SUPPORTED = new Set([
+  'account_create_with_delegation',
+  'custom',
+  'custom_binary',
+  'decline_voting_rights',
+  'escrow_approve',
+  'escrow_dispute',
+  'escrow_release',
+  'escrow_transfer',
+  'feed_publish',
+  'pow',
+  'pow2',
+  'recover_account',
+  'request_account_recovery',
+  'reset_account',
+  'set_reset_account',
+]);
 const HOST = /^[a-z0-9.-]{1,253}(:\d{1,5})?$/i;
 const REASON =
   /^(unknown_operation|undecodable|extensions_present|invalid_field:[a-z_]{1,40}|invalid|none)$/;
@@ -79,10 +102,9 @@ export function trustedTags(
     } else {
       out.op = 'unknown';
       // WHICH unknown name, so the app producing the link can be found. Only
-      // a word shaped like an operation name is admitted: letters and
-      // underscores. A token or key pasted into the path carries digits and
-      // becomes `other`, so nothing secret-shaped can ride along.
-      out.op_name = OP_WORD.test(name) ? name : 'other';
+      // a name from the protocol's own operation list is admitted; a value
+      // from an app's link is untrusted text and is otherwise `other`.
+      out.op_name = HIVE_OPERATIONS_NOT_SUPPORTED.has(name) ? name : 'other';
     }
   }
   if (tags.reason && REASON.test(tags.reason)) out.reason = tags.reason;
