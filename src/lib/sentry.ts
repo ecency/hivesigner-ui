@@ -139,12 +139,28 @@ export function sanitizeBreadcrumb(
  * Initialise reporting. A no-op when no DSN is configured, which is the case for
  * local development and any build that does not pass one.
  */
+/**
+ * The Sentry environment for a hostname. Without it the SDK reports everything
+ * as "production", so staging and testnet errors would land in the production
+ * issue stream.
+ */
+export function environmentFor(hostname: string): string {
+  const h = hostname.toLowerCase();
+  if (h === 'hivesigner.com' || h === 'www.hivesigner.com') return 'production';
+  if (h.startsWith('staging.')) return 'staging';
+  if (h.startsWith('testnet.')) return 'testnet';
+  if (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')
+    return 'development';
+  return 'other';
+}
+
 export function initErrorReporting(): void {
   const dsn = typeof __SENTRY_DSN__ === 'string' ? __SENTRY_DSN__ : '';
   if (!dsn) return;
 
   Sentry.init({
     dsn,
+    environment: environmentFor(window.location.hostname),
     release: typeof __BUILD_SHA__ === 'string' ? __BUILD_SHA__ : undefined,
     // Never attach IP, cookies or user identifiers.
     sendDefaultPii: false,

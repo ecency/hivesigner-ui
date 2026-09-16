@@ -25,7 +25,19 @@ vi.mock('@tanstack/react-router', () => ({
     useParams: () => ({ _splat: h.splat }),
     useSearch: () => h.search,
   }),
-  Link: ({ children }: { children: unknown }) => children,
+  Link: ({
+    children,
+    to,
+    search,
+  }: {
+    children: unknown;
+    to: string;
+    search?: Record<string, string>;
+  }) => (
+    <a href={to} data-search={search ? JSON.stringify(search) : undefined}>
+      {children as never}
+    </a>
+  ),
 }));
 vi.mock('@tanstack/react-query', () => ({
   // The real queryFn (getVestsToSp) resolves to a NUMBER; model that.
@@ -158,16 +170,65 @@ describe('untrusted text cannot push the layout sideways', () => {
     expect(WRAPS.test(detail.className), detail.className).toBe(true);
   });
 
-  it('wraps BOTH the label and the value of every field row', async () => {
+  it('keeps a schema label whole and wraps the value beside it', async () => {
     h.splat = 'transfer';
     h.search = { from: 'treasury', to: 'bob', amount: '1.000 HIVE' };
     render(<Sign />);
     const label = await screen.findByText('From:');
-    expect(WRAPS.test(label.className), `label: ${label.className}`).toBe(true);
-    // The label is attacker-controlled too (a custom_json path), so it must not
-    // stay flex-none: that is what pushed the value off-screen.
-    expect(label.className).not.toContain('flex-none');
+    // A known label must not break letter by letter: at 320px "Permlink:"
+    // rendered as P/e/r/m/l/i/n/k beside a long value when it carried break-all.
+    expect(label.className).toContain('whitespace-nowrap');
+    expect(label.className).toContain('shrink-0');
     const value = label.nextElementSibling as HTMLElement;
     expect(WRAPS.test(value.className), `value: ${value.className}`).toBe(true);
+  });
+
+  it('wraps a label that is a caller-chosen JSON key, so it cannot push its value off-screen', async () => {
+    h.splat = 'custom_json';
+    h.search = {
+      id: 'x',
+      required_posting_auths: '["alice"]',
+      json: JSON.stringify({
+        averyveryveryverylongattackerchosenkeywithoutanybreaks: 1,
+      }),
+    };
+    render(<Sign />);
+    // The raw-operation <pre> also contains the key; the row label is a span.
+    const label = (await screen.findAllByText(/averyvery/)).find(
+      (el) => el.tagName === 'SPAN',
+    ) as HTMLElement;
+    expect(label, 'row label rendered').toBeDefined();
+    expect(WRAPS.test(label.className), label.className).toBe(true);
+    expect(label.className).not.toContain('whitespace-nowrap');
+  });
+});
+
+describe('the request survives import and unlock', () => {
+  // A passcode user arriving from an app deep link pressed Unlock, landed on
+  // the account list and the request was gone. The consent screen carried
+  // `next`; the sign route did not.
+  it('the unlock link carries the request as next', async () => {
+    h.splat = 'transfer';
+    h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
+    h.accounts = { selectedAccount: 'alice', unlocked: [] };
+    render(<Sign />);
+    const link = await screen.findByRole('link', { name: /unlock/i });
+    expect(link).toHaveAttribute('href', '/accounts');
+    const search = JSON.parse(link.getAttribute('data-search') ?? '{}');
+    expect(search.next).toBe(window.location.pathname + window.location.search);
+    h.accounts = { selectedAccount: 'alice', unlocked: ['alice'] };
+  });
+
+  it('the import link carries the request as next', async () => {
+    h.splat = 'transfer';
+    h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
+    h.accounts = { selectedAccount: '', unlocked: [] } as never;
+    render(<Sign />);
+    const link = await screen.findByRole('link', { name: /continue/i });
+    expect(link).toHaveAttribute('href', '/import');
+    expect(JSON.parse(link.getAttribute('data-search') ?? '{}')).toHaveProperty(
+      'next',
+    );
+    h.accounts = { selectedAccount: 'alice', unlocked: ['alice'] };
   });
 });

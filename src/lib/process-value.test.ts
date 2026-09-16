@@ -117,3 +117,47 @@ describe('processValue — array, object, json, time', () => {
     expect(processValue({ type: 'account' }, 'alice', 1)).toBe('alice');
   });
 });
+
+// The serializer WRAPS integers rather than refusing them, so a value outside
+// its field's type was signed as a different number than the screen showed:
+// recurrence 65560 as 24, weight 40000 as -25536, orderid 4294967296 as 0.
+describe('processValue — integers stay inside the range the chain serializes', () => {
+  const int = { type: 'int' as const };
+  it('refuses out-of-range values per field, and accepts the edges', () => {
+    expect(() => processValue(int, '65560', 1, 'recurrence')).toThrow(/range/);
+    expect(processValue(int, '65535', 1, 'recurrence')).toBe(65535);
+    expect(() => processValue(int, '40000', 1, 'weight')).toThrow(/range/);
+    expect(processValue(int, '-10000', 1, 'weight')).toBe(-10000);
+    expect(() => processValue(int, '4294967296', 1, 'orderid')).toThrow(
+      /range/,
+    );
+    expect(processValue(int, '4294967295', 1, 'orderid')).toBe(4294967295);
+    expect(() => processValue(int, '70000', 1, 'percent_hbd')).toThrow(/range/);
+    expect(() => processValue(int, '-1', 1, 'executions')).toThrow(/range/);
+    expect(() => processValue(int, '3000000000', 1, 'unknown_int')).toThrow(
+      /range/,
+    );
+  });
+  it('refuses anything that is not written as an integer', () => {
+    for (const bad of ['12abc', '1e3', '1.5', '', 'abc', '0x10']) {
+      expect(
+        () =>
+          processValue(
+            { ...int, defaultValue: undefined },
+            bad || 'x',
+            1,
+            'weight',
+          ),
+        bad,
+      ).toThrow();
+    }
+    expect(processValue(int, ' 42 ', 1, 'weight')).toBe(42);
+    expect(processValue(int, 7, 1, 'weight')).toBe(7);
+  });
+  it('refuses an amount that is not a number instead of formatting NaN', () => {
+    expect(() => processValue({ type: 'amount' }, 'abc HIVE', 1)).toThrow(
+      /amount/,
+    );
+    expect(processValue({ type: 'amount' }, '1 HIVE', 1)).toBe('1.000 HIVE');
+  });
+});

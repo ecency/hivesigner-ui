@@ -112,7 +112,7 @@ describe('unlocking', () => {
     expect(isUnlocked('bob')).toBe(false);
   });
 
-  it('migrates a legacy triplesec account to v1 on first unlock', async () => {
+  it('keeps a legacy triplesec account readable by the old app on unlock (rollback window)', async () => {
     // Seed a legacy triplesec account directly, as an old-app localStorage would.
     localStorage.setItem(
       'vuex__accounts',
@@ -126,9 +126,11 @@ describe('unlocking', () => {
     expect(keys).toEqual({
       posting: '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL',
     });
-    // Stored field is now the v1 envelope, no longer triplesec.
+    // The stored field is UNCHANGED: the Nuxt app cannot read a v1 envelope,
+    // and a rollback to it must not lock this user out. The upgrade is behind
+    // UPGRADE_TRIPLESEC_ON_UNLOCK, off for the cutover window.
     const stored = JSON.parse(localStorage.getItem('vuex__accounts') ?? '{}');
-    expect(stored.accountsKeychains.legacy.password.startsWith('{')).toBe(true);
+    expect(stored.accountsKeychains.legacy.password).toBe(TRIPLESEC_FIELD);
     // And it still unlocks with the same passcode afterwards.
     _resetKeyCache();
     expect(await unlockAccount('legacy', 'unlock-passcode-123')).toEqual(keys);
@@ -259,5 +261,70 @@ describe('selection precedence when a write fails mid-session', () => {
     // Simulate a reload: volatile state gone, storage intact.
     _resetKeyCache();
     expect(getState().selectedAccount).toBe('bob');
+  });
+});
+
+describe('what the Nuxt app left in storage', () => {
+  it('folds plaintext sibling WIFs into a plaintext account and strips them', async () => {
+    const { encodePlain } = await import('./keystore');
+    const { PrivateKey } = await import('@ecency/sdk/hive');
+    const POSTING = PrivateKey.fromSeed('sibling-posting').toString();
+    const ACTIVE = PrivateKey.fromSeed('sibling-active').toString();
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({
+        selectedAccount: 'alice',
+        accountsKeychains: {
+          alice: {
+            password: encodePlain({ posting: POSTING }),
+            // Added later through the old /auths page: stored ONLY here.
+            active: ACTIVE,
+          },
+        },
+      }),
+    );
+    await autoUnlockPlaintext();
+    expect(getKeys('alice')?.active).toBe(ACTIVE);
+    const stored = JSON.parse(localStorage.getItem('vuex__accounts') ?? '{}');
+    expect(stored.accountsKeychains.alice).not.toHaveProperty('active');
+    // and the merged key is now inside the blob
+    _resetKeyCache();
+    await autoUnlockPlaintext();
+    expect(getKeys('alice')?.active).toBe(ACTIVE);
+    expect(getKeys('alice')?.posting).toBe(POSTING);
+  });
+
+  it('folds a sibling key into memory on unlock of a triplesec account and strips it from disk', async () => {
+    const { PrivateKey } = await import('@ecency/sdk/hive');
+    const ACTIVE = PrivateKey.fromSeed('sibling-active-2').toString();
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({
+        selectedAccount: 'legacy',
+        accountsKeychains: {
+          legacy: { password: TRIPLESEC_FIELD, active: ACTIVE },
+        },
+      }),
+    );
+    const keys = await unlockAccount('legacy', 'unlock-passcode-123');
+    expect(keys.active).toBe(ACTIVE);
+    expect(keys.posting).toBe(
+      '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL',
+    );
+    const stored = JSON.parse(localStorage.getItem('vuex__accounts') ?? '{}');
+    // Blob untouched (old app can still read it), plaintext sibling gone.
+    expect(stored.accountsKeychains.legacy.password).toBe(TRIPLESEC_FIELD);
+    expect(stored.accountsKeychains.legacy).not.toHaveProperty('active');
+  });
+
+  it('deletes the old auth store, which held the last login keys in plaintext', async () => {
+    const { removeLegacyAuthStore } = await import('./accounts');
+    localStorage.setItem(
+      'vuex__auth',
+      JSON.stringify({ keys: { posting: '5K...' } }),
+    );
+    expect(removeLegacyAuthStore()).toBe(true);
+    expect(localStorage.getItem('vuex__auth')).toBeNull();
+    expect(removeLegacyAuthStore()).toBe(false);
   });
 });

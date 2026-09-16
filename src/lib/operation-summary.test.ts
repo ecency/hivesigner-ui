@@ -451,3 +451,38 @@ describe('sanitising the label and actor paths (not just values)', () => {
     expect(rows.find((r) => r.label === 'From')?.value).toBe('@alice�');
   });
 });
+
+describe('an authority with no keys', () => {
+  it('says the key is removed instead of printing nothing', async () => {
+    const { operationFields } = await import('./operation-summary');
+    const rows = operationFields([
+      'account_update',
+      {
+        account: 'alice',
+        posting: {
+          weight_threshold: 1,
+          account_auths: [['evil.app', 1]],
+          key_auths: [],
+        },
+      },
+    ]);
+    const posting = rows.find((r) => r.label === 'posting authority');
+    expect(posting?.value).toMatch(/keys: NONE/);
+    expect(posting?.value).toMatch(/@evil.app/);
+  });
+  it('marks labels that are JSON keys as untrusted, and schema labels as not', async () => {
+    const { operationFields } = await import('./operation-summary');
+    const rows = operationFields([
+      'custom_json',
+      {
+        id: 'x',
+        required_posting_auths: ['alice'],
+        json: JSON.stringify({ 'a very long attacker chosen key': 1 }),
+      },
+    ]);
+    expect(rows.find((r) => r.label === 'ID')?.untrusted).toBeFalsy();
+    expect(rows.find((r) => r.label.includes('attacker'))?.untrusted).toBe(
+      true,
+    );
+  });
+});

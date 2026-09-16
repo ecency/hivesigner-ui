@@ -8,6 +8,7 @@
 // vuex__auth); they live in memory for the session only. On first unlock a
 // legacy triplesec account is transparently re-encrypted into the v1 envelope.
 import {
+  encodePlain,
   isEncrypted as fieldIsEncrypted,
   type Keys,
   needsUpgrade,
@@ -19,6 +20,40 @@ const STORAGE_KEY = 'vuex__accounts';
 
 interface PersistedAccount {
   password: string; // keystore field: plain | triplesec | v1
+  // The Nuxt app ALSO stored keys as plaintext siblings of `password`: the
+  // import form wrote every no-passcode key beside it, and /auths wrote a key
+  // added later ONLY as a sibling. They are read once and folded into the
+  // keystore field (see foldLegacySiblings), never written back.
+  owner?: string;
+  active?: string;
+  posting?: string;
+  memo?: string;
+}
+
+/**
+ * Whether a legacy triplesec blob is re-encrypted into the v1 envelope on
+ * unlock. OFF for the cutover window: the Nuxt app cannot read a v1 envelope,
+ * so a passcode user who had unlocked once here would be locked out by a
+ * rollback to the previous image. Turn on once a rollback is no longer on the
+ * table. Accounts first imported here WITH a passcode are v1 regardless.
+ */
+const UPGRADE_TRIPLESEC_ON_UNLOCK = false;
+
+const SIBLING_ROLES = ['owner', 'active', 'posting', 'memo'] as const;
+const WIF_RE = /^[5KL][1-9A-HJ-NP-Za-km-z]{50,51}$/;
+
+/** The plaintext WIFs the Nuxt app left beside the keystore field, if any. */
+function legacySiblings(record: PersistedAccount): Keys {
+  const out: Keys = {};
+  for (const role of SIBLING_ROLES) {
+    const v = record[role];
+    if (typeof v === 'string' && WIF_RE.test(v)) out[role] = v;
+  }
+  return out;
+}
+
+function stripSiblings(record: PersistedAccount): PersistedAccount {
+  return { password: record.password };
 }
 interface PersistedState {
   accountsKeychains: Record<string, PersistedAccount>;
@@ -47,8 +82,19 @@ function readPersisted(): PersistedState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { accountsKeychains: {}, selectedAccount: '' };
     const parsed = JSON.parse(raw) as Partial<PersistedState>;
+    const accountsKeychains: Record<string, PersistedAccount> = {};
+    for (const [name, rec] of Object.entries(parsed.accountsKeychains ?? {})) {
+      if (!rec || typeof rec !== 'object' || typeof rec.password !== 'string')
+        continue;
+      // Keep the legacy siblings until they have been folded in; a write that
+      // dropped them silently lost every key the old /auths page had added.
+      accountsKeychains[name] = {
+        password: rec.password,
+        ...legacySiblings(rec),
+      };
+    }
     return {
-      accountsKeychains: parsed.accountsKeychains ?? {},
+      accountsKeychains,
       selectedAccount: parsed.selectedAccount ?? '',
     };
   } catch {
@@ -208,21 +254,34 @@ export async function unlockAccount(
   const field = state.accountsKeychains[username]?.password;
   if (!field) throw new Error(`accounts: no such account ${username}`);
 
-  const keys = await readKeys(field, passcode);
+  const record = state.accountsKeychains[username];
+  // Keys the old /auths page stored ONLY as plaintext siblings of the blob:
+  // fold them in now that the passcode is at hand.
+  const siblings = legacySiblings(record);
+  const keys: Keys = { ...siblings, ...(await readKeys(field, passcode)) };
   keyCache.set(username, keys);
 
-  if (needsUpgrade(field) && passcode) {
-    // Migrate the old triplesec blob to the new v1 envelope, same passcode. This
-    // must not fail the unlock: the keys are already cached, so a failed
-    // re-encrypt (e.g. crypto.subtle unavailable) should leave the account
-    // unlocked with the old blob, not surface as a wrong-passcode error.
+  const hasSiblings = Object.keys(siblings).length > 0;
+  const upgrade = UPGRADE_TRIPLESEC_ON_UNLOCK && needsUpgrade(field);
+  if (passcode && (hasSiblings || upgrade)) {
+    // Must not fail the unlock: the keys are already cached, so a failed
+    // re-encrypt (e.g. crypto.subtle unavailable) leaves the account unlocked
+    // with the old blob rather than surfacing as a wrong-passcode error.
     try {
-      state.accountsKeychains[username] = {
-        password: await writeKeys(keys, passcode),
-      };
+      if (needsUpgrade(field) && !UPGRADE_TRIPLESEC_ON_UNLOCK) {
+        // Keep the blob the old app can read (rollback window). The folded
+        // keys stay in memory for this session; the plaintext siblings are
+        // the greater harm and go now. Re-import the key once the upgrade
+        // is switched on if it is still needed.
+        state.accountsKeychains[username] = stripSiblings(record);
+      } else {
+        state.accountsKeychains[username] = {
+          password: await writeKeys(keys, passcode),
+        };
+      }
       writePersisted(state);
     } catch {
-      // keep the legacy blob; the account is unlocked for this session
+      // keep the record as it is; the account is unlocked for this session
     }
   }
   emit();
@@ -369,18 +428,44 @@ export function migrateLegacyKeychain(): boolean {
 }
 
 export async function autoUnlockPlaintext(): Promise<void> {
-  const { accountsKeychains } = readPersisted();
+  const state = readPersisted();
   let changed = false;
-  for (const [username, { password }] of Object.entries(accountsKeychains)) {
-    if (keyCache.has(username) || fieldIsEncrypted(password)) continue;
+  let rewrite = false;
+  for (const [username, record] of Object.entries(state.accountsKeychains)) {
+    if (keyCache.has(username) || fieldIsEncrypted(record.password)) continue;
     try {
-      keyCache.set(username, await readKeys(password));
+      // The Nuxt import form wrote every no-passcode key as a plaintext
+      // sibling too, and /auths wrote a later key ONLY as a sibling. Fold
+      // them into the blob so nothing is lost, then drop them.
+      const siblings = legacySiblings(record);
+      const keys: Keys = { ...siblings, ...(await readKeys(record.password)) };
+      keyCache.set(username, keys);
       changed = true;
+      if (Object.keys(siblings).length > 0) {
+        state.accountsKeychains[username] = { password: encodePlain(keys) };
+        rewrite = true;
+      }
     } catch {
       // A corrupt plaintext blob: skip it rather than break startup.
     }
   }
+  if (rewrite) writePersisted(state);
   if (changed) emit();
+}
+
+/**
+ * The Nuxt app persisted its `auth` store to `vuex__auth`, with the last
+ * login's keys in PLAINTEXT. Nothing here reads it; delete it so those keys
+ * do not sit in storage for ever.
+ */
+export function removeLegacyAuthStore(): boolean {
+  try {
+    if (localStorage.getItem('vuex__auth') === null) return false;
+    localStorage.removeItem('vuex__auth');
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** Test seam: clear in-memory keys and the cached snapshot (not storage). */

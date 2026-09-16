@@ -129,7 +129,11 @@ export default {
   errors: {
     something_wrong: 'Oops, something went wrong.',
     here_message: `Here is the error message: <br /><b>"{message}"</b>`,
-    unknown: 'Oops, something went wrong. The provided data is invalid.'
+    unknown: 'Oops, something went wrong. The provided data is invalid.',
+    not_found_title: 'Page not found',
+    not_found_body: 'There is nothing at this address. Check the link, or start from the home page.',
+    not_found_home: 'Go to the home page',
+    invalid_consent_request: 'This authorization request is incomplete: it names no app or no redirect URL. Go back to the app and try again.'
   },
   authorize: {
     authorize: 'Authorize',

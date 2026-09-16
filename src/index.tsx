@@ -4,7 +4,12 @@ import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import './globals.css';
 import './i18n';
-import { autoUnlockPlaintext, migrateLegacyKeychain } from './lib/accounts';
+import { NotFound } from './components/NotFound';
+import {
+  autoUnlockPlaintext,
+  migrateLegacyKeychain,
+  removeLegacyAuthStore,
+} from './lib/accounts';
 import { parseSearch, stringifySearch } from './lib/search';
 import { initErrorReporting } from './lib/sentry';
 import { initTheme } from './lib/theme';
@@ -25,6 +30,8 @@ initTheme();
 // this carries them over instead. MUST run before autoUnlockPlaintext, which
 // only looks at the new key.
 migrateLegacyKeychain();
+// The old app's `auth` store held the last login's keys in plaintext.
+removeLegacyAuthStore();
 
 // Plaintext (no-passcode) accounts carry no security by staying locked; load
 // their keys at startup so signing works after a reload. Encrypted accounts
@@ -33,6 +40,7 @@ autoUnlockPlaintext();
 
 const router = createRouter({
   routeTree,
+  defaultNotFoundComponent: NotFound,
   // Hive uses the @author form everywhere; keep it literal rather than
   // percent-encoded, matching the current app's URLs.
   pathParamsAllowedCharacters: ['@'],

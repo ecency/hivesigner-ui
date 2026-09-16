@@ -226,3 +226,16 @@ describe('URLs are stripped wherever they appear, not just known fields', () => 
     expect(json).toContain('/verifymessage');
   });
 });
+
+describe('environmentFor', () => {
+  it('separates production, staging, testnet and development', async () => {
+    const { environmentFor } = await import('./sentry');
+    expect(environmentFor('hivesigner.com')).toBe('production');
+    expect(environmentFor('www.hivesigner.com')).toBe('production');
+    expect(environmentFor('staging.hivesigner.com')).toBe('staging');
+    expect(environmentFor('testnet.hivesigner.com')).toBe('testnet');
+    expect(environmentFor('localhost')).toBe('development');
+    expect(environmentFor('127.0.0.1')).toBe('development');
+    expect(environmentFor('evil.example')).toBe('other');
+  });
+});
