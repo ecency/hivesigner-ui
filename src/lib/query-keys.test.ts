@@ -20,12 +20,11 @@ describe('query keys', () => {
   it('no two builders produce the same key for the same account', () => {
     const seen = new Map<string, string>();
     for (const [label, build] of Object.entries(ALL_KEY_BUILDERS)) {
-      // Every builder takes 0 or 1 argument; an account name covers both the
-      // single-name and the batch case.
+      // Every builder takes 0 or 1 argument, and an account name serves for all
+      // of them. It used to special-case the batch builder's array argument;
+      // that builder is gone with the chain-read directory it belonged to.
       const key = JSON.stringify(
-        (build as (arg?: unknown) => readonly unknown[])(
-          label === 'directoryProfileBatchKey' ? [NAME] : NAME,
-        ),
+        (build as (arg?: unknown) => readonly unknown[])(NAME),
       );
       const clash = seen.get(key);
       expect(clash, `${label} and ${clash} both build ${key}`).toBeUndefined();
@@ -138,7 +137,17 @@ describe('cache keys are not hand-written', () => {
   it('every builder in ALL_KEY_BUILDERS is actually used', () => {
     const used = new Set<string>();
     for (const file of files(SRC)) {
-      if (/query-keys\.(test\.)?tsx?$/.test(file)) continue;
+      // ALL test files are excluded here, which is the OPPOSITE of the scan
+      // above, and deliberately so. There, a key literal inside a mock is the
+      // hazard, so tests must be read. Here the question is whether anything
+      // the app RUNS still addresses this cache, and a test that calls a
+      // builder answers no such thing: review pointed out that a builder whose
+      // production consumer is deleted would keep counting as live purely on
+      // its own test. Reproduced by pointing AuthorizeConsent at a different
+      // builder, which left oauthAppProfileKey with only a test use and this
+      // check still green.
+      if (/\.test\.tsx?$/.test(file) || /query-keys\.tsx?$/.test(file))
+        continue;
       const src = readFileSync(file, 'utf8');
       for (const name of BUILDERS) {
         if (new RegExp(`\\b${name}\\s*\\(`).test(src)) used.add(name);
