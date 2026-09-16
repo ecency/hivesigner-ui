@@ -237,7 +237,7 @@ function Accounts() {
 
       {usernames.length === 0 ? (
         <p className={muted}>
-          <Link to="/import" className={link}>
+          <Link to="/import" search={next ? { next } : {}} className={link}>
             {t('accounts.add_another')}
           </Link>
         </p>
@@ -258,8 +258,12 @@ function Accounts() {
 
       {/* Not `btnSecondary`: the dashed, transparent "add" affordance is a
           different control, so it keeps its own class string. */}
+      {/* `next` rides along: a user who came here from a consent or sign
+          request to switch accounts, and finds the one they want is not on
+          the device yet, must get back to that request after importing it. */}
       <Link
         to="/import"
+        search={next ? { next } : {}}
         className="inline-flex h-11 max-w-full items-center justify-center self-start rounded-lg border border-dashed border-line-strong px-4 font-semibold text-ink no-underline"
       >
         + {t('accounts.add_another')}
