@@ -42,9 +42,12 @@ export function AppFooter() {
                 and "team" it would be untranslatable, because word order moves. */}
             <Trans
               i18nKey="footer.built_by"
+              // NOT `link`: html-parse-stringify, which Trans uses, treats
+              // <link> as a VOID element, so the anchor rendered empty and
+              // "Ecency" fell outside it. The first footer test caught it.
               components={{
                 heart: <span className="text-brand" />,
-                link: (
+                ecency: (
                   // The text here is a fallback only: Trans replaces the
                   // children with whatever the translation puts between <link>
                   // and </link>.

@@ -92,6 +92,14 @@ function OperationForm({ name }: { name: string }) {
         try {
           parsed = JSON.parse(text);
         } catch {
+          // A list may be written as `379` or `379,380` as well as `[379]`:
+          // ids or account names separated by commas. processValue turns
+          // that into an array. Anything else, and every object or json
+          // field, must be JSON, so the error names the field.
+          if (type === 'array' && /^[\w.@-]+(\s*,\s*[\w.@-]+)*$/.test(text)) {
+            payload[field] = text;
+            continue;
+          }
           setError(`${field} must be valid JSON for this ${type} field.`);
           return;
         }

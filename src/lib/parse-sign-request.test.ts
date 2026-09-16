@@ -217,3 +217,66 @@ describe('non-finite numbers are refused, not signed as 0', () => {
     expect(unvote?.operations[0][1].weight).toBe(0);
   });
 });
+
+// The bug as reported: "Update proposal votes ... proposal_ids: 379 ...
+// Bad Cast: Invalid cast from string_type to Array, the variant is 379".
+describe('array fields reach the chain as arrays', () => {
+  it('turns proposal_ids=379 on the legacy URL into [379]', () => {
+    const req = parseSignRequest(
+      'update_proposal_votes',
+      { proposal_ids: '379', approve: 'true' },
+      1,
+    );
+    expect(req).not.toBeNull();
+    const [, payload] = req?.operations[0] as [string, Record<string, unknown>];
+    expect(payload.proposal_ids).toEqual([379]);
+    expect(payload.approve).toBe(true);
+    expect(payload.extensions).toEqual([]);
+  });
+
+  it('does the same for an encoded op carrying the scalar (the /signs builder path)', () => {
+    for (const scalar of [379, '379'] as const) {
+      const uri = encodeOp([
+        'update_proposal_votes',
+        { voter: 'alice', proposal_ids: scalar, approve: true },
+      ]);
+      const req = parseSignRequest(uri.replace('hive://sign/', ''), {}, 1);
+      const [, payload] = req?.operations[0] as [
+        string,
+        Record<string, unknown>,
+      ];
+      expect(payload.proposal_ids).toEqual([379]);
+    }
+  });
+
+  it('accepts a list of ids and refuses an object in their place', () => {
+    const ok = parseSignRequest(
+      'remove_proposal',
+      { proposal_ids: '[1,2]' },
+      1,
+    );
+    expect(
+      (ok?.operations[0][1] as Record<string, unknown>).proposal_ids,
+    ).toEqual([1, 2]);
+    expect(
+      parseSignRequest('remove_proposal', { proposal_ids: '{"a":1}' }, 1),
+    ).toBeNull();
+  });
+
+  it('keeps custom_json auths as arrays and its json as text', () => {
+    const req = parseSignRequest(
+      'custom_json',
+      {
+        id: 'follow',
+        required_auths: '[]',
+        required_posting_auths: 'alice',
+        json: '["follow",{"follower":"alice"}]',
+      },
+      1,
+    );
+    const payload = req?.operations[0][1] as Record<string, unknown>;
+    expect(payload.required_auths).toEqual([]);
+    expect(payload.required_posting_auths).toEqual(['alice']);
+    expect(payload.json).toBe('["follow",{"follower":"alice"}]');
+  });
+});
