@@ -43,7 +43,7 @@ export function AppFooter() {
             <Trans
               i18nKey="footer.built_by"
               components={{
-                heart: <span className="text-brand" aria-hidden="true" />,
+                heart: <span className="text-brand" />,
                 link: (
                   // The text here is a fallback only: Trans replaces the
                   // children with whatever the translation puts between <link>

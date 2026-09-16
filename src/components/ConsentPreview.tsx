@@ -68,7 +68,7 @@ export function ConsentPreview() {
     <figure className="m-0 flex flex-col gap-3">
       <div
         aria-hidden="true"
-        className={`${card} flex flex-col gap-4 p-5 select-none sm:p-6`}
+        className={`${card} pointer-events-none flex flex-col gap-4 p-5 select-none sm:p-6`}
       >
         <div className="flex items-center gap-3">
           <Avatar username={DEMO_APP} size="md" />
