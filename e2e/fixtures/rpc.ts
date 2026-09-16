@@ -53,7 +53,9 @@ export async function mockHiveRpc(page: Page, handlers: RpcHandlers) {
     }
   })
 
-  // Avatars are decorative and would otherwise hit images.ecency.com.
+  // Avatars are decorative and would otherwise hit the production image host
+  // (i.ecency.com today; images.ecency.com was the older host).
+  await page.route('https://i.ecency.com/**', (route) => route.abort())
   await page.route('https://images.ecency.com/**', (route) => route.abort())
 }
 

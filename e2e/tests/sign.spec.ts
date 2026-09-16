@@ -47,6 +47,9 @@ test('a vote sign page needs a posting key and offers Continue when logged out',
   })
   const text = await page.locator('body').innerText()
   expect(text).toContain('render-check')
+  // A vote needs posting authority, and the page says which authority it needs.
+  expect(text.toLowerCase()).toContain('posting')
+  expect(text.toLowerCase()).not.toMatch(/\bactive\b/)
   // Logged out: a Continue link into login, not an Approve button.
   await expect(page.locator('[data-e2e="login-continue"], a:has-text("Continue")').first()).toBeVisible()
 })

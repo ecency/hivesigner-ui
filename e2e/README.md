@@ -10,6 +10,7 @@ The external contract these specs defend is written up in `../CONTRACT.md`.
 
 ```bash
 cd e2e
+npm ci                      # the pinned @playwright/test, from package-lock.json
 BASE_URL=https://staging.hivesigner.com npx playwright test
 # or against a local `nuxt generate` served on a port:
 BASE_URL=http://127.0.0.1:3099 npx playwright test

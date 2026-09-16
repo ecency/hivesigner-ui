@@ -5,7 +5,9 @@ import { mockHiveRpc, getConfig, dynamicGlobalProps, appAccount } from '../fixtu
 // needed. Token issuance (which needs a seeded account) is covered in a later batch; see the
 // TODO at the end.
 
-test('offline scope becomes a code request on /login', async ({ page }) => {
+// response_type is not visible on the consent screen; its normalisation is a
+// unit test (lib/oauth.test.ts). What is observable is the scope asked for.
+test('offline scope asks for posting authority', async ({ page }) => {
   await mockHiveRpc(page, {
     'condenser_api.get_config': getConfig,
     'condenser_api.get_dynamic_global_properties': dynamicGlobalProps,
@@ -43,6 +45,10 @@ test('a registered app is named in the consent header', async ({ page }) => {
     waitUntil: 'networkidle',
   })
   await expect(page.locator('body')).toContainText('requesting access')
+  // The client id is the part of the identity the app cannot choose; it must
+  // be on the screen, and so must the callback host the token will go to.
+  await expect(page.locator('body')).toContainText('@ecency.app')
+  await expect(page.locator('body')).toContainText('ecency.com')
 })
 
 // TODO(#100 next batch): token issuance and its redirect shape. Needs a seeded decrypted account
