@@ -74,20 +74,26 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         envs: STAGING_PORT,BROADCAST_NETWORK
         script: |
+          # Stop at the first failure. Without this a failed pull or deploy was
+          # followed by the gate inspecting the PREVIOUS release's spec, whose
+          # replicas were all Running, and the job reported success.
+          set -e
           cd ~/hivesigner-ui
           git pull origin development
           git checkout development
           export PORT=$STAGING_PORT
           export BROADCAST_NETWORK=$BROADCAST_NETWORK
           docker pull ecency/hivesigner:development
-          docker stack deploy -c docker-compose.yml -c docker-compose.staging.yml hivesigner-staging
+          docker stack deploy -c docker-compose.yml -c docker-compose.staging.yml hivesigner-staging || { echo 'stack deploy failed'; exit 1; }
           # `stack deploy` returns once the update is ACCEPTED, so without a wait
           # the workflow reports success over tasks that never start. Wait for
           # every replica to be Running on the image THIS deploy asked for: the
           # spec's image carries the digest swarm resolved, and under start-first
           # the outgoing tasks still run the previous one, so they cannot
-          # satisfy the count. The nginx image has no HEALTHCHECK, so Running is
-          # the strongest signal available here.
+          # satisfy the count. The image defines a HEALTHCHECK (Dockerfile), and
+          # swarm reports a task Running only once it has passed; the container
+          # health is read as well, per task, because that ordering is engine
+          # behaviour rather than a documented guarantee.
           SERVICE=hivesigner-staging_app
           want=$(docker service inspect "$SERVICE" --format '{{.Spec.TaskTemplate.ContainerSpec.Image}}')
           replicas=$(docker service inspect "$SERVICE" --format '{{.Spec.Mode.Replicated.Replicas}}')
@@ -99,12 +105,27 @@ jobs:
                 docker service ps "$SERVICE" --no-trunc | head -8
                 exit 1 ;;
             esac
-            running=$(docker service ps "$SERVICE" --no-trunc --filter desired-state=running \
-              --format '{{.CurrentState}} {{.Image}}' 2>/dev/null \
-              | awk -v want="$want" '$1 == "Running" && index($0, want)' | wc -l)
+            # Task ids of replicas Running on the wanted image.
+            ids=$(docker service ps "$SERVICE" --no-trunc --filter desired-state=running \
+              --format '{{.ID}} {{.CurrentState}} {{.Image}}' 2>/dev/null \
+              | awk -v want="$want" '$2 == "Running" && index($0, want) { print $1 }')
+            running=$(printf '%s\n' $ids | grep -c . || true)
             if [ "$running" -ge "$replicas" ]; then
-              echo "deploy ok: $running/$replicas replicas running $want (update state: $state)"
-              exit 0
+              # Every one of those containers must report healthy (or carry no
+              # healthcheck). A container not on this node cannot be read and
+              # is accepted on the strength of Running.
+              unhealthy=0
+              for id in $ids; do
+                cid=$(docker ps -q --filter "label=com.docker.swarm.task.id=$id" 2>/dev/null | head -1)
+                [ -n "$cid" ] || continue
+                status=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$cid" 2>/dev/null || echo unknown)
+                case "$status" in healthy|none) ;; *) unhealthy=$((unhealthy + 1)) ;; esac
+              done
+              if [ "$unhealthy" -eq 0 ]; then
+                echo "deploy ok: $running/$replicas replicas running and healthy on $want (update state: $state)"
+                exit 0
+              fi
+              echo "waiting: $unhealthy container(s) not healthy yet"
             fi
             sleep 5
           done
