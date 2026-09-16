@@ -7,8 +7,8 @@ import {
 } from '../fixtures/rpc';
 
 // /oauth2/authorize normalization and the app-consent header. Logged out, so no key fixture is
-// needed. Token issuance (which needs a seeded account) is covered in a later batch; see the
-// TODO at the end.
+// needed. Token issuance (which needs a seeded account) is a Vitest route test; see the note at
+// the end.
 
 // response_type is not visible on the consent screen; its normalisation is a
 // unit test (lib/oauth.test.ts). What is observable is the scope asked for.
@@ -24,10 +24,9 @@ test('offline scope asks for posting authority', async ({ page }) => {
     '/oauth2/authorize?client_id=ecency.app&redirect_uri=https%3A%2F%2Fecency.com&scope=login/offline',
     { waitUntil: 'networkidle' },
   );
-  // Nuxt pushed to /login with the normalised query; the React app renders the
-  // consent screen in place. What third-party apps depend on is the SCOPE the
-  // user is asked to grant: offline forces posting (and a code response). So
-  // the assertion is on what the screen asks for, not on the URL it does it at.
+  // What third-party apps depend on is the SCOPE the user is asked to grant:
+  // offline forces posting (and a code response). So the assertion is on what
+  // the screen asks for, not on the URL it does it at.
   await expect(page.locator('body')).toContainText(/requesting access/i);
   await expect(page.locator('body')).toContainText(
     /posting authority|Post, comment, vote/i,
@@ -86,9 +85,6 @@ test('a site with no app account can ask to confirm the username', async ({
   await expect(page.locator('body')).not.toContainText(/incomplete/i);
 });
 
-// TODO(#100 next batch): token issuance and its redirect shape. Needs a seeded decrypted account
-// (username + hex(JSON(keys))+"decrypted" in vuex__accounts, and get_accounts key_auths matching
-// the WIF's pubkey), plus a frozen clock, to assert the exact
-// `<cb>?access_token=<b64u>&expires_in=604800&username=<u>` URL. It must also pin the current
-// behaviour where an UNREGISTERED redirect_uri still receives a token (bug #1 in CONTRACT.md):
-// the rewrite decides whether to keep or fix that, but the test records today's behaviour first.
+// Token issuance and the exact redirect URL need a stored account and a frozen clock, so they
+// are pinned in src/components/AuthorizeConsent.test.tsx and src/lib/oauth.test.ts rather than
+// here: this suite stays logged out so it can run against any deployment.

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-// Route reachability, security headers and asset handling. No mocks: this is the same check that
-// gated the Phase 0 nginx switch (#99), now expressed so it runs against any BASE_URL.
+// Route reachability, security headers and asset handling. No mocks. Every published route must
+// serve the app shell with the security headers nginx.conf sets, whatever BASE_URL it runs against.
 
 const appRoutes = [
   '/',
@@ -37,15 +37,13 @@ for (const route of appRoutes) {
   });
 }
 
-// The hashed-asset prefix is a build detail: Nuxt served /_nuxt/, Rsbuild
-// serves /static/. The contract is the behaviour, so the prefix is read from
-// the shell rather than assumed.
+// The hashed-asset prefix (/static/ today) is a build detail. The contract is
+// the behaviour, so the prefix is read from the shell rather than assumed.
 async function hashedAssetPrefix(
   request: Parameters<Parameters<typeof test>[1]>[0]['request'],
 ) {
   const html = await (await request.get('/')).text();
-  const asset =
-    html.match(/(?:src|href)="(\/(?:_nuxt|static)\/[^"]+\.js)"/)?.[1] ?? '';
+  const asset = html.match(/(?:src|href)="(\/[a-z_]+\/[^"]+\.js)"/)?.[1] ?? '';
   expect(asset, 'a hashed entry chunk referenced in the shell').toBeTruthy();
   return { asset, prefix: asset.split('/').slice(0, 2).join('/') };
 }

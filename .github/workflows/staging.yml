@@ -134,10 +134,12 @@ jobs:
           docker service ps "$SERVICE" --no-trunc | head -8
           exit 1
 
-  # The parity suite, against the staging that was just deployed. It fails the
-  # workflow (after the deploy, which has already happened) so a contract
+  # The contract suite (e2e/), against the staging that was just deployed. The
+  # same specs already ran on the pull request against the built image; this
+  # run proves the DEPLOYED build honours the published URLs, headers and flows.
+  # It fails the workflow after the deploy, which has already happened, so a
   # regression is visible on the run rather than found by an app author.
-  parity:
+  contract:
     needs: deploy-staging
     runs-on: ubuntu-latest
     steps:
