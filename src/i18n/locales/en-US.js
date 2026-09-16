@@ -133,7 +133,15 @@ export default {
     not_found_title: 'Page not found',
     not_found_body: 'There is nothing at this address. Check the link, or start from the home page.',
     not_found_home: 'Go to the home page',
+    render_failed: 'This screen hit a problem it could not recover from. It has been reported. Reloading usually helps.',
+    reload: 'Reload',
     invalid_consent_request: 'This authorization request is incomplete: it names no app or no redirect URL. Go back to the app and try again.'
+  },
+  report: {
+    button: 'Report this problem',
+    note_label: 'What were you trying to do? (optional)',
+    includes_link: 'Sends this link and your note to the Hivesigner team. Keys and tokens are blanked out.',
+    thanks: 'Reported, thank you. Reference {id}.',
   },
   authorize: {
     authorize: 'Authorize',

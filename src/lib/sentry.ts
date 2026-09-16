@@ -59,6 +59,22 @@ const SECRET_PATTERNS: RegExp[] = [
 const URL_IN_TEXT =
   /(?:[a-z][a-z0-9+.-]*:\/\/[^\s"'<>\\]+|\/[^\s"'<>\\?#]*\?[^\s"'<>\\]*)/gi;
 
+/**
+ * Redact credential-shaped values but KEEP the URL and its query. For a report
+ * the user chose to send: the link is the point of it, but a token, a code or
+ * a key inside it is not theirs to leak, so those are still blanked.
+ */
+export function redactSecrets(value: string): string {
+  let out = value;
+  for (const pattern of SECRET_PATTERNS) {
+    out = out.replace(pattern, (match) => {
+      const named = /^([A-Za-z_]+)\s*[=:]/.exec(match);
+      return named ? `${named[1]}=${REDACTED}` : REDACTED;
+    });
+  }
+  return out;
+}
+
 /** Redact credential-shaped substrings from any string we might send. */
 export function scrubText(value: string): string {
   // Strip every URL's query and fragment FIRST: the credential is usually the
@@ -192,4 +208,53 @@ export function initErrorReporting(): void {
       }
     },
   });
+}
+
+export interface UserReport {
+  /** What failed, in the same vocabulary as the integration signals. */
+  kind: string;
+  /** The machine reason, if the app has one (a field name, an op name). */
+  reason?: string;
+  /** Free text the user typed. */
+  note?: string;
+  /** Public facts to index on: app account, operation name. */
+  tags?: Record<string, string | undefined>;
+  /** An error event this report is about, when there is one. */
+  associatedEventId?: string;
+}
+
+/**
+ * A report the USER sends from an error screen: the link they opened, with
+ * secret-shaped values blanked, plus whatever they typed. It goes as Sentry
+ * feedback, which the automatic scrubbing does not touch: the whole point is
+ * that the link survives so someone can reproduce it.
+ *
+ * Returns the event id for the confirmation, or null when reporting is off.
+ */
+export function sendUserReport(report: UserReport): string | null {
+  if (!Sentry.getClient()) return null;
+  const link = redactSecrets(window.location.pathname + window.location.search);
+  const lines = [
+    `kind: ${report.kind}`,
+    report.reason ? `reason: ${report.reason}` : '',
+    `link: ${link}`,
+    report.note?.trim()
+      ? `note: ${redactSecrets(report.note.trim().slice(0, 2000))}`
+      : '',
+  ].filter(Boolean);
+  const tags: Record<string, string> = { report: 'user', kind: report.kind };
+  for (const [k, v] of Object.entries(report.tags ?? {})) {
+    if (v) tags[k] = v.replace(/[^a-z0-9._:-]/gi, '').slice(0, 64);
+  }
+  try {
+    return Sentry.captureFeedback(
+      {
+        message: lines.join('\n'),
+        associatedEventId: report.associatedEventId,
+      },
+      { captureContext: { tags } },
+    );
+  } catch {
+    return null;
+  }
 }

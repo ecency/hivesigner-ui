@@ -239,3 +239,15 @@ describe('environmentFor', () => {
     expect(environmentFor('evil.example')).toBe('other');
   });
 });
+
+describe('redactSecrets', () => {
+  it('keeps the link and blanks only credential-shaped values', async () => {
+    const { redactSecrets } = await import('./sentry');
+    const out = redactSecrets(
+      '/login?client_id=ecency.app&code=abc.def&redirect_uri=https://ecency.com/auth',
+    );
+    expect(out).toContain('/login?client_id=ecency.app');
+    expect(out).toContain('code=[redacted]');
+    expect(out).toContain('redirect_uri=https://ecency.com/auth');
+  });
+});

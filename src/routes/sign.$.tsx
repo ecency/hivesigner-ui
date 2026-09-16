@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ReportIssue } from '@/components/ReportIssue';
 import {
   alertError,
   alertWarn,
@@ -15,6 +16,7 @@ import {
 import { getKeys } from '@/lib/accounts';
 import { getVestsToSp } from '@/lib/hive';
 import { resolveCallback } from '@/lib/hive-uri';
+import { reportIntegrationIssue } from '@/lib/integration-signal';
 import {
   operationActors,
   operationFields,
@@ -22,7 +24,7 @@ import {
   safeText,
   summarizeOperation,
 } from '@/lib/operation-summary';
-import { parseSignRequest } from '@/lib/parse-sign-request';
+import { parseSignRequest, signRequestProblem } from '@/lib/parse-sign-request';
 import { vestsToSpKey } from '@/lib/query-keys';
 import {
   type BroadcastOutcome,
@@ -56,6 +58,38 @@ function useVestsToSp(): { rate: number; ready: boolean } {
 /** This request's own URL, to come back to after import or unlock. */
 function here(): string {
   return window.location.pathname + window.location.search;
+}
+
+/**
+ * A link this app could not turn into a request. Says so, reports it as an
+ * integration signal (the operation and the failing field, never a value),
+ * and offers the user a report that carries the link itself.
+ */
+function InvalidSignRequest({
+  splat,
+  search,
+  rate,
+}: {
+  splat: string;
+  search: Record<string, string>;
+  rate: number;
+}) {
+  const { t } = useTranslation();
+  const op = splat.split('/')[0]?.split('?')[0] ?? '';
+  const reason = signRequestProblem(splat, search, rate);
+  useEffect(() => {
+    reportIntegrationIssue('sign_request_invalid', { op, reason });
+  }, [op, reason]);
+  return (
+    <section className={page}>
+      {/* role="alert": it is the only thing on the page that explains why
+          there is nothing to approve, and assistive tech should announce it. */}
+      <div role="alert" className={alertError}>
+        {t('errors.unknown')}
+      </div>
+      <ReportIssue kind="sign_request_invalid" reason={reason} tags={{ op }} />
+    </section>
+  );
 }
 
 function callbackHost(callback: string): string | null {
@@ -98,13 +132,11 @@ function Sign() {
 
   if (!request) {
     return (
-      <section className={page}>
-        {/* role="alert": it is the only thing on the page that explains why
-            there is nothing to approve, and assistive tech should announce it. */}
-        <div role="alert" className={alertError}>
-          {t('errors.unknown')}
-        </div>
-      </section>
+      <InvalidSignRequest
+        splat={_splat ?? ''}
+        search={search}
+        rate={vestsToSp.rate}
+      />
     );
   }
 
