@@ -24,6 +24,7 @@ import {
   buildAuthToken,
   buildRedirectUrl,
   isRegisteredRedirect,
+  isValidRedirectUri,
   loadAppProfile,
 } from '@/lib/oauth';
 import { safeText } from '@/lib/operation-summary';
@@ -72,12 +73,28 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     };
   }, []);
 
-  const authority = authorityForScope(req.scope);
+  // A request with NO app account is a site asking only to confirm who the
+  // user is (hivesearcher and the like): it holds no posting authority and
+  // gets a bare login token, whatever scope it named. There is no profile to
+  // check a registration against, so the callback is held to being a secure
+  // URL, and the consent names its host as the requester. This is what the
+  // Nuxt app did, minus the plain-http case.
+  const loginOnly = !req.clientId;
+  // A login-only request always answers with a login token as access_token:
+  // a `code` response is the app-side exchange flow, and there is no app.
+  const effective: AuthRequest = loginOnly
+    ? { ...req, scope: 'login', responseType: 'token' }
+    : req;
+  const authority = authorityForScope(effective.scope);
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
   const keys = selectedAccount ? getKeys(selectedAccount) : null;
   const signingKey = keys?.[authority];
   const callback = req.redirectUri ?? '';
-  const registered = profile ? isRegisteredRedirect(profile, callback) : false;
+  const registered = profile
+    ? isRegisteredRedirect(profile, callback)
+    : loginOnly
+      ? isValidRedirectUri(callback)
+      : false;
   const callbackHost = (() => {
     try {
       return new URL(callback).host;
@@ -99,8 +116,10 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   async function approve() {
     setError(null);
     if (!selectedAccount || !signingKey) return;
-    // Enforce redirect_uri registration (the Nuxt app does not; we do).
-    if (!profile || !registered) {
+    // Enforce redirect_uri registration (the Nuxt app does not; we do). A
+    // site with no app account has nothing to register; its callback only
+    // has to be a secure URL.
+    if (!registered || (!loginOnly && !profile)) {
       setError(t('errors.unknown'));
       return;
     }
@@ -145,9 +164,14 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
       // screen in the meantime (Cancel, or navigating away), do NOT hand the app
       // a token and redirect them - they withdrew consent mid-flow.
       if (abandoned.current) return;
-      const token = buildAuthToken(req, selectedAccount, signingKey, authority);
+      const token = buildAuthToken(
+        effective,
+        selectedAccount,
+        signingKey,
+        authority,
+      );
       window.location.assign(
-        buildRedirectUrl(callback, token, req, selectedAccount),
+        buildRedirectUrl(callback, token, effective, selectedAccount),
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -159,6 +183,22 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const unregistered =
     !!req.clientId && !!callback && profile != null && !registered;
   const appMissing = !!req.clientId && profile === null;
+  // A no-app site's callback, classified: plain http off loopback is
+  // INSECURE (the token is a week-long proof of the username, not something
+  // to send in the clear); anything that is not an http(s) URL at all is
+  // INVALID. Different advice, different signal.
+  const callbackKind = (() => {
+    if (!loginOnly || !callback) return 'ok';
+    try {
+      const u = new URL(callback);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return 'invalid';
+      return registered ? 'ok' : 'insecure';
+    } catch {
+      return 'invalid';
+    }
+  })();
+  const insecure = callbackKind === 'insecure';
+  const invalid = callbackKind === 'invalid';
   // The two integration failures an app author can fix, reported once per
   // screen: which app, and which callback host. Never the callback itself.
   useEffect(() => {
@@ -169,17 +209,22 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
       });
     } else if (appMissing) {
       reportIntegrationIssue('app_not_found', { app: req.clientId });
+    } else if (insecure) {
+      reportIntegrationIssue('callback_insecure', {
+        callback_host: hostOf(callback),
+      });
+    } else if (invalid) {
+      reportIntegrationIssue('callback_invalid', {});
     }
-  }, [unregistered, appMissing, req.clientId, callback]);
+  }, [unregistered, appMissing, insecure, invalid, req.clientId, callback]);
 
   if (isLoading) {
     return <section className={page}>…</section>;
   }
 
-  // No app or no callback is not a request anyone can approve. The Nuxt page
-  // issued a bare login token for it; this refuses, because a consent screen
-  // for "@" that leads nowhere is not a flow, it is a bug surfaced to the user.
-  if (!req.clientId || !req.redirectUri) {
+  // No callback is not a request anyone can approve: there is nowhere to
+  // send the answer.
+  if (!req.redirectUri) {
     return (
       <IncompleteRequest
         app={req.clientId}
@@ -196,28 +241,64 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   return (
     <section className={page}>
       <div className="flex flex-col gap-2 text-center">
-        {/* The app account's OWN avatar, keyed on client_id rather than on
-            the display name: client_id is the part of the identity the app
-            cannot rename, so the picture and the name below it agree. */}
-        <Avatar username={req.clientId ?? ''} size="lg" className="mx-auto" />
-        <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
-          <b className="[unicode-bidi:isolate]">{appName}</b>{' '}
-          {t('authorize.request_access')}
-        </h1>
+        {loginOnly ? (
+          // No app account: the requester IS the callback host, which is the
+          // one thing about it the user can check.
+          <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
+            <b className="[unicode-bidi:isolate]">{callbackHost ?? '?'}</b>{' '}
+            {t('authorize.request_verify')}
+          </h1>
+        ) : (
+          <>
+            {/* The app account's OWN avatar, keyed on client_id rather than
+                on the display name: client_id is the part of the identity the
+                app cannot rename, so the picture and the name below it agree. */}
+            <Avatar
+              username={req.clientId ?? ''}
+              size="lg"
+              className="mx-auto"
+            />
+            <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
+              <b className="[unicode-bidi:isolate]">{appName}</b>{' '}
+              {t('authorize.request_access')}
+            </h1>
+          </>
+        )}
         {/* profile.name is the app account's OWN self-declared metadata, so an
             account like `ecency-login` can call itself "Ecency". Always show the
             real client_id and the callback host: those are what the grant and
             the redirect actually use, and they cannot be renamed. */}
         <div className={mutedXs}>
-          {t('authorize.hive_account')} <b>@{req.clientId}</b>
+          {!loginOnly && (
+            <>
+              {t('authorize.hive_account')} <b>@{req.clientId}</b>
+            </>
+          )}
           {callbackHost && (
             <>
-              {' '}
-              · {t('authorize.sends_you_to')} <b>{callbackHost}</b>
+              {loginOnly ? '' : ' · '}
+              {t('authorize.sends_you_to')} <b>{callbackHost}</b>
             </>
           )}
         </div>
       </div>
+
+      {insecure && (
+        <>
+          <div className={alertError}>{t('authorize.callback_insecure')}</div>
+          <ReportIssue
+            kind="callback_insecure"
+            tags={{ callback_host: hostOf(callback) }}
+          />
+        </>
+      )}
+
+      {invalid && (
+        <>
+          <div className={alertError}>{t('authorize.callback_invalid')}</div>
+          <ReportIssue kind="callback_invalid" />
+        </>
+      )}
 
       {unregistered && (
         <>
@@ -236,7 +317,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           login request is one line, because that is all it is. */}
       <div className={`${card} text-sm`}>
         <div className="mb-1 text-xs text-muted">{t('authorize.scope')}</div>
-        {req.scope === 'login' ? (
+        {effective.scope === 'login' ? (
           <div className="font-semibold">{t('authorize.scope_login')}</div>
         ) : (
           <PostingAbilities app={req.clientId ?? ''} compact />
@@ -299,7 +380,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             <button
               type="button"
               onClick={approve}
-              disabled={unregistered || busy}
+              disabled={unregistered || insecure || invalid || busy}
               className={btnPrimary}
             >
               {busy ? '…' : t('authorize.authorize')}

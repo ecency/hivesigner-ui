@@ -72,6 +72,16 @@ Two build args, both optional:
 
 `BROADCAST_NETWORK` is `mainnet`. The testnet deployment is discontinued.
 
+## Confirming a username without an app account
+
+A site that only needs to know who the user is (hivesearcher and the like) can
+send `/oauth2/authorize?redirect_uri=<https url>&scope=login` with no
+`client_id`. There is no profile to check a registration against, so the
+callback only has to be a secure URL (https, or http on loopback), the consent
+names the callback host as the requester, and the token is a bare `login`
+token with no `app`, whatever scope was named. The API does not accept such a
+token; the site verifies it itself.
+
 ## Monitoring what apps and links get wrong
 
 Sentry receives three kinds of signal, all with an `environment` tag

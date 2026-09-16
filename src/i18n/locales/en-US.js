@@ -160,6 +160,9 @@ export default {
     granted: '@{app} is authorized.',
     scope: 'Scope',
     scope_login: 'View your account username',
+    request_verify: 'wants to confirm your Hive username.',
+    callback_invalid: 'This site asked to be sent your login to an address that is not a web URL. Go back to the site and try again.',
+    callback_insecure: 'This site asked to be sent your login over a plain http:// address. Hivesigner only sends it over https. Ask the site to use a secure address.',
     scope_posting: 'Post, comment, vote and follow on your behalf',
     requires_active_key: `This transaction requires your <b>{authority}</b> key.`
   },
