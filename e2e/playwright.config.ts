@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Target under test. Defaults to staging; point BASE_URL at the React build later and the
-// same specs become the parity gate. A local `nuxt generate` served on a port also works.
+// Target under test. Defaults to staging; CI points BASE_URL at the image built for a pull
+// request (see .github/workflows/ui-ci.yml) and at staging after a deploy.
 const baseURL = process.env.BASE_URL || 'https://staging.hivesigner.com';
 
 export default defineConfig({

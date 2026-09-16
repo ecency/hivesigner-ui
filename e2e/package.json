@@ -1,7 +1,7 @@
 {
   "name": "hivesigner-ui-e2e",
   "private": true,
-  "description": "Parity end-to-end suite for hivesigner-ui. Runs against a BASE_URL (staging by default) and, once the React rewrite ships, against that build unchanged.",
+  "description": "Contract end-to-end suite for hivesigner-ui: the routes, headers and flows third-party apps depend on, run against a BASE_URL (staging by default).",
   "scripts": {
     "test": "playwright test",
     "report": "playwright show-report"

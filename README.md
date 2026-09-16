@@ -65,8 +65,18 @@ Two build args, both optional:
 - Push to `main` builds `ecency/hivesigner:latest` and deploys production
   (`.github/workflows/master.yml`). Production releases are the manual
   `development` -> `main` merge.
-- Pull requests run the same lint/build/typecheck/test gate
-  (`.github/workflows/ui-ci.yml`).
+- Pull requests run the same lint/build/typecheck/test gate and the contract
+  suite against the image built from the branch (`.github/workflows/ui-ci.yml`).
+- After a staging deploy the same contract suite runs against
+  staging.hivesigner.com, so the deployed build is proven to match.
+
+## Contract suite
+
+`e2e/` holds Playwright specs that pin what third-party apps and existing users
+depend on: the published routes, the security headers, the sign page's edge
+cases and the consent screen's normalisation. They run logged out against a
+`BASE_URL` with the Hive RPC mocked. `CONTRACT.md` is the written form of that
+contract; `e2e/README.md` says how to run the suite locally.
 
 ## Environment
 

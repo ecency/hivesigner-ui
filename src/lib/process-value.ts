@@ -1,6 +1,6 @@
 // Port of the Nuxt app's process-value.util: normalize one operation field
-// against its schema entry. Kept faithful, including the quirks the parity
-// suite pins (amounts formatted to fixed decimals, HP converted to VESTS,
+// against its schema entry. Kept faithful, including the quirks the tests
+// pin (amounts formatted to fixed decimals, HP converted to VESTS,
 // strings truncated to maxLength - 1).
 //
 // STRUCTURED TYPES ARE COERCED HERE, and nowhere else. The Nuxt util passed

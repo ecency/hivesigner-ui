@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { dynamicGlobalProps, getConfig, mockHiveRpc } from '../fixtures/rpc';
 
-// The confirm-transaction page, logged out. The #96 regression (legacy sign URLs with non-Latin1
-// characters going blank) is the headline case.
+// The confirm-transaction page, logged out. The headline case is a legacy sign URL with
+// non-Latin1 characters (an em dash and emoji), which once rendered blank.
 
 test.beforeEach(async ({ page }) => {
   await mockHiveRpc(page, {
@@ -65,8 +65,7 @@ test('a vote sign page needs a posting key and offers Continue when logged out',
 
 test('an unknown operation shows the invalid-data error', async ({ page }) => {
   await page.goto('/sign/not-a-real-op?foo=bar', { waitUntil: 'networkidle' });
-  // Nuxt styled it `.alert-error`; the React app marks it role="alert". Either
-  // way there must be an error the user can see and no approve control.
+  // There must be an error the user can see and no approve control.
   await expect(
     page.locator('[role="alert"], .alert-error').first(),
   ).toBeVisible();

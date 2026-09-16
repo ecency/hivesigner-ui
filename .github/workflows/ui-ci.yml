@@ -25,3 +25,37 @@ jobs:
           GIT_SHA: ${{ github.sha }}
       - run: pnpm typecheck
       - run: pnpm test
+
+  # The contract suite (e2e/) against the image this pull request would ship.
+  # The specs pin what third-party apps and existing users depend on (published
+  # URLs, security headers, sign and consent flows), so a break is caught here,
+  # before merge, rather than after the staging deploy. The image is the right
+  # target: the headers and the SPA fallback come from nginx.conf, which a
+  # plain static server would not reproduce. No Sentry DSN is passed, so the
+  # run reports nothing.
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t hivesigner-ui:pr --build-arg GIT_SHA=${{ github.sha }} .
+      - run: docker run -d --name ui -p 3000:3000 -e PORT=3000 hivesigner-ui:pr
+      - name: Wait for the container to answer
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:3000/ >/dev/null && exit 0
+            sleep 2
+          done
+          docker logs ui
+          exit 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+      - run: npm ci
+        working-directory: e2e
+      - run: npx playwright install --with-deps chromium
+        working-directory: e2e
+      - run: npx playwright test --reporter=line
+        working-directory: e2e
+        env:
+          BASE_URL: http://127.0.0.1:3000
+          CI: true
