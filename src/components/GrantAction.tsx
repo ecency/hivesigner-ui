@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppProfile } from '@/components/AppProfile';
@@ -20,6 +20,7 @@ import {
   hasGrant,
 } from '@/lib/grant';
 import { type Account, getAccount } from '@/lib/hive';
+import { grantReturnTarget } from '@/lib/oauth';
 import { accountKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
@@ -30,12 +31,19 @@ import { useAccounts } from '@/lib/use-accounts';
 export function GrantAction({
   appName,
   mode,
+  query = {},
 }: {
   appName: string;
   mode: 'grant' | 'revoke';
+  /** The route's query: the legacy detour carries the callback here. */
+  query?: Record<string, string | undefined>;
 }) {
   const { t } = useTranslation();
   const { selectedAccount, unlocked } = useAccounts();
+  const navigate = useNavigate();
+  // Where to go once the broadcast has landed, if this page was reached with a
+  // callback. Null means "no callback": the account list, as before.
+  const returnTarget = grantReturnTarget(appName, query);
   const [status, setStatus] = useState<'idle' | 'busy' | 'done' | 'error'>(
     'idle',
   );
@@ -71,6 +79,10 @@ export function GrantAction({
       await broadcastOperations([op], activeKey, account.name);
       setStatus('done');
       await refetch();
+      // The Nuxt page continued to the callback by itself after the broadcast,
+      // and the login that brought the user here is waiting on it. Automatic
+      // only when there IS a callback; with none the page shows its result.
+      if (returnTarget) navigate(returnTarget as never);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setStatus('error');
@@ -154,7 +166,13 @@ export function GrantAction({
             {t('accounts.unlock')} @{selectedAccount}
           </Link>
         ) : alreadyDone || status === 'done' ? (
-          <Link to="/accounts" className={btnPrimary}>
+          // Already granted, or just granted: continue to the callback that
+          // brought the user here, or to the account list when there is none.
+          <Link
+            to={returnTarget ? returnTarget.to : '/accounts'}
+            search={returnTarget ? returnTarget.search : {}}
+            className={btnPrimary}
+          >
             {t('common.continue')}
           </Link>
         ) : (
