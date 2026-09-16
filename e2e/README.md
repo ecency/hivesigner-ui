@@ -53,6 +53,6 @@ redirect URL, the grant-before-token ordering, key import and the local passcode
 broadcasts, sign and verify message, account switching. This suite stays logged out on purpose, so
 it needs no key fixture and can run against any deployment.
 
-The unknown-operation spec is a real invalid request, so a run against staging sends one
-`integration: sign_request_invalid` signal tagged `environment: staging`. Sentry alert rules
-should filter to production.
+The RPC fixture also blocks Sentry's ingest host, so a run against a deployed build (which
+carries a DSN) reports nothing: the unknown-operation spec is a real invalid request and would
+otherwise file an `integration: sign_request_invalid` event on every run.

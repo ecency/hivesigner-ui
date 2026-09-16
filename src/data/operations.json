@@ -274,7 +274,10 @@
           "account_subsidy_decay": 330782,
           "maximum_block_size": 65536,
           "hbd_interest_rate": 2000,
-          "hbd_exchange_rate": { "base": "0.000 HBD", "quote": "0.000 HIVE" },
+          "hbd_exchange_rate": {
+            "base": "0.000 HBD",
+            "quote": "0.000 HIVE"
+          },
           "url": "https://ecency.com",
           "new_signing_key": "STM1111111111111111111111111111111114T1Anm"
         }
@@ -743,6 +746,213 @@
       },
       "permlink": {
         "type": "string"
+      },
+      "extensions": {
+        "type": "array",
+        "defaultValue": []
+      }
+    }
+  },
+  "escrow_transfer": {
+    "name": "Escrow transfer",
+    "authority": "active",
+    "description": "Place HIVE or HBD in escrow with an agent, to be released to the recipient or returned once both parties and the agent have acted.",
+    "schema": {
+      "from": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "to": {
+        "type": "account"
+      },
+      "agent": {
+        "type": "account"
+      },
+      "escrow_id": {
+        "type": "int"
+      },
+      "hbd_amount": {
+        "type": "amount",
+        "defaultValue": "0.000 HBD"
+      },
+      "hive_amount": {
+        "type": "amount",
+        "defaultValue": "0.000 HIVE"
+      },
+      "fee": {
+        "type": "amount"
+      },
+      "ratification_deadline": {
+        "type": "time"
+      },
+      "escrow_expiration": {
+        "type": "time"
+      },
+      "json_meta": {
+        "type": "json",
+        "defaultValue": ""
+      }
+    }
+  },
+  "escrow_approve": {
+    "name": "Escrow approve",
+    "authority": "active",
+    "description": "Approve or reject an escrow as its recipient or agent.",
+    "schema": {
+      "from": {
+        "type": "account"
+      },
+      "to": {
+        "type": "account"
+      },
+      "agent": {
+        "type": "account"
+      },
+      "who": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "escrow_id": {
+        "type": "int"
+      },
+      "approve": {
+        "type": "bool",
+        "defaultValue": true
+      }
+    }
+  },
+  "escrow_dispute": {
+    "name": "Escrow dispute",
+    "authority": "active",
+    "description": "Raise a dispute on an escrow, handing the decision to the agent.",
+    "schema": {
+      "from": {
+        "type": "account"
+      },
+      "to": {
+        "type": "account"
+      },
+      "agent": {
+        "type": "account"
+      },
+      "who": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "escrow_id": {
+        "type": "int"
+      }
+    }
+  },
+  "escrow_release": {
+    "name": "Escrow release",
+    "authority": "active",
+    "description": "Release escrowed funds to the sender or the recipient.",
+    "schema": {
+      "from": {
+        "type": "account"
+      },
+      "to": {
+        "type": "account"
+      },
+      "agent": {
+        "type": "account"
+      },
+      "who": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "receiver": {
+        "type": "account"
+      },
+      "escrow_id": {
+        "type": "int"
+      },
+      "hbd_amount": {
+        "type": "amount",
+        "defaultValue": "0.000 HBD"
+      },
+      "hive_amount": {
+        "type": "amount",
+        "defaultValue": "0.000 HIVE"
+      }
+    }
+  },
+  "account_create_with_delegation": {
+    "name": "Create account with delegation",
+    "authority": "active",
+    "description": "Create a new account, paying a fee and delegating Hive Power to it.",
+    "schema": {
+      "fee": {
+        "type": "amount"
+      },
+      "delegation": {
+        "type": "amount"
+      },
+      "creator": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "new_account_name": {
+        "type": "account"
+      },
+      "owner": {
+        "type": "object"
+      },
+      "active": {
+        "type": "object"
+      },
+      "posting": {
+        "type": "object"
+      },
+      "memo_key": {
+        "type": "string"
+      },
+      "json_metadata": {
+        "type": "json",
+        "defaultValue": ""
+      },
+      "extensions": {
+        "type": "array",
+        "defaultValue": []
+      }
+    }
+  },
+  "request_account_recovery": {
+    "name": "Request account recovery",
+    "authority": "active",
+    "description": "As an account's recovery partner, propose a new owner authority for it. The account owner then completes the recovery.",
+    "schema": {
+      "recovery_account": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "account_to_recover": {
+        "type": "account"
+      },
+      "new_owner_authority": {
+        "type": "object"
+      },
+      "extensions": {
+        "type": "array",
+        "defaultValue": []
+      }
+    }
+  },
+  "recover_account": {
+    "name": "Recover account",
+    "authority": "owner",
+    "description": "Complete an account recovery. The chain requires signatures from both the new owner authority and a recent one, so the transaction must carry both keys.",
+    "schema": {
+      "account_to_recover": {
+        "type": "account",
+        "defaultValue": "__signer"
+      },
+      "new_owner_authority": {
+        "type": "object"
+      },
+      "recent_owner_authority": {
+        "type": "object"
       },
       "extensions": {
         "type": "array",

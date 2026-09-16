@@ -61,6 +61,53 @@ describe('reportIntegrationIssue', () => {
     expect(h.captureMessage.mock.calls[0][1].tags.path).toBe('login-request');
   });
 
+  it('names an unknown operation only from the protocol vocabulary, never from the link', () => {
+    reportIntegrationIssue('sign_request_invalid', {
+      op: 'feedPublish',
+      reason: 'unknown_operation',
+    });
+    expect(h.captureMessage.mock.calls[0][1].tags).toMatchObject({
+      op: 'unknown',
+      op_name: 'feed_publish',
+    });
+    // Anything else a link puts in the path is untrusted text: a passphrase,
+    // a letters-only token, a key, a prototype name. None of it may reach
+    // the call in any form.
+    for (const secret of [
+      'correct-horse-battery-staple',
+      'AbCdEfGhIjKlMnOpQrStUvWxYz',
+      '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL',
+      'constructor',
+      'transfer_to_savings_next',
+    ]) {
+      h.captureMessage.mockReset();
+      reportIntegrationIssue('sign_request_invalid', {
+        op: secret,
+        reason: 'unknown_operation',
+      });
+      const call = h.captureMessage.mock.calls[0];
+      expect(call[1].tags, secret).toMatchObject({
+        op: 'unknown',
+        op_name: 'other',
+      });
+      const json = JSON.stringify(call).toLowerCase();
+      expect(json, secret).not.toContain(secret.toLowerCase());
+      expect(json, secret).not.toContain(
+        secret.toLowerCase().replace(/-/g, '_'),
+      );
+    }
+  });
+
+  it('tags a legacy spelling of a known operation with the table name', () => {
+    reportIntegrationIssue('sign_request_invalid', {
+      op: 'transferToVesting',
+      reason: 'invalid_field:amount',
+    });
+    const tags = h.captureMessage.mock.calls[0][1].tags;
+    expect(tags.op).toBe('transfer_to_vesting');
+    expect(tags.op_name).toBeUndefined();
+  });
+
   it('fingerprints an insecure or invalid callback by its host, so sites do not merge', () => {
     reportIntegrationIssue('callback_insecure', { callback_host: 'A.example' });
     const [, opts] = h.captureMessage.mock.calls[0];

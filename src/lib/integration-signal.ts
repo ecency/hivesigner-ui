@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/browser';
-import { isKnownOperation } from './operations';
+import { isKnownOperation, normalizeOperationName } from './operations';
 
 /**
  * Integration signals: the decisions where this app REFUSES something a
@@ -14,7 +14,7 @@ import { isKnownOperation } from './operations';
  * a URL an attacker can write, and a tag is indexed and searchable, so each
  * dimension is admitted only when it has a public, bounded shape: an app is a
  * Hive account NAME (16 lowercase characters at most, so no credential fits),
- * a callback host is a hostname, an operation is one of the 34 known names or
+ * a callback host is a hostname, an operation is one of the known names or
  * `unknown`, a path is one of a short allowlist or `other`, a reason is one of
  * the parser's fixed words. Anything else is dropped, never filtered into
  * shape. That is also what keeps the number of distinct issues bounded.
@@ -37,6 +37,24 @@ export interface IntegrationTags {
 }
 
 const ACCOUNT = /^[a-z][a-z0-9.-]{2,15}$/;
+/**
+ * Every operation the Hive protocol defines that this app does NOT sign. A
+ * closed, public vocabulary: an unknown-operation signal may name one of
+ * these and nothing else. A shape rule (letters and underscores) was tried
+ * first and refused by review, rightly: `correct-horse-battery-staple`
+ * normalises to a well-formed word, and no character test can tell an
+ * operation name from a passphrase. A curated list can.
+ */
+const HIVE_OPERATIONS_NOT_SUPPORTED = new Set([
+  'custom',
+  'custom_binary',
+  'decline_voting_rights',
+  'feed_publish',
+  'pow',
+  'pow2',
+  'reset_account',
+  'set_reset_account',
+]);
 const HOST = /^[a-z0-9.-]{1,253}(:\d{1,5})?$/i;
 const REASON =
   /^(unknown_operation|undecodable|extensions_present|invalid_field:[a-z_]{1,40}|invalid|none)$/;
@@ -67,8 +85,21 @@ export function trustedTags(
   if (tags.app && ACCOUNT.test(tags.app)) out.app = tags.app;
   if (tags.callback_host && HOST.test(tags.callback_host))
     out.callback_host = tags.callback_host.toLowerCase();
-  if (tags.op !== undefined)
-    out.op = isKnownOperation(tags.op) ? tags.op : 'unknown';
+  if (tags.op !== undefined) {
+    // The parser accepts legacy camelCase and kebab-case spellings, so the
+    // tag uses the table's name too: a field error on /sign/transferToVesting
+    // is a transfer_to_vesting problem, not an unknown operation.
+    const name = normalizeOperationName(tags.op);
+    if (isKnownOperation(name)) {
+      out.op = name;
+    } else {
+      out.op = 'unknown';
+      // WHICH unknown name, so the app producing the link can be found. Only
+      // a name from the protocol's own operation list is admitted; a value
+      // from an app's link is untrusted text and is otherwise `other`.
+      out.op_name = HIVE_OPERATIONS_NOT_SUPPORTED.has(name) ? name : 'other';
+    }
+  }
   if (tags.reason && REASON.test(tags.reason)) out.reason = tags.reason;
   if (tags.path !== undefined)
     out.path = PATHS.has(tags.path.toLowerCase())
