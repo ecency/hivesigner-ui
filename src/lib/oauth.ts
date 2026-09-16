@@ -215,12 +215,49 @@ export async function loadAppProfile(
  * (The Nuxt app has a known bug where it issues a token even when this fails;
  * the React app enforces it - see the sign/oauth notes.)
  */
+/**
+ * A loopback callback (a native app's local listener) matched the way RFC
+ * 8252 §7.3 requires: the registered and the requested URI both point at
+ * loopback, with the same path, and the HOST and PORT may differ. A native
+ * app cannot know its port in advance, and localhost / 127.0.0.1 / [::1] are
+ * the same interface. The Ecency mobile app registers localhost:3000 and
+ * comes back on 127.0.0.1:3000; the Nuxt app let that through by never
+ * enforcing registration, this app does by matching it properly.
+ */
+function loopbackMatch(registered: string, callback: string): boolean {
+  try {
+    const r = new URL(registered);
+    const c = new URL(callback);
+    // Only the HOST and PORT may differ, and only for plain http, which is
+    // what RFC 8252 relaxes for a native app's local listener. An https
+    // loopback registration stays an exact match. Path, query, fragment and
+    // userinfo must be identical: buildRedirectUrl keeps the callback's own
+    // query, so a different query would carry the token somewhere the app
+    // never registered.
+    return (
+      r.protocol === 'http:' &&
+      c.protocol === 'http:' &&
+      isLoopback(r.hostname) &&
+      isLoopback(c.hostname) &&
+      r.pathname === c.pathname &&
+      r.search === c.search &&
+      r.hash === c.hash &&
+      r.username === c.username &&
+      r.password === c.password
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function isRegisteredRedirect(
   profile: AppProfile,
   callback: string,
 ): boolean {
-  return (
-    isValidRedirectUri(callback) && profile.redirectUris.includes(callback)
+  if (!isValidRedirectUri(callback)) return false;
+  return profile.redirectUris.some(
+    (registered) =>
+      registered === callback || loopbackMatch(registered, callback),
   );
 }
 
