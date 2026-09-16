@@ -47,7 +47,7 @@ export default {
     preview_can_vote_body: 'Upvote and downvote with your account',
     preview_can_follow: 'Follow and update your feed',
     preview_can_follow_body: 'Follow, mute and reblog on your behalf',
-    preview_one_grant: 'All of this is one posting-authority grant. Your active and owner keys, and your funds, are never involved.',
+    preview_one_grant: 'All of this is one posting-authority grant, created on this device. The app never receives a key, and it cannot touch your funds.',
     preview_caption: 'What a permission request looks like.',
     preview_revoke: 'You can revoke any app at any time.',
     dev_eyebrow: 'For developers',

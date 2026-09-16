@@ -23,6 +23,11 @@ const DEMO_HOST = 'ecency.com';
  * granted permission: Hive has one posting authority, and Hivesigner's scopes
  * are `login` or `posting`, nothing finer. So the heading says the bullets are
  * consequences of ONE grant, and the footnote says so again.
+ *
+ * The footnote must not say the active key is "never involved": a first-time
+ * grant IS an account_update signed here with the active key. What is true,
+ * and what matters to the person reading it, is that no key ever reaches the
+ * app and the grant cannot move funds.
  */
 export function ConsentPreview() {
   const { t } = useTranslation();
