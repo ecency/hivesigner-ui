@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "dev": "rsbuild dev --open",
-    "build": "rsbuild build && node scripts/check-node-globals.mjs",
+    "build": "rsbuild build && node scripts/prerender-meta.mjs dist && node scripts/check-node-globals.mjs",
     "preview": "rsbuild preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",

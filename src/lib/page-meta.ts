@@ -19,31 +19,31 @@ const SITE = 'Hivesigner';
 const DEFAULT_DESCRIPTION =
   'Hivesigner keeps your Hive keys on your own device, shows you exactly what a transaction does before you sign it, and lets apps ask for only the permission they need.';
 
-/** The five public pages, by first path segment. */
-const PUBLIC: Record<string, PageMeta> = {
-  '': {
+/** The five public pages, by EXACT path. `/apps/anything` is not a page. */
+export const PUBLIC_PAGES: Record<string, PageMeta> = {
+  '/': {
     title: `${SITE} - Sign in to Hive apps without sharing your keys`,
     description: DEFAULT_DESCRIPTION,
     indexable: true,
   },
-  apps: {
+  '/apps': {
     title: 'Apps that use Hivesigner',
     description:
       'Apps that broadcast to Hive through Hivesigner, ranked by how many people use them.',
     indexable: true,
   },
-  developers: {
+  '/developers': {
     title: 'Developers',
     description:
       'Add Hive sign-in to your app with OAuth2, and let people grant posting access without ever handing over a key.',
     indexable: true,
   },
-  about: {
+  '/about': {
     title: 'About',
     description: DEFAULT_DESCRIPTION,
     indexable: true,
   },
-  signs: {
+  '/signs': {
     title: 'Signer',
     description:
       'Build a Hive transaction, review it in plain language and sign it with keys that never leave your device.',
@@ -69,10 +69,22 @@ const PRIVATE_TITLES: Record<string, string> = {
   verifymessage: 'Verify a message',
 };
 
+/** A path with one leading slash and no trailing one, `/` for the root. */
+export function normalizePath(pathname: string): string {
+  const trimmed = pathname.replace(/\/+$/, '');
+  return trimmed === '' ? '/' : trimmed;
+}
+
+/** The full tab title: the site name is appended unless the title is the site's own. */
+export function fullTitle(meta: PageMeta): string {
+  return meta.title.startsWith(SITE) ? meta.title : `${meta.title} · ${SITE}`;
+}
+
 export function metaFor(pathname: string): PageMeta {
-  const segment = pathname.split('/').filter(Boolean)[0] ?? '';
-  const pub = PUBLIC[segment];
+  const path = normalizePath(pathname);
+  const pub = PUBLIC_PAGES[path];
   if (pub) return pub;
+  const segment = path.split('/').filter(Boolean)[0] ?? '';
   return {
     title: PRIVATE_TITLES[segment] ?? SITE,
     description: DEFAULT_DESCRIPTION,
@@ -111,24 +123,25 @@ function upsertCanonical(href: string | null) {
 /** Apply the metadata for a path to the document. Idempotent. */
 export function applyPageMeta(pathname: string, siteUrl: string): PageMeta {
   const meta = metaFor(pathname);
-  const fullTitle = meta.title.startsWith(SITE)
-    ? meta.title
-    : `${meta.title} · ${SITE}`;
-  document.title = fullTitle;
+  const title = fullTitle(meta);
+  document.title = title;
   upsertMeta('name', 'description', meta.description);
-  upsertMeta('property', 'og:title', fullTitle);
+  upsertMeta('property', 'og:title', title);
   upsertMeta('property', 'og:description', meta.description);
-  upsertMeta('name', 'twitter:title', fullTitle);
+  upsertMeta('name', 'twitter:title', title);
   upsertMeta('name', 'twitter:description', meta.description);
   if (meta.indexable) {
-    const canonical = `${siteUrl}${pathname === '/' ? '/' : pathname.replace(/\/+$/, '')}`;
+    const canonical = `${siteUrl}${normalizePath(pathname)}`;
     upsertCanonical(canonical);
     upsertMeta('property', 'og:url', canonical);
     document.head.querySelector('meta[name="robots"]')?.remove();
   } else {
-    // No canonical for a per-user URL, and tell crawlers that run scripts to
-    // stay out. robots.txt says the same to the ones that do not.
+    // No canonical and no share URL for a per-user page: the shell's or the
+    // previous page's og:url would otherwise still be there, naming a page
+    // this is not. And tell crawlers that run scripts to stay out; robots.txt
+    // says the same to the ones that do not.
     upsertCanonical(null);
+    document.head.querySelector('meta[property="og:url"]')?.remove();
     upsertMeta('name', 'robots', 'noindex, nofollow');
   }
   return meta;

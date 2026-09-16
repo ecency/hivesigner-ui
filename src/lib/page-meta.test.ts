@@ -27,9 +27,17 @@ describe('metaFor', () => {
       '/signmessage',
       '/verifymessage',
       '/something-unknown',
+      // Below a public page is not a page: nginx serves the shell for it, and
+      // it must not come back indexable with a canonical of its own.
+      '/apps/spam',
+      '/about/extra',
+      '/signs/extra',
+      '/developers/x/y',
     ]) {
       expect(metaFor(p).indexable, p).toBe(false);
     }
+    // A trailing slash is the same page.
+    expect(metaFor('/apps/').indexable).toBe(true);
   });
 
   it('gives each screen a title of its own', () => {
