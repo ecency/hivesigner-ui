@@ -123,4 +123,31 @@ describe('cache keys are not hand-written', () => {
       `build these through lib/query-keys instead:\n${offenders.join('\n')}`,
     ).toEqual([]);
   });
+
+  /**
+   * And the register may not accumulate keys for caches that no longer exist.
+   *
+   * The collision test above passes happily on a dead builder, so three of them
+   * outlived the code that used them: `topAppsKey` and `allAppsKey` addressed
+   * the chain-read directory this app no longer has, and
+   * `directoryProfileBatchKey` addressed the profile batching that went with it.
+   * Dead keys are not harmless here. They are the vocabulary someone reaches for
+   * when adding a cache, so a stale one invites a second shape under a name that
+   * once meant something else, which is the crash this whole file exists for.
+   */
+  it('every builder in ALL_KEY_BUILDERS is actually used', () => {
+    const used = new Set<string>();
+    for (const file of files(SRC)) {
+      if (/query-keys\.(test\.)?tsx?$/.test(file)) continue;
+      const src = readFileSync(file, 'utf8');
+      for (const name of BUILDERS) {
+        if (new RegExp(`\\b${name}\\s*\\(`).test(src)) used.add(name);
+      }
+    }
+    const dead = BUILDERS.filter((name) => !used.has(name));
+    expect(
+      dead,
+      `these key builders address nothing; delete them from lib/query-keys:\n${dead.join('\n')}`,
+    ).toEqual([]);
+  });
 });

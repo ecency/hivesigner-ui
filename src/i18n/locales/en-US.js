@@ -61,8 +61,8 @@ export default {
   apps: {
     self_declared: 'Everything above is published by the app account itself. Hivesigner does not verify any of it.',
     directory_unavailable: 'Could not reach the app directory.',
-    directory_hint: 'Apps that use Hivesigner to sign people in, most used first.',
-    building: 'The directory is still being built. It fills in as apps sign people in through Hivesigner.',
+    directory_hint: 'Apps that broadcast to Hive through Hivesigner, most used first.',
+    building: 'The directory is still being built. It fills in as apps broadcast through Hivesigner.',
     featured: 'Featured',
     all_apps: 'All apps',
     loading: 'Loading the directory…',
