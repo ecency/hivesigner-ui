@@ -13,6 +13,7 @@
 // browser, credential-shaped substrings are redacted from text, and the
 // integrations that capture user input or console output are turned off.
 import * as Sentry from '@sentry/browser';
+import { isKnownOperation, normalizeOperationName } from './operations';
 
 declare const __SENTRY_DSN__: string;
 declare const __BUILD_SHA__: string;
@@ -193,10 +194,151 @@ export function sanitizeBreadcrumb(
   return scrubbed;
 }
 
+// --- coarse client context -----------------------------------------------------
+//
+// The HttpContext integration is off (it sends the page URL wholesale), and
+// with it went the user agent, so the crash stream showed no browser, no OS
+// and no route: two error-boundary crashes on cutover day were undiagnosable.
+// What goes back is deliberately coarse and drawn from bounded vocabularies:
+// the route FAMILY (never the path), the user agent (not a secret, and Sentry
+// derives browser/OS from it), whether the page is being machine-translated
+// (the classic cause of insertBefore/removeChild NotFoundError in React), and
+// whether the page runs inside an app's web view.
+
+const ROUTE_FAMILIES = new Set([
+  'about',
+  'accounts',
+  'apps',
+  'authorize',
+  'authorized-apps',
+  'auths',
+  'developers',
+  'import',
+  'login',
+  'login-request',
+  'oauth2',
+  'profile',
+  'revoke',
+  'settings',
+  'sign',
+  'signmessage',
+  'signs',
+  'verifymessage',
+]);
+
+/** First path segment when it names a route of ours; `home`; else `other`. */
+export function routeFamily(pathname: string): string {
+  const seg = (pathname.split('/').find(Boolean) ?? '').toLowerCase();
+  if (!seg) return 'home';
+  return ROUTE_FAMILIES.has(seg) ? seg : 'other';
+}
+
 /**
- * Initialise reporting. A no-op when no DSN is configured, which is the case for
- * local development and any build that does not pass one.
+ * The operation a /sign/<op> path is for, in the table's spelling, when it
+ * is one we know; `op`, `ops` or `tx` for the encoded forms (whose operation
+ * is inside the payload, which never leaves the browser); else `unknown`.
  */
+export function signOperation(pathname: string): string | undefined {
+  const [first, second] = pathname.split('/').filter(Boolean);
+  if (first !== 'sign' || !second) return undefined;
+  if (second === 'op' || second === 'ops' || second === 'tx') return second;
+  let raw = second;
+  try {
+    raw = decodeURIComponent(second);
+  } catch {
+    return 'unknown';
+  }
+  const name = normalizeOperationName(raw);
+  return isKnownOperation(name) ? name : 'unknown';
+}
+
+/** Whether the document has been machine-translated in place, and by what. */
+export function translatedBy(
+  doc: Document,
+): 'chrome' | 'edge' | 'widget' | 'no' {
+  const root = doc.documentElement;
+  if (
+    root.classList.contains('translated-ltr') ||
+    root.classList.contains('translated-rtl')
+  )
+    return 'chrome';
+  if (doc.querySelector('[_msttexthash], [_msthash]')) return 'edge';
+  if (doc.querySelector('font[class^="goog"], #goog-gt-tt')) return 'widget';
+  return 'no';
+}
+
+/** Whether the user agent is an app's embedded web view rather than a browser. */
+export function webviewKind(
+  userAgent: string,
+): 'android' | 'ios' | 'app' | 'no' {
+  if (/\bwv\b/.test(userAgent)) return 'android';
+  if (
+    /FBAN|FBAV|Instagram|Line\/|Twitter|MicroMessenger|Snapchat|TikTok|BytedanceWebview/i.test(
+      userAgent,
+    )
+  )
+    return 'app';
+  if (
+    /iPhone|iPad|iPod/.test(userAgent) &&
+    !/Safari\//.test(userAgent) &&
+    !/CriOS|FxiOS|EdgiOS|OPiOS/.test(userAgent)
+  )
+    return 'ios';
+  return 'no';
+}
+
+export interface ClientFacts {
+  pathname: string;
+  userAgent: string;
+  translated: ReturnType<typeof translatedBy>;
+  lang: string;
+}
+
+/** Read the facts off the live page. Never throws; a throw here would drop the event. */
+export function clientFacts(): ClientFacts {
+  let translated: ClientFacts['translated'] = 'no';
+  let lang = '';
+  try {
+    translated = translatedBy(document);
+    lang = document.documentElement.lang;
+  } catch {
+    // no document, or a hostile one: report without these
+  }
+  return {
+    pathname: window.location.pathname,
+    userAgent: navigator.userAgent,
+    translated,
+    lang,
+  };
+}
+
+/**
+ * Add the coarse context to an event. Runs AFTER sanitizeEvent so nothing it
+ * adds is scrubbed away, and adds nothing derived from the query or fragment.
+ */
+export function attachClientContext(
+  event: SentryEvent,
+  facts: ClientFacts,
+): SentryEvent {
+  const tags: Record<string, string> = {
+    ...(event.tags as Record<string, string> | undefined),
+    route: routeFamily(facts.pathname),
+    translated: facts.translated,
+    webview: webviewKind(facts.userAgent),
+  };
+  const op = signOperation(facts.pathname);
+  if (op) tags.sign_op = op;
+  const lang = facts.lang.replace(/[^a-zA-Z-]/g, '').slice(0, 12);
+  if (lang) tags.page_lang = lang;
+  event.tags = tags;
+  // Only the user agent: Sentry turns it into the browser and OS contexts.
+  // No url, no referrer, no query string; those are the fields that leak.
+  event.request = {
+    headers: { 'User-Agent': facts.userAgent.slice(0, 512) },
+  };
+  return event;
+}
+
 /**
  * The Sentry environment for a hostname. Without it the SDK reports everything
  * as "production", so staging and testnet errors would land in the production
@@ -237,7 +379,7 @@ export function initErrorReporting(): void {
     beforeSend(event) {
       // A throw here DROPS the event silently, so never let one escape.
       try {
-        return sanitizeEvent(event);
+        return attachClientContext(sanitizeEvent(event), clientFacts());
       } catch {
         return null;
       }
