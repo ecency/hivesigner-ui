@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
+import { PostingAbilities } from '@/components/PostingAbilities';
 import { btnPrimary, btnSecondary, card, link, mutedXs } from '@/components/ui';
 
 /** The app shown in the illustration. A real, registered app, so the card
@@ -31,38 +32,6 @@ const DEMO_HOST = 'ecency.com';
  */
 export function ConsentPreview() {
   const { t } = useTranslation();
-
-  const abilities = [
-    {
-      title: t('index.preview_can_post'),
-      body: t('index.preview_can_post_body'),
-      icon: (
-        <svg {...iconProps} aria-hidden="true">
-          <path d="M4 20h4l10-10-4-4L4 16v4Z" />
-          <path d="m13 7 4 4" />
-        </svg>
-      ),
-    },
-    {
-      title: t('index.preview_can_vote'),
-      body: t('index.preview_can_vote_body'),
-      icon: (
-        <svg {...iconProps} aria-hidden="true">
-          <path d="M7 10v10H4V10h3Zm4 10h6.5a2 2 0 0 0 2-1.6l1.2-6A2 2 0 0 0 18.7 10H14V6a2 2 0 0 0-2-2l-1 6v10Z" />
-        </svg>
-      ),
-    },
-    {
-      title: t('index.preview_can_follow'),
-      body: t('index.preview_can_follow_body'),
-      icon: (
-        <svg {...iconProps} aria-hidden="true">
-          <circle cx="9" cy="8" r="3.5" />
-          <path d="M3 20a6 6 0 0 1 12 0M17 8v6m3-3h-6" />
-        </svg>
-      ),
-    },
-  ];
 
   return (
     <figure className="m-0 flex flex-col gap-3">
@@ -115,25 +84,7 @@ export function ConsentPreview() {
             </svg>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <div className="text-[13px] text-muted">
-              {t('index.preview_with_posting', { app: DEMO_APP })}
-            </div>
-            {abilities.map((a) => (
-              <div key={a.title} className="flex items-start gap-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-subtle text-ink">
-                  {a.icon}
-                </span>
-                <div className="min-w-0">
-                  <div className="text-[14px] font-semibold">{a.title}</div>
-                  <div className={mutedXs}>{a.body}</div>
-                </div>
-              </div>
-            ))}
-            <p className={`${mutedXs} leading-[1.5]`}>
-              {t('index.preview_one_grant')}
-            </p>
-          </div>
+          <PostingAbilities app={DEMO_APP} />
 
           <div className={mutedXs}>
             {t('authorize.sends_you_to')}{' '}
@@ -161,14 +112,3 @@ export function ConsentPreview() {
     </figure>
   );
 }
-
-const iconProps = {
-  width: 16,
-  height: 16,
-  viewBox: '0 0 24 24',
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 1.8,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
-};

@@ -25,5 +25,9 @@ services:
       restart_policy:
         condition: any
         delay: 5s
-        max_attempts: 5
+        # NO max_attempts. A cap lets swarm give up on a task after a burst of
+        # crashes and leave the service short until the next deploy. Four
+        # replicas soften that, one (staging) does not; uncapped is the right
+        # trade for a static nginx that only fails on a bad image, which the
+        # rollback below already handles.
         window: 60s
