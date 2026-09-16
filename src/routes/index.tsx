@@ -136,18 +136,17 @@ function Home() {
       <section className="relative isolate -mx-2 overflow-hidden rounded-2xl px-2">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-24 -right-24 -z-10 h-[420px] w-[420px] rounded-full bg-brand/15 blur-3xl"
+          className="pointer-events-none absolute -top-24 -right-24 -z-10 h-[420px] w-[420px] rounded-full bg-brand/10 blur-3xl"
         />
+        {/* The Hive mark, as a faint watermark behind the hero copy. */}
         <svg
           aria-hidden="true"
-          viewBox="0 0 120 120"
-          className="pointer-events-none absolute top-6 right-2 -z-10 h-[260px] w-[260px] text-brand/10 lg:right-[38%]"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="6"
+          viewBox="0 0 220 190"
+          className="pointer-events-none absolute top-8 right-2 -z-10 h-[224px] w-[260px] text-brand/[0.06] lg:right-[38%]"
+          fill="currentColor"
         >
-          <path d="M60 6 106 33v54L60 114 14 87V33L60 6Z" />
-          <path d="M60 34 82 47v26L60 86 38 73V47l22-13Z" />
+          <path d="M157.27 107.26c.73 0 1.18.79.82 1.42l-46.75 80.85a.94.94 0 0 1-.82.47H81.94c-.72 0-1.18-.79-.81-1.42l46.75-80.85a.94.94 0 0 1 .81-.47h28.58ZM129.48 84.09a.94.94 0 0 1-.82-.47L81.13 1.42C80.76.79 81.22 0 81.94 0h28.58c.34 0 .65.18.82.47l47.53 82.2c.36.63-.09 1.42-.82 1.42h-28.57Z" />
+          <path d="M135.13 1.42C134.76.79 135.22 0 135.95 0h28.62c.34 0 .65.18.82.47l54.49 94.06c.17.29.17.65 0 .94l-54.49 94.06a.95.95 0 0 1-.82.47h-28.62c-.73 0-1.18-.79-.82-1.42L189.34 95 135.13 1.42ZM111.87 94.52c.17.3.17.66 0 .95l-54.75 94.06c-.36.63-1.28.63-1.64 0L.13 95.48a.95.95 0 0 1 0-.95L54.87.47c.37-.62 1.28-.63 1.65 0l55.35 94.05Z" />
         </svg>
 
         <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
