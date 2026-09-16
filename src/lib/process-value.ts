@@ -74,18 +74,24 @@ function toArray(value: unknown, fieldName?: string): unknown[] {
   if (typeof value === 'string') {
     const s = value.trim();
     if (s === '') return [];
+    // Parse first, then convert. A conversion error raised INSIDE the parse
+    // try-block was swallowed as "not JSON", and the raw text came back as a
+    // single string element: `[-1]` became the list ["[-1]"].
+    let parsed: unknown;
+    let isJson = true;
     try {
-      const parsed: unknown = JSON.parse(s);
+      parsed = JSON.parse(s);
+    } catch {
+      isJson = false;
+    }
+    if (isJson) {
       if (Array.isArray(parsed))
         return parsed.map((e) => listElement(e, fieldName));
-      if (typeof parsed === 'number' || typeof parsed === 'string') {
+      if (typeof parsed === 'number' || typeof parsed === 'string')
         return [listElement(parsed, fieldName)];
-      }
-      if (isPlainObject(parsed)) throw new Error('expected a list');
-    } catch (e) {
-      if (e instanceof Error && e.message === 'expected a list') throw e;
-      // Not JSON: a bare word or a comma-separated list.
+      throw new Error('expected a list');
     }
+    // Not JSON: a bare word or a comma-separated list.
     return s
       .split(',')
       .map((x) => x.trim())

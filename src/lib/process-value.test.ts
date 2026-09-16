@@ -175,9 +175,9 @@ describe('proposal id lists', () => {
       processValue(arr, '9007199254740993', 1, 'proposal_ids'),
     ).toThrow(/range/);
     expect(() => processValue(arr, '[-1]', 1, 'proposal_ids')).toThrow(/range/);
-    expect(() =>
-      processValue(arr, [9007199254740993], 1, 'proposal_ids'),
-    ).toThrow(/range/);
+    expect(() => processValue(arr, [2 ** 53], 1, 'proposal_ids')).toThrow(
+      /range/,
+    );
     // Other lists: digits become safe integers, names stay names.
     expect(processValue(arr, 'alice,bob', 1, 'required_auths')).toEqual([
       'alice',
