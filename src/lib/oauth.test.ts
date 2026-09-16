@@ -385,3 +385,43 @@ describe('grantReturnTarget refusals from review', () => {
     ).not.toBeNull();
   });
 });
+
+// The Ecency mobile app registers http://localhost:3000/auth and comes back on
+// http://127.0.0.1:3000/auth. That is one loopback interface, and RFC 8252
+// says a native app's loopback port may differ too. Production refused it on
+// cutover day; the Nuxt app had let it through by not enforcing registration.
+describe('isRegisteredRedirect on loopback (RFC 8252)', () => {
+  const profile = {
+    name: 'Ecency',
+    redirectUris: ['http://localhost:3000/auth', 'https://ecency.com/auth'],
+  };
+  it('matches localhost, 127.0.0.1 and [::1] on any port with the same path', async () => {
+    const { isRegisteredRedirect } = await import('./oauth');
+    for (const cb of [
+      'http://127.0.0.1:3000/auth',
+      'http://localhost:3000/auth',
+      'http://127.0.0.1:51234/auth',
+      'http://[::1]:3000/auth',
+      'http://localhost/auth',
+    ]) {
+      expect(isRegisteredRedirect(profile, cb), cb).toBe(true);
+    }
+  });
+  it('still refuses a different path, a non-loopback host, or a scheme change', async () => {
+    const { isRegisteredRedirect } = await import('./oauth');
+    for (const cb of [
+      'http://127.0.0.1:3000/other',
+      'http://127.0.0.1.evil.example:3000/auth',
+      'http://evil.example/auth',
+      'https://127.0.0.1:3000/auth',
+      'http://ecency.com/auth',
+    ]) {
+      expect(isRegisteredRedirect(profile, cb), cb).toBe(false);
+    }
+    // Exact non-loopback registrations are unchanged.
+    expect(isRegisteredRedirect(profile, 'https://ecency.com/auth')).toBe(true);
+    expect(isRegisteredRedirect(profile, 'https://ecency.com/auth/x')).toBe(
+      false,
+    );
+  });
+});
