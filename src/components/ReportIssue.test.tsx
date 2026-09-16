@@ -41,8 +41,11 @@ describe('ReportIssue', () => {
     const [feedback, ctx] = h.captureFeedback.mock.calls[0];
     expect(feedback.message).toContain('kind: sign_request_invalid');
     expect(feedback.message).toContain('reason: invalid_field:amount');
+    // memo is in the secret vocabulary (memos carry private content), so it
+    // is blanked even though it is not a credential; the rest of the link is
+    // exactly as opened.
     expect(feedback.message).toContain(
-      'link: /sign/transfer?to=bob&amount=1%20HIVE&memo=hello&',
+      'link: /sign/transfer?to=bob&amount=1%20HIVE&memo=[redacted]&access_token=[redacted]&nb',
     );
     expect(feedback.message).toContain('access_token=[redacted]');
     expect(feedback.message).not.toContain('SECRET123');

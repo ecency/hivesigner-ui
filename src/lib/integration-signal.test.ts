@@ -29,15 +29,47 @@ describe('reportIntegrationIssue', () => {
     ]);
   });
 
-  it('never carries a URL, a query or free text in a tag', () => {
+  it('admits only public, bounded shapes into tags: no link value survives', () => {
     reportIntegrationIssue('sign_request_invalid', {
       op: 'vote?author=alice&permlink=<script>',
       reason: 'invalid_field:weight',
     });
-    const [, opts] = h.captureMessage.mock.calls[0];
-    expect(opts.tags.op).toBe('voteauthoralicepermlinkscript');
+    let [, opts] = h.captureMessage.mock.calls[0];
+    // Not a known operation: categorised, not filtered into shape.
+    expect(opts.tags.op).toBe('unknown');
     expect(opts.tags.reason).toBe('invalid_field:weight');
-    expect(JSON.stringify(opts)).not.toContain('?');
+    expect(JSON.stringify(opts)).not.toContain('alice');
+
+    h.captureMessage.mockClear();
+    reportIntegrationIssue('app_not_found', {
+      app: 'sk_live_SECRETVALUE12345',
+    });
+    [, opts] = h.captureMessage.mock.calls[0];
+    // Not an account name shape: dropped entirely, and the fingerprint falls
+    // back to the kind alone.
+    expect(opts.tags).toEqual({ kind: 'app_not_found' });
+    expect(opts.fingerprint).toEqual(['integration', 'app_not_found', '-']);
+
+    h.captureMessage.mockClear();
+    reportIntegrationIssue('route_not_found', {
+      path: 'SECRET-looking-segment',
+    });
+    [, opts] = h.captureMessage.mock.calls[0];
+    expect(opts.tags.path).toBe('other');
+    h.captureMessage.mockClear();
+    reportIntegrationIssue('route_not_found', { path: 'login-request' });
+    expect(h.captureMessage.mock.calls[0][1].tags.path).toBe('login-request');
+  });
+
+  it('fingerprints an insecure or invalid callback by its host, so sites do not merge', () => {
+    reportIntegrationIssue('callback_insecure', { callback_host: 'A.example' });
+    const [, opts] = h.captureMessage.mock.calls[0];
+    expect(opts.tags.callback_host).toBe('a.example');
+    expect(opts.fingerprint).toEqual([
+      'integration',
+      'callback_insecure',
+      'a.example',
+    ]);
   });
 
   it('reduces a callback to its host', () => {

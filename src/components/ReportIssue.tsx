@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { btnGhost, fieldBase, mutedXs } from '@/components/ui';
+import { type IntegrationTags, trustedTags } from '@/lib/integration-signal';
 import { sendUserReport, type UserReport } from '@/lib/sentry';
 
 /**
@@ -15,7 +16,7 @@ export function ReportIssue({
   reason,
   tags,
   associatedEventId,
-}: Omit<UserReport, 'note'>) {
+}: Omit<UserReport, 'note' | 'tags'> & { tags?: IntegrationTags }) {
   const { t } = useTranslation();
   const [note, setNote] = useState('');
   const [sent, setSent] = useState<string | null | 'off'>(null);
@@ -49,7 +50,7 @@ export function ReportIssue({
               kind,
               reason,
               note,
-              tags,
+              tags: trustedTags(tags),
               associatedEventId,
             });
             setSent(id ?? 'off');
