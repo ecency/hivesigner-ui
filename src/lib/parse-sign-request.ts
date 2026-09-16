@@ -12,7 +12,11 @@ import {
   type Operation,
   type UnresolvedTx,
 } from './hive-uri';
-import { OPERATIONS } from './operations';
+import {
+  isKnownOperation,
+  normalizeOperationName,
+  OPERATIONS,
+} from './operations';
 import { processValue } from './process-value';
 
 export interface SignRequest {
@@ -50,14 +54,6 @@ function safeCallback(cb: string | undefined): string | undefined {
   }
 }
 
-/** camelCase / kebab-case operation name to snake_case (transferToVesting -> transfer_to_vesting). */
-function snakeCase(input: string): string {
-  return input
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-    .replace(/[-\s]+/g, '_')
-    .toLowerCase();
-}
-
 /** ?a=b&c=d for the query object, dropping requestId, matching buildSearchParams. */
 export function buildSearchParams(query: Record<string, string>): string {
   const keys = Object.keys(query).filter((k) => k !== 'requestId');
@@ -71,8 +67,10 @@ function legacyToHiveUri(
   query: Record<string, string>,
 ): DecodeResult | null {
   try {
-    const opName = snakeCase((splat.split('/')[0] ?? '').split('?')[0]);
-    if (!OPERATIONS[opName]) return null;
+    const opName = normalizeOperationName(
+      (splat.split('/')[0] ?? '').split('?')[0],
+    );
+    if (!isKnownOperation(opName)) return null;
 
     const opParams: Record<string, unknown> = {};
     for (const key of Object.keys(OPERATIONS[opName].schema)) {
@@ -165,8 +163,9 @@ function parseSignRequestOrThrow(
   if (!decoded || !Array.isArray(rawOps) || rawOps.length === 0) {
     throw new Error(
       // The legacy form knows an unknown operation from a broken link.
-      OPERATIONS[snakeCase((splat.split('/')[0] ?? '').split('?')[0])] ||
-        /^(op|ops|tx)\//.test(splat)
+      isKnownOperation(
+        normalizeOperationName((splat.split('/')[0] ?? '').split('?')[0]),
+      ) || /^(op|ops|tx)\//.test(splat)
         ? 'undecodable'
         : 'unknown_operation',
     );

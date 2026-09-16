@@ -13,7 +13,7 @@
 // browser, credential-shaped substrings are redacted from text, and the
 // integrations that capture user input or console output are turned off.
 import * as Sentry from '@sentry/browser';
-import { isKnownOperation } from './operations';
+import { isKnownOperation, normalizeOperationName } from './operations';
 
 declare const __SENTRY_DSN__: string;
 declare const __BUILD_SHA__: string;
@@ -233,11 +233,23 @@ export function routeFamily(pathname: string): string {
   return ROUTE_FAMILIES.has(seg) ? seg : 'other';
 }
 
-/** The operation a /sign/<op> path is for, when it is one we know. */
+/**
+ * The operation a /sign/<op> path is for, in the table's spelling, when it
+ * is one we know; `op`, `ops` or `tx` for the encoded forms (whose operation
+ * is inside the payload, which never leaves the browser); else `unknown`.
+ */
 export function signOperation(pathname: string): string | undefined {
   const [first, second] = pathname.split('/').filter(Boolean);
   if (first !== 'sign' || !second) return undefined;
-  return isKnownOperation(second) ? second : 'unknown';
+  if (second === 'op' || second === 'ops' || second === 'tx') return second;
+  let raw = second;
+  try {
+    raw = decodeURIComponent(second);
+  } catch {
+    return 'unknown';
+  }
+  const name = normalizeOperationName(raw);
+  return isKnownOperation(name) ? name : 'unknown';
 }
 
 /** Whether the document has been machine-translated in place, and by what. */

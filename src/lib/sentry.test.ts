@@ -334,6 +334,27 @@ describe('coarse client context on every event', () => {
       'update_proposal_votes',
     );
     expect(signOperation('/sign/drop%20table')).toBe('unknown');
+    // Legacy spellings the parser accepts get the table's name, not "unknown".
+    expect(signOperation('/sign/transferToVesting')).toBe(
+      'transfer_to_vesting',
+    );
+    expect(signOperation('/sign/transfer-to-vesting')).toBe(
+      'transfer_to_vesting',
+    );
+    // Inherited object properties are not operations.
+    for (const bad of [
+      'toString',
+      'constructor',
+      '__proto__',
+      'hasOwnProperty',
+    ])
+      expect(signOperation(`/sign/${bad}`), bad).toBe('unknown');
+    // The encoded forms name the form, never the payload.
+    expect(signOperation('/sign/op/eyJ0eXBlIjoidm90ZSJ9')).toBe('op');
+    expect(signOperation('/sign/ops/abc')).toBe('ops');
+    expect(signOperation('/sign/tx/abc')).toBe('tx');
+    // A malformed escape must not throw out of beforeSend.
+    expect(signOperation('/sign/%E0%A4%A')).toBe('unknown');
     expect(signOperation('/sign')).toBeUndefined();
     expect(signOperation('/accounts')).toBeUndefined();
   });
