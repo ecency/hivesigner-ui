@@ -132,3 +132,24 @@ jobs:
           echo "service did not reach $replicas running replicas on $want in time:"
           docker service ps "$SERVICE" --no-trunc | head -8
           exit 1
+
+  # The parity suite, against the staging that was just deployed. It fails the
+  # workflow (after the deploy, which has already happened) so a contract
+  # regression is visible on the run rather than found by an app author.
+  parity:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+      - run: npm ci
+        working-directory: e2e
+      - run: npx playwright install --with-deps chromium
+        working-directory: e2e
+      - run: npx playwright test --reporter=line
+        working-directory: e2e
+        env:
+          BASE_URL: https://staging.hivesigner.com
+          CI: true
