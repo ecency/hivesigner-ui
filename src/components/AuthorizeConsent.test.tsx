@@ -205,6 +205,43 @@ describe('AuthorizeConsent', () => {
     expect(h.broadcastOperations).not.toHaveBeenCalled();
   });
 
+  it('answers a no-app request with a login token as access_token even when a code was asked for', async () => {
+    h.getAccount.mockImplementation(async () => userAccount([]));
+    renderConsent({
+      clientId: undefined,
+      redirectUri: 'https://hivesearcher.example/cb',
+      scope: 'login,offline',
+      responseType: 'code',
+    });
+    const button = await screen.findByRole('button', { name: /authorize/i });
+    await waitFor(() => expect(button).toBeEnabled());
+    await userEvent.setup().click(button);
+    await waitFor(() => expect(h.assign).toHaveBeenCalledTimes(1));
+    const url = new URL(h.assign.mock.calls[0][0]);
+    expect(url.searchParams.get('code')).toBeNull();
+    const decoded = decodeToken(url.searchParams.get('access_token') ?? '');
+    expect(decoded?.payload.signed_message).toEqual({ type: 'login' });
+  });
+
+  it('refuses a callback that is not a web URL, with its own message and signal', async () => {
+    sig.report.mockReset();
+    renderConsent({
+      clientId: undefined,
+      redirectUri: 'javascript:alert(1)',
+      scope: 'login',
+    });
+    expect(
+      await screen.findByText(i18n.t('authorize.callback_invalid')),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(i18n.t('authorize.callback_insecure')),
+    ).toBeNull();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /authorize/i })).toBeDisabled(),
+    );
+    expect(sig.report).toHaveBeenCalledWith('callback_invalid', {});
+  });
+
   it('refuses a plain-http callback for a site with no app account', async () => {
     sig.report.mockReset();
     renderConsent({

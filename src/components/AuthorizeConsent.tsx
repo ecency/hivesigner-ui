@@ -80,7 +80,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   // URL, and the consent names its host as the requester. This is what the
   // Nuxt app did, minus the plain-http case.
   const loginOnly = !req.clientId;
-  const effective: AuthRequest = loginOnly ? { ...req, scope: 'login' } : req;
+  // A login-only request always answers with a login token as access_token:
+  // a `code` response is the app-side exchange flow, and there is no app.
+  const effective: AuthRequest = loginOnly
+    ? { ...req, scope: 'login', responseType: 'token' }
+    : req;
   const authority = authorityForScope(effective.scope);
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
   const keys = selectedAccount ? getKeys(selectedAccount) : null;
@@ -179,9 +183,22 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const unregistered =
     !!req.clientId && !!callback && profile != null && !registered;
   const appMissing = !!req.clientId && profile === null;
-  // A no-app site whose callback is not https (loopback aside): the token is
-  // a week-long proof of the username, not something to send over plain http.
-  const insecure = loginOnly && !!callback && !registered;
+  // A no-app site's callback, classified: plain http off loopback is
+  // INSECURE (the token is a week-long proof of the username, not something
+  // to send in the clear); anything that is not an http(s) URL at all is
+  // INVALID. Different advice, different signal.
+  const callbackKind = (() => {
+    if (!loginOnly || !callback) return 'ok';
+    try {
+      const u = new URL(callback);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return 'invalid';
+      return registered ? 'ok' : 'insecure';
+    } catch {
+      return 'invalid';
+    }
+  })();
+  const insecure = callbackKind === 'insecure';
+  const invalid = callbackKind === 'invalid';
   // The two integration failures an app author can fix, reported once per
   // screen: which app, and which callback host. Never the callback itself.
   useEffect(() => {
@@ -196,8 +213,10 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
       reportIntegrationIssue('callback_insecure', {
         callback_host: hostOf(callback),
       });
+    } else if (invalid) {
+      reportIntegrationIssue('callback_invalid', {});
     }
-  }, [unregistered, appMissing, insecure, req.clientId, callback]);
+  }, [unregistered, appMissing, insecure, invalid, req.clientId, callback]);
 
   if (isLoading) {
     return <section className={page}>…</section>;
@@ -271,6 +290,13 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             kind="callback_insecure"
             tags={{ callback_host: hostOf(callback) }}
           />
+        </>
+      )}
+
+      {invalid && (
+        <>
+          <div className={alertError}>{t('authorize.callback_invalid')}</div>
+          <ReportIssue kind="callback_invalid" />
         </>
       )}
 
@@ -354,7 +380,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             <button
               type="button"
               onClick={approve}
-              disabled={unregistered || insecure || busy}
+              disabled={unregistered || insecure || invalid || busy}
               className={btnPrimary}
             >
               {busy ? '…' : t('authorize.authorize')}

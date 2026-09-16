@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/browser';
+import { isKnownOperation } from './operations';
 
 /**
  * Integration signals: the decisions where this app REFUSES something a
@@ -6,15 +7,22 @@ import * as Sentry from '@sentry/browser';
  * error on screen, so Sentry would never hear of it, and the one person who
  * could act on it (whoever runs the app) never learns which app is broken.
  *
- * Reported as warnings with a fixed fingerprint per kind and app, so Sentry
- * shows one issue per broken integration with a count, not a flood. The tags
- * carry PUBLIC facts only: the app's account name (public on chain), the
- * callback's host (the app's own domain), an operation name, a field name.
- * Never the callback URL, a token, a memo, a username or any query value.
+ * Reported as warnings with a fixed fingerprint per kind and integration, so
+ * Sentry shows one issue per broken integration with a count, not a flood.
+ *
+ * TAGS ARE TRUSTED DIMENSIONS, NOT LINK VALUES. Everything here starts life in
+ * a URL an attacker can write, and a tag is indexed and searchable, so each
+ * dimension is admitted only when it has a public, bounded shape: an app is a
+ * Hive account NAME (16 lowercase characters at most, so no credential fits),
+ * a callback host is a hostname, an operation is one of the 34 known names or
+ * `unknown`, a path is one of a short allowlist or `other`, a reason is one of
+ * the parser's fixed words. Anything else is dropped, never filtered into
+ * shape. That is also what keeps the number of distinct issues bounded.
  */
 export type IntegrationIssue =
   | 'redirect_not_registered' // callback not in the app's registered list
   | 'callback_insecure' // a no-app site's callback is plain http off loopback
+  | 'callback_invalid' // a no-app site's callback is not a URL, or not http(s)
   | 'consent_incomplete' // no redirect_uri
   | 'app_not_found' // client_id names no Hive account
   | 'sign_request_invalid' // a /sign link this app could not parse
@@ -28,12 +36,45 @@ export interface IntegrationTags {
   path?: string;
 }
 
-const SAFE = /[^a-z0-9._:-]/gi;
+const ACCOUNT = /^[a-z][a-z0-9.-]{2,15}$/;
+const HOST = /^[a-z0-9.-]{1,253}(:\d{1,5})?$/i;
+const REASON =
+  /^(unknown_operation|undecodable|extensions_present|invalid_field:[a-z_]{1,40}|invalid|none)$/;
+/** Route words worth telling apart when nothing serves them. */
+const PATHS = new Set([
+  'login',
+  'login-request',
+  'oauth',
+  'oauth2',
+  'auth',
+  'callback',
+  'sign',
+  'signs',
+  'authorize',
+  'revoke',
+  'apps',
+  'api',
+  'docs',
+  'import',
+  'accounts',
+]);
 
-/** Keep tag values short and to a plain character set; they are indexed. */
-function tag(value: string | undefined): string | undefined {
-  if (!value) return undefined;
-  return value.replace(SAFE, '').slice(0, 64) || undefined;
+/** The dimensions Sentry may see, each admitted only in its public shape. */
+export function trustedTags(
+  tags: IntegrationTags = {},
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (tags.app && ACCOUNT.test(tags.app)) out.app = tags.app;
+  if (tags.callback_host && HOST.test(tags.callback_host))
+    out.callback_host = tags.callback_host.toLowerCase();
+  if (tags.op !== undefined)
+    out.op = isKnownOperation(tags.op) ? tags.op : 'unknown';
+  if (tags.reason && REASON.test(tags.reason)) out.reason = tags.reason;
+  if (tags.path !== undefined)
+    out.path = PATHS.has(tags.path.toLowerCase())
+      ? tags.path.toLowerCase()
+      : 'other';
+  return out;
 }
 
 /** The host of a URL, or nothing: never the URL itself. */
@@ -50,21 +91,17 @@ export function reportIntegrationIssue(
   kind: IntegrationIssue,
   tags: IntegrationTags = {},
 ): void {
-  const clean: Record<string, string> = { kind };
-  for (const [k, v] of Object.entries(tags)) {
-    const t = tag(v);
-    if (t) clean[k] = t;
-  }
+  const clean: Record<string, string> = { kind, ...trustedTags(tags) };
   try {
     Sentry.captureMessage(`integration: ${kind}`, {
       level: 'warning',
       tags: clean,
-      // One issue per kind and app (or per kind and op for sign links), so
-      // "ecency.app has 340 unregistered-callback rejections" is one row.
+      // One issue per kind and integration: the app, or the site's host, or
+      // the operation, or the route word. All bounded vocabularies.
       fingerprint: [
         'integration',
         kind,
-        clean.app ?? clean.op ?? clean.path ?? '-',
+        clean.app ?? clean.callback_host ?? clean.op ?? clean.path ?? '-',
       ],
     });
   } catch {
