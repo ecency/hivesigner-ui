@@ -257,14 +257,18 @@ export async function addAccount(
   if (existing && isLegacyShape(existing) && !UPGRADE_TRIPLESEC_ON_UNLOCK) {
     // Rollback window: keep the shape the old app reads. A triplesec blob
     // stays as it is (it cannot be re-encrypted here); a plaintext blob is
-    // re-encoded with every key; the merged keys are written as siblings.
+    // re-encoded with every key. The siblings hold ONLY what the old app
+    // could not find otherwise: the siblings it already had, plus the key
+    // being added now. A key that lives in the encrypted blob stays there;
+    // writing it out as a sibling would put a passcode-protected key on disk
+    // in plaintext, which is more than compatibility needs.
     state.accountsKeychains[username] = legacyRecord(
       {
         password: fieldIsEncrypted(existing.password)
           ? existing.password
           : encodePlain(merged),
       },
-      merged,
+      { ...legacySiblings(existing), ...keys },
     );
   } else {
     state.accountsKeychains[username] = {
