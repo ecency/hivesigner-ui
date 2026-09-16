@@ -94,7 +94,11 @@ function Sign() {
   if (!request) {
     return (
       <section className={page}>
-        <div className={alertError}>{t('errors.unknown')}</div>
+        {/* role="alert": it is the only thing on the page that explains why
+            there is nothing to approve, and assistive tech should announce it. */}
+        <div role="alert" className={alertError}>
+          {t('errors.unknown')}
+        </div>
       </section>
     );
   }
