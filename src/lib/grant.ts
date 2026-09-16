@@ -5,7 +5,7 @@
 // Both are broadcast with the ACTIVE key. Matches the Nuxt AuthorizeForm /
 // RevokeForm payload shape, but is weight-aware and de-duplicated (the Nuxt
 // version pushes a duplicate even when the grant already exists).
-import type { Account, Authority } from './hive';
+import { type Account, type Authority, getAccount } from './hive';
 import type { Operation } from './hive-uri';
 
 /** Weight-aware: is `name` in the authority with enough weight to meet its threshold? */
@@ -95,4 +95,31 @@ export function authorizedApps(account: Account): string[] {
   return account.posting.account_auths
     .filter(([, w]) => Number(w ?? 0) >= threshold)
     .map(([n]) => n);
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Poll the chain until the app holds posting authority, or the budget runs out.
+ *
+ * A broadcast returns before block inclusion and reads can lag, so a single
+ * immediate refetch would wrongly report failure, and whatever screen comes
+ * next would ask for the grant again and broadcast a second account_update.
+ * Shared by the consent screen and the grant page for exactly that reason.
+ */
+export async function waitForGrant(
+  username: string,
+  clientId: string,
+  attempts = 8,
+): Promise<boolean> {
+  for (let i = 0; i < attempts; i++) {
+    await sleep(2000);
+    try {
+      const acc = await getAccount(username);
+      if (acc && hasGrant(acc.posting, clientId)) return true;
+    } catch {
+      // transient read failure; keep polling within the budget
+    }
+  }
+  return false;
 }

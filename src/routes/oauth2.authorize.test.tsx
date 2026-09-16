@@ -51,6 +51,17 @@ vi.mock('@/lib/use-accounts', () => ({ useAccounts: () => h.accounts }));
 vi.mock('@/lib/accounts', () => ({ getKeys: () => h.keys }));
 vi.mock('@/lib/hive', () => ({ getAccount: h.getAccount }));
 vi.mock('@/lib/grant', () => ({
+  // The real waitForGrant lives in this module and calls the module's OWN
+  // hasGrant, which this mock replaces, so it has to be modelled here: poll
+  // the mocked account and the mocked hasGrant, quickly.
+  waitForGrant: async (username: string, clientId: string) => {
+    for (let i = 0; i < 5; i++) {
+      await new Promise((r) => setTimeout(r, 20));
+      const acc = await h.getAccount(username);
+      if (acc && h.hasGrant(acc.posting, clientId)) return true;
+    }
+    return false;
+  },
   hasGrant: h.hasGrant,
   buildGrantOperation: () => ['account_update', { account: 'alice' }],
 }));

@@ -286,3 +286,102 @@ describe('buildRedirectUrl and callback fragments', () => {
     expect(url.startsWith('https://app.example/cb?q=%20x&flag&')).toBe(true);
   });
 });
+
+// The grant page's return target. The production Nuxt login page still sends
+// people through `/authorize/<app>?redirect_uri=/login-request/...`; the
+// rewrite ignored that callback and stranded them on the account list.
+describe('grantReturnTarget', () => {
+  it('routes the common detour, a nested login-request path, through /login', async () => {
+    const { grantReturnTarget } = await import('./oauth');
+    const cb =
+      '/login-request/ecency.app?client_id=ecency.app&redirect_uri=https%3A%2F%2Fecency.com%2Fauth&response_type=code&scope=posting';
+    expect(grantReturnTarget('ecency.app', { redirect_uri: cb })).toEqual({
+      to: '/login',
+      search: { redirect: cb },
+    });
+  });
+
+  it('accepts the legacy `redirect` spelling too', async () => {
+    const { grantReturnTarget } = await import('./oauth');
+    expect(grantReturnTarget('ecency.app', { redirect: '/profile' })).toEqual({
+      to: '/login',
+      search: { redirect: '/profile' },
+    });
+  });
+
+  it('turns an absolute callback into a consent request for THIS app', async () => {
+    const { grantReturnTarget } = await import('./oauth');
+    expect(
+      grantReturnTarget('ecency.app', {
+        redirect_uri: 'https://ecency.com/auth',
+        scope: 'posting',
+        response_type: 'code',
+        state: 'xyz',
+      }),
+    ).toEqual({
+      to: '/login',
+      search: {
+        client_id: 'ecency.app',
+        redirect_uri: 'https://ecency.com/auth',
+        scope: 'posting',
+        response_type: 'code',
+        state: 'xyz',
+      },
+    });
+  });
+
+  it('falls back to login scope and token response, as login.vue did', async () => {
+    const { grantReturnTarget } = await import('./oauth');
+    expect(
+      grantReturnTarget('ecency.app', {
+        redirect_uri: 'https://ecency.com/auth',
+        scope: 'offline',
+      })?.search,
+    ).toMatchObject({ scope: 'login', response_type: 'token' });
+  });
+
+  it('refuses an off-site path and a non-http scheme', async () => {
+    const { grantReturnTarget } = await import('./oauth');
+    expect(
+      grantReturnTarget('a', { redirect_uri: '//evil.example/x' }),
+    ).toBeNull();
+    expect(
+      grantReturnTarget('a', { redirect_uri: 'javascript:alert(1)' }),
+    ).toBeNull();
+    expect(grantReturnTarget('a', {})).toBeNull();
+  });
+});
+
+describe('grantReturnTarget refusals from review', () => {
+  it('never builds a target for a revoke: it would lead to a re-grant', async () => {
+    const { grantReturnTarget } = await import('./oauth');
+    expect(
+      grantReturnTarget(
+        'ecency.app',
+        { redirect_uri: 'https://ecency.com/auth' },
+        'revoke',
+      ),
+    ).toBeNull();
+    expect(
+      grantReturnTarget(
+        'ecency.app',
+        { redirect_uri: '/login-request/ecency.app?x=1' },
+        'revoke',
+      ),
+    ).toBeNull();
+  });
+
+  it('refuses a nested login-request for a DIFFERENT app', async () => {
+    const { grantReturnTarget } = await import('./oauth');
+    expect(
+      grantReturnTarget('app-a', {
+        redirect_uri: '/login-request/app-b?client_id=app-b',
+      }),
+    ).toBeNull();
+    expect(
+      grantReturnTarget('app-a', {
+        redirect_uri: '/login-request/app-a?client_id=app-a',
+      }),
+    ).not.toBeNull();
+  });
+});
