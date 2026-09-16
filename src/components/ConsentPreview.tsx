@@ -22,13 +22,10 @@ const DEMO_HOST = 'ecency.com';
  * it holds posting authority - post, comment, vote, follow - and that is
  * accurate. What they must not imply is that each line is a separately
  * granted permission: Hive has one posting authority, and Hivesigner's scopes
- * are `login` or `posting`, nothing finer. So the heading says the bullets are
- * consequences of ONE grant, and the footnote says so again.
- *
- * The footnote must not say the active key is "never involved": a first-time
- * grant IS an account_update signed here with the active key. What is true,
- * and what matters to the person reading it, is that no key ever reaches the
- * app and the grant cannot move funds.
+ * are `login` or `posting`, nothing finer. The heading says the bullets are
+ * consequences of ONE grant; the explanations and the footnote live on the
+ * real consent screen (PostingAbilities in full), which is where they are
+ * agreed to. The illustration shows only the shape.
  */
 export function ConsentPreview() {
   const { t } = useTranslation();
@@ -84,7 +81,10 @@ export function ConsentPreview() {
             </svg>
           </div>
 
-          <PostingAbilities app={DEMO_APP} />
+          {/* Titles only: the picture shows the SHAPE of a request. The full
+              wording, with the one-grant footnote, is on the real consent
+              screen where it is agreed to. */}
+          <PostingAbilities app={DEMO_APP} brief />
 
           <div className={mutedXs}>
             {t('authorize.sends_you_to')}{' '}

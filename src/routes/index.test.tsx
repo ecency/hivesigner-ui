@@ -72,6 +72,27 @@ describe('/', () => {
     expect(screen.queryByText(/powering apps/i)).toBeNull();
   });
 
+  it('makes each promise once: no promise cards or chips between the hero and the trust strip', () => {
+    renderHome();
+    // The lede says it, the trust strip restates it in four words; nothing
+    // in between repeats it.
+    expect(screen.queryByText(/keys never leave this device/i)).toBeNull();
+    expect(screen.queryByText(/keys stay on your device/i)).toBeNull();
+    expect(screen.queryByText(/see what you are signing/i)).toBeNull();
+    expect(screen.getByText(/local key storage/i)).toBeInTheDocument();
+    expect(screen.getByText(/transaction preview/i)).toBeInTheDocument();
+  });
+
+  it('keeps the illustration to the shape of a request: ability titles, no explanations', () => {
+    const { container } = renderHome();
+    const picture = container.querySelector('figure [aria-hidden="true"]');
+    expect(picture).toHaveTextContent(/post and comment/i);
+    expect(picture).not.toHaveTextContent(
+      /publish posts and comments on your behalf/i,
+    );
+    expect(picture).not.toHaveTextContent(/one posting-authority grant/i);
+  });
+
   it('shows the consent illustration as a picture and the developer band', () => {
     const { container } = renderHome();
     expect(

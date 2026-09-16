@@ -17,10 +17,17 @@ import { mutedXs } from '@/components/ui';
 export function PostingAbilities({
   app,
   compact = false,
+  brief = false,
 }: {
   app: string;
   /** Tighter spacing for the consent card, which sits above two buttons. */
   compact?: boolean;
+  /**
+   * Titles only, no explanations and no footnote: for the landing-page
+   * illustration, which is a picture of the request, not the request. The
+   * real consent screen always shows the full list.
+   */
+  brief?: boolean;
 }) {
   const { t } = useTranslation();
 
@@ -67,20 +74,27 @@ export function PostingAbilities({
         className={`m-0 flex list-none flex-col p-0 ${compact ? 'gap-2' : 'gap-3'}`}
       >
         {abilities.map((a) => (
-          <li key={a.title} className="flex items-start gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-subtle text-ink">
+          <li
+            key={a.title}
+            className={`flex gap-3 ${brief ? 'items-center' : 'items-start'}`}
+          >
+            <span
+              className={`flex shrink-0 items-center justify-center rounded-lg bg-subtle text-ink ${brief ? 'h-7 w-7' : 'h-8 w-8'}`}
+            >
               {a.icon}
             </span>
             <div className="min-w-0">
               <div className="text-[14px] font-semibold">{a.title}</div>
-              <div className={mutedXs}>{a.body}</div>
+              {!brief && <div className={mutedXs}>{a.body}</div>}
             </div>
           </li>
         ))}
       </ul>
-      <p className={`${mutedXs} leading-[1.5]`}>
-        {t('index.preview_one_grant')}
-      </p>
+      {!brief && (
+        <p className={`${mutedXs} leading-[1.5]`}>
+          {t('index.preview_one_grant')}
+        </p>
+      )}
     </div>
   );
 }

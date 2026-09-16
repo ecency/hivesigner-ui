@@ -24,14 +24,17 @@ describe('ConsentPreview', () => {
     expect(screen.queryByRole('button')).toBeNull();
   });
 
-  it('frames the abilities as one posting-authority grant', () => {
+  it('frames the abilities as one posting-authority grant, titles only', () => {
     render(<ConsentPreview />);
     expect(
       screen.getByText(/with your posting authority/i),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/one posting-authority grant/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/post and comment/i)).toBeInTheDocument();
+    // The explanations and the one-grant footnote are on the real consent
+    // screen (AuthorizeConsent.test pins them there); the picture shows only
+    // the shape of a request.
+    expect(screen.queryByText(/publish posts and comments/i)).toBeNull();
+    expect(screen.queryByText(/one posting-authority grant/i)).toBeNull();
   });
 
   it('shows a placeholder account, never a real one', () => {

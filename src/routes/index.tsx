@@ -24,6 +24,12 @@ export const Route = createFileRoute('/')({
 // Hivesigner does, where the keys live, and who already uses it - and SHOWS
 // the thing it is describing, a permission request, rather than only talking
 // about it. Every section stacks on a phone and spreads out from `sm`/`lg`.
+//
+// Each promise is made ONCE. An earlier version said "keys stay on your
+// device / review what you sign / posting only" three times over (a row of
+// chips under the hero, three cards, then the trust strip) and the page read
+// as padding. The lede states them, the illustration shows them and the
+// trust strip at the foot restates them in four words each. Nothing between.
 
 const iconProps = {
   width: 18,
@@ -36,18 +42,6 @@ const iconProps = {
   strokeLinejoin: 'round' as const,
 };
 
-const LockIcon = (
-  <svg {...iconProps} aria-hidden="true">
-    <rect x="4" y="10" width="16" height="10" rx="2" />
-    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-  </svg>
-);
-const EyeIcon = (
-  <svg {...iconProps} aria-hidden="true">
-    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-);
 const ShieldIcon = (
   <svg {...iconProps} aria-hidden="true">
     <path d="M12 3 4 6v5.5c0 4.6 3.2 7.6 8 8.5 4.8-.9 8-3.9 8-8.5V6l-8-3Z" />
@@ -78,39 +72,6 @@ const DocIcon = (
     <path d="M14 3v5h5M10 13h6M10 17h6" />
   </svg>
 );
-
-/** A hero-row point: icon chip and a short label, three across. */
-function MiniPoint({ label, icon }: { label: string; icon: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-ink">
-        {icon}
-      </span>
-      <span className="text-[13.5px] font-semibold leading-tight">{label}</span>
-    </div>
-  );
-}
-
-/** A full point card: icon, title, body. */
-function Point({
-  title,
-  body,
-  icon,
-}: {
-  title: string;
-  body: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className={`${card} flex flex-col gap-2.5 p-5`}>
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-soft text-brand-ink">
-        {icon}
-      </div>
-      <h3 className="m-0 text-[16px] font-semibold">{title}</h3>
-      <p className={`${muted} leading-[1.55]`}>{body}</p>
-    </div>
-  );
-}
 
 /** A trust-strip item: icon, title, one-line body. */
 function TrustItem({
@@ -223,36 +184,12 @@ function Home() {
                 {t('index.browse_apps')}
               </Link>
             </div>
-            <div className="grid grid-cols-1 gap-3 pt-1 sm:grid-cols-3 sm:gap-4">
-              <MiniPoint label={t('index.mini_keys')} icon={LockIcon} />
-              <MiniPoint label={t('index.mini_review')} icon={EyeIcon} />
-              <MiniPoint label={t('index.mini_scope')} icon={ShieldIcon} />
-            </div>
           </div>
 
           <div className="w-full max-w-md lg:ml-auto lg:max-w-none">
             <ConsentPreview />
           </div>
         </div>
-      </section>
-
-      {/* THREE PROMISES, in full. */}
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Point
-          title={t('index.keys_title')}
-          body={t('index.keys_body')}
-          icon={LockIcon}
-        />
-        <Point
-          title={t('index.review_title')}
-          body={t('index.review_body')}
-          icon={EyeIcon}
-        />
-        <Point
-          title={t('index.scope_title')}
-          body={t('index.scope_body')}
-          icon={ShieldIcon}
-        />
       </section>
 
       {/* WHO ALREADY USES IT. Nothing renders while the list is loading or if
