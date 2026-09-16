@@ -61,7 +61,9 @@ so do it deliberately and say so in the release notes.
   `[state=<s>&]access_token=<token>&expires_in=604800&username=<u>`.
 - The parameters are appended to the callback string with `?` when it has no query and `&` when
   it has one, before any `#fragment`. The callback's own query is preserved byte for byte.
-- A sign callback (`cb=`) with no `{{sig|id|block|txn|data}}` template gets nothing appended.
+- A sign callback (`cb=`) has its `{{sig}}`, `{{id}}`, `{{block}}`, `{{txn}}` and `{{data}}`
+  placeholders filled. A callback with none of them gets the transaction id appended as `id=`,
+  with `?` when it has no query and `&` when it has one.
 
 ## Stored data (existing users must stay logged in)
 
