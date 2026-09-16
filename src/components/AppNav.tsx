@@ -1,23 +1,22 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 
-// The persistent navigation the Nuxt app had (`hidden sm:flex` in
-// components/Navigation.vue) and the React rewrite dropped. Without it a desktop
-// user who lands on /sign or /accounts has no way to reach anything else.
+// The persistent navigation. It lives INSIDE the header bar and is shown on
+// every screen at EVERY width: inline beside the brand once the bar is wide
+// enough, and as a full-width scroll row under it on a phone. It must never be
+// hidden at a breakpoint - the rewrite once rendered it only inside
+// `sm:hidden`, so navigation vanished at 640px and above.
 //
-// Shown on every screen at EVERY width, in its own bar under the brand bar: a
-// scrollable row when the viewport is narrow, roomier when it is not. It must
-// never be hidden at a breakpoint - that is the bug this component exists to fix.
+// Settings, About and the message tools moved to the footer: they are
+// destinations a visitor reaches once, not sections they move between.
 export function AppNav() {
   const { t } = useTranslation();
 
-  // Same destinations the Nuxt navigation offered. Docs is external.
   const links = [
     { to: '/apps', label: t('footer.apps') },
     { to: '/accounts', label: t('footer.accounts') },
     { to: '/signs', label: t('footer.signs') },
-    { to: '/settings', label: t('footer.settings') },
-    { to: '/about', label: t('footer.about') },
+    { to: '/developers', label: t('footer.developers') },
   ] as const;
 
   // The active item is marked with an underline, so the current section reads
@@ -37,11 +36,11 @@ export function AppNav() {
     // gone now; this keeps the axis pinned so the next one cannot do it again.
     //
     // `scroll-row` then hides the horizontal bar, which is real at ~320px where
-    // six items genuinely do not fit. The row still scrolls by wheel, trackpad,
-    // touch and keyboard.
+    // five items genuinely do not fit. The row still scrolls by wheel,
+    // trackpad, touch and keyboard.
     <nav
       aria-label="Main"
-      className="scroll-row -mx-1 flex items-center gap-3 overflow-x-auto overflow-y-hidden px-1 whitespace-nowrap text-[13px] text-muted sm:gap-6"
+      className="scroll-row -mx-1 flex items-center gap-4 overflow-x-auto overflow-y-hidden px-1 whitespace-nowrap text-[13px] text-muted lg:gap-6"
     >
       {links.map((l) => (
         <Link
