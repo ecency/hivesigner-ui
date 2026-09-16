@@ -246,9 +246,11 @@ export async function addAccount(
     }
   }
   const existing = state.accountsKeychains[username];
+  // Oldest to newest: the blob, then the siblings the old /auths page wrote
+  // over it, then what this session holds, then what is being added now.
   const merged: Keys = {
-    ...(existing ? legacySiblings(existing) : {}),
     ...stored,
+    ...(existing ? legacySiblings(existing) : {}),
     ...(keyCache.get(username) ?? {}),
     ...keys,
   };
@@ -294,8 +296,11 @@ export async function unlockAccount(
   const record = state.accountsKeychains[username];
   // Keys the old /auths page stored ONLY as plaintext siblings of the blob:
   // fold them in now that the passcode is at hand.
+  // Siblings LAST: the old /auths page wrote a re-added key as a sibling
+  // beside a blob that still held the previous one, so the sibling is the
+  // newer copy of any role present in both.
   const siblings = legacySiblings(record);
-  const keys: Keys = { ...siblings, ...(await readKeys(field, passcode)) };
+  const keys: Keys = { ...(await readKeys(field, passcode)), ...siblings };
   keyCache.set(username, keys);
 
   // Rollback window: the record stays EXACTLY as the old app wrote it (blob
@@ -468,8 +473,9 @@ export async function autoUnlockPlaintext(): Promise<void> {
       // The Nuxt import form wrote every no-passcode key as a plaintext
       // sibling too, and /auths wrote a later key ONLY as a sibling. Fold
       // them into the blob so nothing is lost, then drop them.
+      // Siblings last: they are the newer copy of a role present in both.
       const siblings = legacySiblings(record);
-      const keys: Keys = { ...siblings, ...(await readKeys(record.password)) };
+      const keys: Keys = { ...(await readKeys(record.password)), ...siblings };
       keyCache.set(username, keys);
       changed = true;
       // Only once a rollback is off the table: Nuxt reads these siblings.

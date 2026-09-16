@@ -51,10 +51,15 @@ const isPlainObject = (v: unknown): v is Record<string, unknown> =>
 /** A list element: an integer written as text becomes a number (proposal
  * ids), anything else is kept. Account names cannot be all digits, so an
  * account list is never touched by this. */
-function listElement(v: unknown): unknown {
-  return typeof v === 'string' && /^-?\d+$/.test(v.trim())
-    ? Number(v.trim())
-    : v;
+function listElement(v: unknown, fieldName?: string): unknown {
+  const isDigits = typeof v === 'string' && /^-?\d+$/.test(v.trim());
+  if (!isDigits && typeof v !== 'number') return v;
+  // A proposal id list gets the same range check as the scalar proposal_id:
+  // an id above 2^53 was rounded by Number() and could name another proposal.
+  if (fieldName === 'proposal_ids') return toInt(v, 'proposal_id');
+  const n = typeof v === 'number' ? v : Number((v as string).trim());
+  if (!Number.isSafeInteger(n)) throw new Error(`not a safe integer: ${v}`);
+  return n;
 }
 
 /**
@@ -62,17 +67,19 @@ function listElement(v: unknown): unknown {
  * a JSON list, a bare scalar (`379`), a comma-separated list (`379,380`),
  * or an actual array from an encoded op.
  */
-function toArray(value: unknown): unknown[] {
-  if (Array.isArray(value)) return value.map(listElement);
-  if (typeof value === 'number' || typeof value === 'boolean') return [value];
+function toArray(value: unknown, fieldName?: string): unknown[] {
+  if (Array.isArray(value)) return value.map((e) => listElement(e, fieldName));
+  if (typeof value === 'number') return [listElement(value, fieldName)];
+  if (typeof value === 'boolean') return [value];
   if (typeof value === 'string') {
     const s = value.trim();
     if (s === '') return [];
     try {
       const parsed: unknown = JSON.parse(s);
-      if (Array.isArray(parsed)) return parsed.map(listElement);
+      if (Array.isArray(parsed))
+        return parsed.map((e) => listElement(e, fieldName));
       if (typeof parsed === 'number' || typeof parsed === 'string') {
-        return [listElement(parsed)];
+        return [listElement(parsed, fieldName)];
       }
       if (isPlainObject(parsed)) throw new Error('expected a list');
     } catch (e) {
@@ -83,7 +90,7 @@ function toArray(value: unknown): unknown[] {
       .split(',')
       .map((x) => x.trim())
       .filter((x) => x !== '')
-      .map(listElement);
+      .map((e) => listElement(e, fieldName));
   }
   throw new Error('expected a list');
 }
@@ -174,7 +181,7 @@ export function processValue(
       }
       return String(realValue);
     case 'array':
-      return toArray(realValue);
+      return toArray(realValue, fieldName);
     case 'object':
       return toObject(realValue);
     case 'json':

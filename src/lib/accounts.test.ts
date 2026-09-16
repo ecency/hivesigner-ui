@@ -291,6 +291,25 @@ describe('what the Nuxt app left in storage', () => {
     expect(localStorage.getItem('vuex__accounts')).toBe(before);
   });
 
+  it('prefers a sibling over the blob for the same role: the sibling is the newer key', async () => {
+    const { encodePlain } = await import('./keystore');
+    const { PrivateKey } = await import('@ecency/sdk/hive');
+    const OLD = PrivateKey.fromSeed('old-posting').toString();
+    const NEW = PrivateKey.fromSeed('new-posting').toString();
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({
+        selectedAccount: 'alice',
+        accountsKeychains: {
+          // Re-added through the old /auths page: the blob still holds OLD.
+          alice: { password: encodePlain({ posting: OLD }), posting: NEW },
+        },
+      }),
+    );
+    await autoUnlockPlaintext();
+    expect(getKeys('alice')?.posting).toBe(NEW);
+  });
+
   it('adds a key to a legacy account the way the old /auths page did: as a sibling, blob unchanged', async () => {
     const { PrivateKey } = await import('@ecency/sdk/hive');
     const ACTIVE = PrivateKey.fromSeed('added-active').toString();

@@ -161,3 +161,30 @@ describe('processValue — integers stay inside the range the chain serializes',
     expect(processValue({ type: 'amount' }, '1 HIVE', 1)).toBe('1.000 HIVE');
   });
 });
+
+describe('proposal id lists', () => {
+  it('range-checks every element like the scalar proposal_id, and refuses an unsafe id', () => {
+    const arr = { type: 'array' as const };
+    expect(processValue(arr, '[379, "380"]', 1, 'proposal_ids')).toEqual([
+      379, 380,
+    ]);
+    expect(() =>
+      processValue(arr, '[9007199254740993]', 1, 'proposal_ids'),
+    ).toThrow(/range/);
+    expect(() =>
+      processValue(arr, '9007199254740993', 1, 'proposal_ids'),
+    ).toThrow(/range/);
+    expect(() => processValue(arr, '[-1]', 1, 'proposal_ids')).toThrow(/range/);
+    expect(() =>
+      processValue(arr, [9007199254740993], 1, 'proposal_ids'),
+    ).toThrow(/range/);
+    // Other lists: digits become safe integers, names stay names.
+    expect(processValue(arr, 'alice,bob', 1, 'required_auths')).toEqual([
+      'alice',
+      'bob',
+    ]);
+    expect(() =>
+      processValue(arr, '[99999999999999999999]', 1, 'extensions'),
+    ).toThrow(/safe/);
+  });
+});
