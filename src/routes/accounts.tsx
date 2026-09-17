@@ -200,8 +200,8 @@ function AccountRow({
             <span className={labelText}>
               {t('accounts.passcode')} · @{username}
             </span>
-            {/* Not the site's password: a manager must neither fill the saved
-                Hive key in here nor offer to save the passcode. */}
+            {/* Not the site's password: kept out of managers' save and
+                update prompts (see SecretInput for what each one honours). */}
             <SecretInput
               className={field}
               name={`passcode-${username}`}

@@ -41,6 +41,10 @@ export function AddActiveKey({ username }: { username: string }) {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    // The button is disabled on exactly this condition, but a submit can
+    // arrive without it: an empty passcode would store the key unprotected,
+    // and a second submit while busy would run on the emptied fields.
+    if (!canSubmit) return;
     setError(null);
     setBusy(true);
     // Both secrets are taken out of their fields before anything else, so the
@@ -97,8 +101,10 @@ export function AddActiveKey({ username }: { username: string }) {
       );
     } finally {
       if (!added) {
-        setSecret(typed.secret);
-        setPasscode(typed.passcode);
+        // The fields are read-only while busy; only an empty one is refilled
+        // all the same, so nothing typed since is ever overwritten.
+        setSecret((current) => current || typed.secret);
+        setPasscode((current) => current || typed.passcode);
       }
       setBusy(false);
     }
@@ -120,6 +126,7 @@ export function AddActiveKey({ username }: { username: string }) {
           value={secret}
           onChange={setSecret}
           onEnter="submit-form"
+          readOnly={busy}
         />
         <span className={mutedXs}>{t('authorize.active_key_hint')}</span>
       </label>
@@ -129,6 +136,7 @@ export function AddActiveKey({ username }: { username: string }) {
             type="checkbox"
             className="accent-brand"
             checked={protect}
+            disabled={busy}
             onChange={(e) => setProtect(e.target.checked)}
           />
           <span>{t('import.protect_with_passcode')}</span>
@@ -143,6 +151,7 @@ export function AddActiveKey({ username }: { username: string }) {
             value={passcode}
             onChange={setPasscode}
             onEnter="submit-form"
+            readOnly={busy}
           />
           <span className={mutedXs}>{t('import.passcode_hint')}</span>
         </label>
@@ -158,6 +167,7 @@ export function AddActiveKey({ username }: { username: string }) {
             value={passcode}
             onChange={setPasscode}
             onEnter="submit-form"
+            readOnly={busy}
           />
           <span className={mutedXs}>
             {t('authorize.active_key_passcode_hint')}

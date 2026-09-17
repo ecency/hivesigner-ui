@@ -9,9 +9,11 @@ import { SecretInput } from './SecretInput';
 function Harness({
   onSubmit,
   onEnter,
+  disabled = false,
 }: {
   onSubmit: () => void;
   onEnter?: 'submit-form' | (() => void);
+  disabled?: boolean;
 }) {
   const [a, setA] = useState('');
   const [b, setB] = useState('');
@@ -33,7 +35,9 @@ function Harness({
         Second
         <SecretInput name="second" value={b} onChange={setB} />
       </label>
-      <button type="submit">Go</button>
+      <button type="submit" disabled={disabled}>
+        Go
+      </button>
     </form>
   );
 }
@@ -95,6 +99,38 @@ describe('SecretInput', () => {
     expect(
       fireEvent.keyDown(screen.getByLabelText('Second'), { key: 'a' }),
     ).toBe(true);
+  });
+
+  it('submits nothing on Enter while the form’s button is disabled, as implicit submission would', async () => {
+    const onSubmit = vi.fn();
+    render(<Harness onSubmit={onSubmit} onEnter="submit-form" disabled />);
+    await userEvent.setup().type(screen.getByLabelText('First'), 'x{Enter}');
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('still submits where the browser has no requestSubmit', async () => {
+    const original = HTMLFormElement.prototype.requestSubmit;
+    // @ts-expect-error simulating an engine without it
+    HTMLFormElement.prototype.requestSubmit = undefined;
+    try {
+      const onSubmit = vi.fn();
+      render(<Harness onSubmit={onSubmit} onEnter="submit-form" />);
+      await userEvent.setup().type(screen.getByLabelText('First'), 'x{Enter}');
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+    } finally {
+      HTMLFormElement.prototype.requestSubmit = original;
+    }
+  });
+
+  it('leaves Enter alone while an input method is composing', () => {
+    const onEnter = vi.fn();
+    render(<Harness onSubmit={() => {}} onEnter={onEnter} />);
+    const notCancelled = fireEvent.keyDown(screen.getByLabelText('First'), {
+      key: 'Enter',
+      isComposing: true,
+    });
+    expect(notCancelled).toBe(true);
+    expect(onEnter).not.toHaveBeenCalled();
   });
 
   it('calls a handler on Enter instead, when given one', async () => {

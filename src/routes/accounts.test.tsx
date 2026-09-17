@@ -261,6 +261,11 @@ describe('unlock and password managers (#136)', () => {
     ) as HTMLInputElement;
     expect(field).toHaveAttribute('autocomplete', 'one-time-code');
     expect(field).toHaveAttribute('data-1p-ignore', 'true');
+    // Enter on an empty field does nothing: no attempt, no error.
+    await user.type(field, '{Enter}');
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(isUnlocked('bob')).toBe(false);
     await user.type(field, 'pass{Enter}');
     await waitFor(() => expect(rs.navigate).toHaveBeenCalled(), {
       timeout: 10_000,

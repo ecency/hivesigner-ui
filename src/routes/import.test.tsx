@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -243,4 +243,57 @@ describe('import and password managers (#136)', () => {
     expect(isUnlocked('alice')).toBe(true);
     expect(passcodeAtNavigation).toBe('');
   }, 30_000);
+});
+
+describe('import refuses a submit its button would refuse', () => {
+  async function typeInto(name: string, text: string) {
+    await userEvent
+      .setup()
+      .type(
+        document.querySelector(`input[name="${name}"]`) as HTMLElement,
+        text,
+      );
+  }
+
+  it('does not add an account under a passcode shorter than allowed', async () => {
+    getAccount.mockResolvedValue(account());
+    render(<Import />);
+    await typeInto('username', 'alice');
+    await typeInto('password', POSTING_WIF);
+    await typeInto('passcode', 'abc{Enter}');
+    await new Promise((r) => setTimeout(r, 50));
+    expect(getAccount).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+    expect(localStorage.getItem('vuex__accounts')).toBeNull();
+  });
+
+  it('refuses the same when the form is submitted without its button', async () => {
+    getAccount.mockResolvedValue(account());
+    render(<Import />);
+    await typeInto('username', 'alice');
+    await typeInto('password', POSTING_WIF);
+    await typeInto('passcode', 'abc');
+    fireEvent.submit(document.querySelector('form') as HTMLFormElement);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(getAccount).not.toHaveBeenCalled();
+    expect(localStorage.getItem('vuex__accounts')).toBeNull();
+  });
+
+  it('does not look up an empty username', async () => {
+    render(<Import />);
+    await typeInto('password', POSTING_WIF);
+    await typeInto('passcode', 'pass1234{Enter}');
+    await new Promise((r) => setTimeout(r, 50));
+    expect(getAccount).not.toHaveBeenCalled();
+  });
+
+  it('adds once, however often Enter is pressed while it works', async () => {
+    getAccount.mockReturnValue(new Promise(() => {}));
+    render(<Import />);
+    await typeInto('username', 'alice');
+    await typeInto('password', POSTING_WIF);
+    await typeInto('passcode', 'pass1234{Enter}{Enter}{Enter}');
+    await new Promise((r) => setTimeout(r, 50));
+    expect(getAccount).toHaveBeenCalledTimes(1);
+  });
 });

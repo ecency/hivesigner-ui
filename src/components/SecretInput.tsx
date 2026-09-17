@@ -11,12 +11,16 @@ import { createPortal } from 'react-dom';
  * offer to overwrite the saved key with the passcode. Four layers keep that
  * from happening, because no single signal is honoured by every manager:
  *
- * - `autocomplete="one-time-code"`: Chromium's password manager does not treat
- *   such a field as a password at all, so it neither saves it nor suggests one.
+ * - `autocomplete="one-time-code"`: Chromium's password manager parses such a
+ *   field only as a fallback, which never raises an automatic save or update
+ *   prompt and never offers a generated password. It may still list the
+ *   saved credential when the field is clicked.
  * - The attributes 1Password, LastPass, Bitwarden and Dashlane look for.
- * - Its own detached form. A manager pairs password fields by form, so the
- *   secret is never read as the new password of the login beside it; Firefox,
- *   which honours neither signal above, pairs by form as well.
+ * - Its own detached form. Managers pair password fields by form, so the
+ *   secret is never read as the new password of the login beside it; that is
+ *   what removes the "update the saved key" path in Firefox too, which
+ *   honours neither signal above (it may still offer to save the passcode as
+ *   a separate entry, or fill a lone saved login into it).
  * - The value is cleared by the caller as soon as it has been used, so a
  *   manager that captures on navigation or on removal finds nothing.
  *
@@ -25,7 +29,8 @@ import { createPortal } from 'react-dom';
  *
  * Because the input belongs to another form, Enter no longer submits the form
  * it sits in. `onEnter` restores that: `'submit-form'` submits the form the
- * field sits in, a function is called instead.
+ * field sits in the way implicit submission does, a function is called
+ * instead.
  */
 export function SecretInput({
   name,
@@ -34,6 +39,7 @@ export function SecretInput({
   onEnter,
   className,
   autoFocus,
+  readOnly,
 }: {
   name: string;
   value: string;
@@ -41,6 +47,7 @@ export function SecretInput({
   onEnter?: 'submit-form' | (() => void);
   className?: string;
   autoFocus?: boolean;
+  readOnly?: boolean;
 }) {
   const formId = `secret-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
@@ -49,7 +56,16 @@ export function SecretInput({
     // this secret, which is what managers capture.
     e.preventDefault();
     if (onEnter === 'submit-form') {
-      e.currentTarget.closest('form')?.requestSubmit();
+      // Through the form's default button, as implicit submission does: a
+      // disabled button (an incomplete or busy form) submits nothing, where
+      // requestSubmit() would submit anyway. A click also works where
+      // requestSubmit is missing (older Safari).
+      const form = e.currentTarget.closest('form');
+      const button = form?.querySelector<HTMLElement>(
+        'button:not([type]), button[type="submit"], input[type="submit"]',
+      );
+      if (button) button.click();
+      else form?.requestSubmit?.();
     } else {
       onEnter?.();
     }
@@ -72,6 +88,7 @@ export function SecretInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
+        readOnly={readOnly}
         // biome-ignore lint/a11y/noAutofocus: only where the caller just opened the field
         autoFocus={autoFocus}
       />

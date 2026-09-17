@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -279,6 +279,51 @@ describe('consent with only a posting key on this device', () => {
     await screen.findByRole('button', { name: /^authorize$/i });
     expect(getKeys('alice')?.active).toBe(active.toString());
   });
+
+  it('adds nothing on Enter while the form is incomplete, and once while it works', async () => {
+    await addAccount('alice', { posting: posting.toString() });
+    renderConsent();
+    const user = userEvent.setup();
+    await screen.findByTestId('add-active-key');
+    let lookups = 0;
+    let release: (value: unknown) => void = () => {};
+    chain.getAccount.mockImplementation(async (name: string) => {
+      if (name !== 'alice') return appAccount;
+      lookups += 1;
+      await new Promise((r) => {
+        release = r;
+      });
+      return alice();
+    });
+    // Protection is on and the new passcode is too short: Enter adds nothing,
+    // where it used to store the key under it (or unprotected when empty).
+    await user.type(keyField(), active.toString());
+    await user.type(newPasscode(), 'ab{Enter}');
+    await new Promise((r) => setTimeout(r, 50));
+    expect(lookups).toBe(0);
+    expect(getKeys('alice')?.active).toBeUndefined();
+    // Nor when the form is submitted without its button, with no passcode:
+    // an empty passcode would have stored the key unprotected.
+    await user.clear(newPasscode());
+    fireEvent.submit(screen.getByTestId('add-active-key'));
+    await new Promise((r) => setTimeout(r, 50));
+    expect(lookups).toBe(0);
+    await user.type(newPasscode(), 'ab');
+    // Complete, then Enter three times while the lookup is pending.
+    await user.type(newPasscode(), 'cd{Enter}{Enter}{Enter}');
+    await new Promise((r) => setTimeout(r, 50));
+    expect(lookups).toBe(1);
+    // Nothing can be typed over the emptied fields meanwhile.
+    expect(keyField()).toHaveAttribute('readonly');
+    expect(newPasscode()).toHaveAttribute('readonly');
+    release(undefined);
+    await screen.findByRole(
+      'button',
+      { name: /^authorize$/i },
+      { timeout: 10_000 },
+    );
+    expect(getKeys('alice')?.active).toBe(active.toString());
+  }, 30_000);
 
   it('protects an unprotected account with a new passcode by default', async () => {
     await addAccount('alice', { posting: posting.toString() });

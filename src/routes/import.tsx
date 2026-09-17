@@ -55,6 +55,10 @@ function Import() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    // The button is disabled on exactly this condition, but a submit can
+    // arrive without it (Enter, a script): never add an account under a
+    // passcode the form would refuse, or twice at once.
+    if (!canSubmit) return;
     setError(null);
     setBusy(true);
     try {
