@@ -1,6 +1,7 @@
+import * as Sentry from '@sentry/browser';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { isChunkLoadError, reloadOnce } from '@/lib/chunk-reload';
+import { isChunkLoadError } from '@/lib/chunk-reload';
 import { getStoredLanguage, setLanguage } from '@/lib/prefs';
 import {
   browserLanguages,
@@ -12,7 +13,7 @@ import {
 import { english, loaders } from './locales';
 
 // Starts in English, the only dictionary in the bundle, and moves to the
-// user's language once its dictionary has loaded (see `languageReady`).
+// user's language once its dictionary has loaded (see `startLanguage`).
 //
 // The dictionaries use single-brace {item} placeholders (Vue i18n style, kept
 // from the previous app), so i18next's interpolation is configured to match.
@@ -55,24 +56,41 @@ export async function loadLanguage(lang: Language): Promise<void> {
 // override a language picked while it was loading.
 let latest = 0;
 
+const reported = new Set<string>();
+
+/** Tell error monitoring, once per language per page load, that one failed. */
+function reportFailure(lang: Language, error: unknown): void {
+  if (reported.has(lang)) return;
+  reported.add(lang);
+  queueMicrotask(() => {
+    try {
+      Sentry.captureMessage(`language_load_failed: ${lang}`, {
+        level: 'warning',
+        fingerprint: ['language_load_failed'],
+        tags: { chunk: String(isChunkLoadError(error)) },
+      });
+    } catch {
+      // Reporting must never break the page it reports on.
+    }
+  });
+}
+
 /**
  * Show the app in `lang`. `remember` is for a language the user picked: it is
- * stored, and if its file is gone because a release replaced this page's
- * files, the page reloads once to pick it up. Resolves false when the
- * language could not be loaded; the page then stays as it was.
+ * stored once it is showing. Resolves false when the language could not be
+ * loaded (the page stays as it was, nothing is stored) or a newer request
+ * took over.
  */
 export async function switchLanguage(
   lang: Language,
   { remember = false }: { remember?: boolean } = {},
 ): Promise<boolean> {
   const request = ++latest;
+  deferred = null;
   try {
     await loadLanguage(lang);
   } catch (error) {
-    if (remember && request === latest) {
-      setLanguage(lang);
-      if (isChunkLoadError(error)) reloadOnce();
-    }
+    reportFailure(lang, error);
     return false;
   }
   if (request !== latest) return false;
@@ -81,17 +99,60 @@ export async function switchLanguage(
   return true;
 }
 
-/** The language to start in: the user's pick, else the browser's. */
-export function initialLanguage(): Language {
-  return getStoredLanguage() ?? detectLanguage(browserLanguages());
+// Screens where the user reads a request before approving it. A language that
+// arrives after such a screen is showing waits for the next page, rather than
+// rewriting (and for Arabic and Persian, mirroring) what is being read.
+const APPROVAL = /^\/(sign|oauth2|authorize|revoke|login|login-request)(\/|$)/;
+
+let deferred: { lang: Language; path: string } | null = null;
+
+/** Apply a language that was held back, once the user is on another page. */
+export function applyDeferredLanguage(pathname: string): void {
+  if (!deferred || deferred.path === pathname) return;
+  const { lang } = deferred;
+  deferred = null;
+  void i18n.changeLanguage(lang);
 }
 
-/** Settles once the starting language is shown, or could not be loaded. */
-export const languageReady: Promise<void> = (() => {
-  const lang = initialLanguage();
-  return lang === 'en'
-    ? Promise.resolve()
-    : switchLanguage(lang).then(() => undefined);
-})();
+/**
+ * Start the app in its language: the user's pick, else the browser's, else
+ * English. Settles once that language is showing, or after `waitMs`, so the
+ * first screen can render; a language that loads later still applies (see
+ * APPROVAL). A pick whose file cannot be loaded falls back to the browser's
+ * language rather than straight to English.
+ */
+export function startLanguage(
+  waitMs: number,
+  pathname: () => string = () => window.location.pathname,
+): Promise<void> {
+  const candidates = [
+    ...new Set([getStoredLanguage(), detectLanguage(browserLanguages())]),
+  ].filter((lang): lang is Exclude<Language, 'en'> => !!lang && lang !== 'en');
+  if (candidates.length === 0) return Promise.resolve();
+  const request = ++latest;
+  let rendered = false;
+  const shown = (async () => {
+    for (const lang of candidates) {
+      try {
+        await loadLanguage(lang);
+      } catch (error) {
+        reportFailure(lang, error);
+        continue;
+      }
+      if (request !== latest) return;
+      const path = pathname();
+      if (rendered && APPROVAL.test(path)) {
+        deferred = { lang, path };
+        return;
+      }
+      await i18n.changeLanguage(lang);
+      return;
+    }
+  })();
+  const waited = new Promise<void>((resolve) => setTimeout(resolve, waitMs));
+  return Promise.race([shown, waited]).then(() => {
+    rendered = true;
+  });
+}
 
 export default i18n;

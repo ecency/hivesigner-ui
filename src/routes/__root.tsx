@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { AppFooter } from '@/components/AppFooter';
 import { AppHeader } from '@/components/AppHeader';
 import { gutter } from '@/components/ui';
+import { applyDeferredLanguage } from '@/i18n';
 import { applyPageMeta } from '@/lib/page-meta';
 
 export const Route = createRootRoute({
@@ -21,6 +22,7 @@ function RootLayout() {
   // The tab title is in the page's language, and changes with it.
   const { t } = useTranslation();
   useEffect(() => {
+    applyDeferredLanguage(pathname);
     // The define is absent under vitest, which has no build step; the page's
     // own origin is the right answer there and a fine fallback anywhere.
     applyPageMeta(

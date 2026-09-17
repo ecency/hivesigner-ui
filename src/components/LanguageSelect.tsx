@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { switchLanguage } from '@/i18n';
 import { isLanguage, LANGUAGES, type Language } from '@/i18n/languages';
@@ -44,38 +44,54 @@ export function LanguageSelect({
   const { t, i18n } = useTranslation();
   // The pick shows at once, even while its dictionary is still on the way.
   const [pending, setPending] = useState<Language | null>(null);
+  const [failed, setFailed] = useState(false);
+  // Only the newest pick answers: an older one that settles later must not
+  // report on the newer one's behalf.
+  const newest = useRef('');
   const current: Language = isLanguage(i18n.language) ? i18n.language : 'en';
 
   async function pick(value: string) {
     if (!isLanguage(value)) return;
+    newest.current = value;
     setPending(value);
+    setFailed(false);
     const applied = await switchLanguage(value, { remember: true });
+    if (newest.current !== value) return;
     setPending(null);
+    // The menu shows the language the page is in again; say why.
+    setFailed(!applied);
     onPicked?.(applied);
   }
 
   return (
-    <div className={`relative ${className}`}>
-      <GlobeIcon />
-      {/* The names are each language's own: never machine-translated. */}
-      <select
-        translate="no"
-        aria-label={t('settings.language')}
-        value={pending ?? current}
-        onChange={(e) => pick(e.target.value)}
-        className={`${tall ? 'h-11 text-[15px]' : 'h-9 text-[13px]'} w-full cursor-pointer rounded-lg border border-line bg-surface ps-8 pe-3 text-ink`}
-      >
-        {LANGUAGES.map((l) => (
-          <option
-            key={l.code}
-            value={l.code}
-            lang={'htmlLang' in l ? l.htmlLang : l.code}
-            dir={'rtl' in l ? 'rtl' : 'ltr'}
-          >
-            {l.name}
-          </option>
-        ))}
-      </select>
+    <div className={className}>
+      <div className="relative">
+        <GlobeIcon />
+        {/* The names are each language's own: never machine-translated. */}
+        <select
+          translate="no"
+          aria-label={t('settings.language')}
+          value={pending ?? current}
+          onChange={(e) => pick(e.target.value)}
+          className={`${tall ? 'h-11 text-[15px]' : 'h-9 text-[13px]'} w-full cursor-pointer rounded-lg border border-line bg-surface ps-8 pe-3 text-ink`}
+        >
+          {LANGUAGES.map((l) => (
+            <option
+              key={l.code}
+              value={l.code}
+              lang={'htmlLang' in l ? l.htmlLang : l.code}
+              dir={'rtl' in l ? 'rtl' : 'ltr'}
+            >
+              {l.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      {failed && (
+        <output className="mt-1 block text-[12px] text-warn">
+          {t('common.try_again')}
+        </output>
+      )}
     </div>
   );
 }

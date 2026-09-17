@@ -4,7 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../i18n';
 import { LANGUAGES } from '../i18n/languages';
 
-const h = vi.hoisted(() => ({ failNext: false }));
+const h = vi.hoisted(() => ({
+  failNext: false,
+  slowNext: false,
+  finishSlow: () => {},
+}));
 vi.mock('@/i18n', async (importOriginal) => {
   const real = await importOriginal<typeof import('@/i18n')>();
   return {
@@ -13,6 +17,13 @@ vi.mock('@/i18n', async (importOriginal) => {
       if (h.failNext) {
         h.failNext = false;
         return Promise.resolve(false);
+      }
+      if (h.slowNext) {
+        // A pick that another one overtakes: it settles last, unapplied.
+        h.slowNext = false;
+        return new Promise<boolean>((resolve) => {
+          h.finishSlow = () => resolve(false);
+        });
       }
       return real.switchLanguage(...args);
     },
@@ -63,6 +74,28 @@ describe('LanguageSelect', () => {
     await waitFor(() => expect(onPicked).toHaveBeenCalledWith(false));
     expect(i18n.language).toBe('en');
     expect(screen.getByRole('combobox')).toHaveValue('en');
+    expect(screen.getByRole('status')).toHaveTextContent(
+      i18n.t('common.try_again'),
+    );
+    // A pick that works clears it.
+    await userEvent.setup().selectOptions(screen.getByRole('combobox'), 'nl');
+    await waitFor(() => expect(i18n.language).toBe('nl'));
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('answers only for the newest pick', async () => {
+    const onPicked = vi.fn();
+    render(<LanguageSelect onPicked={onPicked} />);
+    const user = userEvent.setup();
+    h.slowNext = true;
+    await user.selectOptions(screen.getByRole('combobox'), 'fa');
+    await user.selectOptions(screen.getByRole('combobox'), 'it');
+    await waitFor(() => expect(i18n.language).toBe('it'));
+    h.finishSlow();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(onPicked.mock.calls).toEqual([[true]]);
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.getByRole('combobox')).toHaveValue('it');
   });
 
   it('follows a language changed elsewhere', async () => {

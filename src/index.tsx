@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom/client';
 import './globals.css';
 import { ErrorPage } from './components/ErrorPage';
 import { NotFound } from './components/NotFound';
-import { languageReady } from './i18n';
+import { startLanguage } from './i18n';
 import {
   autoUnlockPlaintext,
   migrateLegacyKeychain,
@@ -75,7 +75,8 @@ const queryClient = new QueryClient({
 // Someone reading in another language gets the first screen in it rather than
 // a flash of English: the render waits for that dictionary, which is one small
 // file. A slow network does not hold the page for long; the language then
-// switches when its file arrives.
+// switches when its file arrives (on a screen being approved, at the next
+// page).
 const LANGUAGE_WAIT_MS = 3000;
 
 function render() {
@@ -92,7 +93,4 @@ function render() {
   }
 }
 
-Promise.race([
-  languageReady,
-  new Promise((resolve) => setTimeout(resolve, LANGUAGE_WAIT_MS)),
-]).then(render);
+startLanguage(LANGUAGE_WAIT_MS).then(render);
