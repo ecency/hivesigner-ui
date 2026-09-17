@@ -100,10 +100,10 @@ function AuthorizedApps() {
             <div key={app} className={`${cardTight} flex items-center gap-3`}>
               <Avatar username={app} size="md" />
               <div
-                className="min-w-0 flex-1 break-all text-[15px] font-semibold [unicode-bidi:isolate]"
+                className="min-w-0 flex-1 break-all text-[15px] font-semibold"
                 translate="no"
               >
-                {`@${app}`}
+                <bdi>{`@${app}`}</bdi>
               </div>
               {!isUnlocked || !activeKey ? (
                 <Link

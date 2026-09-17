@@ -49,7 +49,7 @@ export function CurrentAccount({
           className="break-all text-[15px] font-semibold text-ink"
           translate="no"
         >
-          {`@${username}`}
+          <bdi>{`@${username}`}</bdi>
         </div>
       </div>
       {!busy && (

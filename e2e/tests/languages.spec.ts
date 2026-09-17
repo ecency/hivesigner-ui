@@ -124,6 +124,84 @@ test('an English browser stays in English, and the menu offers every language by
   );
 });
 
+/** Whether the first character of `text` is drawn left of the second. */
+async function readsLeftToRight(page: Page, text: string) {
+  return page.evaluate((wanted) => {
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+    );
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const at = node.textContent?.indexOf(wanted) ?? -1;
+      if (at < 0) continue;
+      const box = (i: number) => {
+        const range = document.createRange();
+        range.setStart(node, at + i);
+        range.setEnd(node, at + i + 1);
+        return range.getBoundingClientRect().x;
+      };
+      return box(0) < box(1);
+    }
+    throw new Error(`no text ${wanted}`);
+  }, text);
+}
+
+test('Arabic keeps names, amounts and hosts reading as they are', async ({
+  page,
+}) => {
+  await setUp(page);
+  await pick(page, 'ar');
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto(`${TRANSFER}&redirect_uri=${encodeURIComponent(CALLBACK)}`, {
+    waitUntil: 'networkidle',
+  });
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  // "@bob", not "bob@"; "1.000 HIVE", not "HIVE 1.000".
+  expect(await readsLeftToRight(page, '@bob')).toBe(true);
+  expect(await readsLeftToRight(page, '1.000 HIVE')).toBe(true);
+  expect(await readsLeftToRight(page, '@alice')).toBe(true);
+  // An Arabic memo still reads right to left inside it.
+  await page.goto(
+    '/sign/transfer?from=alice&to=bob&amount=1.000%20HIVE&memo=%D8%B4%D9%83%D8%B1%D8%A7',
+    { waitUntil: 'networkidle' },
+  );
+  expect(await readsLeftToRight(page, 'شكرا')).toBe(false);
+
+  // The sentence around the values still lines up right to left.
+  const memo = page.getByText('شكرا', { exact: true });
+  const card = await page
+    .locator('main .text-lg.font-bold')
+    .first()
+    .boundingBox();
+  const value = await memo.boundingBox();
+  expect((value?.x ?? 0) + (value?.width ?? 0)).toBeGreaterThan(
+    (card?.x ?? 0) + 100,
+  );
+
+  // A name in a block of its own reads the same and still lines up with the
+  // page's right edge.
+  await page.route('**/api/apps', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        apps: [{ username: 'peakd.app', about: 'Hive frontend', users: 3 }],
+        featured: [],
+      }),
+    }),
+  );
+  await page.goto('/apps', { waitUntil: 'networkidle' });
+  expect(await readsLeftToRight(page, '@peakd.app')).toBe(true);
+  const gap = await page
+    .locator('main bdi', { hasText: '@peakd.app' })
+    .evaluate(
+      (el) =>
+        (el.parentElement?.getBoundingClientRect().right ?? 0) -
+        el.getBoundingClientRect().right,
+    );
+  expect(gap).toBeLessThan(2);
+});
+
 test('Arabic lays the page out right to left', async ({ page }) => {
   await setUp(page);
   await pick(page, 'ar');
@@ -190,8 +268,8 @@ for (const language of LANGUAGES) {
           .map(([, value]) => value);
         await expect(title.locator('[translate="no"]')).toHaveText(values);
         await expect(
-          page.locator('main [translate="no"]', { hasText: 'спасибо' }),
-        ).toHaveText('спасибо — thanks');
+          page.getByText('спасибо — thanks', { exact: true }),
+        ).toHaveAttribute('translate', 'no');
       }
     }
     expect(errors).toEqual([]);

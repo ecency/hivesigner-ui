@@ -13,7 +13,7 @@ describe('Handle', () => {
     render(<Handle name="alice" className="font-bold" />);
     const el = screen.getByText('@alice');
     expect(el).toHaveAttribute('translate', 'no');
-    expect(el.className).toBe('[unicode-bidi:isolate] font-bold');
+    expect(el.className).toBe('font-bold');
     expect(el.childNodes).toHaveLength(1);
   });
 });
@@ -81,7 +81,7 @@ describe('Sentence', () => {
     const value = container.querySelector('b');
     expect(value).toHaveTextContent('app.example');
     expect(value).toHaveAttribute('translate', 'no');
-    expect(value?.className).toBe('[unicode-bidi:isolate] text-ink');
+    expect(value?.className).toBe('text-ink');
   });
 
   it('picks the plural form from count', () => {

@@ -341,9 +341,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           {!loginOnly && (
             <>
               {t('authorize.hive_account')}{' '}
-              <b className="[unicode-bidi:isolate]" translate="no">
-                {`@${clientLabel}`}
-              </b>
+              <b translate="no">{`@${clientLabel}`}</b>
             </>
           )}
           {callbackHost && (

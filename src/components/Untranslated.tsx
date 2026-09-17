@@ -5,9 +5,8 @@ import { sentenceParts } from '@/i18n/parts';
 // app ids, hosts. Chrome's page translation rewrites whatever text it is
 // given, and a signer's screens exist so the user can check these exactly.
 // Each value is the only child of its own element, so React replaces it whole
-// when it changes (see lib/translation-guard.ts).
-
-const ISOLATE = '[unicode-bidi:isolate]';
+// when it changes (see lib/translation-guard.ts), and runs in the direction
+// of its own text (globals.css), so "@bob" reads the same on an Arabic page.
 
 /** An account name as `@name`. */
 export function Handle({
@@ -18,7 +17,7 @@ export function Handle({
   className?: string;
 }) {
   return (
-    <span translate="no" className={`${ISOLATE} ${className}`.trim()}>
+    <span translate="no" className={className || undefined}>
       {`@${name}`}
     </span>
   );
@@ -56,7 +55,7 @@ export function Sentence({
             // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one fixed sentence
             key={i}
             translate="no"
-            className={`${ISOLATE} ${valueClassName}`.trim()}
+            className={valueClassName || undefined}
           >
             {part.value}
           </Value>

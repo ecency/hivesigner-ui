@@ -141,7 +141,7 @@ function AccountRow({
         <div className="min-w-0 flex-1">
           {/* Data, not copy: a page translator must leave the name alone. */}
           <div className="text-[15px] font-semibold break-all" translate="no">
-            {`@${username}`}
+            <bdi>{`@${username}`}</bdi>
           </div>
           {/* Each part in its own element. This line changes while the page
               is open, and a page translator swaps loose text for its own

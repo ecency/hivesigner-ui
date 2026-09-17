@@ -214,9 +214,7 @@ function Home() {
                 className={`${cardTight} flex items-center gap-2 py-2 text-[13px] font-semibold text-ink no-underline hover:border-line-strong`}
               >
                 <Avatar username={username} size="sm" />
-                <span className="[unicode-bidi:isolate]" translate="no">
-                  {`@${username}`}
-                </span>
+                <span translate="no">{`@${username}`}</span>
               </Link>
             ))}
           </div>

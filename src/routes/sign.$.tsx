@@ -106,7 +106,7 @@ function Parts({ parts }: { parts: TextPart[] }) {
       part
     ) : (
       // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one fixed line
-      <span key={i} translate="no" className="[unicode-bidi:isolate]">
+      <span key={i} translate="no">
         {part.value}
       </span>
     ),
@@ -342,24 +342,23 @@ function Sign() {
                     shape: break-all on it rendered "P/e/r/m/l/i/n/k" at 320px
                     beside a long value. A label that is a JSON KEY is
                     caller-chosen, so it may be arbitrarily long and must wrap
-                    instead of pushing the value off-screen; isolate it too,
-                    since it can carry bidi controls. */}
+                    instead of pushing the value off-screen, and it is data
+                    (translate="no"), so it is isolated in its own direction:
+                    it can carry bidi controls. */}
                 <span
-                  className={`${f.untrusted ? 'break-all' : 'shrink-0 whitespace-nowrap'} text-muted [unicode-bidi:isolate]`}
+                  className={`${f.untrusted ? 'break-all' : 'shrink-0 whitespace-nowrap [unicode-bidi:isolate]'} text-muted`}
                   translate={f.untrusted ? 'no' : undefined}
                 >
                   {`${f.label}:`}
                 </span>
-                {/* isolate: a value cannot reorder the text around it. */}
+                {/* A value runs in its own direction and cannot reorder the
+                    text around it (globals.css). */}
                 {f.parts ? (
                   <span className="break-all [unicode-bidi:isolate]">
                     <Parts parts={f.parts} />
                   </span>
                 ) : (
-                  <span
-                    className="break-all [unicode-bidi:isolate]"
-                    translate="no"
-                  >
+                  <span className="break-all" translate="no">
                     {f.value}
                   </span>
                 )}

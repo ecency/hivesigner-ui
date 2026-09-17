@@ -80,7 +80,7 @@ function LocalLogin({ next }: { next?: string }) {
           i18nKey="login.unlock_to_continue_to"
           values={{ target }}
           components={{
-            target: <b className="break-all [unicode-bidi:isolate]" />,
+            target: <b className="break-all" translate="no" />,
           }}
         />
       </p>
