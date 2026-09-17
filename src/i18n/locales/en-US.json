@@ -156,7 +156,7 @@
   "login": {
     "unlock_to_continue_to": "Unlock an account to continue to <target>{target}</target>.",
     "switch_an_account": "Switch an account",
-    "invalid_hs_password": "Invalid Hivesigner password"
+    "invalid_hs_password": "Wrong passcode."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} currently has permission to post on behalf of accounts that granted it. Add an account to revoke it.",
@@ -256,7 +256,7 @@
   "developers": {
     "developers": "Developers",
     "add_app_title": "Add your app",
-    "add_app_body": "Create a Hive account for your app, then set its type to \"application\" and register your redirect URIs on the profile page.",
+    "add_app_body": "Create a Hive account for your app, log in with it here and list your redirect URIs on its profile page.",
     "sdk_title": "Hivesigner JS SDK",
     "sdk_body": "Integrate with the official SDK: <sdk>hivesigner.js</sdk>.",
     "docs_at": "Full documentation is at <docs>docs.hivesigner.com</docs>."
