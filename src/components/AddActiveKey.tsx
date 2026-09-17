@@ -2,6 +2,7 @@ import { type FormEvent, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { SecretInput } from '@/components/SecretInput';
+import { Sentence } from '@/components/Untranslated';
 import {
   alertError,
   btnPrimary,
@@ -118,7 +119,10 @@ export function AddActiveKey({ username }: { username: string }) {
     >
       <label className={label}>
         <span className={labelText}>
-          {t('authorize.active_key_label', { account: username })}
+          <Sentence
+            k="authorize.active_key_label"
+            values={{ account: username }}
+          />
         </span>
         <SecretInput
           className={`${field} font-mono`}
@@ -159,7 +163,10 @@ export function AddActiveKey({ username }: { username: string }) {
       {encrypted && (
         <label className={label}>
           <span className={labelText}>
-            {t('authorize.active_key_passcode', { account: username })}
+            <Sentence
+              k="authorize.active_key_passcode"
+              values={{ account: username }}
+            />
           </span>
           <SecretInput
             className={field}

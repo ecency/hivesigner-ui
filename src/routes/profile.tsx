@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Handle } from '@/components/Untranslated';
 import {
   alertError,
   btnPrimary,
@@ -13,6 +14,7 @@ import {
   mutedXs,
   page,
 } from '@/components/ui';
+
 import { getKeys } from '@/lib/accounts';
 import { type Account, getAccount } from '@/lib/hive';
 import { isValidRedirectUri } from '@/lib/oauth';
@@ -209,7 +211,8 @@ function Profile() {
     // but stretching these inputs across it would only make them harder to read.
     <section className={`${page} ${formColumn} sm:max-w-xl`}>
       <h1 className={h1}>
-        {t('profile.profile')} · @{selectedAccount}
+        {`${t('profile.profile')} · `}
+        <Handle name={selectedAccount} />
       </h1>
 
       {field('name', t('profile.name'))}
@@ -234,8 +237,15 @@ function Profile() {
 
       {/* Full width under the thumb on a phone, its own size once there is room. */}
       {!isUnlocked || !postingKey ? (
-        <Link to="/accounts" className={`${btnPrimary} sm:self-start`}>
-          {t('accounts.unlock')} @{selectedAccount}
+        // Keyed: its children differ from a plain label's, so React builds it
+        // fresh rather than reworking another link's text (translation-guard).
+        <Link
+          key="unlock"
+          to="/accounts"
+          className={`${btnPrimary} sm:self-start`}
+        >
+          {`${t('accounts.unlock')} `}
+          <Handle name={selectedAccount} />
         </Link>
       ) : (
         <button

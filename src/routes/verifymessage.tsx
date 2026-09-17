@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import clsx from 'clsx';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Sentence } from '@/components/Untranslated';
 import {
   alertError,
   btnPrimary,
@@ -33,7 +34,8 @@ const alertOk =
 
 interface Result {
   ok: boolean;
-  text: string;
+  /** What to say, as a translation key: the account it names is data. */
+  note: { k: string; values?: Record<string, string> };
   author?: string;
   signer?: string;
   authority?: string | null;
@@ -52,7 +54,7 @@ function VerifyMessage() {
     if (!trimmed) {
       setResult({
         ok: false,
-        text: t('message_verification.payload_required'),
+        note: { k: 'message_verification.payload_required' },
       });
       return;
     }
@@ -62,7 +64,7 @@ function VerifyMessage() {
       if (!decoded) {
         setResult({
           ok: false,
-          text: t('message_verification.invalid_payload'),
+          note: { k: 'message_verification.invalid_payload' },
         });
         return;
       }
@@ -71,9 +73,10 @@ function VerifyMessage() {
       if (!account) {
         setResult({
           ok: false,
-          text: t('message_verification.account_not_found', {
-            username: author,
-          }),
+          note: {
+            k: 'message_verification.account_not_found',
+            values: { username: author },
+          },
         });
         return;
       }
@@ -84,9 +87,12 @@ function VerifyMessage() {
           : JSON.stringify(decoded.payload.signed_message);
       setResult({
         ok: role !== null,
-        text: role
-          ? t('message_verification.success', { username: author })
-          : t('message_verification.invalid_signature'),
+        note: role
+          ? {
+              k: 'message_verification.success',
+              values: { username: author },
+            }
+          : { k: 'message_verification.invalid_signature' },
         author,
         signer: decoded.signer,
         authority: role,
@@ -94,7 +100,7 @@ function VerifyMessage() {
       });
     } catch {
       // An RPC failure while looking up the account must not strand the UI.
-      setResult({ ok: false, text: t('common.try_again') });
+      setResult({ ok: false, note: { k: 'common.try_again' } });
     } finally {
       setBusy(false);
     }
@@ -150,7 +156,7 @@ function VerifyMessage() {
           role="alert"
           className={clsx(result.ok ? alertOk : alertError, 'font-semibold')}
         >
-          {result.text}
+          <Sentence k={result.note.k} values={result.note.values ?? {}} />
         </div>
       )}
 
@@ -160,17 +166,25 @@ function VerifyMessage() {
         <div
           className={`${card} flex flex-col gap-2 text-[13px] sm:grid sm:grid-cols-2 sm:gap-x-6`}
         >
-          <Row label={t('message_verification.author')}>@{result.author}</Row>
+          {/* What was verified is data: a page translator must leave the
+              name, the key and the message as they are (translate="no"), and
+              since the result changes in place on the next check, the name is
+              one string (see lib/translation-guard.ts). */}
+          <Row label={t('message_verification.author')}>
+            <span translate="no">{`@${result.author}`}</span>
+          </Row>
           <Row label={t('message_verification.recovered_key')}>
             {/* break-all is deliberate: it stops a crafted key from running
                 off the line. `mono` carries it. */}
-            <code className={`${mono} text-[11px]`}>{result.signer}</code>
+            <code className={`${mono} text-[11px]`} translate="no">
+              {result.signer}
+            </code>
           </Row>
           <Row label={t('message_verification.matched_authority')}>
             {result.authority ?? t('message_verification.unknown_authority')}
           </Row>
           <Row label={t('message_verification.message_preview')}>
-            {result.message}
+            <span translate="no">{result.message}</span>
           </Row>
         </div>
       )}

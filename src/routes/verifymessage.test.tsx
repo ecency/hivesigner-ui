@@ -4,6 +4,7 @@ import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../i18n';
 import { routerState } from '../test-router-mock';
+import { wholeText } from '../test-text';
 
 vi.mock('@tanstack/react-router', async () =>
   (await import('../test-router-mock')).routerMock(),
@@ -61,7 +62,7 @@ describe('/verifymessage', () => {
     await user.type(screen.getByRole('textbox'), token);
     await user.click(screen.getByRole('button', { name: /verify/i }));
     expect(
-      await screen.findByText(/signature is valid for alice/i),
+      await screen.findByText(wholeText(/^signature is valid for alice$/i)),
     ).toBeInTheDocument();
     expect(screen.getByText('posting')).toBeInTheDocument();
     expect(screen.getByText(pub)).toBeInTheDocument();
@@ -86,7 +87,7 @@ describe('/verifymessage', () => {
     render(<VerifyMessage />);
     await waitFor(() =>
       expect(
-        screen.getByText(/signature is valid for alice/i),
+        screen.getByText(wholeText(/^signature is valid for alice$/i)),
       ).toBeInTheDocument(),
     );
   });
@@ -98,7 +99,9 @@ describe('/verifymessage', () => {
     await user.type(screen.getByRole('textbox'), token);
     await user.click(screen.getByRole('button', { name: /verify/i }));
     expect(
-      await screen.findByText(/account alice could not be found/i),
+      await screen.findByText(
+        wholeText(/^account alice could not be found\.$/i),
+      ),
     ).toBeInTheDocument();
   });
 });

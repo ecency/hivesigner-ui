@@ -154,17 +154,21 @@ function SignMessage() {
             {t('message_signing.summary')}
           </div>
           <Field label={t('message_signing.author')}>
-            @{payload.authors[0]}
+            <span translate="no">{`@${payload.authors[0]}`}</span>
           </Field>
           <Field label={t('message_signing.authority_used')}>
             {payload.authority}
           </Field>
           <Field label={t('message_signing.verification_token')}>
             {/* `mono` keeps the deliberate break-all on rendered values. */}
-            <code className={`${mono} text-[11px]`}>{token}</code>
+            <code className={`${mono} text-[11px]`} translate="no">
+              {token}
+            </code>
           </Field>
           <Field label={t('message_signing.verification_link')}>
-            <code className={`${mono} text-[11px]`}>{link}</code>
+            <code className={`${mono} text-[11px]`} translate="no">
+              {link}
+            </code>
           </Field>
         </div>
       )}

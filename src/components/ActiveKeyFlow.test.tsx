@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../i18n';
+import { wholeText } from '../test-text';
 
 // Which key a consent or grant screen needs, and what happens when the
 // account on this device lacks it (#135). Unlike AuthorizeConsent.test, the
@@ -420,7 +421,7 @@ describe('consent with only a posting key on this device', () => {
     renderConsent({ clientId: 'ghost.app' });
     expect(
       await screen.findByText(
-        i18n.t('authorize.app_not_found', { app: 'ghost.app' }),
+        wholeText(i18n.t('authorize.app_not_found', { app: 'ghost.app' })),
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^authorize$/i })).toBeDisabled();
@@ -480,9 +481,14 @@ describe('consent with neither posting nor active on this device', () => {
     chain.granted = true;
     await addAccount('alice', { memo: memo.toString() });
     renderConsent();
+    // The account name is an element of its own (kept out of page
+    // translation), and jsdom's accessible name puts spaces around it.
     const link = await screen.findByRole('link', {
-      name: i18n.t('authorize.add_key_to_continue', { account: 'alice' }),
+      name: /^Add a posting or active key for @\s?alice\s?to continue$/,
     });
+    expect(link).toHaveTextContent(
+      i18n.t('authorize.add_key_to_continue', { account: 'alice' }),
+    );
     expect(link).toHaveAttribute('href', '/import');
     expect(link.getAttribute('data-search')).toContain('/oauth2/authorize');
   });
@@ -525,7 +531,7 @@ describe('the grant page when the account cannot be used', () => {
     wrap(<GrantAction appName="ecency.app" mode="grant" query={{}} />);
     expect(
       await screen.findByText(
-        i18n.t('authorize.account_missing', { account: 'alice' }),
+        wholeText(i18n.t('authorize.account_missing', { account: 'alice' })),
       ),
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '…' })).toBeNull();
@@ -557,7 +563,7 @@ describe('an app name taken from the link', () => {
     renderConsent({ clientId: `ecency.app${RLO}` });
     expect(
       await screen.findByText(
-        i18n.t('authorize.app_not_found', { app: 'ecency.app�' }),
+        wholeText(i18n.t('authorize.app_not_found', { app: 'ecency.app�' })),
       ),
     ).toBeInTheDocument();
     expect(document.body.textContent).not.toContain(RLO);

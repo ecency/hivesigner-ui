@@ -7,6 +7,7 @@ import { Avatar } from '@/components/Avatar';
 import { CurrentAccount } from '@/components/CurrentAccount';
 import { PostingAbilities } from '@/components/PostingAbilities';
 import { ReportIssue } from '@/components/ReportIssue';
+import { Handle, Sentence } from '@/components/Untranslated';
 import {
   alertError,
   alertWarn,
@@ -255,9 +256,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const grantNotice = grantNeeded && (
     <div className={alertWarn}>
       First-time authorization: this adds{' '}
-      <b className="[unicode-bidi:isolate]">@{clientLabel}</b> to your posting
-      authority on-chain and needs your active key once. That account will be
-      able to post as you until you revoke it.
+      <b className="[unicode-bidi:isolate]" translate="no">
+        {`@${clientLabel}`}
+      </b>{' '}
+      to your posting authority on-chain and needs your active key once. That
+      account will be able to post as you until you revoke it.
     </div>
   );
   // The two integration failures an app author can fix, reported once per
@@ -306,7 +309,9 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           // No app account: the requester IS the callback host, which is the
           // one thing about it the user can check.
           <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
-            <b className="[unicode-bidi:isolate]">{callbackHost ?? '?'}</b>{' '}
+            <b className="[unicode-bidi:isolate]" translate="no">
+              {callbackHost ?? '?'}
+            </b>{' '}
             {t('authorize.request_verify')}
           </h1>
         ) : (
@@ -320,7 +325,9 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
               className="mx-auto"
             />
             <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
-              <b className="[unicode-bidi:isolate]">{appName}</b>{' '}
+              <b className="[unicode-bidi:isolate]" translate="no">
+                {appName}
+              </b>{' '}
               {t('authorize.request_access')}
             </h1>
           </>
@@ -333,13 +340,15 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           {!loginOnly && (
             <>
               {t('authorize.hive_account')}{' '}
-              <b className="[unicode-bidi:isolate]">@{clientLabel}</b>
+              <b className="[unicode-bidi:isolate]" translate="no">
+                {`@${clientLabel}`}
+              </b>
             </>
           )}
           {callbackHost && (
             <>
               {loginOnly ? '' : ' · '}
-              {t('authorize.sends_you_to')} <b>{callbackHost}</b>
+              {t('authorize.sends_you_to')} <b translate="no">{callbackHost}</b>
             </>
           )}
         </div>
@@ -365,7 +374,10 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
       {appMissing && (
         <>
           <div className={alertError}>
-            {t('authorize.app_not_found', { app: clientLabel })}
+            <Sentence
+              k="authorize.app_not_found"
+              values={{ app: clientLabel }}
+            />
           </div>
           <ReportIssue kind="app_not_found" tags={{ app: req.clientId }} />
         </>
@@ -444,13 +456,17 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           </Link>
         ) : !isUnlocked ? (
           // Carry the consent request through the unlock, or the app has to
-          // start the whole authorization over.
+          // start the whole authorization over. Keyed: its children differ
+          // from the other links' plain labels, so React builds it fresh
+          // rather than reworking their text (see lib/translation-guard.ts).
           <Link
+            key="unlock"
             to="/accounts"
             search={{ next: window.location.pathname + window.location.search }}
             className={btnPrimary}
           >
-            {t('accounts.unlock')} @{selectedAccount}
+            {`${t('accounts.unlock')} `}
+            <Handle name={selectedAccount} />
           </Link>
         ) : postingScope && !accountLoaded ? (
           // Never issue a posting token before we can confirm the on-chain
@@ -471,7 +487,10 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             search={{ next: window.location.pathname + window.location.search }}
             className={btnPrimary}
           >
-            {t('authorize.add_key_to_continue', { account: selectedAccount })}
+            <Sentence
+              k="authorize.add_key_to_continue"
+              values={{ account: selectedAccount }}
+            />
           </Link>
         ) : (
           <>

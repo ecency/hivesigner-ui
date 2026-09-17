@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { wholeText } from '../test-text';
 
 // Regression tests for the sign route wiring (findings: no_broadcast must not
 // broadcast; HP requests must wait for a real rate). Real parseSignRequest runs;
@@ -181,7 +182,8 @@ describe('untrusted text cannot push the layout sideways', () => {
     h.splat = 'vote';
     h.search = { author: 'alice', permlink: 'a'.repeat(250), weight: '10000' };
     render(<Sign />);
-    const title = await screen.findByText(/Upvote @alice/);
+    // The title is copy around the request's values (each its own element).
+    const title = await screen.findByText(wholeText(/^Upvote @alice\/a+$/));
     expect(WRAPS.test(title.className), title.className).toBe(true);
     // min-w-0 is what actually lets a flex child shrink below min-content.
     expect(title.className).toContain('min-w-0');
@@ -192,7 +194,7 @@ describe('untrusted text cannot push the layout sideways', () => {
     h.splat = 'transfer';
     h.search = { to: 'bob', amount: '1.000 HIVE', memo: `#${'A'.repeat(300)}` };
     render(<Sign />);
-    const detail = await screen.findByText(/^Memo: #A+$/);
+    const detail = await screen.findByText(wholeText(/^Memo: #A+$/));
     expect(WRAPS.test(detail.className), detail.className).toBe(true);
   });
 
@@ -327,5 +329,56 @@ describe('the request survives import and unlock', () => {
       'next',
     );
     h.accounts = { selectedAccount: 'alice', unlocked: ['alice'] };
+  });
+});
+
+describe('a translated page', () => {
+  // A page translator rewrites whatever it is not told to leave alone. The
+  // request's own values are shown exactly; the copy around them is not
+  // marked, so it can still be translated.
+  const kept = (el: Element) =>
+    Array.from(el.querySelectorAll('[translate="no"]'), (n) => n.textContent);
+
+  it('keeps the values of a request out of translation, and the copy in it', async () => {
+    h.splat = 'transfer';
+    h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE', memo: 'hi' };
+    render(<Sign />);
+    const title = await screen.findByText(wholeText('Send 1.000 HIVE to @bob'));
+    expect(title).not.toHaveAttribute('translate');
+    expect(kept(title)).toEqual(['1.000 HIVE', '@bob']);
+    const detail = screen.getByText(wholeText('Memo: hi'));
+    expect(kept(detail)).toEqual(['hi']);
+    // The schema label is copy; the account it names is not.
+    const from = screen.getByText('From:');
+    expect(from).not.toHaveAttribute('translate');
+    expect(from.nextElementSibling).toHaveAttribute('translate', 'no');
+    expect(from.nextElementSibling).toHaveTextContent('@alice');
+    expect(document.querySelector('pre')).toHaveAttribute('translate', 'no');
+  });
+
+  it('lets an authority warning be translated, but not the keys beside it', async () => {
+    const op = [
+      'account_update',
+      {
+        account: 'alice',
+        posting: {
+          weight_threshold: 1,
+          account_auths: [['app', 1]],
+          key_auths: [],
+        },
+        memo_key: 'STM1',
+        json_metadata: '',
+      },
+    ];
+    h.splat = `op/${btoa(JSON.stringify(op)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')}`;
+    h.search = {};
+    render(<Sign />);
+    const row = await screen.findByText(
+      wholeText(
+        'threshold 1; keys: NONE (your key is removed); accounts: @app (1)',
+      ),
+    );
+    expect(row).not.toHaveAttribute('translate');
+    expect(kept(row)).toEqual(['1', '@app (1)']);
   });
 });

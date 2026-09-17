@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CurrentAccount } from '@/components/CurrentAccount';
 import { ReportIssue } from '@/components/ReportIssue';
+import { Handle } from '@/components/Untranslated';
 import {
   alertError,
   alertWarn,
@@ -24,6 +25,7 @@ import {
   requiredAuthority,
   safeText,
   summarizeOperation,
+  type TextPart,
 } from '@/lib/operation-summary';
 import { parseSignRequest, signRequestProblem } from '@/lib/parse-sign-request';
 import { vestsToSpKey } from '@/lib/query-keys';
@@ -90,6 +92,24 @@ function InvalidSignRequest({
       </div>
       <ReportIssue kind="sign_request_invalid" reason={reason} tags={{ op }} />
     </section>
+  );
+}
+
+/**
+ * A summary line: the copy may be translated with the page, the request's
+ * values never are. The parts of one line are fixed for a request, so React
+ * never inserts or removes loose text among them.
+ */
+function Parts({ parts }: { parts: TextPart[] }) {
+  return parts.map((part, i) =>
+    typeof part === 'string' ? (
+      part
+    ) : (
+      // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one fixed line
+      <span key={i} translate="no" className="[unicode-bidi:isolate]">
+        {part.value}
+      </span>
+    ),
   );
 }
 
@@ -209,16 +229,21 @@ function Sign() {
     }
   }
 
+  // Both screens below are a <section>. Keyed apart, React builds the success
+  // screen fresh instead of reworking the confirm screen's children into it,
+  // which removed text a page translator had already replaced and crashed.
   if (status === 'done' && outcome) {
     return (
-      <section className={page}>
+      <section key="done" className={page}>
         <h1 className={h1}>
           {request.noBroadcast ? t('sign.sign') : t('sign.success_title')}
         </h1>
         {request.noBroadcast ? (
           <div className={`${card} text-[13px]`}>
             {t('message_signing.signature')}:{' '}
-            <code className="break-all text-[11px]">{outcome.signature}</code>
+            <code className="break-all text-[11px]" translate="no">
+              {outcome.signature}
+            </code>
           </div>
         ) : (
           <div className={`${card} text-sm`}>
@@ -232,7 +257,7 @@ function Sign() {
               rel="noopener noreferrer"
               className={`${link} ${mono}`}
             >
-              {outcome.id.slice(0, 12)}
+              <span translate="no">{outcome.id.slice(0, 12)}</span>
               <span aria-hidden="true"> &#8599;</span>
             </a>
           </div>
@@ -242,12 +267,17 @@ function Sign() {
   }
 
   return (
-    <section className={page}>
+    <section key="confirm" className={page}>
       <h1 className={h1}>{t('sign.confirm_transaction')}</h1>
 
+      {/* Account names, hosts, amounts and the operation itself are data, so
+          a page translator is told to leave them alone (translate="no"): the
+          user approves what the request says, not a translation of it. Text
+          that can change while this screen is open is the only child of its
+          element (see lib/translation-guard.ts). */}
       {host && (
         <div className={alertWarn}>
-          {t('sign.going_redirect_to')} <b>{host}</b>.
+          {t('sign.going_redirect_to')} <b translate="no">{host}</b>.
         </div>
       )}
 
@@ -255,9 +285,10 @@ function Sign() {
         <div role="alert" className={alertWarn}>
           This acts as{' '}
           {foreignActors.map((a) => (
-            <b key={a}>@{a} </b>
+            <b key={a} translate="no">{`@${a} `}</b>
           ))}
-          , not @{selectedAccount}. Only continue if you manage that account.
+          , not <Handle name={selectedAccount ?? ''} />. Only continue if you
+          manage that account.
         </div>
       )}
 
@@ -276,8 +307,8 @@ function Sign() {
           <div key={`${op[0]}-${i}`} className={`${card} flex flex-col gap-2`}>
             <div className="flex flex-wrap items-baseline gap-2">
               <div className="min-w-0 flex-1 break-words text-lg font-bold">
-                {displayOps.length > 1 ? `${i + 1}. ` : ''}
-                {s.title}
+                {displayOps.length > 1 && `${i + 1}. `}
+                <Parts parts={s.titleParts} />
               </div>
               {/* Per-op authority, so one active-key op among posting ops shows. */}
               <span
@@ -290,8 +321,10 @@ function Sign() {
                 {opAuthority ?? 'unknown'}
               </span>
             </div>
-            {s.detail && (
-              <div className="break-all text-[13px] text-muted">{s.detail}</div>
+            {s.detailParts && (
+              <div className="break-all text-[13px] text-muted">
+                <Parts parts={s.detailParts} />
+              </div>
             )}
             {/* Show the material fields inline so nothing dangerous is hidden. */}
             {fields.map((f, fi) => (
@@ -308,13 +341,23 @@ function Sign() {
                     since it can carry bidi controls. */}
                 <span
                   className={`${f.untrusted ? 'break-all' : 'shrink-0 whitespace-nowrap'} text-muted [unicode-bidi:isolate]`}
+                  translate={f.untrusted ? 'no' : undefined}
                 >
-                  {f.label}:
+                  {`${f.label}:`}
                 </span>
                 {/* isolate: a value cannot reorder the text around it. */}
-                <span className="break-all [unicode-bidi:isolate]">
-                  {f.value}
-                </span>
+                {f.parts ? (
+                  <span className="break-all [unicode-bidi:isolate]">
+                    <Parts parts={f.parts} />
+                  </span>
+                ) : (
+                  <span
+                    className="break-all [unicode-bidi:isolate]"
+                    translate="no"
+                  >
+                    {f.value}
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -324,7 +367,7 @@ function Sign() {
       {req.preservedTx && (
         <div className={`${card} text-[12.5px] break-words text-muted`}>
           This request supplied its own transaction header. Expires:{' '}
-          <b>{safeText(String(req.preservedTx.expiration))}</b>
+          <b translate="no">{safeText(String(req.preservedTx.expiration))}</b>
           {Array.isArray(req.preservedTx.signatures) &&
             req.preservedTx.signatures.length > 0 && (
               <>
@@ -353,7 +396,10 @@ function Sign() {
         <summary className="cursor-pointer text-[13.5px] font-semibold text-muted">
           Show raw operation{displayOps.length > 1 ? 's' : ''}
         </summary>
-        <pre className="mt-3 overflow-x-auto font-mono text-xs text-ink">
+        <pre
+          className="mt-3 overflow-x-auto font-mono text-xs text-ink"
+          translate="no"
+        >
           {/* The resolved ops: exactly the bytes that will be signed. */}
           {JSON.stringify(displayOps, null, 2)}
         </pre>
@@ -362,9 +408,7 @@ function Sign() {
       {status === 'error' && (
         <div role="alert" className={alertError}>
           <div className="font-semibold">{t('sign.failure_title')}</div>
-          <div className="mt-1">
-            {t('sign.error_message')}: {errorMsg}
-          </div>
+          <div className="mt-1">{`${t('sign.error_message')}: ${errorMsg}`}</div>
         </div>
       )}
 
@@ -385,8 +429,8 @@ function Sign() {
         {!authority ? null : signerMismatch ? (
           <>
             <div className="text-[13px] text-warn">
-              This request must be signed by <b>@{req.signer}</b>. Switch to
-              that account.
+              This request must be signed by{' '}
+              <b translate="no">{`@${req.signer}`}</b>. Switch to that account.
             </div>
             <Link
               to="/accounts"
@@ -404,14 +448,22 @@ function Sign() {
             {t('common.continue')}
           </Link>
         ) : !isUnlocked ? (
-          <Link to="/accounts" search={{ next: here() }} className={btnPrimary}>
-            {t('accounts.unlock')} @{selectedAccount}
+          // Keyed: its children differ from the other links' plain labels, so
+          // React builds it fresh rather than reworking their text.
+          <Link
+            key="unlock"
+            to="/accounts"
+            search={{ next: here() }}
+            className={btnPrimary}
+          >
+            {`${t('accounts.unlock')} `}
+            <Handle name={selectedAccount} />
           </Link>
         ) : !signingKey ? (
           <>
             <div className="text-[13px] text-warn">
-              This needs your <b>{authority}</b> key, which @{selectedAccount}{' '}
-              does not have here.
+              This needs your <b>{authority}</b> key, which{' '}
+              <Handle name={selectedAccount} /> does not have here.
             </div>
             <Link to="/import" search={{ next: here() }} className={btnPrimary}>
               {t('accounts.add_another')}

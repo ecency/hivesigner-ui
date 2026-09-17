@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../i18n';
+import { wholeText } from '../test-text';
 
 // The consent screen on its own, with a real query client and real token
 // building, so the screen is tested through what a visitor sees and what the
@@ -113,7 +114,7 @@ describe('AuthorizeConsent', () => {
     expect(screen.getByText('ecency.com')).toBeInTheDocument();
     expect(
       screen.getByText(
-        i18n.t('index.preview_with_posting', { app: 'ecency.app' }),
+        wholeText(i18n.t('index.preview_with_posting', { app: 'ecency.app' })),
       ),
     ).toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);

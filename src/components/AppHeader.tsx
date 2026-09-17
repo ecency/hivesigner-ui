@@ -133,7 +133,12 @@ function HostCue({ host }: { host: string }) {
           isolate: a hostname is attacker-influenced text in the very
           case this cue exists for, and a bidi override inside it could
           otherwise reorder the bar around it. */}
-      <span className="font-mono break-all [unicode-bidi:isolate]">{host}</span>
+      <span
+        className="font-mono break-all [unicode-bidi:isolate]"
+        translate="no"
+      >
+        {host}
+      </span>
     </div>
   );
 }

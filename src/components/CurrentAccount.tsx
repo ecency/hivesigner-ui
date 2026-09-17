@@ -43,9 +43,13 @@ export function CurrentAccount({
         <div className="text-[11px] text-muted">{label}</div>
         {/* break-all, never truncate: the row exists so the user can check
             the EXACT account, and a 16-character name at 320px would lose
-            the suffix that tells two similar accounts apart. */}
-        <div className="break-all text-[15px] font-semibold text-ink">
-          @{username}
+            the suffix that tells two similar accounts apart. translate="no":
+            a page translator must not rewrite the name being checked. */}
+        <div
+          className="break-all text-[15px] font-semibold text-ink"
+          translate="no"
+        >
+          {`@${username}`}
         </div>
       </div>
       {!busy && (

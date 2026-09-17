@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Sentence } from '@/components/Untranslated';
 import { mutedXs } from '@/components/ui';
 
 /**
@@ -68,7 +69,7 @@ export function PostingAbilities({
       {/* The app name is attacker-influenced text (the client id from the
           URL); isolate it so a right-to-left name cannot reorder the sentence. */}
       <div className="text-[13px] text-muted [unicode-bidi:isolate]">
-        {t('index.preview_with_posting', { app })}
+        <Sentence k="index.preview_with_posting" values={{ app }} />
       </div>
       <ul
         className={`m-0 flex list-none flex-col p-0 ${compact ? 'gap-2' : 'gap-3'}`}
