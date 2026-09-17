@@ -15,7 +15,7 @@ function translate(text: Text): HTMLElement {
   return font;
 }
 
-/** The DOMException name `run` throws, or `none`. */
+/** The name of the error `run` throws, or `none`. */
 function thrown(run: () => unknown): string {
   try {
     run();
@@ -115,6 +115,21 @@ describe('the DOM calls React makes, on a node a translator moved', () => {
       thrown(() => parent.insertBefore(document.createElement('span'), parent)),
     ).toBe('NotFoundError');
     expect(stranger.parentNode).toBe(elsewhere);
+    expect(conflicts).toBe(0);
+  });
+
+  it('leaves an argument that is not a node to the browser to refuse', () => {
+    guard();
+    const notNodes: unknown[] = [{}, 'x', { parentNode: null }];
+    for (const value of notNodes) {
+      expect(thrown(() => parent.removeChild(value as Node))).toBe('TypeError');
+      expect(
+        thrown(() =>
+          parent.insertBefore(document.createElement('span'), value as Node),
+        ),
+      ).toBe('TypeError');
+    }
+    expect(Array.from(parent.childNodes)).toEqual([text]);
     expect(conflicts).toBe(0);
   });
 

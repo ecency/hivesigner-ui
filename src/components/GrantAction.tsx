@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AddActiveKey } from '@/components/AddActiveKey';
 import { AppProfile } from '@/components/AppProfile';
 import { Avatar } from '@/components/Avatar';
+import { Handle, Sentence } from '@/components/Untranslated';
 import {
   alertError,
   alertOk,
@@ -151,7 +152,8 @@ export function GrantAction({
       <h1 className={`${h1} flex flex-wrap items-center gap-2 break-words`}>
         <Avatar username={appName} size="md" />
         <span className="min-w-0 break-words [unicode-bidi:isolate]">
-          {`${verb} @${appLabel}`}
+          {`${verb} `}
+          <Handle name={appLabel} />
         </span>
       </h1>
 
@@ -164,25 +166,30 @@ export function GrantAction({
             be interpolated when there is no account: logged out, this read
             "@ecency.app will be able to post, comment, vote and follow as @."
             - a consent sentence naming nobody. */}
-        {!selectedAccount
-          ? // Review caught this: branching on the account alone told a user
-            // opening /revoke/:app that the app "is asking to post ... on your
-            // behalf", the exact opposite of what the page does.
-            t(
+        {/* The names in this sentence are what the user is agreeing to, so
+            they stay out of page translation (Sentence). */}
+        {!selectedAccount ? (
+          // Review caught this: branching on the account alone told a user
+          // opening /revoke/:app that the app "is asking to post ... on your
+          // behalf", the exact opposite of what the page does.
+          <Sentence
+            k={
               mode === 'grant'
                 ? 'authorize.grant_explain_no_account'
-                : 'revoke.revoke_explain_no_account',
-              { app: appLabel },
-            )
-          : mode === 'grant'
-            ? t('authorize.grant_explain', {
-                app: appLabel,
-                account: selectedAccount,
-              })
-            : t('revoke.revoke_explain', {
-                app: appLabel,
-                account: selectedAccount,
-              })}
+                : 'revoke.revoke_explain_no_account'
+            }
+            values={{ app: appLabel }}
+          />
+        ) : (
+          <Sentence
+            k={
+              mode === 'grant'
+                ? 'authorize.grant_explain'
+                : 'revoke.revoke_explain'
+            }
+            values={{ app: appLabel, account: selectedAccount }}
+          />
+        )}
         <div className="mt-2 text-[12.5px] text-warn">
           {t('authorize.requires_active_key', { authority: 'active' }).replace(
             /<\/?b>/g,
@@ -193,15 +200,15 @@ export function GrantAction({
 
       {status === 'done' || alreadyDone ? (
         <output className={`${alertOk} block text-sm font-semibold`}>
+          <Sentence
+            k={mode === 'grant' ? 'authorize.granted' : 'revoke.revoked'}
+            values={{ app: appLabel }}
+          />
           {/* Granted but not yet readable from the chain: say so, and leave
               Continue in place. The consent screen it leads to re-checks the
-              authority itself. One string, because the ellipsis goes away
+              authority itself. An element of its own, because it goes away
               while the screen is open (see lib/translation-guard.ts). */}
-          {`${
-            mode === 'grant'
-              ? t('authorize.granted', { app: appLabel })
-              : t('revoke.revoked', { app: appLabel })
-          }${status === 'done' && confirming ? ' …' : ''}`}
+          {status === 'done' && confirming ? <span> …</span> : null}
         </output>
       ) : null}
 
@@ -218,7 +225,10 @@ export function GrantAction({
       )}
       {accountMissing && (
         <div role="alert" className={alertError}>
-          {t('authorize.account_missing', { account: selectedAccount })}
+          <Sentence
+            k="authorize.account_missing"
+            values={{ account: selectedAccount ?? '' }}
+          />
         </div>
       )}
       {/* Above the actions, not in their row: the form is a block of its own
@@ -235,8 +245,11 @@ export function GrantAction({
             {t('common.continue')}
           </Link>
         ) : !isUnlocked ? (
-          <Link to="/accounts" className={btnPrimary}>
-            {`${t('accounts.unlock')} @${selectedAccount}`}
+          // Keyed: its children differ from the other links' plain labels, so
+          // React builds it fresh rather than reworking their text.
+          <Link key="unlock" to="/accounts" className={btnPrimary}>
+            {`${t('accounts.unlock')} `}
+            <Handle name={selectedAccount} />
           </Link>
         ) : alreadyDone || status === 'done' ? (
           // Already granted, or just granted: continue to the callback that

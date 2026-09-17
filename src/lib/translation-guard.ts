@@ -24,13 +24,19 @@ import { routeFamily } from './sentry';
 // - a node the translator moved deeper (into one of its own elements) is
 //   removed from, or inserted in front of, where it now is.
 //
-// A call that would have succeeded behaves exactly as before, and one that
-// fails for any other reason (a node attached somewhere else entirely) still
+// The guard cannot tell a translator's work from anything else's: any node
+// that is out of the document, or deeper inside the parent, is handled this
+// way. A call that would have succeeded behaves exactly as before, and a node
+// attached somewhere else entirely, or an argument that is not a node, still
 // throws.
 
 const INSTALLED = Symbol.for('hivesigner.translationGuard');
 
 type Guarded = Node & { [INSTALLED]?: true };
+
+function isNode(value: unknown): value is Node {
+  return typeof (value as Node | null)?.nodeType === 'number';
+}
 
 /** The child of `parent` that contains `node`, or null when none does. */
 function childContaining(parent: Node, node: Node): Node | null {
@@ -60,7 +66,7 @@ export function installTranslationGuard(
     this: Node,
     child: T,
   ): T {
-    if (child.parentNode !== this && child !== this) {
+    if (isNode(child) && child.parentNode !== this && child !== this) {
       if (!child.parentNode) {
         onConflict();
         return child;
@@ -78,7 +84,7 @@ export function installTranslationGuard(
     node: T,
     ref: Node | null,
   ): T {
-    if (ref && ref.parentNode !== this && ref !== this) {
+    if (isNode(ref) && ref.parentNode !== this && ref !== this) {
       if (!ref.parentNode) {
         onConflict();
         return insertBefore.call(this, node, null) as T;

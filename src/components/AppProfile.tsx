@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
+import { Handle } from '@/components/Untranslated';
 import { card, link, mutedXs } from '@/components/ui';
 import { getProfiles } from '@/lib/hive';
 import { safeText } from '@/lib/operation-summary';
@@ -71,13 +72,19 @@ export function AppProfile({ username }: { username: string }) {
         <Avatar username={username} size="lg" />
         <div className="min-w-0 flex-1">
           {name && (
-            <div className="text-base font-semibold break-words [unicode-bidi:isolate]">
+            <div
+              className="text-base font-semibold break-words [unicode-bidi:isolate]"
+              translate="no"
+            >
               {name}
             </div>
           )}
           {/* Always shown: the handle is the only part of the identity the app
               cannot choose freely, so it is what a user can actually check. */}
-          <div className={`${mutedXs} break-all [unicode-bidi:isolate]`}>
+          <div
+            className={`${mutedXs} break-all [unicode-bidi:isolate]`}
+            translate="no"
+          >
             {handle}
           </div>
           {site && (
@@ -87,6 +94,7 @@ export function AppProfile({ username }: { username: string }) {
               // nofollow as well: this is an unvetted URL out of chain data.
               rel="noopener noreferrer nofollow"
               className={`${link} mt-1 inline-block text-[13px] break-all`}
+              translate="no"
             >
               {site.host}
             </a>
@@ -102,7 +110,8 @@ export function AppProfile({ username }: { username: string }) {
 
       {creator && (
         <div className={`${mutedXs} [unicode-bidi:isolate]`}>
-          {`${t('apps.creator')}: @${creator}`}
+          {`${t('apps.creator')}: `}
+          <Handle name={creator} />
         </div>
       )}
 

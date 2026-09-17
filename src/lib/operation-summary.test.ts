@@ -17,7 +17,16 @@ describe('summarizeOperation', () => {
     ];
     expect(summarizeOperation(op)).toEqual({
       title: 'Send 10.000 HIVE to @bob',
+      // The same line in parts: the copy is translatable, the values are the
+      // request's own and are shown exactly.
+      titleParts: [
+        'Send ',
+        { value: '10.000 HIVE' },
+        ' to ',
+        { value: '@bob' },
+      ],
       detail: 'Memo: thanks',
+      detailParts: ['Memo: ', { value: 'thanks' }],
       authority: 'active',
     });
   });

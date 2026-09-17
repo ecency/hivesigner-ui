@@ -3,6 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
+import { Handle } from '@/components/Untranslated';
 import {
   btnGhost,
   card,
@@ -53,7 +54,10 @@ function Auths() {
     <section className={page}>
       <h1 className={`${h1} flex flex-wrap items-center gap-2`}>
         <Avatar username={selectedAccount} size="md" />
-        <span>{`${t('auths.auths')} · @${selectedAccount}`}</span>
+        <span>
+          {`${t('auths.auths')} · `}
+          <Handle name={selectedAccount} />
+        </span>
       </h1>
 
       <div className={cardGrid}>
@@ -65,13 +69,15 @@ function Auths() {
               <div className="font-bold capitalize">{role}</div>
               {authority?.key_auths.map(([k, w]) => (
                 <div key={k} className={`${mutedXs} ${mono}`}>
-                  {k} · {t('auths.weight')} {w}
+                  <span translate="no">{k}</span>
+                  {` · ${t('auths.weight')} ${w}`}
                 </div>
               ))}
               {authority?.account_auths.map(([a, w]) => (
                 <div key={a} className={`${row} justify-between`}>
                   <span>
-                    @{a} · {t('auths.weight')} {w}
+                    <Handle name={a} />
+                    {` · ${t('auths.weight')} ${w}`}
                   </span>
                   {/* Revoke removes an account from posting and active, signed with
                       the active key. An OWNER delegation needs the owner key, so

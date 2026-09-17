@@ -7,6 +7,7 @@ import { Avatar } from '@/components/Avatar';
 import { CurrentAccount } from '@/components/CurrentAccount';
 import { PostingAbilities } from '@/components/PostingAbilities';
 import { ReportIssue } from '@/components/ReportIssue';
+import { Handle, Sentence } from '@/components/Untranslated';
 import {
   alertError,
   alertWarn,
@@ -373,7 +374,10 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
       {appMissing && (
         <>
           <div className={alertError}>
-            {t('authorize.app_not_found', { app: clientLabel })}
+            <Sentence
+              k="authorize.app_not_found"
+              values={{ app: clientLabel }}
+            />
           </div>
           <ReportIssue kind="app_not_found" tags={{ app: req.clientId }} />
         </>
@@ -452,13 +456,17 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           </Link>
         ) : !isUnlocked ? (
           // Carry the consent request through the unlock, or the app has to
-          // start the whole authorization over.
+          // start the whole authorization over. Keyed: its children differ
+          // from the other links' plain labels, so React builds it fresh
+          // rather than reworking their text (see lib/translation-guard.ts).
           <Link
+            key="unlock"
             to="/accounts"
             search={{ next: window.location.pathname + window.location.search }}
             className={btnPrimary}
           >
-            {`${t('accounts.unlock')} @${selectedAccount}`}
+            {`${t('accounts.unlock')} `}
+            <Handle name={selectedAccount} />
           </Link>
         ) : postingScope && !accountLoaded ? (
           // Never issue a posting token before we can confirm the on-chain
@@ -479,7 +487,10 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             search={{ next: window.location.pathname + window.location.search }}
             className={btnPrimary}
           >
-            {t('authorize.add_key_to_continue', { account: selectedAccount })}
+            <Sentence
+              k="authorize.add_key_to_continue"
+              values={{ account: selectedAccount }}
+            />
           </Link>
         ) : (
           <>

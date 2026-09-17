@@ -5,6 +5,7 @@ import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
 import { SecretInput } from '@/components/SecretInput';
+import { Handle } from '@/components/Untranslated';
 import {
   btnPrimary,
   cardGrid,
@@ -208,7 +209,8 @@ function AccountRow({
               carries the account it unlocks. */}
           <label className={label}>
             <span className={labelText}>
-              {`${t('accounts.passcode')} · @${username}`}
+              {`${t('accounts.passcode')} · `}
+              <Handle name={username} />
             </span>
             {/* Not the site's password: kept out of managers' save and
                 update prompts (see SecretInput for what each one honours). */}

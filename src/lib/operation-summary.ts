@@ -8,13 +8,48 @@ import { type HiveAuthority, OPERATIONS } from './operations';
 export type { HiveAuthority } from './operations';
 export type Operation = [string, Record<string, unknown>];
 
+/**
+ * A piece of a line the confirm screen shows: copy, which a page translator
+ * may translate, or a value taken from the request, which the screen shows
+ * exactly as it is. "Send 1.000 HIVE to @bob" is the copy "Send " and " to "
+ * around the values "1.000 HIVE" and "@bob": the user approves the values,
+ * not a translation of them.
+ */
+export type TextPart = string | { value: string };
+
+/** The plain text of a line made of parts. */
+export function joinParts(parts: TextPart[]): string {
+  return parts
+    .map((part) => (typeof part === 'string' ? part : part.value))
+    .join('');
+}
+
+const data = (value: string): TextPart => ({ value });
+
 export interface OperationSummary {
   /** One-line human sentence, e.g. "Send 10.000 HIVE to @bob". */
   title: string;
+  /** The title in parts (see TextPart). */
+  titleParts: TextPart[];
   /** Optional secondary line, e.g. a memo or the vote weight. */
   detail?: string;
+  /** The detail in parts, when there is a detail. */
+  detailParts?: TextPart[];
   /** Authority this single operation needs, or null when it cannot be determined. */
   authority: HiveAuthority | null;
+}
+
+function summary(
+  authority: HiveAuthority | null,
+  titleParts: TextPart[],
+  detailParts?: TextPart[],
+): OperationSummary {
+  return {
+    title: joinParts(titleParts),
+    titleParts,
+    ...(detailParts ? { detail: joinParts(detailParts), detailParts } : {}),
+    authority,
+  };
 }
 
 function str(value: unknown): string {
@@ -127,53 +162,61 @@ export function summarizeOperation(op: Operation): OperationSummary {
 
   switch (name) {
     case 'transfer':
-      return {
-        title: `Send ${txt(p.amount)} to @${txt(p.to)}`,
-        detail: p.memo ? `Memo: ${txt(p.memo)}` : undefined,
+      return summary(
         authority,
-      };
+        ['Send ', data(txt(p.amount)), ' to ', data(`@${txt(p.to)}`)],
+        p.memo ? ['Memo: ', data(txt(p.memo))] : undefined,
+      );
     case 'vote': {
       const weight = Number(p.weight ?? 0);
       const pct = Math.round(weight / 100);
-      const target = `@${txt(p.author)}/${txt(p.permlink)}`;
+      const target = data(`@${txt(p.author)}/${txt(p.permlink)}`);
       if (weight === 0)
-        return { title: `Remove vote from ${target}`, authority };
+        return summary(authority, ['Remove vote from ', target]);
       const verb = weight < 0 ? 'Downvote' : 'Upvote';
-      return { title: `${verb} ${target}`, detail: `${pct}%`, authority };
+      return summary(authority, [`${verb} `, target], [data(`${pct}%`)]);
     }
     case 'comment': {
       const isReply = str(p.parent_author) !== '';
-      return {
-        title: isReply
-          ? `Reply to @${txt(p.parent_author)}/${txt(p.parent_permlink)}`
-          : `Publish post "${txt(p.title) || txt(p.permlink)}"`,
+      return summary(
         authority,
-      };
+        isReply
+          ? [
+              'Reply to ',
+              data(`@${txt(p.parent_author)}/${txt(p.parent_permlink)}`),
+            ]
+          : ['Publish post "', data(txt(p.title) || txt(p.permlink)), '"'],
+      );
     }
     case 'custom_json':
-      return { title: `Custom action (${txt(p.id)})`, authority };
+      return summary(authority, ['Custom action (', data(txt(p.id)), ')']);
     case 'account_update':
     case 'account_update2':
-      return { title: 'Update account authorities', authority };
+      return summary(authority, ['Update account authorities']);
     default:
-      return { title: humanizeName(name), authority };
+      return summary(authority, [humanizeName(name)]);
   }
 }
 
 export interface OperationField {
   label: string;
   value: string;
+  /**
+   * The value in parts, when it mixes copy with request values (see
+   * TextPart). Without it the whole value is request data.
+   */
+  parts?: TextPart[];
   /** The label is a key from a JSON payload, i.e. chosen by the caller. */
   untrusted?: boolean;
 }
 
-function describeAuthority(value: unknown): string {
+function describeAuthority(value: unknown): TextPart[] {
   const a = value as {
     weight_threshold?: unknown;
     key_auths?: [string, number][];
     account_auths?: [string, number][];
   } | null;
-  if (!a || typeof a !== 'object') return '';
+  if (!a || typeof a !== 'object') return [];
   // These come straight from a decoded /sign payload, so an entry can be any
   // JSON value, not the [name, weight] tuple the type claims. Destructuring a
   // non-array threw and took the whole confirm screen down, which is a way to
@@ -194,19 +237,23 @@ function describeAuthority(value: unknown): string {
   // it for ANY present value, not only a number - the chain coerces a string
   // ("2") or a missing field (signs as 0) just the same, so a typeof check here
   // would let a phishing payload hide exactly the field this row exists to show.
-  const threshold = present(a.weight_threshold)
-    ? `threshold ${txt(a.weight_threshold)}`
-    : 'threshold NOT SET (signs as 0)';
-  const parts = [
+  // The warnings are copy, so a translated page translates them; the values
+  // around them are data.
+  const threshold: TextPart[] = present(a.weight_threshold)
+    ? ['threshold ', data(txt(a.weight_threshold))]
+    : ['threshold NOT SET (signs as 0)'];
+  const sections: TextPart[][] = [
     threshold,
     // An empty key list is the MATERIAL fact when an authority is replaced:
     // it removes the user's own key. Say it rather than print nothing.
     keys.length
-      ? `keys: ${keys.join(', ')}`
-      : 'keys: NONE (your key is removed)',
-    accts.length ? `accounts: ${accts.join(', ')}` : '',
-  ].filter(Boolean);
-  return parts.join('; ');
+      ? ['keys: ', data(keys.join(', '))]
+      : ['keys: NONE (your key is removed)'],
+    accts.length ? ['accounts: ', data(accts.join(', '))] : [],
+  ].filter((section) => section.length > 0);
+  return sections.flatMap((section, i) =>
+    i === 0 ? section : ['; ', ...section],
+  );
 }
 
 /** A JSON path segment, quoted when it is not a plain identifier so two
@@ -353,11 +400,14 @@ export function operationFields(op: Operation): OperationField[] {
     case 'account_update':
     case 'account_update2': {
       for (const role of ['owner', 'active', 'posting'] as const) {
-        if (p[role] !== undefined)
+        if (p[role] !== undefined) {
+          const parts = describeAuthority(p[role]);
           rows.push({
             label: `${role} authority`,
-            value: describeAuthority(p[role]),
+            value: joinParts(parts),
+            parts,
           });
+        }
       }
       if (str(p.memo_key))
         rows.push({ label: 'Memo key', value: txt(p.memo_key) });

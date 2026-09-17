@@ -100,39 +100,72 @@ export async function emulateChromeTranslate(page: Page) {
       }
     };
 
+    // Chrome translates new content shortly after it appears, not in the
+    // same task, so the app gets to run in between. `settled` says whether
+    // everything that appeared so far has been through the translator, so a
+    // test can wait for that before its next step.
+    let started = false;
+    let pending: Node[] = [];
+    let timer = 0;
+    const flush = () => {
+      timer = 0;
+      const nodes = pending;
+      pending = [];
+      for (const n of nodes) if (n.isConnected) translate(n);
+    };
+    const own = (n: Node) =>
+      n instanceof Element && n.hasAttribute('data-translated');
     const start = () => {
       document.documentElement.classList.add('translated-ltr');
       document.documentElement.lang = 'es';
       translate(document.body);
-      // Chrome translates new content shortly after it appears, not in the
-      // same task, so the app gets to run in between.
-      let pending: Node[] = [];
-      const flush = () => {
-        const nodes = pending;
-        pending = [];
-        for (const n of nodes) if (n.isConnected) translate(n);
-      };
+      started = true;
       new MutationObserver((records) => {
         for (const r of records) {
           if (r.type === 'characterData') pending.push(r.target);
-          for (const n of r.addedNodes) pending.push(n);
+          for (const n of r.addedNodes) if (!own(n)) pending.push(n);
         }
-        if (pending.length) setTimeout(flush, 30);
+        if (pending.length && !timer) timer = window.setTimeout(flush, 30);
       }).observe(document.body, {
         childList: true,
         subtree: true,
         characterData: true,
       });
     };
+    (
+      window as unknown as { __translationSettled: () => boolean }
+    ).__translationSettled = () => started && !timer && pending.length === 0;
     // The app has started by `load` (its scripts are deferred), so the watch
     // wraps whatever the app installed and sees each call first. Translation
     // starts a little later, after the first render, as a user clicking
     // "Translate" (or the browser translating on its own) would.
     window.addEventListener('load', () => {
+      // The app installs its guard before its first render. Without it a
+      // conflict throws; installed later than this, it would wrap the watch
+      // and hide the conflicts it rescues. Either way the page is not the one
+      // this emulation is meant to check.
+      // Only on the app's own pages (a callback page has no app).
+      const app = document.querySelector('script[src*="/static/js/index."]');
+      const guard = Symbol.for('hivesigner.translationGuard');
+      if (app && !(Node.prototype as unknown as Record<symbol, unknown>)[guard])
+        note('the translation guard was not installed before the page loaded');
       watch();
       setTimeout(start, 300);
     });
   }, PREFIX);
+}
+
+/**
+ * Wait until the translator has been through everything on the page. Call it
+ * after each step that changes the screen, before the next one: a step that
+ * runs first would act on text the translator never saw.
+ */
+export async function translationSettled(page: Page) {
+  await page.waitForFunction(() =>
+    (
+      window as unknown as { __translationSettled?: () => boolean }
+    ).__translationSettled?.(),
+  );
 }
 
 /**
