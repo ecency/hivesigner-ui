@@ -73,7 +73,7 @@ describe('/auths', () => {
       '/revoke/ecency.app',
     );
     expect(
-      screen.getByText(/owner delegation: remove with your owner key/i),
+      screen.getByText(/owner delegation: remove it with your owner key/i),
     ).toBeInTheDocument();
   });
 

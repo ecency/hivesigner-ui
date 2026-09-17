@@ -85,7 +85,7 @@ function Auths() {
                       nothing. Say so instead of pretending. */}
                   {role === 'owner' ? (
                     <span className={mutedXs}>
-                      owner delegation: remove with your owner key
+                      {t('auths.owner_delegation')}
                     </span>
                   ) : (
                     <Link

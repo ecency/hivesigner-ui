@@ -15,6 +15,7 @@ import {
   page,
 } from '@/components/ui';
 import { encodeOp } from '@/lib/hive-uri';
+import { operationName } from '@/lib/operation-summary';
 import { OPERATIONS } from '@/lib/operations';
 
 // /signs: the operation directory and request builder, a published contract
@@ -100,7 +101,7 @@ function OperationForm({ name }: { name: string }) {
             payload[field] = text;
             continue;
           }
-          setError(`${field} must be valid JSON for this ${type} field.`);
+          setError(t('signs.invalid_json', { field, type }));
           return;
         }
         // Structured fields send the parsed value; json fields send the text.
@@ -181,13 +182,18 @@ function Signs() {
     { name: t('message_verification.title'), to: '/verifymessage' as const },
   ].filter((op) => !q || op.name.toLowerCase().includes(q));
 
-  // Matches the Nuxt filter: operation name OR the authority it requires.
+  // Matches the Nuxt filter: operation name OR the authority it requires,
+  // as shown or in English.
   const operations = Object.keys(OPERATIONS).filter((name) => {
     const op = OPERATIONS[name];
     return (
       !q ||
-      op.name.toLowerCase().includes(q) ||
-      op.authority.toLowerCase().includes(q)
+      [
+        operationName(name),
+        op.name,
+        op.authority,
+        t(`authority.${op.authority}`),
+      ].some((text) => text.toLowerCase().includes(q))
     );
   });
 
@@ -222,7 +228,7 @@ function Signs() {
             <details key={name} className={cardTight}>
               <summary className="flex cursor-pointer items-baseline gap-2 text-sm">
                 <span className="min-w-0 flex-1 font-semibold">
-                  {OPERATIONS[name].name}
+                  {operationName(name)}
                 </span>
                 <span
                   className={clsx(
@@ -232,7 +238,7 @@ function Signs() {
                       : 'bg-danger-bg text-danger',
                   )}
                 >
-                  {OPERATIONS[name].authority}
+                  {t(`authority.${OPERATIONS[name].authority}`)}
                 </span>
               </summary>
               <OperationForm name={name} />

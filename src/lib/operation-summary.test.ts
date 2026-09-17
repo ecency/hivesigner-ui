@@ -80,10 +80,18 @@ describe('summarizeOperation', () => {
     expect(summarizeOperation(reply).title).toBe('Reply to @bob/p');
   });
 
-  it('falls back to a readable title for an unmapped operation', () => {
+  it('titles an operation without a summary by its name', () => {
     expect(summarizeOperation(['claim_reward_balance', {}]).title).toBe(
-      'Claim reward balance',
+      'Redeem rewards',
     );
+  });
+
+  it('falls back to a readable title for an operation it has no name for', () => {
+    expect(summarizeOperation(['some_future_op', {}]).title).toBe(
+      'Some future op',
+    );
+    // Never a property every object has.
+    expect(summarizeOperation(['constructor', {}]).title).toBe('Constructor');
   });
 });
 
@@ -178,7 +186,7 @@ describe('authority resolution', () => {
         },
       },
     ]);
-    const activeRow = rows.find((r) => r.label === 'active authority');
+    const activeRow = rows.find((r) => r.label === 'Active authority');
     expect(activeRow?.value).toContain('STM_ATTACKER');
   });
 
@@ -273,7 +281,7 @@ describe('authority resolution', () => {
         },
       },
     ]);
-    expect(rows.find((r) => r.label === 'owner authority')?.value).toContain(
+    expect(rows.find((r) => r.label === 'Owner authority')?.value).toContain(
       'threshold 9',
     );
   });
@@ -292,7 +300,7 @@ describe('authority resolution', () => {
         },
       },
     ]);
-    const row = rows.find((r) => r.label === 'posting authority')?.value;
+    const row = rows.find((r) => r.label === 'Posting authority')?.value;
     expect(row).toContain('threshold 2');
     expect(row).toContain('@attacker');
   });
@@ -302,7 +310,7 @@ describe('authority resolution', () => {
       'account_update',
       { account: 'victim', owner: { account_auths: [], key_auths: [] } },
     ]);
-    expect(rows.find((r) => r.label === 'owner authority')?.value).toContain(
+    expect(rows.find((r) => r.label === 'Owner authority')?.value).toContain(
       'NOT SET',
     );
   });
@@ -475,7 +483,7 @@ describe('an authority with no keys', () => {
         },
       },
     ]);
-    const posting = rows.find((r) => r.label === 'posting authority');
+    const posting = rows.find((r) => r.label === 'Posting authority');
     expect(posting?.value).toMatch(/keys: NONE/);
     expect(posting?.value).toMatch(/@evil.app/);
   });

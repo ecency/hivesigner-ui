@@ -4,6 +4,7 @@ import {
   useRouterState,
 } from '@tanstack/react-router';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AppFooter } from '@/components/AppFooter';
 import { AppHeader } from '@/components/AppHeader';
 import { gutter } from '@/components/ui';
@@ -17,6 +18,8 @@ function RootLayout() {
   // Title, description, robots and canonical follow the route. One place, so
   // no screen can forget it; see lib/page-meta.ts for the table.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // The tab title is in the page's language, and changes with it.
+  const { t } = useTranslation();
   useEffect(() => {
     // The define is absent under vitest, which has no build step; the page's
     // own origin is the right answer there and a fine fallback anywhere.
@@ -25,8 +28,9 @@ function RootLayout() {
       typeof __SITE_URL__ === 'string' && __SITE_URL__
         ? __SITE_URL__
         : window.location.origin,
+      (key) => t(key),
     );
-  }, [pathname]);
+  }, [pathname, t]);
 
   return (
     // The bars run the FULL width of the viewport and only their contents are

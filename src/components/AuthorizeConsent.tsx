@@ -7,7 +7,7 @@ import { Avatar } from '@/components/Avatar';
 import { CurrentAccount } from '@/components/CurrentAccount';
 import { PostingAbilities } from '@/components/PostingAbilities';
 import { ReportIssue } from '@/components/ReportIssue';
-import { Handle, Sentence } from '@/components/Untranslated';
+import { Sentence } from '@/components/Untranslated';
 import {
   alertError,
   alertWarn,
@@ -198,9 +198,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           if (op) await broadcastOperations([op], activeKey, loaded.name);
           // Wait for the grant to be visible on-chain before issuing the token.
           if (!(await waitForGrant(loaded.name, req.clientId))) {
-            setError(
-              'Authorization was submitted but is still confirming. Please try again in a moment.',
-            );
+            setError(t('authorize.still_confirming'));
             return;
           }
           await refetchAccount();
@@ -255,12 +253,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     (postingScope && accountFailed && account === undefined);
   const grantNotice = grantNeeded && (
     <div className={alertWarn}>
-      First-time authorization: this adds{' '}
-      <b className="[unicode-bidi:isolate]" translate="no">
-        {`@${clientLabel}`}
-      </b>{' '}
-      to your posting authority on-chain and needs your active key once. That
-      account will be able to post as you until you revoke it.
+      <Sentence
+        k="authorize.first_time_grant"
+        values={{ app: `@${clientLabel}` }}
+        bold
+      />
     </div>
   );
   // The two integration failures an app author can fix, reported once per
@@ -300,7 +297,9 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   // Attacker-controlled: profile.name is the app account's own on-chain
   // metadata and clientId comes from the URL. Strip control and bidi characters
   // for the same reason the confirm screen does.
-  const appName = safeText(profile?.name ?? req.clientId ?? 'This site');
+  const appName = safeText(
+    profile?.name ?? req.clientId ?? t('authorize.this_site'),
+  );
 
   return (
     <section className={page}>
@@ -309,10 +308,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           // No app account: the requester IS the callback host, which is the
           // one thing about it the user can check.
           <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
-            <b className="[unicode-bidi:isolate]" translate="no">
-              {callbackHost ?? '?'}
-            </b>{' '}
-            {t('authorize.request_verify')}
+            <Sentence
+              k="authorize.request_verify"
+              values={{ site: callbackHost ?? '?' }}
+              bold
+            />
           </h1>
         ) : (
           <>
@@ -325,10 +325,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
               className="mx-auto"
             />
             <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
-              <b className="[unicode-bidi:isolate]" translate="no">
-                {appName}
-              </b>{' '}
-              {t('authorize.request_access')}
+              <Sentence
+                k="authorize.request_access"
+                values={{ app: appName }}
+                bold
+              />
             </h1>
           </>
         )}
@@ -348,7 +349,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           {callbackHost && (
             <>
               {loginOnly ? '' : ' · '}
-              {t('authorize.sends_you_to')} <b translate="no">{callbackHost}</b>
+              <Sentence
+                k="authorize.sends_you_to"
+                values={{ host: callbackHost }}
+                bold
+              />
             </>
           )}
         </div>
@@ -465,8 +470,10 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             search={{ next: window.location.pathname + window.location.search }}
             className={btnPrimary}
           >
-            {`${t('accounts.unlock')} `}
-            <Handle name={selectedAccount} />
+            <Sentence
+              k="accounts.unlock_account"
+              values={{ account: `@${selectedAccount}` }}
+            />
           </Link>
         ) : postingScope && !accountLoaded ? (
           // Never issue a posting token before we can confirm the on-chain

@@ -206,7 +206,7 @@ test('sign: without a callback the success screen is shown', async ({
   await expect(page.locator('main')).toContainText(/successfully/i);
   await translationSettled(page);
   await expect(page.locator('main')).toContainText(
-    translated('Transaction has been successfully broadcasted'),
+    translated('Transaction broadcast successfully'),
   );
   expect(problems).toEqual([]);
 });

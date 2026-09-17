@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Handle } from '@/components/Untranslated';
+import { Handle, Sentence } from '@/components/Untranslated';
 import {
   alertError,
   btnPrimary,
@@ -143,9 +143,7 @@ function Profile() {
       .filter((u) => !isValidRedirectUri(u));
     if (bad.length > 0) {
       setStatus('error');
-      setError(
-        `Not a usable callback (https, or http on localhost): ${bad.join(', ')}`,
-      );
+      setError(t('profile.bad_callbacks', { uris: bad.join(', ') }));
       return;
     }
     setStatus('busy');
@@ -244,8 +242,10 @@ function Profile() {
           to="/accounts"
           className={`${btnPrimary} sm:self-start`}
         >
-          {`${t('accounts.unlock')} `}
-          <Handle name={selectedAccount} />
+          <Sentence
+            k="accounts.unlock_account"
+            values={{ account: `@${selectedAccount}` }}
+          />
         </Link>
       ) : (
         <button

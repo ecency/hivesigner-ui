@@ -136,13 +136,13 @@ function Home() {
       <section className="relative isolate -mx-2 overflow-hidden rounded-2xl px-2">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-24 -right-24 -z-10 h-[420px] w-[420px] rounded-full bg-brand/10 blur-3xl"
+          className="pointer-events-none absolute -top-24 -end-24 -z-10 h-[420px] w-[420px] rounded-full bg-brand/10 blur-3xl"
         />
         {/* The Hive mark, as a faint watermark behind the hero copy. */}
         <svg
           aria-hidden="true"
           viewBox="0 0 220 190"
-          className="pointer-events-none absolute top-8 right-2 -z-10 h-[224px] w-[260px] text-brand/[0.06] lg:right-[38%]"
+          className="pointer-events-none absolute top-8 end-2 -z-10 h-[224px] w-[260px] text-brand/[0.06] lg:end-[38%]"
           fill="currentColor"
         >
           <path d="M157.27 107.26c.73 0 1.18.79.82 1.42l-46.75 80.85a.94.94 0 0 1-.82.47H81.94c-.72 0-1.18-.79-.81-1.42l46.75-80.85a.94.94 0 0 1 .81-.47h28.58ZM129.48 84.09a.94.94 0 0 1-.82-.47L81.13 1.42C80.76.79 81.22 0 81.94 0h28.58c.34 0 .65.18.82.47l47.53 82.2c.36.63-.09 1.42-.82 1.42h-28.57Z" />
@@ -151,10 +151,10 @@ function Home() {
 
         <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
           <div className="flex flex-col gap-5">
-            <div className="text-[11.5px] font-semibold tracking-[0.18em] text-muted uppercase">
+            <div className="text-[11.5px] font-semibold tracking-[0.18em] text-muted uppercase rtl:tracking-normal">
               {t('index.eyebrow')}
             </div>
-            <h1 className="m-0 text-[32px] leading-[1.08] font-bold tracking-tight sm:text-[44px] lg:text-[52px]">
+            <h1 className="m-0 text-[32px] leading-[1.08] font-bold tracking-tight rtl:tracking-normal sm:text-[44px] lg:text-[52px]">
               {t('index.hero_title')}
               <br />
               <span className="text-brand-ink">
@@ -173,7 +173,7 @@ function Home() {
                   {...iconProps}
                   width={16}
                   height={16}
-                  className="ml-2"
+                  className="ms-2 rtl:-scale-x-100"
                   aria-hidden="true"
                 >
                   <path d="M5 12h14m-6-6 6 6-6 6" />
@@ -185,7 +185,7 @@ function Home() {
             </div>
           </div>
 
-          <div className="w-full max-w-md lg:ml-auto lg:max-w-none">
+          <div className="w-full max-w-md lg:ms-auto lg:max-w-none">
             <ConsentPreview />
           </div>
         </div>
@@ -231,7 +231,7 @@ function Home() {
           {CodeIcon}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[11.5px] font-semibold tracking-[0.18em] text-muted uppercase">
+          <div className="text-[11.5px] font-semibold tracking-[0.18em] text-muted uppercase rtl:tracking-normal">
             {t('index.dev_eyebrow')}
           </div>
           <h2 className="m-0 mt-1 text-[20px] font-bold sm:text-[22px]">

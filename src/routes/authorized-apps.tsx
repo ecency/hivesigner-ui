@@ -127,9 +127,7 @@ function AuthorizedApps() {
         </div>
       )}
 
-      <p className={mutedXs}>
-        Revoking is an on-chain change and needs your active key once.
-      </p>
+      <p className={mutedXs}>{t('apps.revoke_needs_active')}</p>
     </section>
   );
 }

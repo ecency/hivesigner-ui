@@ -1,20 +1,24 @@
 // Small per-device UI preferences (language). Node selection and timeouts are
 // the SDK's job now, so there is no custom-node setting.
-import { supportedLngs } from '@/i18n/locales';
+import { isLanguage, type Language } from '@/i18n/languages';
 
 const LANG_KEY = 'hs_lang';
 
-export type Language = (typeof supportedLngs)[number];
+export type { Language } from '@/i18n/languages';
 
-export function getLanguage(): Language {
+/**
+ * The language the user picked on this device, or null when they never did.
+ * Only a pick is stored: a language detected from the browser is worked out
+ * again on every visit, so a language added later reaches people too.
+ */
+export function getStoredLanguage(): Language | null {
   try {
     const v = localStorage.getItem(LANG_KEY);
-    if (v && (supportedLngs as readonly string[]).includes(v))
-      return v as Language;
+    if (isLanguage(v)) return v;
   } catch {
-    // storage blocked; fall through to default
+    // storage blocked; nothing stored as far as we can tell
   }
-  return 'en';
+  return null;
 }
 
 export function setLanguage(lang: Language): void {

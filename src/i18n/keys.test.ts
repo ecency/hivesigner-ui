@@ -1,7 +1,9 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import en from './locales/en-US.js';
+import { OPERATIONS } from '@/lib/operations';
+import { LANGUAGES } from './languages';
+import en from './locales/en-US.json';
 
 /**
  * Every t('...') and <Trans i18nKey="..."> in the source must resolve.
@@ -86,11 +88,133 @@ describe('translation keys', () => {
     expect(missing, `missing keys:\n${missing.join('\n')}`).toEqual([]);
   });
 
-  // The two places that build a key from a variable, listed by hand because a
-  // regex cannot follow them.
-  it('the computed theme keys exist', () => {
-    for (const theme of ['system', 'light', 'dark']) {
-      expect(resolves(`theme.${theme}`), `theme.${theme}`).toBe(true);
+  // The keys built from a variable, listed by hand because a regex cannot
+  // follow them.
+  it('the computed keys exist', () => {
+    for (const key of COMPUTED) {
+      expect(resolves(key), key).toBe(true);
     }
   });
+
+  // A string nothing shows is a string translators still translate, in every
+  // language, for as long as it stays. The Nuxt app left 126 of them.
+  it('every string in en-US is used', () => {
+    const used = new Set(COMPUTED);
+    for (const file of files) {
+      for (const m of readFileSync(file, 'utf8').matchAll(DOTTED)) {
+        used.add(m[1]);
+      }
+    }
+    const unused = leaves(en).filter(
+      ([key]) => !used.has(key) && !used.has(key.replace(PLURAL, '')),
+    );
+    expect(unused.map(([key]) => key)).toEqual([]);
+  });
 });
+
+const PLURAL = /_(zero|one|two|few|many|other)$/;
+
+/** Keys the source builds from a variable (see the usages named). */
+const COMPUTED = [
+  // ThemeToggle, settings: t(`theme.${theme}`)
+  ...['system', 'light', 'dark'].map((v) => `theme.${v}`),
+  // sign, signs: t(`authority.${authority}`)
+  ...['posting', 'active', 'owner', 'unknown'].map((v) => `authority.${v}`),
+  // sign: `sign.signed_with_${authority}`, `sign.missing_${authority}_key`
+  ...['posting', 'active', 'owner'].flatMap((v) => [
+    `sign.signed_with_${v}`,
+    `sign.missing_${v}_key`,
+  ]),
+  // operation-summary: operationName(), fieldLabel()
+  ...Object.keys(OPERATIONS).map((name) => `op_name.${name}`),
+  ...Object.keys(en.op_field).map((field) => `op_field.${field}`),
+  // page-meta: `meta.${key}`
+  ...Object.keys(en.meta).map((key) => `meta.${key}`),
+];
+
+type Tree = { [key: string]: string | Tree };
+
+/** [dotted key, string] for every string in a dictionary. */
+function leaves(tree: Tree, prefix = ''): [string, string][] {
+  return Object.entries(tree).flatMap(([key, value]) =>
+    typeof value === 'string'
+      ? [[`${prefix}${key}`, value] as [string, string]]
+      : leaves(value, `${prefix}${key}.`),
+  );
+}
+
+const placeholders = (text: string) =>
+  [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+const tags = (text: string) =>
+  [...text.matchAll(/<\/?(\w+)\s*\/?>/g)].map((m) => m[0]).sort();
+
+// Every shipped dictionary against the English source. Crowdin writes these
+// files; a sync that dropped a string, renamed a placeholder or lost a plural
+// form a language needs fails here rather than on someone's screen.
+describe.each(
+  LANGUAGES.filter((l) => l.code !== 'en').map((l) => [l.code, l.file]),
+)('the %s dictionary', (code, file) => {
+  const dictionary = JSON.parse(
+    readFileSync(resolve(SRC, 'i18n/locales', `${file}.json`), 'utf8'),
+  ) as Tree;
+  const translated = new Map(leaves(dictionary));
+  const source = leaves(en as Tree);
+  // The forms a count on these screens can take. French, Spanish, Italian and
+  // Portuguese also have a `many` for round millions, which neither Crowdin
+  // nor a count of apps or accounts ever reaches.
+  const rules = new Intl.PluralRules(code);
+  const categories = new Set(
+    Array.from({ length: 1001 }, (_, n) => rules.select(n)),
+  );
+
+  it('has every string, with the same placeholders and markup', () => {
+    const problems: string[] = [];
+    for (const [key, text] of source) {
+      if (PLURAL.test(key)) continue;
+      const own = translated.get(key);
+      if (typeof own !== 'string' || !own.trim()) {
+        problems.push(`${key}: missing`);
+        continue;
+      }
+      if (placeholders(own).join() !== placeholders(text).join())
+        problems.push(`${key}: placeholders ${placeholders(own)}`);
+      if (tags(own).join() !== tags(text).join())
+        problems.push(`${key}: markup ${tags(own)}`);
+    }
+    expect(problems).toEqual([]);
+  });
+
+  it('has the plural forms the language needs', () => {
+    const problems: string[] = [];
+    const bases = new Set(
+      source
+        .filter(([key]) => PLURAL.test(key))
+        .map(([key]) => key.replace(PLURAL, '')),
+    );
+    for (const base of bases) {
+      const wanted = placeholders(en_other(base));
+      for (const category of categories) {
+        const own = translated.get(`${base}_${category}`);
+        if (typeof own !== 'string' || !own.trim()) {
+          problems.push(`${base}_${category}: missing`);
+        } else if (placeholders(own).some((name) => !wanted.includes(name))) {
+          problems.push(`${base}_${category}: placeholders`);
+        }
+      }
+    }
+    expect(problems).toEqual([]);
+  });
+
+  it('has nothing the English source does not', () => {
+    const known = new Set(source.map(([key]) => key.replace(PLURAL, '')));
+    const extra = [...translated.keys()].filter(
+      (key) => !known.has(key.replace(PLURAL, '')),
+    );
+    expect(extra).toEqual([]);
+  });
+});
+
+function en_other(base: string): string {
+  const text = lookup(`${base}_other`);
+  return typeof text === 'string' ? text : '';
+}

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { card, cardGrid, h1, muted, page } from '@/components/ui';
 
 // Developer docs pointers. Static links; the app registration itself is done on
@@ -19,41 +19,48 @@ function Developers() {
       <h1 className={h1}>{t('developers.developers')}</h1>
 
       <p className={`m-0 ${muted}`}>
-        Full documentation is at{' '}
-        <a
-          href="https://docs.hivesigner.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-semibold text-brand-ink"
-        >
-          docs.hivesigner.com
-        </a>
-        .
+        <Trans
+          i18nKey="developers.docs_at"
+          components={{
+            docs: (
+              // biome-ignore lint/a11y/useAnchorContent: Trans fills in the text
+              <a
+                href="https://docs.hivesigner.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-brand-ink"
+                translate="no"
+              />
+            ),
+          }}
+        />
       </p>
 
       {/* Two pointer cards: stacked on a phone, side by side once the shell widens. */}
       <div className={cardGrid}>
         <div className={`${card} flex flex-col gap-1.5`}>
-          <div className="font-semibold">{t('developers.1.title')}</div>
-          <p className={cardBody}>
-            Create a Hive account for your app, then set its type to
-            "application" and register your redirect URIs on the profile page.
-          </p>
+          <div className="font-semibold">{t('developers.add_app_title')}</div>
+          <p className={cardBody}>{t('developers.add_app_body')}</p>
         </div>
 
         <div className={`${card} flex flex-col gap-1.5`}>
-          <div className="font-semibold">{t('developers.3.title')}</div>
+          <div className="font-semibold">{t('developers.sdk_title')}</div>
           <p className={cardBody}>
-            Integrate with the official SDK:{' '}
-            <a
-              href="https://github.com/ecency/hivesigner.js"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-brand-ink"
-            >
-              hivesigner.js
-            </a>
-            .
+            <Trans
+              i18nKey="developers.sdk_body"
+              components={{
+                sdk: (
+                  // biome-ignore lint/a11y/useAnchorContent: Trans fills in the text
+                  <a
+                    href="https://github.com/ecency/hivesigner.js"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-ink"
+                    translate="no"
+                  />
+                ),
+              }}
+            />
           </p>
         </div>
       </div>

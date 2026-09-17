@@ -28,7 +28,7 @@ describe('/signs', () => {
     render(<Signs />);
     expect(screen.getAllByText(/transfer/i).length).toBeGreaterThan(0);
     await user.type(
-      screen.getByPlaceholderText(/type name of transaction/i),
+      screen.getByPlaceholderText(/search operations/i),
       'zzzznope',
     );
     expect(screen.queryByText(/^Transfer$/)).toBeNull();
@@ -38,10 +38,7 @@ describe('/signs', () => {
   it('filters by the authority an operation needs', async () => {
     const user = userEvent.setup();
     render(<Signs />);
-    await user.type(
-      screen.getByPlaceholderText(/type name of transaction/i),
-      'owner',
-    );
+    await user.type(screen.getByPlaceholderText(/search operations/i), 'owner');
     // change_recovery_account is the owner-authority op in the schema.
     expect(screen.getAllByText(/owner/i).length).toBeGreaterThan(0);
   });
@@ -50,7 +47,7 @@ describe('/signs', () => {
     const user = userEvent.setup();
     render(<Signs />);
     await user.type(
-      screen.getByPlaceholderText(/type name of transaction/i),
+      screen.getByPlaceholderText(/search operations/i),
       'redeem',
     );
     // Open the first matching operation and submit it.
@@ -79,7 +76,7 @@ describe('/signs structured fields', () => {
     const user = userEvent.setup();
     render(<Signs />);
     await user.type(
-      screen.getByPlaceholderText(/type name of transaction/i),
+      screen.getByPlaceholderText(/search operations/i),
       'custom operation',
     );
     await user.click(screen.getAllByText(/custom operation/i)[0]);
@@ -95,7 +92,7 @@ describe('/signs structured fields', () => {
     const user = userEvent.setup();
     render(<Signs />);
     await user.type(
-      screen.getByPlaceholderText(/type name of transaction/i),
+      screen.getByPlaceholderText(/search operations/i),
       'witness update',
     );
     await user.click(screen.getAllByText(/witness update/i)[0]);
@@ -113,7 +110,7 @@ describe('/signs structured fields', () => {
     const user = userEvent.setup();
     render(<Signs />);
     await user.type(
-      screen.getByPlaceholderText(/type name of transaction/i),
+      screen.getByPlaceholderText(/search operations/i),
       'custom operation',
     );
     await user.click(screen.getAllByText(/custom operation/i)[0]);
@@ -138,10 +135,7 @@ describe('/signs schema-type fidelity', () => {
   async function payloadFor(term: string, label: RegExp) {
     const user = userEvent.setup();
     render(<Signs />);
-    await user.type(
-      screen.getByPlaceholderText(/type name of transaction/i),
-      term,
-    );
+    await user.type(screen.getByPlaceholderText(/search operations/i), term);
     await user.click(screen.getAllByText(label)[0]);
     return { user };
   }

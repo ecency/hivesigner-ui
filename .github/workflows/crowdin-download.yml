@@ -1,0 +1,43 @@
+name: Crowdin Download
+
+# Pulls the latest translations from Crowdin into ONE pull request against
+# development (branch l10n/crowdin), instead of a commit per language. Runs
+# weekly and on demand from the Actions tab; the pull request is updated in
+# place while it is open. Skipped until the repository variable
+# CROWDIN_PROJECT_ID is set.
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  download:
+    if: vars.CROWDIN_PROJECT_ID != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: development
+
+      - name: Download translations from Crowdin
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: false
+          upload_translations: false
+          download_translations: true
+          localization_branch_name: l10n/crowdin
+          create_pull_request: true
+          pull_request_title: 'Sync translations from Crowdin'
+          pull_request_body: 'Translations pulled from Crowdin. The dictionary tests check every language for missing strings, placeholders and plural forms.'
+          pull_request_base_branch_name: development
+          commit_message: 'Sync translations from Crowdin'
+          github_user_name: 'github-actions[bot]'
+          github_user_email: '41898282+github-actions[bot]@users.noreply.github.com'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_PROJECT_ID: ${{ vars.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}

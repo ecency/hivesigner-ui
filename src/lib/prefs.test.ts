@@ -1,19 +1,26 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getLanguage, setLanguage } from './prefs';
+import { getStoredLanguage, setLanguage } from './prefs';
 
 beforeEach(() => localStorage.clear());
 afterEach(() => vi.restoreAllMocks());
 
 describe('language preference', () => {
-  it('defaults to English and round-trips a supported choice', () => {
-    expect(getLanguage()).toBe('en');
-    setLanguage('ru');
-    expect(getLanguage()).toBe('ru');
+  it('is empty until a language is picked, then round-trips it', () => {
+    expect(getStoredLanguage()).toBeNull();
+    setLanguage('zh-TW');
+    expect(getStoredLanguage()).toBe('zh-TW');
   });
 
-  it('ignores an unsupported stored value', () => {
+  it('ignores a stored value the app does not ship', () => {
     localStorage.setItem('hs_lang', 'xx');
-    expect(getLanguage()).toBe('en');
+    expect(getStoredLanguage()).toBeNull();
+    localStorage.setItem('hs_lang', 'constructor');
+    expect(getStoredLanguage()).toBeNull();
+  });
+
+  it('keeps a pick stored by the previous app version', () => {
+    localStorage.setItem('hs_lang', 'ru');
+    expect(getStoredLanguage()).toBe('ru');
   });
 
   it('survives blocked storage', () => {
@@ -24,6 +31,6 @@ describe('language preference', () => {
       throw new Error('blocked');
     });
     expect(() => setLanguage('ru')).not.toThrow();
-    expect(getLanguage()).toBe('en');
+    expect(getStoredLanguage()).toBeNull();
   });
 });

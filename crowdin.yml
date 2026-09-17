@@ -1,0 +1,10 @@
+# Translations are managed on Crowdin. en-US.json is the source; every other
+# dictionary is written by Crowdin (see .github/workflows/crowdin-*.yml), so
+# fix a translation there, not in the file, or the next sync undoes it.
+# `i18next_json` makes Crowdin read and write the _one/_few/_many plural keys
+# each language needs.
+preserve_hierarchy: true
+files:
+  - source: /src/i18n/locales/en-US.json
+    translation: /src/i18n/locales/%locale%.json
+    type: i18next_json

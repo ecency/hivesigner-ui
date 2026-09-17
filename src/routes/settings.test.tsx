@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -8,7 +8,7 @@ vi.mock('@tanstack/react-router', async () =>
   (await import('../test-router-mock')).routerMock(),
 );
 
-import { getLanguage } from '@/lib/prefs';
+import { getStoredLanguage } from '@/lib/prefs';
 import { _resetSessionTheme, getTheme } from '@/lib/theme';
 import { Route } from './settings';
 
@@ -24,11 +24,13 @@ beforeEach(() => {
 describe('/settings', () => {
   it('changes and persists the language, and switches the dictionary', async () => {
     render(<Settings />);
-    await userEvent.setup().selectOptions(screen.getByRole('combobox'), 'ru');
-    expect(getLanguage()).toBe('ru');
-    expect(i18n.language).toBe('ru');
+    await userEvent
+      .setup()
+      .selectOptions(screen.getByRole('combobox', { name: 'Language' }), 'ru');
+    await waitFor(() => expect(i18n.language).toBe('ru'));
+    expect(getStoredLanguage()).toBe('ru');
     expect(screen.getByRole('status')).toBeInTheDocument();
-    i18n.changeLanguage('en');
+    await i18n.changeLanguage('en');
   });
 
   it('offers the three theme values as one radio group and applies the choice', async () => {

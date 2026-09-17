@@ -77,7 +77,7 @@ export function AppHeader() {
           <AppNav />
         </div>
 
-        <div className="ml-auto flex min-w-0 items-center gap-2 py-2.5 lg:ml-0 lg:gap-3 lg:py-3">
+        <div className="ms-auto flex min-w-0 items-center gap-2 py-2.5 lg:ms-0 lg:gap-3 lg:py-3">
           <div className="hidden lg:block">
             <HostCue host={host} />
           </div>
