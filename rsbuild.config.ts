@@ -31,6 +31,13 @@ export default defineConfig({
       __SITE_URL__: JSON.stringify(SITE_URL),
     },
   },
+  output: {
+    // Ten hash characters rather than the default eight. The length itself
+    // does not matter; changing it gave every asset a URL no browser had seen
+    // before, after a release in which missing assets were served as
+    // cacheable 404s that some browsers kept. Leave it as it is.
+    filenameHash: 'contenthash:10',
+  },
   html: {
     template: './template.html',
     templateParameters: { siteUrl: SITE_URL },

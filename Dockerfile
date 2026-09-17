@@ -1,5 +1,15 @@
 # Build the SPA and serve dist/ with nginx. There is no application server: the
 # app renders entirely in the browser, so the runtime stage is nginx alone.
+
+# The image this build replaces: the tag the deploy is about to update. Its
+# hashed assets are carried into the new image, so while a release rolls out
+# container by container a page from either release finds its chunks, and a
+# tab opened before the release can still load the routes it has not visited
+# yet. The default has no /static/, which is what a first or local build wants.
+ARG PREVIOUS_IMAGE=nginx:1.31-alpine
+
+FROM ${PREVIOUS_IMAGE} AS previous
+
 FROM node:24-alpine AS build
 
 WORKDIR /app
@@ -31,6 +41,17 @@ ARG SITE_URL=""
 ENV SITE_URL=${SITE_URL}
 RUN pnpm build
 
+# The previous release's assets, minus anything past the retention window. A
+# file's mtime is the build that last wrote it: an asset every release rebuilds
+# stays fresh, one that no release has produced for 30 days is dropped, so the
+# carried set cannot grow without bound.
+FROM nginx:1.31-alpine AS carried
+COPY --from=previous /usr/share/nginx/html/ /previous/
+RUN mkdir -p /carried/static \
+  && if [ -d /previous/static ]; then cp -a /previous/static/. /carried/static/; fi \
+  && find /carried/static -type f -mtime +30 -delete \
+  && find /carried/static -mindepth 1 -type d -empty -delete
+
 # serve the static build
 FROM nginx:1.31-alpine
 
@@ -38,6 +59,8 @@ ENV PORT=3000
 
 # nginx:alpine substitutes ${PORT} in templates into conf.d at start.
 COPY nginx.conf /etc/nginx/templates/default.conf.template
+# Carried assets first, so this build's own files win on a name clash.
+COPY --from=carried /carried/static /usr/share/nginx/html/static
 COPY --from=build /app/dist /usr/share/nginx/html
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD wget -q -O /dev/null "http://127.0.0.1:${PORT}/" || exit 1

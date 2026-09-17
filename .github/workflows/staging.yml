@@ -50,7 +50,9 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ecency/hivesigner:development
+          # The image being replaced, whose assets the new one carries forward.
           build-args: |
+            PREVIOUS_IMAGE=ecency/hivesigner:development
             GIT_SHA=${{ github.sha }}
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
             API_URL=${{ vars.API_URL }}
