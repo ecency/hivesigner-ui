@@ -102,7 +102,7 @@
   "report": {
     "button": "Bu sorunu bildir",
     "note_label": "Ne yapmaya çalışıyordunuz? (isteğe bağlı)",
-    "includes_link": "Bu bağlantıyı ve notunuzu Hivesigner ekibine gönderir. Anahtarlar ve token'lar gizlenir.",
+    "includes_link": "Bu bağlantıyı ve notunuzu Hivesigner ekibine gönderir. Anahtarlar ve token'lar bağlantıdan silinir.",
     "thanks": "Bildirildi, teşekkürler. Referans: {id}."
   },
   "authorize": {
@@ -148,7 +148,7 @@
     "passcode": "Erişim kodu",
     "protect_with_passcode": "Erişim koduyla koru (önerilir)",
     "private_key_hint": "Gönderi anahtarı, gönderi paylaşma ve oy verme gibi günlük işlemler için yeterlidir. Cüzdan işlemleri ve bir uygulamayı ilk kez yetkilendirmek için aktif anahtar gerekir. Ana şifre ikisini de kapsar. Anahtar bu cihazda saklanır ve hiçbir yere gönderilmez.",
-    "passcode_hint": "Hive anahtarlarınızdan ayrı, yerel bir şifre. Anahtarı bu cihazda şifreler ve kilidini yeniden açar. Hive şifreniz değildir ve kurtarılamaz.",
+    "passcode_hint": "Hive anahtarlarınızdan ayrı, yerel bir koddur. Anahtarı bu cihazda şifreler ve kilidini yeniden açar. Bu kod Hive şifreniz değildir ve kurtarılamaz.",
     "accounts_on_device_one": "Bu cihazda {count} hesap var.",
     "accounts_on_device_other": "Bu cihazda {count} hesap var.",
     "passcode_needed": "Bu hesap bu cihazda korunuyor. Anahtarı eklemek için hesabın erişim kodunu girin."
@@ -156,7 +156,7 @@
   "login": {
     "unlock_to_continue_to": "<target>{target}</target> sitesine devam etmek için bir hesabın kilidini açın.",
     "switch_an_account": "Hesap değiştir",
-    "invalid_hs_password": "Geçersiz Hivesigner erişim kodu"
+    "invalid_hs_password": "Yanlış erişim kodu."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} şu anda kendisine yetki veren hesaplar adına gönderi paylaşma iznine sahip. Bu izni iptal etmek için bir hesap ekleyin.",
@@ -235,15 +235,15 @@
     "failure_title": "İşleminiz ağa yayınlanmadı",
     "error_message": "Hata mesajı",
     "transaction_id": "İşlem kimliği",
-    "acts_as": "Bu işlem {account} hesabı adına değil, {actors} adına gerçekleştirilir. Yalnızca o hesabı siz yönetiyorsanız devam edin.",
+    "acts_as": "Bu işlem {account} hesabı adına değil, {actors} adına gerçekleştirilir. Yalnızca o hesabı da siz yönetiyorsanız devam edin.",
     "contains_operations_one": "Bu istek {count} operasyon içeriyor. Onaylamadan önce inceleyin.",
     "contains_operations_other": "Bu istek {count} operasyon içeriyor. Onaylamadan önce her birini inceleyin.",
     "own_header": "Bu istek kendi işlem başlığını gönderdi. Son geçerlilik: {expiration}.",
     "carries_signatures_one": "Zaten {count} imza taşıyor.",
     "carries_signatures_other": "Zaten {count} imza taşıyor.",
-    "signed_with_posting": "Gönderi anahtarınızla imzalandı",
-    "signed_with_active": "Aktif anahtarınızla imzalandı",
-    "signed_with_owner": "Sahip anahtarınızla imzalandı",
+    "signed_with_posting": "Gönderi anahtarınızla imzalanır",
+    "signed_with_active": "Aktif anahtarınızla imzalanır",
+    "signed_with_owner": "Sahip anahtarınızla imzalanır",
     "mixed_authorities": "Bu işlem birden fazla yetki türü gerektiriyor ve tek bir anahtarla imzalanamaz.",
     "show_raw_one": "Ham operasyonu göster",
     "show_raw_other": "Ham operasyonları göster",
@@ -256,7 +256,7 @@
   "developers": {
     "developers": "Geliştiriciler",
     "add_app_title": "Uygulamanızı ekleyin",
-    "add_app_body": "Uygulamanız için bir Hive hesabı oluşturun, ardından profil sayfasında türünü “application” olarak ayarlayın ve yönlendirme URI'lerinizi kaydedin.",
+    "add_app_body": "Uygulamanız için bir Hive hesabı oluşturun, bu hesapla burada giriş yapın ve yönlendirme URI'lerinizi hesabın profil sayfasına ekleyin.",
     "sdk_title": "Hivesigner için JS SDK",
     "sdk_body": "Resmî SDK ile entegre edin: <sdk>hivesigner.js</sdk>.",
     "docs_at": "Belgelerin tamamı <docs>docs.hivesigner.com</docs> adresinde."
@@ -371,11 +371,11 @@
     "remove_proposal": "Teklif kaldırma",
     "update_proposal_votes": "Teklif oylarını güncelleme",
     "update_proposal": "Teklif güncelleme",
-    "escrow_transfer": "Emanet transferi",
+    "escrow_transfer": "Emanet aktarımı",
     "escrow_approve": "Emanet onayı",
     "escrow_dispute": "Emanet ihtilafı",
     "escrow_release": "Emanetin serbest bırakılması",
-    "account_create_with_delegation": "Delegasyonla hesap oluşturma",
+    "account_create_with_delegation": "Hive Power devriyle hesap oluşturma",
     "request_account_recovery": "Hesap kurtarma talebi",
     "recover_account": "Hesap kurtarma"
   },

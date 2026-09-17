@@ -8,7 +8,7 @@
   "index": {
     "lede": "Hivesigner 會把你的 Hive 金鑰保存在你自己的裝置上，在你簽署前清楚顯示交易實際會做什麼，並讓應用程式只要求它需要的權限。",
     "browse_apps": "瀏覽應用程式",
-    "powering": "這些 Hive 應用程式都在使用",
+    "powering": "為這些 Hive 應用程式提供支援",
     "see_all_apps": "查看所有應用程式",
     "title": "Hivesigner",
     "description": "Hivesigner 是登入 Hive 應用程式的安全方式。它為使用者的金鑰提供強大的保護，也為開發者提供業界標準的 OAuth2 串接方式。",
@@ -107,7 +107,7 @@
   "authorize": {
     "authorize": "授權",
     "request_access": "{app} 要求存取你的帳號。",
-    "authorizing_as": "授權帳號",
+    "authorizing_as": "用於授權的帳號",
     "redirect_not_registered": "這個應用程式的重新導向網址尚未註冊。為了你的安全，已封鎖登入。",
     "hive_account": "Hive 帳號",
     "sends_you_to": "將前往 {host}",
@@ -154,7 +154,7 @@
   "login": {
     "unlock_to_continue_to": "請解鎖帳號以繼續前往 <target>{target}</target>。",
     "switch_an_account": "切換帳號",
-    "invalid_hs_password": "Hivesigner 本機密碼錯誤"
+    "invalid_hs_password": "本機密碼錯誤。"
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} 目前有權代表授權給它的帳號發文。請新增帳號以撤銷。",
@@ -233,7 +233,7 @@
     "failure_title": "你的交易未廣播",
     "error_message": "錯誤訊息",
     "transaction_id": "交易 ID",
-    "acts_as": "此操作會以 {actors} 的身分執行，而不是 {account}。只有在你管理該帳號時才繼續。",
+    "acts_as": "此操作不是以 {account} 的身分執行，而是以 {actors} 的身分執行。只有在你也管理該帳號時才繼續。",
     "contains_operations_other": "這個請求包含 {count} 項操作。核准前請逐一檢查。",
     "own_header": "這個請求自帶交易標頭。到期時間：{expiration}。",
     "carries_signatures_other": "它已附有 {count} 個簽章。",
@@ -251,7 +251,7 @@
   "developers": {
     "developers": "開發者",
     "add_app_title": "新增你的應用程式",
-    "add_app_body": "為你的應用程式建立一個 Hive 帳號，然後在個人檔案頁面將類型設為「application」，並註冊你的重新導向 URI。",
+    "add_app_body": "為你的應用程式建立一個 Hive 帳號，用該帳號在這裡登入，並在它的個人檔案頁面列出你的重新導向 URI。",
     "sdk_title": "Hivesigner JS SDK",
     "sdk_body": "使用官方 SDK 串接：<sdk>hivesigner.js</sdk>。",
     "docs_at": "完整說明文件請見 <docs>docs.hivesigner.com</docs>。"

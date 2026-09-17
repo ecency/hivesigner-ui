@@ -107,7 +107,7 @@
   "authorize": {
     "authorize": "承認",
     "request_access": "{app} があなたのアカウントへのアクセスを求めています。",
-    "authorizing_as": "承認するアカウント",
+    "authorizing_as": "承認に使うアカウント",
     "redirect_not_registered": "このアプリのリダイレクト URL は登録されていません。安全のため、サインインはブロックされました。",
     "hive_account": "Hive アカウント",
     "sends_you_to": "移動先：{host}",
@@ -154,7 +154,7 @@
   "login": {
     "unlock_to_continue_to": "<target>{target}</target> に進むには、アカウントのロックを解除してください。",
     "switch_an_account": "アカウントを切り替え",
-    "invalid_hs_password": "Hivesigner のパスコードが正しくありません"
+    "invalid_hs_password": "パスコードが正しくありません。"
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} は現在、権限を付与したアカウントの代わりに投稿する権限を持っています。取り消すにはアカウントを追加してください。",
@@ -233,7 +233,7 @@
     "failure_title": "トランザクションはブロードキャストされませんでした",
     "error_message": "エラーメッセージ",
     "transaction_id": "トランザクション ID",
-    "acts_as": "この操作は {account} ではなく {actors} として実行されます。そのアカウントをあなたが管理している場合にのみ続行してください。",
+    "acts_as": "この操作は {account} としてではなく、{actors} として実行されます。そのアカウントもあなたが管理している場合にのみ続行してください。",
     "contains_operations_other": "このリクエストには {count} 件の操作が含まれています。承認する前にすべての内容を確認してください。",
     "own_header": "このリクエストには独自のトランザクションヘッダーが指定されています。有効期限：{expiration}",
     "carries_signatures_other": "すでに {count} 件の署名が付いています。",
@@ -251,7 +251,7 @@
   "developers": {
     "developers": "開発者",
     "add_app_title": "アプリを追加",
-    "add_app_body": "アプリ用の Hive アカウントを作成し、プロフィールページでタイプを「application」に設定して、リダイレクト URI を登録してください。",
+    "add_app_body": "アプリ用の Hive アカウントを作成し、そのアカウントでここにログインして、そのプロフィールページにリダイレクト URI を登録してください。",
     "sdk_title": "Hivesigner JS SDK",
     "sdk_body": "公式 SDK <sdk>hivesigner.js</sdk> を使って連携できます。",
     "docs_at": "詳しいドキュメントは <docs>docs.hivesigner.com</docs> にあります。"

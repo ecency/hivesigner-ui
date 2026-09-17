@@ -8,7 +8,7 @@
   "index": {
     "lede": "Hivesigner 将您的 Hive 密钥保存在您自己的设备上，在您签名前准确展示交易会做什么，并让应用只申请它所需的权限。",
     "browse_apps": "浏览应用",
-    "powering": "这些 Hive 应用正在使用",
+    "powering": "为这些 Hive 应用提供支持",
     "see_all_apps": "查看全部应用",
     "title": "Hivesigner",
     "description": "Hivesigner 是登录 Hive 应用的安全方式。它为用户的密钥提供强有力的保护，并为开发者提供业界标准的 OAuth2 集成方式。",
@@ -107,7 +107,7 @@
   "authorize": {
     "authorize": "授权",
     "request_access": "{app} 正在请求访问您的账户。",
-    "authorizing_as": "授权账户",
+    "authorizing_as": "用于授权的账户",
     "redirect_not_registered": "此应用的重定向 URL 未注册。为保障您的安全，已阻止登录。",
     "hive_account": "Hive 账户",
     "sends_you_to": "将跳转到 {host}",
@@ -154,7 +154,7 @@
   "login": {
     "unlock_to_continue_to": "请解锁一个账户以继续前往 <target>{target}</target>。",
     "switch_an_account": "切换账户",
-    "invalid_hs_password": "Hivesigner 本地密码错误"
+    "invalid_hs_password": "本地密码错误。"
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} 目前有权代表已授权它的账户发布内容。请添加账户以撤销。",
@@ -233,7 +233,7 @@
     "failure_title": "您的交易未被广播",
     "error_message": "错误信息",
     "transaction_id": "交易 ID",
-    "acts_as": "此操作将以 {actors} 的身份执行，而不是 {account}。只有在您管理该账户时才可继续。",
+    "acts_as": "此操作不是以 {account} 的身份执行，而是以 {actors} 的身份执行。只有在您同时管理该账户时才可继续。",
     "contains_operations_other": "此请求包含 {count} 项操作。批准前请逐项检查。",
     "own_header": "此请求自带交易头。过期时间：{expiration}。",
     "carries_signatures_other": "它已带有 {count} 个签名。",
@@ -251,7 +251,7 @@
   "developers": {
     "developers": "开发者",
     "add_app_title": "添加您的应用",
-    "add_app_body": "为您的应用创建一个 Hive 账户，然后在个人资料页面将其类型设置为“application”，并注册您的重定向 URI。",
+    "add_app_body": "为您的应用创建一个 Hive 账户，用该账户在此登录，并在其个人资料页面中列出您的重定向 URI。",
     "sdk_title": "Hivesigner JS SDK",
     "sdk_body": "使用官方 SDK 进行集成：<sdk>hivesigner.js</sdk>。",
     "docs_at": "完整文档请访问 <docs>docs.hivesigner.com</docs>。"

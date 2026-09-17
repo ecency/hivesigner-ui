@@ -104,7 +104,7 @@
   "report": {
     "button": "Zgłoś ten problem",
     "note_label": "Co próbujesz zrobić? (opcjonalnie)",
-    "includes_link": "Wysyła ten link i Twoją notatkę do zespołu Hivesigner. Klucze i tokeny są wymazywane.",
+    "includes_link": "Wysyła ten link i Twoją notatkę do zespołu Hivesigner. Klucze i tokeny są usuwane z linku.",
     "thanks": "Zgłoszono, dziękujemy. Numer referencyjny: {id}."
   },
   "authorize": {
@@ -160,7 +160,7 @@
   "login": {
     "unlock_to_continue_to": "Odblokuj konto, aby przejść do <target>{target}</target>.",
     "switch_an_account": "Przełącz konto",
-    "invalid_hs_password": "Nieprawidłowy kod dostępu Hivesigner"
+    "invalid_hs_password": "Nieprawidłowy kod dostępu."
   },
   "revoke": {
     "revoke_explain_no_account": "Konto @{app} ma obecnie uprawnienie do publikowania w imieniu kont, które je nadały. Dodaj konto, aby je cofnąć.",
@@ -239,7 +239,7 @@
     "failure_title": "Twoja transakcja nie została rozgłoszona w sieci",
     "error_message": "Komunikat błędu",
     "transaction_id": "Identyfikator transakcji",
-    "acts_as": "To żądanie działa w imieniu {actors}, a nie w imieniu {account}. Kontynuuj tylko wtedy, gdy zarządzasz tym kontem.",
+    "acts_as": "To żądanie nie działa w imieniu {account}, lecz w imieniu {actors}. Kontynuuj tylko wtedy, gdy zarządzasz także tym kontem.",
     "contains_operations_one": "To żądanie zawiera {count} operację. Sprawdź ją przed zatwierdzeniem.",
     "contains_operations_few": "To żądanie zawiera {count} operacje. Sprawdź każdą z nich przed zatwierdzeniem.",
     "contains_operations_many": "To żądanie zawiera {count} operacji. Sprawdź każdą z nich przed zatwierdzeniem.",
@@ -249,9 +249,9 @@
     "carries_signatures_few": "Ma już {count} podpisy.",
     "carries_signatures_many": "Ma już {count} podpisów.",
     "carries_signatures_other": "Ma już {count} podpisu.",
-    "signed_with_posting": "Podpisano Twoim kluczem publikowania",
-    "signed_with_active": "Podpisano Twoim kluczem aktywnym",
-    "signed_with_owner": "Podpisano Twoim kluczem właściciela",
+    "signed_with_posting": "Podpis Twoim kluczem publikowania",
+    "signed_with_active": "Podpis Twoim kluczem aktywnym",
+    "signed_with_owner": "Podpis Twoim kluczem właściciela",
     "mixed_authorities": "Ta transakcja wymaga więcej niż jednego uprawnienia i nie może zostać podpisana jednym kluczem.",
     "show_raw_one": "Pokaż surową operację",
     "show_raw_few": "Pokaż surowe operacje",
@@ -266,7 +266,7 @@
   "developers": {
     "developers": "Deweloperzy",
     "add_app_title": "Dodaj swoją aplikację",
-    "add_app_body": "Utwórz konto Hive dla swojej aplikacji, a następnie na stronie profilu ustaw jego typ na „application” i zarejestruj adresy URI przekierowania.",
+    "add_app_body": "Utwórz konto Hive dla swojej aplikacji, zaloguj się na nie tutaj i wpisz adresy URI przekierowania na stronie jego profilu.",
     "sdk_title": "Hivesigner JS SDK",
     "sdk_body": "Zintegruj się z oficjalnym SDK: <sdk>hivesigner.js</sdk>.",
     "docs_at": "Pełna dokumentacja jest dostępna na <docs>docs.hivesigner.com</docs>."
@@ -303,13 +303,13 @@
     "unknown": "Nieznany"
   },
   "summary": {
-    "transfer": "Wyślij {amount} do {to}",
+    "transfer": "Przelew {amount} do {to}",
     "memo": "Notatka: {memo}",
     "upvote": "Głos za: {post}",
     "downvote": "Głos przeciw: {post}",
     "unvote": "Wycofanie głosu: {post}",
     "reply": "Odpowiedź na {post}",
-    "post": "Opublikuj wpis „{title}”",
+    "post": "Publikacja wpisu „{title}”",
     "custom_json": "Niestandardowa akcja ({id})",
     "account_update": "Aktualizacja uprawnień konta",
     "threshold": "próg {value}",

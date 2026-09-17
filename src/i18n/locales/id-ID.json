@@ -154,7 +154,7 @@
   "login": {
     "unlock_to_continue_to": "Buka kunci akun untuk melanjutkan ke <target>{target}</target>.",
     "switch_an_account": "Ganti akun",
-    "invalid_hs_password": "Kata sandi Hivesigner tidak valid"
+    "invalid_hs_password": "Kode sandi salah."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} saat ini memiliki izin untuk memposting atas nama akun-akun yang telah memberinya izin. Tambahkan akun untuk mencabut izin tersebut.",
@@ -233,13 +233,13 @@
     "failure_title": "Transaksi Anda tidak disiarkan",
     "error_message": "Pesan kesalahan",
     "transaction_id": "ID transaksi",
-    "acts_as": "Permintaan ini bertindak atas nama {actors}, bukan {account}. Lanjutkan hanya jika Anda mengelola akun tersebut.",
+    "acts_as": "Permintaan ini tidak bertindak atas nama {account}, melainkan atas nama {actors}. Lanjutkan hanya jika Anda juga mengelola akun tersebut.",
     "contains_operations_other": "Permintaan ini berisi {count} operasi. Tinjau semuanya sebelum menyetujui.",
     "own_header": "Permintaan ini menyertakan header transaksinya sendiri. Kedaluwarsa: {expiration}.",
     "carries_signatures_other": "Permintaan ini sudah memuat {count} tanda tangan.",
-    "signed_with_posting": "Ditandatangani dengan kunci posting Anda",
-    "signed_with_active": "Ditandatangani dengan kunci active Anda",
-    "signed_with_owner": "Ditandatangani dengan kunci owner Anda",
+    "signed_with_posting": "Akan ditandatangani dengan kunci posting Anda",
+    "signed_with_active": "Akan ditandatangani dengan kunci active Anda",
+    "signed_with_owner": "Akan ditandatangani dengan kunci owner Anda",
     "mixed_authorities": "Transaksi ini memerlukan lebih dari satu otoritas dan tidak dapat ditandatangani dengan satu kunci.",
     "show_raw_other": "Tampilkan operasi mentah",
     "must_be_signed_by": "Permintaan ini harus ditandatangani oleh {account}. Beralihlah ke akun tersebut.",
@@ -251,7 +251,7 @@
   "developers": {
     "developers": "Pengembang",
     "add_app_title": "Tambahkan aplikasi Anda",
-    "add_app_body": "Buat akun Hive untuk aplikasi Anda, lalu atur jenisnya menjadi “application” dan daftarkan URI pengalihan Anda di halaman profil.",
+    "add_app_body": "Buat akun Hive untuk aplikasi Anda, masuk dengan akun tersebut di sini, lalu cantumkan URI pengalihan Anda di halaman profilnya.",
     "sdk_title": "SDK JS Hivesigner",
     "sdk_body": "Integrasikan dengan SDK resmi: <sdk>hivesigner.js</sdk>.",
     "docs_at": "Dokumentasi lengkap tersedia di <docs>docs.hivesigner.com</docs>."
@@ -300,7 +300,7 @@
     "threshold": "ambang batas {value}",
     "threshold_missing": "ambang batas TIDAK DIATUR (dihitung sebagai 0)",
     "keys": "kunci: {keys}",
-    "keys_none": "kunci: TIDAK ADA (kunci Anda dihapus)",
+    "keys_none": "kunci: TIDAK ADA (kunci Anda akan dihapus)",
     "accounts": "akun: {accounts}"
   },
   "op_field": {

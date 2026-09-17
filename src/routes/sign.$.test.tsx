@@ -119,8 +119,9 @@ describe('sign route', () => {
     h.splat = 'transfer';
     h.search = { from: 'treasury', to: 'attacker', amount: '10.000 HIVE' };
     render(<Sign />);
-    expect(await screen.findByRole('alert')).toHaveTextContent(/@treasury/);
-    expect(screen.getByRole('alert')).toHaveTextContent(/not @alice/);
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'This does not act as @alice but as @treasury. Only continue if you manage that account too.',
+    );
   });
 
   it('shows no actor warning when the operation acts as the selected account', async () => {

@@ -103,7 +103,7 @@
   "report": {
     "button": "Prijavi ovaj problem",
     "note_label": "Šta ste pokušavali da uradite? (opciono)",
-    "includes_link": "Šalje ovaj link i vašu napomenu timu servisa Hivesigner. Ključevi i tokeni se prikrivaju.",
+    "includes_link": "Šalje ovaj link i vašu napomenu timu servisa Hivesigner. Ključevi i tokeni se uklanjaju iz linka.",
     "thanks": "Prijavljeno, hvala vam. Referentni broj: {id}."
   },
   "authorize": {
@@ -158,7 +158,7 @@
   "login": {
     "unlock_to_continue_to": "Otključajte nalog da biste nastavili na <target>{target}</target>.",
     "switch_an_account": "Promeni nalog",
-    "invalid_hs_password": "Pogrešan Hivesigner pristupni kod"
+    "invalid_hs_password": "Pogrešan pristupni kod."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} trenutno ima dozvolu da objavljuje u ime naloga koji su mu je dodelili. Dodajte nalog da biste je opozvali.",
@@ -237,7 +237,7 @@
     "failure_title": "Vaša transakcija nije emitovana",
     "error_message": "Poruka o grešci",
     "transaction_id": "ID transakcije",
-    "acts_as": "Ova operacija se izvršava u ime naloga {actors}, a ne naloga {account}. Nastavite samo ako upravljate tim nalogom.",
+    "acts_as": "Ova operacija se ne izvršava u ime naloga {account}, već u ime naloga {actors}. Nastavite samo ako upravljate i tim nalogom.",
     "contains_operations_one": "Ovaj zahtev sadrži {count} operaciju. Pažljivo ga pregledajte pre odobravanja.",
     "contains_operations_few": "Ovaj zahtev sadrži {count} operacije. Pregledajte svaku od njih pre odobravanja.",
     "contains_operations_other": "Ovaj zahtev sadrži {count} operacija. Pregledajte svaku od njih pre odobravanja.",
@@ -245,14 +245,14 @@
     "carries_signatures_one": "Već sadrži {count} potpis.",
     "carries_signatures_few": "Već sadrži {count} potpisa.",
     "carries_signatures_other": "Već sadrži {count} potpisa.",
-    "signed_with_posting": "Potpisano vašim ključem za objavljivanje",
-    "signed_with_active": "Potpisano vašim aktivnim ključem",
-    "signed_with_owner": "Potpisano vašim vlasničkim ključem",
+    "signed_with_posting": "Potpisuje se vašim ključem za objavljivanje",
+    "signed_with_active": "Potpisuje se vašim aktivnim ključem",
+    "signed_with_owner": "Potpisuje se vašim vlasničkim ključem",
     "mixed_authorities": "Ova transakcija zahteva više od jednog ovlašćenja i ne može se potpisati jednim ključem.",
-    "show_raw_one": "Prikaži sirove podatke",
+    "show_raw_one": "Prikaži sirove podatke operacije",
     "show_raw_few": "Prikaži sirove podatke operacija",
     "show_raw_other": "Prikaži sirove podatke operacija",
-    "must_be_signed_by": "Ovaj zahtev mora da potpiše {account}. Prebacite se na taj nalog.",
+    "must_be_signed_by": "Ovaj zahtev mora biti potpisan u ime naloga {account}. Prebacite se na taj nalog.",
     "missing_posting_key": "Za ovo je potreban vaš ključ za objavljivanje, koji nalog {account} ovde nema.",
     "missing_active_key": "Za ovo je potreban vaš aktivni ključ, koji nalog {account} ovde nema.",
     "missing_owner_key": "Za ovo je potreban vaš vlasnički ključ, koji nalog {account} ovde nema.",
@@ -261,7 +261,7 @@
   "developers": {
     "developers": "Programeri",
     "add_app_title": "Dodajte svoju aplikaciju",
-    "add_app_body": "Napravite Hive nalog za svoju aplikaciju, zatim na stranici profila postavite njegov tip na „application“ i registrujte URI adrese za preusmeravanje.",
+    "add_app_body": "Napravite Hive nalog za svoju aplikaciju, prijavite se njime ovde i navedite URI adrese za preusmeravanje na stranici njegovog profila.",
     "sdk_title": "JS SDK za Hivesigner",
     "sdk_body": "Integrišite pomoću zvaničnog SDK paketa: <sdk>hivesigner.js</sdk>.",
     "docs_at": "Kompletna dokumentacija je na <docs>docs.hivesigner.com</docs>."
@@ -346,7 +346,7 @@
     "recurrent_transfer": "Ponavljajući prenos",
     "delegate_vesting_shares": "Delegiranje Hive Power",
     "transfer_to_vesting": "Power Up",
-    "set_withdraw_vesting_route": "Putanja za Power Down",
+    "set_withdraw_vesting_route": "Podešavanje putanje za Power Down",
     "withdraw_vesting": "Power Down",
     "transfer_to_savings": "Prenos na štednju",
     "transfer_from_savings": "Prenos iz štednje",

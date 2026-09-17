@@ -156,7 +156,7 @@
   "login": {
     "unlock_to_continue_to": "Entsperren Sie ein Konto, um weiter zu <target>{target}</target> zu gelangen.",
     "switch_an_account": "Konto wechseln",
-    "invalid_hs_password": "Ungültiger Hivesigner-Passcode"
+    "invalid_hs_password": "Falscher Passcode."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} darf derzeit im Namen der Konten posten, die diese Berechtigung erteilt haben. Fügen Sie ein Konto hinzu, um sie zu widerrufen.",
@@ -235,15 +235,15 @@
     "failure_title": "Ihre Transaktion wurde nicht übertragen",
     "error_message": "Fehlermeldung",
     "transaction_id": "Transaktions-ID",
-    "acts_as": "Diese Anfrage handelt im Namen von {actors}, nicht von {account}. Fahren Sie nur fort, wenn Sie dieses Konto verwalten.",
+    "acts_as": "Diese Anfrage handelt nicht im Namen von {account}, sondern im Namen von {actors}. Fahren Sie nur fort, wenn Sie dieses Konto verwalten.",
     "contains_operations_one": "Diese Anfrage enthält {count} Operation. Prüfen Sie sie, bevor Sie genehmigen.",
     "contains_operations_other": "Diese Anfrage enthält {count} Operationen. Prüfen Sie jede einzelne, bevor Sie genehmigen.",
-    "own_header": "Diese Anfrage bringt ihren eigenen Transaktions-Header mit. Ablauf: {expiration}.",
+    "own_header": "Diese Anfrage bringt ihren eigenen Transaktions-Header mit. Läuft ab: {expiration}.",
     "carries_signatures_one": "Die Anfrage enthält bereits {count} Signatur.",
     "carries_signatures_other": "Die Anfrage enthält bereits {count} Signaturen.",
-    "signed_with_posting": "Signiert mit Ihrem Posting-Schlüssel",
-    "signed_with_active": "Signiert mit Ihrem Active-Schlüssel",
-    "signed_with_owner": "Signiert mit Ihrem Owner-Schlüssel",
+    "signed_with_posting": "Wird mit Ihrem Posting-Schlüssel signiert",
+    "signed_with_active": "Wird mit Ihrem Active-Schlüssel signiert",
+    "signed_with_owner": "Wird mit Ihrem Owner-Schlüssel signiert",
     "mixed_authorities": "Diese Transaktion benötigt mehr als eine Berechtigung und kann nicht mit einem einzelnen Schlüssel signiert werden.",
     "show_raw_one": "Rohdaten der Operation anzeigen",
     "show_raw_other": "Rohdaten der Operationen anzeigen",
@@ -256,7 +256,7 @@
   "developers": {
     "developers": "Entwickler",
     "add_app_title": "Ihre App hinzufügen",
-    "add_app_body": "Erstellen Sie ein Hive-Konto für Ihre App, setzen Sie dann auf der Profilseite den Typ auf „application“ und registrieren Sie dort Ihre Weiterleitungs-URIs.",
+    "add_app_body": "Erstellen Sie ein Hive-Konto für Ihre App, melden Sie sich hier damit an und tragen Sie Ihre Weiterleitungs-URIs auf seiner Profilseite ein.",
     "sdk_title": "Hivesigner JS SDK",
     "sdk_body": "Integrieren Sie das offizielle SDK: <sdk>hivesigner.js</sdk>.",
     "docs_at": "Die vollständige Dokumentation finden Sie unter <docs>docs.hivesigner.com</docs>."

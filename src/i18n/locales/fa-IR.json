@@ -156,7 +156,7 @@
   "login": {
     "unlock_to_continue_to": "برای ادامه به <target>{target}</target>، قفل یک حساب را باز کنید.",
     "switch_an_account": "تغییر حساب",
-    "invalid_hs_password": "گذرواژه Hivesigner نامعتبر است"
+    "invalid_hs_password": "کد عبور اشتباه است."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} در حال حاضر اجازه دارد از طرف حساب‌هایی که به آن مجوز داده‌اند پست بگذارد. برای لغو مجوز، یک حساب اضافه کنید.",
@@ -235,7 +235,7 @@
     "failure_title": "تراکنش شما به شبکه ارسال نشد",
     "error_message": "پیام خطا",
     "transaction_id": "شناسه تراکنش",
-    "acts_as": "این درخواست به‌عنوان {actors} عمل می‌کند، نه {account}. فقط اگر آن حساب را مدیریت می‌کنید ادامه دهید.",
+    "acts_as": "این درخواست به‌عنوان {account} عمل نمی‌کند، بلکه به‌عنوان {actors} عمل می‌کند. فقط اگر آن حساب را هم مدیریت می‌کنید ادامه دهید.",
     "contains_operations_one": "این درخواست شامل {count} عملیات است. پیش از تأیید، آن را بررسی کنید.",
     "contains_operations_other": "این درخواست شامل {count} عملیات است. پیش از تأیید، تک‌تک آن‌ها را بررسی کنید.",
     "own_header": "این درخواست سرآیند تراکنش خودش را ارائه کرده است. انقضا: {expiration}.",
@@ -256,7 +256,7 @@
   "developers": {
     "developers": "توسعه‌دهندگان",
     "add_app_title": "برنامه خود را اضافه کنید",
-    "add_app_body": "یک حساب Hive برای برنامه خود بسازید، سپس نوع آن را «application» قرار دهید و نشانی‌های URI بازگشت را در صفحه پروفایل ثبت کنید.",
+    "add_app_body": "یک حساب Hive برای برنامه خود بسازید، با آن در اینجا وارد شوید و نشانی‌های URI بازگشت را در صفحه پروفایل همان حساب ثبت کنید.",
     "sdk_title": "Hivesigner JS SDK",
     "sdk_body": "با SDK رسمی یکپارچه شوید: <sdk>hivesigner.js</sdk>.",
     "docs_at": "مستندات کامل در <docs>docs.hivesigner.com</docs> در دسترس است."
@@ -340,9 +340,9 @@
     "transfer": "انتقال",
     "recurrent_transfer": "انتقال مکرر",
     "delegate_vesting_shares": "واگذاری Hive Power",
-    "transfer_to_vesting": "استیک (Power up)",
-    "set_withdraw_vesting_route": "تنظیم مسیر لغو استیک",
-    "withdraw_vesting": "لغو استیک (Power down)",
+    "transfer_to_vesting": "تبدیل به Hive Power (Power up)",
+    "set_withdraw_vesting_route": "تنظیم مسیر برداشت Hive Power",
+    "withdraw_vesting": "برداشت Hive Power (Power down)",
     "transfer_to_savings": "انتقال به پس‌انداز",
     "transfer_from_savings": "انتقال از پس‌انداز",
     "cancel_transfer_from_savings": "لغو انتقال از پس‌انداز",

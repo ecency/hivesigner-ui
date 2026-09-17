@@ -20,7 +20,7 @@
     "your_accounts": "내 계정",
     "preview_wants_access": "회원님의 Hive 계정에 접근하려고 합니다",
     "preview_account": "hong-gildong",
-    "preview_with_posting": "게시 권한으로 {app} 앱에서 다음 작업을 할 수 있습니다:",
+    "preview_with_posting": "게시 권한을 통해 {app} 앱이 다음 작업을 할 수 있게 됩니다:",
     "preview_can_post": "글 작성 및 댓글",
     "preview_can_post_body": "회원님을 대신해 글과 댓글 게시",
     "preview_can_vote": "투표",
@@ -107,7 +107,7 @@
   "authorize": {
     "authorize": "승인",
     "request_access": "{app} 앱에서 회원님의 계정에 대한 접근을 요청합니다.",
-    "authorizing_as": "승인할 계정",
+    "authorizing_as": "승인에 사용할 계정",
     "redirect_not_registered": "이 앱의 리디렉션 URL이 등록되어 있지 않습니다. 안전을 위해 로그인이 차단되었습니다.",
     "hive_account": "Hive 계정",
     "sends_you_to": "이동할 주소: {host}",
@@ -154,7 +154,7 @@
   "login": {
     "unlock_to_continue_to": "<target>{target}</target> 사이트로 계속하려면 계정의 잠금을 해제하세요.",
     "switch_an_account": "계정 전환",
-    "invalid_hs_password": "Hivesigner 패스코드가 올바르지 않습니다"
+    "invalid_hs_password": "패스코드가 올바르지 않습니다."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} 앱은 현재 권한을 부여한 계정을 대신해 글을 게시할 수 있습니다. 권한을 취소하려면 계정을 추가하세요.",
@@ -233,7 +233,7 @@
     "failure_title": "거래가 브로드캐스트되지 않았습니다",
     "error_message": "오류 메시지",
     "transaction_id": "거래 ID",
-    "acts_as": "이 작업은 {account} 계정이 아닌 {actors} 계정으로 실행됩니다. 해당 계정을 직접 관리하는 경우에만 계속하세요.",
+    "acts_as": "이 작업은 {account} 계정이 아니라 {actors} 계정으로 실행됩니다. 해당 계정도 직접 관리하는 경우에만 계속하세요.",
     "contains_operations_other": "이 요청에는 작업 {count}개가 포함되어 있습니다. 승인하기 전에 모든 작업을 검토하세요.",
     "own_header": "이 요청에는 자체 거래 헤더가 포함되어 있습니다. 만료: {expiration}.",
     "carries_signatures_other": "이미 서명 {count}개가 포함되어 있습니다.",
@@ -251,7 +251,7 @@
   "developers": {
     "developers": "개발자",
     "add_app_title": "앱 추가하기",
-    "add_app_body": "앱용 Hive 계정을 만든 다음, 프로필 페이지에서 유형을 “application”으로 설정하고 리디렉션 URI를 등록하세요.",
+    "add_app_body": "앱용 Hive 계정을 만들고, 그 계정으로 여기에 로그인한 다음 해당 계정의 프로필 페이지에 리디렉션 URI를 등록하세요.",
     "sdk_title": "Hivesigner JS SDK",
     "sdk_body": "공식 SDK로 연동하세요: <sdk>hivesigner.js</sdk>",
     "docs_at": "전체 문서는 <docs>docs.hivesigner.com</docs>에서 볼 수 있습니다."

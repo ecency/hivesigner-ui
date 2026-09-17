@@ -64,7 +64,7 @@
     "unlock_account": "Sblocca {account}"
   },
   "apps": {
-    "self_declared": "Tutte le informazioni qui sopra sono pubblicate dall’account dell’app stessa. Hivesigner non ne verifica nessuna.",
+    "self_declared": "Tutte le informazioni qui sopra sono pubblicate dall’account stesso dell’app. Hivesigner non ne verifica nessuna.",
     "directory_unavailable": "Impossibile raggiungere l’elenco delle app.",
     "directory_hint": "App che trasmettono su Hive tramite Hivesigner, a partire dalle più usate.",
     "building": "L’elenco è ancora in costruzione. Si riempie man mano che le app trasmettono tramite Hivesigner.",
@@ -81,7 +81,7 @@
     "search_for": "Cerca «{search}»",
     "empty_search": "Nessuna app trovata per «{search}»",
     "creator": "Creatore",
-    "revoke_needs_active": "La revoca è una modifica sulla blockchain e richiede una volta la tua chiave attiva."
+    "revoke_needs_active": "La revoca è una modifica sulla blockchain e richiede la tua chiave attiva una sola volta."
   },
   "auths": {
     "auths": "Autorità",
@@ -135,7 +135,7 @@
     "active_key_needed": "Serve la chiave attiva di @{account}.",
     "add_key_to_continue": "Aggiungi una chiave di pubblicazione o una chiave attiva di @{account} per continuare",
     "still_confirming": "L’autorizzazione è stata inviata, ma è ancora in fase di conferma. Riprova tra un momento.",
-    "first_time_grant": "Prima autorizzazione: questa operazione aggiunge {app} alla tua autorità di pubblicazione sulla blockchain e richiede una volta la tua chiave attiva. Quell’account potrà pubblicare a tuo nome finché non lo revochi.",
+    "first_time_grant": "Prima autorizzazione: questa operazione aggiunge {app} alla tua autorità di pubblicazione sulla blockchain e richiede la tua chiave attiva una sola volta. Quell’account potrà pubblicare a tuo nome finché non lo revochi.",
     "this_site": "Questo sito",
     "authorize_app": "Autorizza {app}"
   },
@@ -156,7 +156,7 @@
   "login": {
     "unlock_to_continue_to": "Sblocca un account per continuare su <target>{target}</target>.",
     "switch_an_account": "Cambia account",
-    "invalid_hs_password": "Password di Hivesigner non valida"
+    "invalid_hs_password": "Codice di accesso errato."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} ha attualmente il permesso di pubblicare per conto degli account che glielo hanno concesso. Aggiungi un account per revocarlo.",
@@ -235,15 +235,15 @@
     "failure_title": "La tua transazione non è stata trasmessa",
     "error_message": "Messaggio di errore",
     "transaction_id": "ID transazione",
-    "acts_as": "Questa operazione agisce come {actors}, non come {account}. Continua solo se gestisci quell’account.",
+    "acts_as": "Questa richiesta non agisce per conto di {account}, ma per conto di {actors}. Continua solo se gestisci quell’account.",
     "contains_operations_one": "Questa richiesta contiene {count} operazione. Controllala prima di approvare.",
     "contains_operations_other": "Questa richiesta contiene {count} operazioni. Controllale tutte prima di approvare.",
     "own_header": "Questa richiesta fornisce una propria intestazione di transazione. Scadenza: {expiration}.",
     "carries_signatures_one": "Contiene già {count} firma.",
     "carries_signatures_other": "Contiene già {count} firme.",
-    "signed_with_posting": "Firmata con la tua chiave di pubblicazione",
-    "signed_with_active": "Firmata con la tua chiave attiva",
-    "signed_with_owner": "Firmata con la tua chiave proprietario",
+    "signed_with_posting": "Verrà firmata con la tua chiave di pubblicazione",
+    "signed_with_active": "Verrà firmata con la tua chiave attiva",
+    "signed_with_owner": "Verrà firmata con la tua chiave proprietario",
     "mixed_authorities": "Questa transazione richiede più di un’autorità e non può essere firmata con una sola chiave.",
     "show_raw_one": "Mostra l’operazione grezza",
     "show_raw_other": "Mostra le operazioni grezze",
@@ -256,7 +256,7 @@
   "developers": {
     "developers": "Sviluppatori",
     "add_app_title": "Aggiungi la tua app",
-    "add_app_body": "Crea un account Hive per la tua app, imposta il suo tipo su «applicazione» e registra i tuoi URI di reindirizzamento nella pagina del profilo.",
+    "add_app_body": "Crea un account Hive per la tua app, accedi qui con quell’account e inserisci i tuoi URI di reindirizzamento nella sua pagina del profilo.",
     "sdk_title": "SDK JS di Hivesigner",
     "sdk_body": "Integra l’SDK ufficiale: <sdk>hivesigner.js</sdk>.",
     "docs_at": "La documentazione completa è disponibile su <docs>docs.hivesigner.com</docs>."

@@ -156,7 +156,7 @@
   "login": {
     "unlock_to_continue_to": "Ontgrendel een account om door te gaan naar <target>{target}</target>.",
     "switch_an_account": "Van account wisselen",
-    "invalid_hs_password": "Ongeldige Hivesigner-toegangscode"
+    "invalid_hs_password": "Onjuiste toegangscode."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} heeft momenteel toestemming om te posten namens accounts die deze toestemming hebben verleend. Voeg een account toe om die in te trekken.",
@@ -235,15 +235,15 @@
     "failure_title": "Je transactie is niet uitgezonden",
     "error_message": "Foutmelding",
     "transaction_id": "Transactie-ID",
-    "acts_as": "Dit verzoek handelt namens {actors}, niet namens {account}. Ga alleen door als je dat account beheert.",
+    "acts_as": "Dit verzoek handelt niet namens {account}, maar namens {actors}. Ga alleen door als je dat account beheert.",
     "contains_operations_one": "Dit verzoek bevat {count} operatie. Bekijk die voordat je goedkeurt.",
     "contains_operations_other": "Dit verzoek bevat {count} operaties. Bekijk ze allemaal voordat je goedkeurt.",
     "own_header": "Dit verzoek levert een eigen transactieheader mee. Verloopt: {expiration}.",
     "carries_signatures_one": "Het bevat al {count} handtekening.",
     "carries_signatures_other": "Het bevat al {count} handtekeningen.",
-    "signed_with_posting": "Ondertekend met je posting-sleutel",
-    "signed_with_active": "Ondertekend met je active-sleutel",
-    "signed_with_owner": "Ondertekend met je owner-sleutel",
+    "signed_with_posting": "Wordt ondertekend met je posting-sleutel",
+    "signed_with_active": "Wordt ondertekend met je active-sleutel",
+    "signed_with_owner": "Wordt ondertekend met je owner-sleutel",
     "mixed_authorities": "Deze transactie vereist meer dan één bevoegdheid en kan niet met één sleutel worden ondertekend.",
     "show_raw_one": "Ruwe operatie tonen",
     "show_raw_other": "Ruwe operaties tonen",
@@ -256,7 +256,7 @@
   "developers": {
     "developers": "Ontwikkelaars",
     "add_app_title": "Je app toevoegen",
-    "add_app_body": "Maak een Hive-account aan voor je app, stel daarna op de profielpagina het type in op “application” en registreer daar je doorstuur-URI's.",
+    "add_app_body": "Maak een Hive-account aan voor je app, log daarmee hier in en vermeld je doorstuur-URI's op de profielpagina van dat account.",
     "sdk_title": "Hivesigner JS SDK",
     "sdk_body": "Integreer met de officiële SDK: <sdk>hivesigner.js</sdk>.",
     "docs_at": "De volledige documentatie staat op <docs>docs.hivesigner.com</docs>."

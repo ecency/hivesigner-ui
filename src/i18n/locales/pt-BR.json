@@ -81,7 +81,7 @@
     "search_for": "Buscar “{search}”",
     "empty_search": "Não encontramos nenhum aplicativo para “{search}”",
     "creator": "Criador",
-    "revoke_needs_active": "Revogar é uma alteração na blockchain e exige sua chave ativa uma vez."
+    "revoke_needs_active": "Revogar é uma alteração na blockchain e exige sua chave ativa uma única vez."
   },
   "auths": {
     "auths": "Autoridades",
@@ -135,7 +135,7 @@
     "active_key_needed": "Isto exige a chave ativa de @{account}.",
     "add_key_to_continue": "Adicione uma chave de postagem ou uma chave ativa de @{account} para continuar",
     "still_confirming": "A autorização foi enviada, mas ainda está sendo confirmada. Tente novamente em instantes.",
-    "first_time_grant": "Primeira autorização: isto adiciona {app} à sua autoridade de postagem na blockchain e exige sua chave ativa uma vez. Essa conta poderá postar em seu nome até que você revogue a autorização.",
+    "first_time_grant": "Primeira autorização: isto adiciona {app} à sua autoridade de postagem na blockchain e exige sua chave ativa uma única vez. Essa conta poderá postar em seu nome até que você revogue a autorização.",
     "this_site": "Este site",
     "authorize_app": "Autorizar {app}"
   },
@@ -156,7 +156,7 @@
   "login": {
     "unlock_to_continue_to": "Desbloqueie uma conta para continuar em <target>{target}</target>.",
     "switch_an_account": "Trocar de conta",
-    "invalid_hs_password": "Senha do Hivesigner inválida"
+    "invalid_hs_password": "Código de acesso incorreto."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} tem permissão no momento para postar em nome das contas que a concederam. Adicione uma conta para revogá-la.",
@@ -235,15 +235,15 @@
     "failure_title": "Sua transação não foi transmitida",
     "error_message": "Mensagem de erro",
     "transaction_id": "ID da transação",
-    "acts_as": "Esta operação age como {actors}, não como {account}. Só continue se você administrar essa conta.",
+    "acts_as": "Esta solicitação não age em nome de {account}, mas em nome de {actors}. Só continue se você administrar essa conta.",
     "contains_operations_one": "Esta solicitação contém {count} operação. Revise-a antes de aprovar.",
     "contains_operations_other": "Esta solicitação contém {count} operações. Revise todas antes de aprovar.",
     "own_header": "Esta solicitação forneceu o próprio cabeçalho de transação. Expiração: {expiration}.",
     "carries_signatures_one": "Ela já contém {count} assinatura.",
     "carries_signatures_other": "Ela já contém {count} assinaturas.",
-    "signed_with_posting": "Assinada com sua chave de postagem",
-    "signed_with_active": "Assinada com sua chave ativa",
-    "signed_with_owner": "Assinada com sua chave de proprietário",
+    "signed_with_posting": "Será assinada com sua chave de postagem",
+    "signed_with_active": "Será assinada com sua chave ativa",
+    "signed_with_owner": "Será assinada com sua chave de proprietário",
     "mixed_authorities": "Esta transação precisa de mais de uma autoridade e não pode ser assinada com uma única chave.",
     "show_raw_one": "Mostrar operação bruta",
     "show_raw_other": "Mostrar operações brutas",
@@ -256,7 +256,7 @@
   "developers": {
     "developers": "Desenvolvedores",
     "add_app_title": "Adicione seu aplicativo",
-    "add_app_body": "Crie uma conta do Hive para o seu aplicativo, defina o tipo dela como “aplicativo” e registre suas URIs de redirecionamento na página de perfil.",
+    "add_app_body": "Crie uma conta do Hive para o seu aplicativo, entre aqui com ela e informe suas URIs de redirecionamento na página de perfil dessa conta.",
     "sdk_title": "SDK JS do Hivesigner",
     "sdk_body": "Integre com o SDK oficial: <sdk>hivesigner.js</sdk>.",
     "docs_at": "A documentação completa está em <docs>docs.hivesigner.com</docs>."

@@ -118,7 +118,7 @@
     "scope_login": "Xem tên người dùng của tài khoản bạn",
     "request_verify": "{site} muốn xác nhận tên người dùng Hive của bạn.",
     "callback_invalid": "Trang web này yêu cầu gửi thông tin đăng nhập của bạn tới một địa chỉ không phải URL web. Hãy quay lại trang web đó và thử lại.",
-    "callback_insecure": "Trang web này yêu cầu gửi thông tin đăng nhập của bạn qua một địa chỉ http:// thông thường. Hivesigner chỉ gửi qua https. Hãy yêu cầu trang web dùng địa chỉ bảo mật.",
+    "callback_insecure": "Trang web này yêu cầu gửi thông tin đăng nhập của bạn qua một địa chỉ http:// không mã hóa. Hivesigner chỉ gửi qua https. Hãy yêu cầu trang web dùng địa chỉ bảo mật.",
     "requires_active_key": "Giao dịch này cần khóa active của bạn.",
     "active_key_label": "Khóa active hoặc mật khẩu chính của @{account}",
     "active_key_hint": "Được đối chiếu với tài khoản trên chuỗi, sau đó lưu trên thiết bị này cùng các khóa khác của bạn. Khóa không bao giờ rời khỏi trình duyệt này.",
@@ -154,7 +154,7 @@
   "login": {
     "unlock_to_continue_to": "Mở khóa một tài khoản để tiếp tục đến <target>{target}</target>.",
     "switch_an_account": "Chuyển tài khoản",
-    "invalid_hs_password": "Mật khẩu Hivesigner không hợp lệ"
+    "invalid_hs_password": "Sai mã mở khóa."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} hiện có quyền đăng bài thay mặt các tài khoản đã cấp quyền cho nó. Hãy thêm một tài khoản để thu hồi quyền này.",
@@ -233,13 +233,13 @@
     "failure_title": "Giao dịch của bạn chưa được phát lên mạng",
     "error_message": "Thông báo lỗi",
     "transaction_id": "ID giao dịch",
-    "acts_as": "Yêu cầu này thực hiện thao tác dưới danh nghĩa {actors}, không phải {account}. Chỉ tiếp tục nếu bạn quản lý tài khoản đó.",
+    "acts_as": "Yêu cầu này không thực hiện thao tác dưới danh nghĩa {account} mà dưới danh nghĩa {actors}. Chỉ tiếp tục nếu bạn cũng quản lý tài khoản đó.",
     "contains_operations_other": "Yêu cầu này chứa {count} thao tác. Hãy xem xét tất cả trước khi phê duyệt.",
     "own_header": "Yêu cầu này tự cung cấp phần đầu (header) giao dịch riêng. Hết hạn: {expiration}.",
     "carries_signatures_other": "Yêu cầu này đã có sẵn {count} chữ ký.",
-    "signed_with_posting": "Đã ký bằng khóa posting của bạn",
-    "signed_with_active": "Đã ký bằng khóa active của bạn",
-    "signed_with_owner": "Đã ký bằng khóa owner của bạn",
+    "signed_with_posting": "Sẽ được ký bằng khóa posting của bạn",
+    "signed_with_active": "Sẽ được ký bằng khóa active của bạn",
+    "signed_with_owner": "Sẽ được ký bằng khóa owner của bạn",
     "mixed_authorities": "Giao dịch này cần nhiều hơn một loại quyền và không thể ký bằng một khóa duy nhất.",
     "show_raw_other": "Hiện dữ liệu thô của thao tác",
     "must_be_signed_by": "Yêu cầu này phải được ký bởi {account}. Hãy chuyển sang tài khoản đó.",
@@ -251,7 +251,7 @@
   "developers": {
     "developers": "Nhà phát triển",
     "add_app_title": "Thêm ứng dụng của bạn",
-    "add_app_body": "Tạo một tài khoản Hive cho ứng dụng của bạn, sau đó đặt loại tài khoản thành “application” và đăng ký các URI chuyển hướng trên trang hồ sơ.",
+    "add_app_body": "Tạo một tài khoản Hive cho ứng dụng của bạn, đăng nhập bằng tài khoản đó tại đây và liệt kê các URI chuyển hướng trên trang hồ sơ của tài khoản.",
     "sdk_title": "SDK JS của Hivesigner",
     "sdk_body": "Tích hợp bằng SDK chính thức: <sdk>hivesigner.js</sdk>.",
     "docs_at": "Tài liệu đầy đủ có tại <docs>docs.hivesigner.com</docs>."

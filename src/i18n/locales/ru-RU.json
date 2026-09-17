@@ -104,7 +104,7 @@
   "report": {
     "button": "Сообщить о проблеме",
     "note_label": "Что вы пытались сделать? (необязательно)",
-    "includes_link": "Отправляет эту ссылку и ваш комментарий команде Hivesigner. Ключи и токены при этом удаляются.",
+    "includes_link": "Отправляет эту ссылку и ваш комментарий команде Hivesigner. Ключи и токены из ссылки удаляются.",
     "thanks": "Отправлено, спасибо. Номер обращения: {id}."
   },
   "authorize": {
@@ -160,7 +160,7 @@
   "login": {
     "unlock_to_continue_to": "Разблокируйте аккаунт, чтобы перейти на <target>{target}</target>.",
     "switch_an_account": "Сменить аккаунт",
-    "invalid_hs_password": "Неверный код доступа Hivesigner"
+    "invalid_hs_password": "Неверный код доступа."
   },
   "revoke": {
     "revoke_explain_no_account": "Сейчас @{app} может публиковать от имени аккаунтов, которые выдали такое разрешение. Добавьте аккаунт, чтобы отозвать его.",
@@ -239,7 +239,7 @@
     "failure_title": "Ваша транзакция не была отправлена в сеть",
     "error_message": "Сообщение об ошибке",
     "transaction_id": "ID транзакции",
-    "acts_as": "Этот запрос действует от имени {actors}, а не {account}. Продолжайте, только если вы управляете этим аккаунтом.",
+    "acts_as": "Этот запрос действует не от имени {account}, а от имени {actors}. Продолжайте, только если вы управляете и этим аккаунтом.",
     "contains_operations_one": "Этот запрос содержит {count} операцию. Проверьте её перед одобрением.",
     "contains_operations_few": "Этот запрос содержит {count} операции. Проверьте каждую из них перед одобрением.",
     "contains_operations_many": "Этот запрос содержит {count} операций. Проверьте каждую из них перед одобрением.",
@@ -249,9 +249,9 @@
     "carries_signatures_few": "Запрос уже содержит {count} подписи.",
     "carries_signatures_many": "Запрос уже содержит {count} подписей.",
     "carries_signatures_other": "Запрос уже содержит {count} подписи.",
-    "signed_with_posting": "Подписано вашим постинг-ключом",
-    "signed_with_active": "Подписано вашим активным ключом",
-    "signed_with_owner": "Подписано вашим ключом владельца",
+    "signed_with_posting": "Подписывается вашим постинг-ключом",
+    "signed_with_active": "Подписывается вашим активным ключом",
+    "signed_with_owner": "Подписывается вашим ключом владельца",
     "mixed_authorities": "Этой транзакции нужны полномочия более чем одного уровня, поэтому её нельзя подписать одним ключом.",
     "show_raw_one": "Показать исходные данные операции",
     "show_raw_few": "Показать исходные данные операций",
@@ -266,7 +266,7 @@
   "developers": {
     "developers": "Разработчикам",
     "add_app_title": "Добавьте своё приложение",
-    "add_app_body": "Создайте аккаунт Hive для своего приложения, затем на странице профиля укажите тип «application» и зарегистрируйте адреса перенаправления (redirect URI).",
+    "add_app_body": "Создайте аккаунт Hive для своего приложения, войдите в него здесь и укажите адреса перенаправления (redirect URI) на странице его профиля.",
     "sdk_title": "Hivesigner JS SDK",
     "sdk_body": "Интегрируйтесь с помощью официального SDK: <sdk>hivesigner.js</sdk>.",
     "docs_at": "Полная документация доступна на <docs>docs.hivesigner.com</docs>."
@@ -303,13 +303,13 @@
     "unknown": "Неизвестно"
   },
   "summary": {
-    "transfer": "Отправить {amount} получателю {to}",
+    "transfer": "Перевод {amount} получателю {to}",
     "memo": "Примечание: {memo}",
     "upvote": "Голос «за»: {post}",
     "downvote": "Голос «против»: {post}",
     "unvote": "Отмена голоса: {post}",
     "reply": "Ответ на {post}",
-    "post": "Опубликовать пост «{title}»",
+    "post": "Публикация поста «{title}»",
     "custom_json": "Пользовательское действие ({id})",
     "account_update": "Изменение полномочий аккаунта",
     "threshold": "порог {value}",
@@ -351,7 +351,7 @@
     "recurrent_transfer": "Регулярный перевод",
     "delegate_vesting_shares": "Делегирование Hive Power",
     "transfer_to_vesting": "Перевод в Hive Power (power up)",
-    "set_withdraw_vesting_route": "Маршрут вывода из Hive Power",
+    "set_withdraw_vesting_route": "Настройка маршрута вывода из Hive Power",
     "withdraw_vesting": "Вывод из Hive Power (power down)",
     "transfer_to_savings": "Перевод в сейф",
     "transfer_from_savings": "Перевод из сейфа",

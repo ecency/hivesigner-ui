@@ -102,7 +102,7 @@
   "report": {
     "button": "Докладвайте този проблем",
     "note_label": "Какво се опитвахте да направите? (по избор)",
-    "includes_link": "Изпраща тази връзка и вашата бележка на екипа на Hivesigner. Ключовете и токените се заличават.",
+    "includes_link": "Изпраща тази връзка и вашата бележка на екипа на Hivesigner. Ключовете и токените във връзката се заличават.",
     "thanks": "Докладвано, благодарим ви. Номер: {id}."
   },
   "authorize": {
@@ -156,7 +156,7 @@
   "login": {
     "unlock_to_continue_to": "Отключете акаунт, за да продължите към <target>{target}</target>.",
     "switch_an_account": "Смяна на акаунт",
-    "invalid_hs_password": "Грешен код за достъп до Hivesigner"
+    "invalid_hs_password": "Грешен код за достъп."
   },
   "revoke": {
     "revoke_explain_no_account": "В момента @{app} има разрешение да публикува от името на акаунтите, които са му го предоставили. Добавете акаунт, за да го отнемете.",
@@ -235,15 +235,15 @@
     "failure_title": "Вашата транзакция не беше излъчена",
     "error_message": "Съобщение за грешка",
     "transaction_id": "ID на транзакцията",
-    "acts_as": "Това действа от името на {actors}, а не на {account}. Продължете само ако управлявате този акаунт.",
+    "acts_as": "Това не действа от името на {account}, а от името на {actors}. Продължете само ако управлявате и този акаунт.",
     "contains_operations_one": "Тази заявка съдържа {count} операция. Прегледайте я, преди да одобрите.",
     "contains_operations_other": "Тази заявка съдържа {count} операции. Прегледайте всяка от тях, преди да одобрите.",
     "own_header": "Тази заявка подава собствена заглавна част на транзакцията. Изтича: {expiration}.",
     "carries_signatures_one": "Тя вече съдържа {count} подпис.",
     "carries_signatures_other": "Тя вече съдържа {count} подписа.",
-    "signed_with_posting": "Подписано с вашия posting ключ",
-    "signed_with_active": "Подписано с вашия active ключ",
-    "signed_with_owner": "Подписано с вашия owner ключ",
+    "signed_with_posting": "Подписва се с вашия posting ключ",
+    "signed_with_active": "Подписва се с вашия active ключ",
+    "signed_with_owner": "Подписва се с вашия owner ключ",
     "mixed_authorities": "Тази транзакция изисква повече от едно ниво на правомощия и не може да бъде подписана с един ключ.",
     "show_raw_one": "Покажи операцията в суров вид",
     "show_raw_other": "Покажи операциите в суров вид",
@@ -256,7 +256,7 @@
   "developers": {
     "developers": "Разработчици",
     "add_app_title": "Добавете своето приложение",
-    "add_app_body": "Създайте Hive акаунт за приложението си, след това на страницата на профила задайте типа му „application“ и регистрирайте своите URI адреси за пренасочване.",
+    "add_app_body": "Създайте Hive акаунт за приложението си, влезте с него тук и посочете своите URI адреси за пренасочване на страницата на профила му.",
     "sdk_title": "JS SDK за Hivesigner",
     "sdk_body": "Интегрирайте чрез официалния SDK: <sdk>hivesigner.js</sdk>.",
     "docs_at": "Пълната документация е на <docs>docs.hivesigner.com</docs>."
@@ -341,7 +341,7 @@
     "recurrent_transfer": "Повтарящ се превод",
     "delegate_vesting_shares": "Делегиране на Hive Power",
     "transfer_to_vesting": "Power Up",
-    "set_withdraw_vesting_route": "Маршрут за Power Down",
+    "set_withdraw_vesting_route": "Задаване на маршрут за Power Down",
     "withdraw_vesting": "Power Down",
     "transfer_to_savings": "Превод към спестявания",
     "transfer_from_savings": "Превод от спестявания",

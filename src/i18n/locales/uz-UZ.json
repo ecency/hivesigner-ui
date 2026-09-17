@@ -156,7 +156,7 @@
   "login": {
     "unlock_to_continue_to": "<target>{target}</target> saytiga oʻtish uchun hisobni qulfdan chiqaring.",
     "switch_an_account": "Hisobni almashtirish",
-    "invalid_hs_password": "Hivesigner paroli notoʻgʻri"
+    "invalid_hs_password": "Himoya kodi notoʻgʻri."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} hozirda oʻziga ruxsat bergan hisoblar nomidan post joylash huquqiga ega. Ruxsatni bekor qilish uchun hisob qoʻshing.",
@@ -235,15 +235,15 @@
     "failure_title": "Tranzaksiyangiz tarmoqqa yuborilmadi",
     "error_message": "Xato xabari",
     "transaction_id": "Tranzaksiya identifikatori",
-    "acts_as": "Bu soʻrov {account} nomidan emas, {actors} nomidan amal bajaradi. Faqat oʻsha hisobni siz boshqarsangizgina davom eting.",
+    "acts_as": "Bu soʻrov {account} nomidan emas, {actors} nomidan amal bajaradi. Faqat oʻsha hisobni ham siz boshqarsangizgina davom eting.",
     "contains_operations_one": "Bu soʻrovda {count} ta amal bor. Tasdiqlashdan oldin uni koʻrib chiqing.",
     "contains_operations_other": "Bu soʻrovda {count} ta amal bor. Tasdiqlashdan oldin ularning har birini koʻrib chiqing.",
     "own_header": "Bu soʻrov tranzaksiya sarlavhasini oʻzi taqdim etgan. Amal qilish muddati: {expiration}.",
     "carries_signatures_one": "Unda allaqachon {count} ta imzo bor.",
     "carries_signatures_other": "Unda allaqachon {count} ta imzo bor.",
-    "signed_with_posting": "Posting kalitingiz bilan imzolandi",
-    "signed_with_active": "Active kalitingiz bilan imzolandi",
-    "signed_with_owner": "Owner kalitingiz bilan imzolandi",
+    "signed_with_posting": "Posting kalitingiz bilan imzolanadi",
+    "signed_with_active": "Active kalitingiz bilan imzolanadi",
+    "signed_with_owner": "Owner kalitingiz bilan imzolanadi",
     "mixed_authorities": "Bu tranzaksiya bir nechta vakolatni talab qiladi va uni bitta kalit bilan imzolab boʻlmaydi.",
     "show_raw_one": "Amalning xom maʼlumotlarini koʻrsatish",
     "show_raw_other": "Amallarning xom maʼlumotlarini koʻrsatish",
@@ -256,7 +256,7 @@
   "developers": {
     "developers": "Dasturchilar",
     "add_app_title": "Ilovangizni qoʻshing",
-    "add_app_body": "Ilovangiz uchun Hive hisobi yarating, soʻng profil sahifasida uning turini «application» qilib belgilang va yoʻnaltirish URI manzillaringizni roʻyxatdan oʻtkazing.",
+    "add_app_body": "Ilovangiz uchun Hive hisobi yarating, u bilan shu yerda tizimga kiring va uning profil sahifasida yoʻnaltirish URI manzillaringizni roʻyxatga kiriting.",
     "sdk_title": "Hivesigner uchun JS SDK",
     "sdk_body": "Rasmiy SDK orqali integratsiya qiling: <sdk>hivesigner.js</sdk>.",
     "docs_at": "Toʻliq hujjatlar <docs>docs.hivesigner.com</docs> saytida joylashgan."

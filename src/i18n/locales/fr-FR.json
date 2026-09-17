@@ -156,7 +156,7 @@
   "login": {
     "unlock_to_continue_to": "Déverrouillez un compte pour continuer vers <target>{target}</target>.",
     "switch_an_account": "Changer de compte",
-    "invalid_hs_password": "Mot de passe Hivesigner non valide"
+    "invalid_hs_password": "Code d’accès incorrect."
   },
   "revoke": {
     "revoke_explain_no_account": "@{app} est actuellement autorisé à publier au nom des comptes qui lui ont accordé ce droit. Ajoutez un compte pour le révoquer.",
@@ -235,15 +235,15 @@
     "failure_title": "Votre transaction n’a pas été diffusée",
     "error_message": "Message d’erreur",
     "transaction_id": "ID de transaction",
-    "acts_as": "Cette opération agit en tant que {actors}, et non en tant que {account}. Ne continuez que si vous gérez ce compte.",
+    "acts_as": "Cette demande n’agit pas au nom de {account}, mais au nom de {actors}. Ne continuez que si vous gérez ce compte.",
     "contains_operations_one": "Cette demande contient {count} opération. Vérifiez-la avant d’approuver.",
     "contains_operations_other": "Cette demande contient {count} opérations. Vérifiez-les toutes avant d’approuver.",
     "own_header": "Cette demande fournit son propre en-tête de transaction. Expiration : {expiration}.",
     "carries_signatures_one": "Elle porte déjà {count} signature.",
     "carries_signatures_other": "Elle porte déjà {count} signatures.",
-    "signed_with_posting": "Signée avec votre clé de publication",
-    "signed_with_active": "Signée avec votre clé active",
-    "signed_with_owner": "Signée avec votre clé propriétaire",
+    "signed_with_posting": "Sera signée avec votre clé de publication",
+    "signed_with_active": "Sera signée avec votre clé active",
+    "signed_with_owner": "Sera signée avec votre clé propriétaire",
     "mixed_authorities": "Cette transaction nécessite plusieurs autorités et ne peut pas être signée avec une seule clé.",
     "show_raw_one": "Afficher l’opération brute",
     "show_raw_other": "Afficher les opérations brutes",
@@ -256,7 +256,7 @@
   "developers": {
     "developers": "Développeurs",
     "add_app_title": "Ajoutez votre application",
-    "add_app_body": "Créez un compte Hive pour votre application, définissez son type sur « application », puis enregistrez vos URI de redirection sur la page de profil.",
+    "add_app_body": "Créez un compte Hive pour votre application, connectez-vous ici avec ce compte et indiquez vos URI de redirection sur sa page de profil.",
     "sdk_title": "SDK JS de Hivesigner",
     "sdk_body": "Intégrez le SDK officiel : <sdk>hivesigner.js</sdk>.",
     "docs_at": "La documentation complète est disponible sur <docs>docs.hivesigner.com</docs>."

@@ -136,7 +136,7 @@
     "add_active_key": "إضافة المفتاح النشط",
     "not_active_key": "هذا ليس مفتاحًا نشطًا للحساب @{account}. الصق المفتاح النشط أو كلمة المرور الرئيسية.",
     "wrong_passcode": "رمز المرور غير صحيح. لم يُحفظ المفتاح.",
-    "active_key_needed": "يتطلب هذا المفتاح النشط للحساب @{account}.",
+    "active_key_needed": "يتطلب هذا الإجراء المفتاح النشط للحساب @{account}.",
     "add_key_to_continue": "أضِف مفتاح النشر أو المفتاح النشط للحساب @{account} للمتابعة",
     "still_confirming": "تم إرسال التخويل لكنه لا يزال قيد التأكيد. يُرجى المحاولة مرة أخرى بعد لحظات.",
     "first_time_grant": "تخويل لأول مرة: ستتم إضافة {app} إلى صلاحية النشر الخاصة بك على السلسلة، ويتطلب ذلك مفتاحك النشط مرة واحدة. سيتمكّن ذلك الحساب من النشر باسمك إلى أن تلغي تخويله.",
@@ -164,7 +164,7 @@
   "login": {
     "unlock_to_continue_to": "افتح قفل حساب للمتابعة إلى <target>{target}</target>.",
     "switch_an_account": "تبديل الحساب",
-    "invalid_hs_password": "كلمة مرور Hivesigner غير صالحة"
+    "invalid_hs_password": "رمز المرور غير صحيح."
   },
   "revoke": {
     "revoke_explain_no_account": "يملك @{app} حاليًا إذنًا بالنشر نيابةً عن الحسابات التي منحته إياه. أضِف حسابًا لإلغاء تخويله.",
@@ -243,7 +243,7 @@
     "failure_title": "لم يتم بث معاملتك",
     "error_message": "رسالة الخطأ",
     "transaction_id": "معرّف المعاملة",
-    "acts_as": "يتصرّف هذا الطلب باسم {actors}، لا باسم {account}. لا تتابع إلا إذا كنت تدير ذلك الحساب.",
+    "acts_as": "لا يتصرّف هذا الطلب باسم {account}، بل باسم {actors}. لا تتابع إلا إذا كنت تدير ذلك الحساب أيضًا.",
     "contains_operations_zero": "لا يحتوي هذا الطلب على أي عملية. راجِعه قبل الموافقة.",
     "contains_operations_one": "يحتوي هذا الطلب على عملية واحدة. راجِعها قبل الموافقة.",
     "contains_operations_two": "يحتوي هذا الطلب على عمليتين. راجِع كلتيهما قبل الموافقة.",
@@ -276,7 +276,7 @@
   "developers": {
     "developers": "المطوّرون",
     "add_app_title": "أضِف تطبيقك",
-    "add_app_body": "أنشئ حسابًا على Hive لتطبيقك، ثم عيّن نوعه إلى «application» وسجّل عناوين URI لإعادة التوجيه في صفحة الملف الشخصي.",
+    "add_app_body": "أنشئ حسابًا على Hive لتطبيقك، وسجّل الدخول به هنا، ثم أدرج عناوين URI لإعادة التوجيه في صفحة ملفه الشخصي.",
     "sdk_title": "Hivesigner JS SDK",
     "sdk_body": "تكامل مع حزمة SDK الرسمية: <sdk>hivesigner.js</sdk>.",
     "docs_at": "الوثائق الكاملة متاحة على <docs>docs.hivesigner.com</docs>."
@@ -297,7 +297,7 @@
     "location": "الموقع الجغرافي",
     "redirect_uris": "عناوين URI لإعادة التوجيه",
     "one_uri_line": "عنوان URI واحد في كل سطر، يتضمن البروتوكول، دون أجزاء (#) أو مسارات نسبية.",
-    "bad_callbacks": "عناوين غير صالحة لإعادة الاستدعاء (https، أو http على localhost): {uris}"
+    "bad_callbacks": "عناوين غير صالحة لإعادة الاستدعاء (المسموح: https، أو http على localhost): {uris}"
   },
   "signs": {
     "nothing_matches": "لا توجد نتائج مطابقة.",
@@ -360,9 +360,9 @@
     "transfer": "تحويل",
     "recurrent_transfer": "تحويل متكرر",
     "delegate_vesting_shares": "تفويض قوة HIVE",
-    "transfer_to_vesting": "تجميد (Power up)",
-    "set_withdraw_vesting_route": "تعيين مسار إلغاء التجميد",
-    "withdraw_vesting": "إلغاء التجميد (Power down)",
+    "transfer_to_vesting": "تحويل إلى قوة HIVE (Power up)",
+    "set_withdraw_vesting_route": "تعيين مسار سحب قوة HIVE",
+    "withdraw_vesting": "سحب قوة HIVE (Power down)",
     "transfer_to_savings": "تحويل إلى المدخرات",
     "transfer_from_savings": "تحويل من المدخرات",
     "cancel_transfer_from_savings": "إلغاء التحويل من المدخرات",
