@@ -237,3 +237,41 @@ describe('plaintext unlock failure', () => {
     expect(getState().selectedAccount).toBe('alice');
   });
 });
+
+describe('unlock and password managers (#136)', () => {
+  beforeEach(() => {
+    rs.search = { next: '/oauth2/authorize?client_id=theapp' };
+    rs.navigate.mockReset();
+  });
+
+  it('keeps managers away from the passcode, unlocks on Enter and empties it before leaving', async () => {
+    await addAccount('bob', { posting: '5Kbob' }, 'pass');
+    lockAccount('bob');
+    let fieldAtNavigation: string | null | undefined = 'unset';
+    rs.navigate.mockImplementation(() => {
+      fieldAtNavigation =
+        (document.querySelector('input[type="password"]') as HTMLInputElement)
+          ?.value ?? null;
+    });
+    const user = userEvent.setup();
+    render(<Accounts />);
+    await user.click(screen.getByRole('button', { name: /^unlock$/i }));
+    const field = document.querySelector(
+      'input[type="password"]',
+    ) as HTMLInputElement;
+    expect(field).toHaveAttribute('autocomplete', 'one-time-code');
+    expect(field).toHaveAttribute('data-1p-ignore', 'true');
+    // Enter on an empty field does nothing: no attempt, no error.
+    await user.type(field, '{Enter}');
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(isUnlocked('bob')).toBe(false);
+    await user.type(field, 'pass{Enter}');
+    await waitFor(() => expect(rs.navigate).toHaveBeenCalled(), {
+      timeout: 10_000,
+    });
+    expect(isUnlocked('bob')).toBe(true);
+    // Gone, or at least empty, by the time the page changes.
+    expect(fieldAtNavigation === null || fieldAtNavigation === '').toBe(true);
+  }, 30_000);
+});

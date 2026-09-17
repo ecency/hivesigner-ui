@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { type FormEvent, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { SecretInput } from '@/components/SecretInput';
 import {
   alertError,
   btnPrimary,
@@ -53,6 +55,10 @@ function Import() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    // The button is disabled on exactly this condition, but a submit can
+    // arrive without it (Enter, a script): never add an account under a
+    // passcode the form would refuse, or twice at once.
+    if (!canSubmit) return;
     setError(null);
     setBusy(true);
     try {
@@ -75,6 +81,10 @@ function Import() {
         return;
       }
       await addAccount(name, keys, usePasscode ? passcode : undefined);
+      // The passcode has done its job; empty the field before the page
+      // changes, so a password manager that captures on navigation finds
+      // nothing to offer to save.
+      flushSync(() => setPasscode(''));
       // Make the account the user just imported the current one. addAccount only
       // selects when NOTHING is selected, so importing Bob while Alice was
       // selected left Alice current: returning to a consent request would then
@@ -129,10 +139,13 @@ function Import() {
 
       <label className={label}>
         <span className={labelText}>{t('import.private_key')}</span>
+        {/* The one login credential on this page: username plus this key is
+            what a password manager should save and fill. */}
         <input
           className={`${field} font-mono`}
           name="password"
           type="password"
+          autoComplete="current-password"
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
         />
@@ -155,13 +168,12 @@ function Import() {
           // left this field - the one that protects the key - unnamed.
           <label className={label}>
             <span className={labelText}>{t('import.passcode')}</span>
-            <input
+            <SecretInput
               className={field}
               name="passcode"
-              type="password"
-              autoComplete="new-password"
               value={passcode}
-              onChange={(e) => setPasscode(e.target.value)}
+              onChange={setPasscode}
+              onEnter="submit-form"
             />
             {/* Which secret this is has to be said out loud. Three different
                 things could plausibly go in a password box on this screen - a
