@@ -27,7 +27,10 @@ vi.mock('@/lib/accounts', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/accounts')>()),
   getKeys: () => h.keys,
 }));
-vi.mock('@/lib/hive', () => ({ getAccount: h.getAccount }));
+vi.mock('@/lib/hive', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/hive')>()),
+  getAccount: h.getAccount,
+}));
 vi.mock('@/lib/sign-tx', () => ({
   broadcastOperations: h.broadcastOperations,
 }));

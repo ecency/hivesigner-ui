@@ -58,7 +58,8 @@ export function AppProfile({ username }: { username: string }) {
     staleTime: 10 * 60_000,
   });
 
-  const handle = `@${username}`;
+  // The username can come straight from a URL (/authorize/<app>).
+  const handle = `@${safeText(username)}`;
   const name = profile?.name ? safeText(profile.name) : null;
   const about = profile?.about ? safeText(profile.about) : null;
   const site = parseWebsite(profile?.website);

@@ -9,7 +9,7 @@ import {
   labelText,
   mutedXs,
 } from '@/components/ui';
-import { accountIsEncrypted, addAccount } from '@/lib/accounts';
+import { accountIsEncrypted, addAccount, getKeys } from '@/lib/accounts';
 import { getAccount, type Keys, resolveCredential } from '@/lib/hive';
 
 // Password managers must leave these fields alone. A manager keeps ONE
@@ -29,18 +29,25 @@ const unmanaged = {
  * A screen that needs the active key (a first-time grant) shows this instead
  * of sending the user to /import, so the request they are answering stays on
  * screen. The key is checked against the account on-chain and merged into the
- * stored keys, under the account's passcode when it has one.
+ * stored keys, under the account's passcode when it has one. An account with
+ * no passcode is offered one, on by default as on /import: this is the key
+ * that moves funds, and without a passcode it sits on disk unencrypted.
  */
 export function AddActiveKey({ username }: { username: string }) {
   const { t } = useTranslation();
   const [secret, setSecret] = useState('');
   const [passcode, setPasscode] = useState('');
+  const [protect, setProtect] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const encrypted = accountIsEncrypted(username);
 
-  const canSubmit =
-    secret.trim().length > 0 && (!encrypted || passcode.length > 0) && !busy;
+  // A new passcode follows /import's minimum; an existing one is whatever the
+  // user chose back then, so any non-empty entry is tried.
+  const passcodeOk = encrypted
+    ? passcode.length > 0
+    : !protect || passcode.length >= 4;
+  const canSubmit = secret.trim().length > 0 && passcodeOk && !busy;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -62,10 +69,21 @@ export function AddActiveKey({ username }: { username: string }) {
         return;
       }
       // Only what this screen needs. A master password also derives the
-      // owner key, and nothing here should leave that on the device.
+      // owner key, and nothing here should leave that on the device. The
+      // posting key it derives is kept only when the device has none: an
+      // account can list several posting keys, and the one the user added
+      // stays theirs.
       const keys: Keys = { active: resolved.active };
-      if (resolved.posting) keys.posting = resolved.posting;
-      await addAccount(username, keys, encrypted ? passcode : undefined);
+      if (resolved.posting && !getKeys(username)?.posting) {
+        keys.posting = resolved.posting;
+      }
+      // Protecting a plaintext account re-encrypts the whole record under the
+      // new passcode, the same as adding it again on /import would.
+      await addAccount(
+        username,
+        keys,
+        encrypted || protect ? passcode : undefined,
+      );
       // addAccount notifies the account store, so the screen re-renders with
       // the key and this form is replaced by the action it was blocking.
     } catch (err) {
@@ -85,7 +103,7 @@ export function AddActiveKey({ username }: { username: string }) {
   return (
     <form
       onSubmit={onSubmit}
-      className={`${card} flex flex-col gap-3`}
+      className={`${card} flex w-full flex-col gap-3`}
       data-testid="add-active-key"
     >
       <label className={label}>
@@ -102,6 +120,31 @@ export function AddActiveKey({ username }: { username: string }) {
         />
         <span className={mutedXs}>{t('authorize.active_key_hint')}</span>
       </label>
+      {!encrypted && (
+        <label className="flex items-center gap-2 text-[13.5px]">
+          <input
+            type="checkbox"
+            className="accent-brand"
+            checked={protect}
+            onChange={(e) => setProtect(e.target.checked)}
+          />
+          <span>{t('import.protect_with_passcode')}</span>
+        </label>
+      )}
+      {!encrypted && protect && (
+        <label className={label}>
+          <span className={labelText}>{t('import.passcode')}</span>
+          <input
+            className={field}
+            name="new-passcode"
+            type="password"
+            value={passcode}
+            onChange={(e) => setPasscode(e.target.value)}
+            {...unmanaged}
+          />
+          <span className={mutedXs}>{t('import.passcode_hint')}</span>
+        </label>
+      )}
       {encrypted && (
         <label className={label}>
           <span className={labelText}>

@@ -56,6 +56,9 @@ const owner = PrivateKey.fromLogin('alice', MASTER, 'owner');
 const active = PrivateKey.fromLogin('alice', MASTER, 'active');
 const posting = PrivateKey.fromLogin('alice', MASTER, 'posting');
 const memo = PrivateKey.fromLogin('alice', MASTER, 'memo');
+// A second posting key on the account, not derived from the master password:
+// the kind a user adds by hand and keeps on this device.
+const posting2 = PrivateKey.fromSeed('alice-second-posting-key');
 const pub = (k: PrivateKey) => k.createPublic().toString();
 
 const appAccount = {
@@ -79,7 +82,10 @@ const alice = () => ({
   posting: {
     weight_threshold: 1,
     account_auths: chain.granted ? [['ecency.app', 1]] : [],
-    key_auths: [[pub(posting), 1]],
+    key_auths: [
+      [pub(posting), 1],
+      [pub(posting2), 1],
+    ],
   },
   memo_key: pub(memo),
   posting_json_metadata: '{}',
@@ -116,6 +122,12 @@ const keyField = () =>
   );
 const addButton = () =>
   screen.getByRole('button', { name: i18n.t('authorize.add_active_key') });
+const protectBox = () =>
+  screen.getByRole('checkbox', {
+    name: i18n.t('import.protect_with_passcode'),
+  });
+const newPasscode = () =>
+  screen.getByLabelText(new RegExp(`^${i18n.t('import.passcode')}`));
 
 beforeEach(() => {
   localStorage.clear();
@@ -197,6 +209,8 @@ describe('consent with only a posting key on this device', () => {
     expect(screen.queryByRole('button', { name: /^authorize$/i })).toBeNull();
     expect(screen.getByText(/first-time authorization/i)).toBeInTheDocument();
 
+    // Left unprotected only because the user unticks it.
+    await user.click(protectBox());
     // The posting key is not the active key: refused, nothing stored.
     await user.type(keyField(), posting.toString());
     await user.click(addButton());
@@ -210,6 +224,7 @@ describe('consent with only a posting key on this device', () => {
     await user.click(addButton());
     await screen.findByRole('button', { name: /^authorize$/i });
     expect(screen.queryByTestId('add-active-key')).toBeNull();
+    expect(accountIsEncrypted('alice')).toBe(false);
     // Stored, not just held for this render: it survives a lock and unlock.
     lockAccount('alice');
     expect((await unlockAccount('alice')).active).toBe(active.toString());
@@ -225,11 +240,13 @@ describe('consent with only a posting key on this device', () => {
   });
 
   it('takes a master password but keeps only the active and posting keys from it', async () => {
-    await addAccount('alice', { posting: posting.toString() });
+    // Memo only, so the posting key can only have come from the password.
+    await addAccount('alice', { memo: memo.toString() });
     renderConsent();
     const user = userEvent.setup();
     await screen.findByTestId('add-active-key');
     await user.type(keyField(), MASTER);
+    await user.click(protectBox());
     await user.click(addButton());
     await screen.findByRole('button', { name: /^authorize$/i });
     const keys = getKeys('alice');
@@ -237,6 +254,58 @@ describe('consent with only a posting key on this device', () => {
     expect(keys?.posting).toBe(posting.toString());
     expect(keys?.owner).toBeUndefined();
   });
+
+  it('keeps the posting key already on the device when a master password derives a different one', async () => {
+    await addAccount('alice', { posting: posting2.toString() });
+    renderConsent();
+    const user = userEvent.setup();
+    await screen.findByTestId('add-active-key');
+    await user.type(keyField(), MASTER);
+    await user.click(protectBox());
+    await user.click(addButton());
+    await screen.findByRole('button', { name: /^authorize$/i });
+    expect(getKeys('alice')?.active).toBe(active.toString());
+    expect(getKeys('alice')?.posting).toBe(posting2.toString());
+  });
+
+  it('accepts a pasted key with surrounding whitespace', async () => {
+    await addAccount('alice', { posting: posting.toString() });
+    renderConsent();
+    const user = userEvent.setup();
+    await screen.findByTestId('add-active-key');
+    await user.type(keyField(), `  ${active.toString()}  `);
+    await user.click(protectBox());
+    await user.click(addButton());
+    await screen.findByRole('button', { name: /^authorize$/i });
+    expect(getKeys('alice')?.active).toBe(active.toString());
+  });
+
+  it('protects an unprotected account with a new passcode by default', async () => {
+    await addAccount('alice', { posting: posting.toString() });
+    renderConsent();
+    const user = userEvent.setup();
+    await screen.findByTestId('add-active-key');
+    expect(protectBox()).toBeChecked();
+    expect(newPasscode()).toHaveAttribute('data-1p-ignore');
+    await user.type(keyField(), active.toString());
+    // No passcode yet, then one shorter than /import allows.
+    expect(addButton()).toBeDisabled();
+    await user.type(newPasscode(), 'abc');
+    expect(addButton()).toBeDisabled();
+    await user.type(newPasscode(), 'd');
+    await user.click(addButton());
+    await screen.findByRole(
+      'button',
+      { name: /^authorize$/i },
+      { timeout: 10_000 },
+    );
+    // The whole record, posting key included, is now under the passcode.
+    expect(accountIsEncrypted('alice')).toBe(true);
+    lockAccount('alice');
+    const reread = await unlockAccount('alice', 'abcd');
+    expect(reread.active).toBe(active.toString());
+    expect(reread.posting).toBe(posting.toString());
+  }, 30_000);
 
   it('asks for the passcode of a protected account and keeps it protected', async () => {
     await addAccount('alice', { posting: posting.toString() }, 'pass1234');
@@ -281,6 +350,65 @@ describe('consent with only a posting key on this device', () => {
     expect(button).toBeDisabled();
     expect(screen.queryByTestId('add-active-key')).toBeNull();
   });
+
+  it('does not ask for a key on behalf of an app account that does not exist, and says why', async () => {
+    await addAccount('alice', { posting: posting.toString() });
+    renderConsent({ clientId: 'ghost.app' });
+    expect(
+      await screen.findByText(
+        i18n.t('authorize.app_not_found', { app: 'ghost.app' }),
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^authorize$/i })).toBeDisabled();
+    expect(screen.queryByTestId('add-active-key')).toBeNull();
+  });
+
+  it('offers a retry when the account cannot be read, then carries on', async () => {
+    await addAccount('alice', { posting: posting.toString() });
+    let down = true;
+    chain.getAccount.mockImplementation(async (name: string) => {
+      if (name === 'alice' && down) throw new Error('rpc down');
+      return name === 'ecency.app' ? appAccount : alice();
+    });
+    renderConsent();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('authorize.read_failed'),
+    );
+    expect(screen.queryByRole('button', { name: /^authorize$/i })).toBeNull();
+    down = false;
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: i18n.t('authorize.retry') }));
+    expect(await screen.findByTestId('add-active-key')).toBeInTheDocument();
+    expect(screen.queryByText(i18n.t('authorize.read_failed'))).toBeNull();
+  });
+
+  it('offers a retry when the app account cannot be read', async () => {
+    await addAccount('alice', { posting: posting.toString() });
+    let down = true;
+    chain.getAccount.mockImplementation(async (name: string) => {
+      if (name === 'ecency.app' && down) throw new Error('rpc down');
+      return name === 'ecency.app' ? appAccount : alice();
+    });
+    renderConsent();
+    await screen.findByText(i18n.t('authorize.read_failed'));
+    expect(screen.queryByTestId('add-active-key')).toBeNull();
+    down = false;
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: i18n.t('authorize.retry') }));
+    expect(await screen.findByTestId('add-active-key')).toBeInTheDocument();
+  });
+});
+
+describe('consent for a request that cannot be approved, with no account on this device', () => {
+  it('does not send the visitor off to add an account for it', async () => {
+    renderConsent({ redirectUri: 'https://evil.example/auth' });
+    expect(
+      await screen.findByRole('button', { name: /^authorize$/i }),
+    ).toBeDisabled();
+    expect(screen.queryByRole('link', { name: /continue/i })).toBeNull();
+  });
 });
 
 describe('consent with neither posting nor active on this device', () => {
@@ -314,6 +442,7 @@ describe('the grant page with only a posting key on this device', () => {
     await screen.findByTestId('add-active-key');
     expect(screen.queryByRole('link', { name: /unlock/i })).toBeNull();
     await user.type(keyField(), active.toString());
+    await user.click(protectBox());
     await user.click(addButton());
     await user.click(
       await screen.findByRole('button', { name: /^authorize$/i }),
@@ -322,5 +451,61 @@ describe('the grant page with only a posting key on this device', () => {
       expect(chain.broadcastOperations).toHaveBeenCalledTimes(1),
     );
     expect(chain.broadcastOperations.mock.calls[0][1]).toBe(active.toString());
+  });
+});
+
+describe('the grant page when the account cannot be used', () => {
+  it('says so when the chain does not know the account, instead of waiting for ever', async () => {
+    await addAccount('alice', { posting: posting.toString() });
+    chain.getAccount.mockImplementation(async () => null);
+    wrap(<GrantAction appName="ecency.app" mode="grant" query={{}} />);
+    expect(
+      await screen.findByText(
+        i18n.t('authorize.account_missing', { account: 'alice' }),
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '…' })).toBeNull();
+    expect(screen.queryByTestId('add-active-key')).toBeNull();
+  });
+
+  it('offers a retry when the account cannot be read', async () => {
+    await addAccount('alice', { posting: posting.toString() });
+    let down = true;
+    chain.getAccount.mockImplementation(async () => {
+      if (down) throw new Error('rpc down');
+      return alice();
+    });
+    wrap(<GrantAction appName="ecency.app" mode="grant" query={{}} />);
+    await screen.findByText(i18n.t('authorize.read_failed'));
+    down = false;
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: i18n.t('authorize.retry') }));
+    expect(await screen.findByTestId('add-active-key')).toBeInTheDocument();
+  });
+});
+
+describe('an app name taken from the link', () => {
+  const RLO = '‮';
+
+  it('is never looked up or shown as typed when it is not a Hive account name', async () => {
+    await addAccount('alice', { posting: posting.toString() });
+    renderConsent({ clientId: `ecency.app${RLO}` });
+    expect(
+      await screen.findByText(
+        i18n.t('authorize.app_not_found', { app: 'ecency.app�' }),
+      ),
+    ).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain(RLO);
+    expect(chain.getAccount).not.toHaveBeenCalledWith(`ecency.app${RLO}`);
+    expect(screen.getByRole('button', { name: /^authorize$/i })).toBeDisabled();
+    expect(screen.queryByTestId('add-active-key')).toBeNull();
+  });
+
+  it('is shown without control characters on the grant page', async () => {
+    await addAccount('alice', { posting: posting.toString() });
+    wrap(<GrantAction appName={`ecency.app${RLO}`} mode="grant" query={{}} />);
+    await screen.findByRole('heading', { level: 1 });
+    expect(document.body.textContent).not.toContain(RLO);
   });
 });

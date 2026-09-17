@@ -11,6 +11,7 @@ import {
   alertError,
   alertWarn,
   btnPrimary,
+  btnSecondary,
   card,
   mutedXs,
   page,
@@ -44,17 +45,36 @@ import { useAccounts } from '@/lib/use-accounts';
 // the point: the grant confirmation, the cancellation latch and the client_id
 // disclosure must not drift between the two entry points.
 
+// The shape of a Hive account name. A client_id that is not one names no app:
+// it is never looked up on-chain and never shown as typed.
+const HIVE_NAME = /^[a-z][a-z0-9.-]{2,15}$/;
+
 export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const { t } = useTranslation();
   const { selectedAccount, unlocked } = useAccounts();
+  const clientIdValid = !req.clientId || HIVE_NAME.test(req.clientId);
+  // For display only. The URL is attacker-controlled, so control and bidi
+  // characters are stripped here as they are for the heading.
+  const clientLabel = safeText(req.clientId ?? '');
 
-  const { data: profile, isLoading } = useQuery({
+  const {
+    data: profile,
+    isLoading,
+    isError: profileFailed,
+    isFetching: profileFetching,
+    refetch: refetchProfile,
+  } = useQuery({
     queryKey: oauthAppProfileKey(req.clientId ?? ''),
     queryFn: (): Promise<AppProfile | null> =>
       req.clientId ? loadAppProfile(req.clientId) : Promise.resolve(null),
-    enabled: !!req.clientId,
+    enabled: !!req.clientId && clientIdValid,
   });
-  const { data: account, refetch: refetchAccount } = useQuery({
+  const {
+    data: account,
+    refetch: refetchAccount,
+    isError: accountFailed,
+    isFetching: accountFetching,
+  } = useQuery({
     queryKey: accountKey(selectedAccount),
     queryFn: (): Promise<Account | null> =>
       selectedAccount ? getAccount(selectedAccount) : Promise.resolve(null),
@@ -207,7 +227,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
 
   const unregistered =
     !!req.clientId && !!callback && profile != null && !registered;
-  const appMissing = !!req.clientId && profile === null;
+  const appMissing = !!req.clientId && (!clientIdValid || profile === null);
   // A no-app site's callback, classified: plain http off loopback is
   // INSECURE (the token is a week-long proof of the username, not something
   // to send in the clear); anything that is not an http(s) URL at all is
@@ -224,11 +244,18 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   })();
   const insecure = callbackKind === 'insecure';
   const invalid = callbackKind === 'invalid';
-  // A request that cannot be approved: no key is asked for on its behalf.
-  const refused = unregistered || insecure || invalid;
+  // A request that cannot be approved. Nothing that asks for a key (adding an
+  // account, unlocking one, adding its active key) is offered on its behalf.
+  const refused = appMissing || unregistered || insecure || invalid;
+  // A read that failed, as opposed to one still running: without this the
+  // screen waited on a disabled button for ever.
+  const readFailed =
+    (!!req.clientId && profileFailed && profile === undefined) ||
+    (postingScope && accountFailed && account === undefined);
   const grantNotice = grantNeeded && (
     <div className={alertWarn}>
-      First-time authorization: this adds <b>@{req.clientId}</b> to your posting
+      First-time authorization: this adds{' '}
+      <b className="[unicode-bidi:isolate]">@{clientLabel}</b> to your posting
       authority on-chain and needs your active key once. That account will be
       able to post as you until you revoke it.
     </div>
@@ -305,7 +332,8 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
         <div className={mutedXs}>
           {!loginOnly && (
             <>
-              {t('authorize.hive_account')} <b>@{req.clientId}</b>
+              {t('authorize.hive_account')}{' '}
+              <b className="[unicode-bidi:isolate]">@{clientLabel}</b>
             </>
           )}
           {callbackHost && (
@@ -334,6 +362,15 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
         </>
       )}
 
+      {appMissing && (
+        <>
+          <div className={alertError}>
+            {t('authorize.app_not_found', { app: clientLabel })}
+          </div>
+          <ReportIssue kind="app_not_found" tags={{ app: req.clientId }} />
+        </>
+      )}
+
       {unregistered && (
         <>
           <div className={alertError}>
@@ -354,7 +391,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
         {effective.scope === 'login' ? (
           <div className="font-semibold">{t('authorize.scope_login')}</div>
         ) : (
-          <PostingAbilities app={req.clientId ?? ''} compact />
+          <PostingAbilities app={clientLabel} compact />
         )}
       </div>
 
@@ -376,7 +413,28 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             busy={busy}
           />
         )}
-        {!selectedAccount ? (
+        {refused ? (
+          <button type="button" disabled className={btnPrimary}>
+            {t('authorize.authorize')}
+          </button>
+        ) : readFailed ? (
+          <>
+            <div role="alert" className={alertError}>
+              {t('authorize.read_failed')}
+            </div>
+            <button
+              type="button"
+              disabled={profileFetching || accountFetching}
+              onClick={() => {
+                if (profileFailed) refetchProfile();
+                if (accountFailed) refetchAccount();
+              }}
+              className={btnSecondary}
+            >
+              {profileFetching || accountFetching ? '…' : t('authorize.retry')}
+            </button>
+          </>
+        ) : !selectedAccount ? (
           <Link
             to="/import"
             search={{ next: window.location.pathname + window.location.search }}
@@ -400,13 +458,14 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           <button type="button" disabled className={btnPrimary}>
             …
           </button>
-        ) : needsActiveKey && !refused ? (
+        ) : needsActiveKey ? (
           <>
             {grantNotice}
             <AddActiveKey username={selectedAccount} />
           </>
         ) : !signingKey ? (
-          // Neither posting nor active on this device (a memo-only import).
+          // Neither posting nor active on this device (a memo-only import)
+          // and no first-time grant to add the active key for.
           <Link
             to="/import"
             search={{ next: window.location.pathname + window.location.search }}
@@ -420,7 +479,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             <button
               type="button"
               onClick={approve}
-              disabled={refused || busy}
+              disabled={busy}
               className={btnPrimary}
             >
               {busy ? '…' : t('authorize.authorize')}

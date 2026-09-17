@@ -122,3 +122,13 @@ describe('AppProfile', () => {
     expect(screen.queryByText(WARNING)).not.toBeInTheDocument();
   });
 });
+
+describe('AppProfile handle', () => {
+  // /authorize/<app> passes the name straight from the URL.
+  it('shows the handle without control or bidi characters', () => {
+    profile.current = null;
+    render(<AppProfile username={'ecency.app‮ppa'} />);
+    expect(screen.getByText('@ecency.app�ppa')).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('‮');
+  });
+});
