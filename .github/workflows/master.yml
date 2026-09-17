@@ -5,6 +5,15 @@ on:
   push:
     branches:
       - main
+# One release at a time. Each build carries the assets of the image it
+# replaces, so a build must start after the previous one has been pushed. A
+# running release is never cancelled; a newer push only replaces one that is
+# still waiting, which was never deployed, so no page refers to its assets.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+permissions:
+  contents: read
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -45,8 +54,12 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
+          # Always resolve PREVIOUS_IMAGE from the registry, never a stale local copy.
+          pull: true
           tags: ecency/hivesigner:latest
+          # The image being replaced, whose assets the new one carries forward.
           build-args: |
+            PREVIOUS_IMAGE=ecency/hivesigner:latest
             GIT_SHA=${{ github.sha }}
             SENTRY_DSN=${{ secrets.SENTRY_DSN }}
             API_URL=${{ vars.API_URL }}

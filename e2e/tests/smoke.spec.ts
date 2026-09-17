@@ -50,8 +50,14 @@ async function hashedAssetPrefix(
 
 test('missing hashed asset is a 404, not the shell', async ({ request }) => {
   const { prefix } = await hashedAssetPrefix(request);
-  const res = await request.get(`${prefix}/does-not-exist.js`);
+  // A name no cache can already hold: a fixed one could be answered from a
+  // cache filled before the current config was deployed.
+  const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const res = await request.get(`${prefix}/does-not-exist-${unique}.js`);
   expect(res.status()).toBe(404);
+  // Never cacheable: a miss that is kept stays a miss after the file exists.
+  expect(res.headers()['cache-control']).toBe('no-store');
+  expect(res.headers()['x-content-type-options']).toBe('nosniff');
 });
 
 test('hashed assets are cached for a year', async ({ request }) => {
