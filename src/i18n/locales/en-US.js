@@ -156,7 +156,16 @@ export default {
     callback_invalid: 'This site asked to be sent your login to an address that is not a web URL. Go back to the site and try again.',
     callback_insecure: 'This site asked to be sent your login over a plain http:// address. Hivesigner only sends it over https. Ask the site to use a secure address.',
     scope_posting: 'Post, comment, vote and follow on your behalf',
-    requires_active_key: `This transaction requires your <b>{authority}</b> key.`
+    requires_active_key: `This transaction requires your <b>{authority}</b> key.`,
+    active_key_label: 'Active key or master password for @{account}',
+    active_key_hint: 'Checked against the account on-chain, then saved on this device with your other keys. It never leaves this browser.',
+    active_key_passcode: 'Passcode for @{account}',
+    active_key_passcode_hint: 'This account is protected on this device. Its passcode saves the new key under the same protection.',
+    add_active_key: 'Add active key',
+    not_active_key: 'That is not an active key of @{account}. Paste the active key or the master password.',
+    wrong_passcode: 'Wrong passcode. The key was not saved.',
+    active_key_needed: 'This needs the active key of @{account}.',
+    add_key_to_continue: 'Add a posting or active key for @{account} to continue'
   },
   import: {
     hs_password: 'Hivesigner password',
@@ -192,7 +201,7 @@ export default {
     password_placeholder: 'Hive private key, e.g. Owner, Active, Posting, Memo keys',
     passcode: 'Passcode',
     protect_with_passcode: 'Protect with a passcode (recommended)',
-    private_key_hint: 'A posting key covers everyday actions. Use an active or owner key, or your master password, only if you need to. The key is stored on this device and never sent anywhere.',
+    private_key_hint: 'A posting key covers everyday actions such as posting and voting. Wallet actions and authorizing an app for the first time need the active key. A master password covers both. The key is stored on this device and never sent anywhere.',
     passcode_hint: 'A local password, separate from your Hive keys. It encrypts the key on this device and unlocks it again. It is not your Hive password and cannot be recovered.',
     accounts_on_device_one: '{count} account on this device.',
     accounts_on_device_other: '{count} accounts on this device.',

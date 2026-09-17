@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AddActiveKey } from '@/components/AddActiveKey';
 import { AppProfile } from '@/components/AppProfile';
 import { Avatar } from '@/components/Avatar';
 import {
@@ -192,7 +193,7 @@ export function GrantAction({
           <Link to="/import" className={btnPrimary}>
             {t('common.continue')}
           </Link>
-        ) : !isUnlocked || !activeKey ? (
+        ) : !isUnlocked ? (
           <Link to="/accounts" className={btnPrimary}>
             {t('accounts.unlock')} @{selectedAccount}
           </Link>
@@ -206,6 +207,17 @@ export function GrantAction({
           >
             {t('common.continue')}
           </Link>
+        ) : !activeKey ? (
+          // An unlocked account without its active key: ask for it here. The
+          // unlock link this used to show led to an account that was already
+          // unlocked, and the request was lost on the way.
+          account ? (
+            <AddActiveKey username={selectedAccount} />
+          ) : (
+            <button type="button" disabled className={btnPrimary}>
+              …
+            </button>
+          )
         ) : (
           <button
             type="button"
