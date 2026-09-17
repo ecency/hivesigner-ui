@@ -292,7 +292,7 @@ test('grant: authorizing an app waits for the grant, then returns to the login',
   await expect(done).toContainText('…');
   await translationSettled(page);
   await expect(done).toContainText(translated(' is authorized.'));
-  await expect(done.locator('[translate="no"]')).toHaveText('new.app');
+  await expect(done.locator('[translate="no"]')).toHaveText('@new.app');
   await expectNamesKept(page);
   await page.waitForURL('**/login?**', { timeout: 30_000 });
   await translationSettled(page);
