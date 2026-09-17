@@ -1,4 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { StrictMode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../i18n';
 
@@ -15,6 +17,11 @@ vi.mock('@sentry/browser', () => ({
   getClient: () => undefined,
 }));
 const reload = vi.hoisted(() => ({ once: vi.fn() }));
+const report = vi.hoisted(() => ({ send: vi.fn(() => 'feedback-id') }));
+vi.mock('@/lib/sentry', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/sentry')>()),
+  sendUserReport: report.send,
+}));
 vi.mock('@/lib/chunk-reload', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/chunk-reload')>()),
   reloadOnce: () => reload.once(),
@@ -30,6 +37,8 @@ beforeEach(() => {
   sentry.captureException.mockClear();
   sentry.captureMessage.mockClear();
   reload.once.mockReset();
+  report.send.mockClear();
+  window.history.pushState({}, '', '/accounts');
 });
 
 describe('ErrorPage', () => {
@@ -48,11 +57,42 @@ describe('ErrorPage', () => {
     expect(
       await screen.findByText(i18n.t('errors.something_wrong')),
     ).toBeInTheDocument();
+    // One issue for every route (the fingerprint), the route in the message.
     expect(sentry.captureMessage).toHaveBeenCalledWith(
-      'chunk_load_failed',
-      expect.objectContaining({ level: 'warning' }),
+      'chunk_load_failed: accounts',
+      {
+        level: 'warning',
+        tags: { boundary: 'route' },
+        fingerprint: ['chunk_load_failed'],
+      },
     );
     expect(sentry.captureException).not.toHaveBeenCalled();
+    // A report the user sends says what it was and points at that event.
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: i18n.t('report.button') }));
+    expect(report.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'chunk_load_failed',
+        associatedEventId: 'msg-id',
+      }),
+    );
+  });
+
+  it('reloads once under Strict Mode, without showing or reporting in between', async () => {
+    // The first effect run reloads and marks it; the second, which Strict
+    // Mode adds, must not read that mark as a reload that already failed.
+    reload.once.mockReturnValueOnce(true).mockReturnValue(false);
+    render(
+      <StrictMode>
+        <ErrorPage error={chunkError} />
+      </StrictMode>,
+    );
+    await waitFor(() => expect(reload.once).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 20));
+    expect(reload.once).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText(i18n.t('errors.something_wrong'))).toBeNull();
+    expect(sentry.captureMessage).not.toHaveBeenCalled();
   });
 
   it('reports any other render error as it is, without reloading', async () => {
@@ -65,5 +105,11 @@ describe('ErrorPage', () => {
       tags: { boundary: 'route' },
     });
     expect(reload.once).not.toHaveBeenCalled();
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: i18n.t('report.button') }));
+    expect(report.send).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'render_error' }),
+    );
   });
 });

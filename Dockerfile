@@ -42,15 +42,23 @@ ENV SITE_URL=${SITE_URL}
 RUN pnpm build
 
 # The previous release's assets, minus anything past the retention window. A
-# file's mtime is the build that last wrote it: an asset every release rebuilds
-# stays fresh, one that no release has produced for 30 days is dropped, so the
-# carried set cannot grow without bound.
+# file's mtime is the build that last wrote it, so the newest mtime is the
+# previous build itself. The window is measured back from that build, not from
+# today: the release being replaced is always carried in full, however long
+# ago it shipped, and only files no build has written for 30 days before it
+# are dropped, so the carried set cannot grow without bound.
 FROM nginx:1.31-alpine AS carried
 COPY --from=previous /usr/share/nginx/html/ /previous/
 RUN mkdir -p /carried/static \
-  && if [ -d /previous/static ]; then cp -a /previous/static/. /carried/static/; fi \
-  && find /carried/static -type f -mtime +30 -delete \
-  && find /carried/static -mindepth 1 -type d -empty -delete
+  && if [ -d /previous/static ]; then \
+       cp -a /previous/static/. /carried/static/ \
+       && newest=$(find /carried/static -type f -exec stat -c %Y {} + | sort -n | tail -1) \
+       && if [ -n "$newest" ]; then \
+            touch -d "$(date -u -d "@$((newest - 30 * 86400))" '+%Y-%m-%d %H:%M:%S')" /tmp/cutoff \
+            && find /carried/static -type f ! -newer /tmp/cutoff -delete \
+            && find /carried/static -mindepth 1 -type d -empty -delete; \
+          fi; \
+     fi
 
 # serve the static build
 FROM nginx:1.31-alpine

@@ -38,10 +38,12 @@ export function reloadOnce(
 ): boolean {
   try {
     const store = storage();
-    const last = Number(store.getItem(KEY));
-    if (Number.isFinite(last) && last > 0 && now - last < WINDOW_MS) {
-      return false;
-    }
+    // A missing or garbage marker reads as NaN and never blocks. The distance
+    // is absolute, so a marker left by a clock that has since moved back does
+    // not block either.
+    const raw = store.getItem(KEY);
+    const last = raw === null ? Number.NaN : Number(raw);
+    if (Math.abs(now - last) < WINDOW_MS) return false;
     store.setItem(KEY, String(now));
   } catch {
     return false;

@@ -26,6 +26,12 @@ describe('isChunkLoadError', () => {
     expect(isChunkLoadError(js)).toBe(true);
     // By message alone, in case a wrapper renamed the error.
     expect(isChunkLoadError(new Error('Loading chunk 540 failed.'))).toBe(true);
+    // And by name alone, whatever a wrapper did to the message.
+    expect(
+      isChunkLoadError(
+        Object.assign(new Error('something else'), { name: 'ChunkLoadError' }),
+      ),
+    ).toBe(true);
     expect(
       isChunkLoadError(new Error('Loading CSS chunk 12 failed.\n(/x.css)')),
     ).toBe(true);
@@ -74,5 +80,19 @@ describe('reloadOnce', () => {
     store.setItem('hs_chunk_reload_at', 'nonsense');
     const reload = vi.fn();
     expect(reloadOnce(5, () => store, reload)).toBe(true);
+  });
+
+  it('is not blocked by a missing marker, even with a clock near zero', () => {
+    const reload = vi.fn();
+    expect(reloadOnce(1, () => memoryStore(), reload)).toBe(true);
+  });
+
+  it('is not blocked by a marker from a clock that has since moved back', () => {
+    const store = memoryStore();
+    store.setItem('hs_chunk_reload_at', String(10_000_000));
+    const reload = vi.fn();
+    expect(reloadOnce(10_000_000 - 10 * 60_000, () => store, reload)).toBe(
+      true,
+    );
   });
 });

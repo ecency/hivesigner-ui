@@ -1,10 +1,11 @@
 import * as Sentry from '@sentry/browser';
 import { Link } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ReportIssue } from '@/components/ReportIssue';
 import { btnPrimary, btnSecondary, h1, muted, page } from '@/components/ui';
 import { isChunkLoadError, reloadOnce } from '@/lib/chunk-reload';
+import { routeFamily } from '@/lib/sentry';
 
 /**
  * A screen that threw while rendering. The router's boundary catches it, so
@@ -22,21 +23,32 @@ export function ErrorPage({ error }: { error: unknown }) {
   const chunk = isChunkLoadError(error);
   const [recovering, setRecovering] = useState(chunk);
   const [eventId, setEventId] = useState<string | undefined>(undefined);
+  // Remembered across effect runs: Strict Mode runs this effect twice, and
+  // the second run must not read the marker the first one just set as "a
+  // reload already failed".
+  const reloading = useRef(false);
   useEffect(() => {
+    if (chunk && !reloading.current) reloading.current = reloadOnce();
     // The page is going away; nothing to show or report.
-    if (chunk && reloadOnce()) return;
+    if (reloading.current) return;
     setRecovering(false);
     try {
       setEventId(
         chunk
           ? // A message, not the exception: error monitoring drops chunk
             // load exceptions as noise, and one that a reload did not fix is
-            // exactly what should be seen.
-            Sentry.captureMessage('chunk_load_failed', {
-              level: 'warning',
-              tags: { boundary: 'route' },
-              fingerprint: ['chunk_load_failed'],
-            })
+            // exactly what should be seen. The route family (a bounded
+            // vocabulary) is part of the message because the SDK drops a
+            // repeat of an identical one, and a second route failing in the
+            // same tab is worth counting.
+            Sentry.captureMessage(
+              `chunk_load_failed: ${routeFamily(window.location.pathname)}`,
+              {
+                level: 'warning',
+                tags: { boundary: 'route' },
+                fingerprint: ['chunk_load_failed'],
+              },
+            )
           : Sentry.captureException(error, { tags: { boundary: 'route' } }),
       );
     } catch {
