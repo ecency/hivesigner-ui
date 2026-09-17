@@ -1,5 +1,7 @@
 import { type FormEvent, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { SecretInput } from '@/components/SecretInput';
 import {
   alertError,
   btnPrimary,
@@ -11,18 +13,6 @@ import {
 } from '@/components/ui';
 import { accountIsEncrypted, addAccount, getKeys } from '@/lib/accounts';
 import { getAccount, type Keys, resolveCredential } from '@/lib/hive';
-
-// Password managers must leave these fields alone. A manager keeps ONE
-// password per username per site, and on this site that is usually the key
-// the account was added with: offered a second password for the same
-// username, it proposes to overwrite that saved key with this one (#136).
-const unmanaged = {
-  autoComplete: 'off',
-  'data-1p-ignore': 'true',
-  'data-lpignore': 'true',
-  'data-bwignore': 'true',
-  'data-form-type': 'other',
-} as const;
 
 /**
  * Add the active key to an account that is already on this device, in place.
@@ -53,6 +43,15 @@ export function AddActiveKey({ username }: { username: string }) {
     e.preventDefault();
     setError(null);
     setBusy(true);
+    // Both secrets are taken out of their fields before anything else, so the
+    // form this component is removed with holds nothing a password manager
+    // could offer to save. They go back only if the key is not added.
+    const typed = { secret, passcode };
+    flushSync(() => {
+      setSecret('');
+      setPasscode('');
+    });
+    let added = false;
     try {
       const account = await getAccount(username);
       if (!account) {
@@ -62,8 +61,8 @@ export function AddActiveKey({ username }: { username: string }) {
       // As on /import: the secret exactly as typed first, then trimmed, since
       // a master password may legitimately start or end with a space.
       const resolved =
-        resolveCredential(account, secret) ??
-        resolveCredential(account, secret.trim());
+        resolveCredential(account, typed.secret) ??
+        resolveCredential(account, typed.secret.trim());
       if (!resolved?.active) {
         setError(t('authorize.not_active_key', { account: username }));
         return;
@@ -82,8 +81,9 @@ export function AddActiveKey({ username }: { username: string }) {
       await addAccount(
         username,
         keys,
-        encrypted || protect ? passcode : undefined,
+        encrypted || protect ? typed.passcode : undefined,
       );
+      added = true;
       // addAccount notifies the account store, so the screen re-renders with
       // the key and this form is replaced by the action it was blocking.
     } catch (err) {
@@ -96,6 +96,10 @@ export function AddActiveKey({ username }: { username: string }) {
           : t('common.try_again'),
       );
     } finally {
+      if (!added) {
+        setSecret(typed.secret);
+        setPasscode(typed.passcode);
+      }
       setBusy(false);
     }
   }
@@ -110,13 +114,12 @@ export function AddActiveKey({ username }: { username: string }) {
         <span className={labelText}>
           {t('authorize.active_key_label', { account: username })}
         </span>
-        <input
+        <SecretInput
           className={`${field} font-mono`}
           name="active-key"
-          type="password"
           value={secret}
-          onChange={(e) => setSecret(e.target.value)}
-          {...unmanaged}
+          onChange={setSecret}
+          onEnter="submit-form"
         />
         <span className={mutedXs}>{t('authorize.active_key_hint')}</span>
       </label>
@@ -134,13 +137,12 @@ export function AddActiveKey({ username }: { username: string }) {
       {!encrypted && protect && (
         <label className={label}>
           <span className={labelText}>{t('import.passcode')}</span>
-          <input
+          <SecretInput
             className={field}
             name="new-passcode"
-            type="password"
             value={passcode}
-            onChange={(e) => setPasscode(e.target.value)}
-            {...unmanaged}
+            onChange={setPasscode}
+            onEnter="submit-form"
           />
           <span className={mutedXs}>{t('import.passcode_hint')}</span>
         </label>
@@ -150,13 +152,12 @@ export function AddActiveKey({ username }: { username: string }) {
           <span className={labelText}>
             {t('authorize.active_key_passcode', { account: username })}
           </span>
-          <input
+          <SecretInput
             className={field}
             name="unlock-passcode"
-            type="password"
             value={passcode}
-            onChange={(e) => setPasscode(e.target.value)}
-            {...unmanaged}
+            onChange={setPasscode}
+            onEnter="submit-form"
           />
           <span className={mutedXs}>
             {t('authorize.active_key_passcode_hint')}

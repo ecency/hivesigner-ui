@@ -318,15 +318,34 @@ describe('consent with only a posting key on this device', () => {
     );
     // Password managers are told to leave both fields alone (#136).
     expect(passcode).toHaveAttribute('data-1p-ignore');
-    expect(keyField()).toHaveAttribute('autocomplete', 'off');
+    expect(keyField()).toHaveAttribute('autocomplete', 'one-time-code');
 
     await user.type(keyField(), active.toString());
     await user.type(passcode, 'wrong-one');
+    // Taken out of the fields while the key is being added (#136): read them
+    // at the moment the account is looked up, after the submit started.
+    const seen: string[] = [];
+    chain.getAccount.mockImplementation(async (name: string) => {
+      seen.push(
+        (document.querySelector('input[name="active-key"]') as HTMLInputElement)
+          .value,
+        (
+          document.querySelector(
+            'input[name="unlock-passcode"]',
+          ) as HTMLInputElement
+        ).value,
+      );
+      return name === 'alice' ? alice() : appAccount;
+    });
     await user.click(addButton());
     expect(
       await screen.findByRole('alert', {}, { timeout: 10_000 }),
     ).toHaveTextContent(i18n.t('authorize.wrong_passcode'));
     expect(getKeys('alice')?.active).toBeUndefined();
+    expect(seen).toEqual(['', '']);
+    // ... and given back when it was not added, so nothing is retyped.
+    expect(keyField()).toHaveValue(active.toString());
+    expect(passcode).toHaveValue('wrong-one');
 
     await user.clear(passcode);
     await user.type(passcode, 'pass1234');

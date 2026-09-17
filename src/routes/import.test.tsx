@@ -190,3 +190,57 @@ describe('the imported account becomes current', () => {
     );
   });
 });
+
+describe('import and password managers (#136)', () => {
+  it('offers the username and key as the login, and keeps the passcode out of it', () => {
+    render(<Import />);
+    const form = document.querySelector('form') as HTMLFormElement;
+    const key = document.querySelector(
+      'input[name="password"]',
+    ) as HTMLInputElement;
+    const passcode = document.querySelector(
+      'input[name="passcode"]',
+    ) as HTMLInputElement;
+    expect(key).toHaveAttribute('autocomplete', 'current-password');
+    expect(key.form).toBe(form);
+    expect(screen.getByRole('textbox', { name: /username/i })).toHaveAttribute(
+      'autocomplete',
+      'username',
+    );
+    // No longer "new-password": that is what made the pair read as a
+    // password change of the saved key.
+    expect(passcode).toHaveAttribute('autocomplete', 'one-time-code');
+    expect(passcode).toHaveAttribute('data-1p-ignore', 'true');
+    expect(passcode.form).not.toBe(form);
+    expect(Array.from(form.elements)).not.toContain(passcode);
+  });
+
+  it('adds the account on Enter in the passcode field, and empties it before leaving', async () => {
+    getAccount.mockResolvedValue(account());
+    let passcodeAtNavigation: string | null | undefined;
+    navigate.mockImplementation(() => {
+      passcodeAtNavigation = (
+        document.querySelector('input[name="passcode"]') as HTMLInputElement
+      )?.value;
+    });
+    const user = userEvent.setup();
+    render(<Import />);
+    await user.type(
+      screen.getByRole('textbox', { name: /username/i }),
+      'alice',
+    );
+    await user.type(
+      document.querySelector('input[name="password"]') as HTMLElement,
+      POSTING_WIF,
+    );
+    await user.type(
+      document.querySelector('input[name="passcode"]') as HTMLElement,
+      'pass1234{Enter}',
+    );
+    await waitFor(() => expect(navigate).toHaveBeenCalled(), {
+      timeout: 10_000,
+    });
+    expect(isUnlocked('alice')).toBe(true);
+    expect(passcodeAtNavigation).toBe('');
+  }, 30_000);
+});

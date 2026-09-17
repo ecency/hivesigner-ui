@@ -1,8 +1,10 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import clsx from 'clsx';
 import { useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
+import { SecretInput } from '@/components/SecretInput';
 import {
   btnPrimary,
   cardGrid,
@@ -107,8 +109,12 @@ function AccountRow({
     try {
       await unlockAccount(username, passcode);
       selectAccount(username);
-      setUnlocking(false);
-      setPasscode('');
+      // Emptied and removed before the page changes, so a password manager
+      // that captures on navigation finds nothing to offer to save.
+      flushSync(() => {
+        setPasscode('');
+        setUnlocking(false);
+      });
       done();
     } catch {
       setError(t('login.invalid_hs_password'));
@@ -194,14 +200,16 @@ function AccountRow({
             <span className={labelText}>
               {t('accounts.passcode')} · @{username}
             </span>
-            <input
+            {/* Not the site's password: a manager must neither fill the saved
+                Hive key in here nor offer to save the passcode. */}
+            <SecretInput
               className={field}
-              type="password"
               name={`passcode-${username}`}
-              autoComplete="current-password"
               value={passcode}
-              onChange={(e) => setPasscode(e.target.value)}
-              // biome-ignore lint/a11y/noAutofocus: focus the field the user just opened
+              onChange={setPasscode}
+              onEnter={() => {
+                if (!busy && passcode.length > 0) submitUnlock();
+              }}
               autoFocus
             />
           </label>
