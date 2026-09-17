@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { installTestDictionary } from '../test-i18n';
 import { wholeText } from '../test-text';
 
 // Regression tests for the sign route wiring (findings: no_broadcast must not
@@ -380,5 +381,68 @@ describe('a translated page', () => {
     );
     expect(row).not.toHaveAttribute('translate');
     expect(kept(row)).toEqual(['1', '@app (1)']);
+  });
+});
+
+describe('in another language', () => {
+  let undo = async () => {};
+  afterEach(() => undo());
+  const kept = (el: Element) =>
+    Array.from(el.querySelectorAll('[translate="no"]'), (n) => n.textContent);
+
+  it('reads in that language, with the request values exact and in its word order', async () => {
+    undo = await installTestDictionary('fa', {
+      sign: {
+        confirm_transaction: 'تأیید تراکنش',
+        going_redirect_to: 'به {host} هدایت می‌شوید.',
+        signed_with_active: 'با کلید فعال شما امضا می‌شود',
+        show_raw_one: 'نمایش عملیات خام',
+      },
+      summary: { transfer: '{to} ← {amount} ارسال' },
+      authority: { active: 'فعال' },
+    });
+    h.splat = 'transfer';
+    h.search = {
+      from: 'alice',
+      to: 'bob',
+      amount: '1.000 HIVE',
+      redirect_uri: 'https://app.example/done',
+    };
+    render(<Sign />);
+    expect(
+      await screen.findByRole('heading', { name: 'تأیید تراکنش' }),
+    ).toBeInTheDocument();
+    const title = screen.getByText(wholeText('@bob ← 1.000 HIVE ارسال'));
+    expect(kept(title)).toEqual(['@bob', '1.000 HIVE']);
+    const redirect = screen.getByText(
+      wholeText('به app.example هدایت می‌شوید.'),
+    );
+    expect(redirect.querySelector('b')).toHaveAttribute('translate', 'no');
+    expect(screen.getByText('فعال')).toBeInTheDocument();
+    expect(screen.getByText('با کلید فعال شما امضا می‌شود')).toBeInTheDocument();
+    expect(screen.getByText('نمایش عملیات خام')).toBeInTheDocument();
+  });
+
+  it('counts operations with the plural form the language needs', async () => {
+    undo = await installTestDictionary('ru', {
+      sign: {
+        contains_operations_one: '{count} операция',
+        contains_operations_few: '{count} операции',
+        contains_operations_many: '{count} операций',
+        show_raw_few: 'Показать операции',
+      },
+    });
+    const vote = [
+      'vote',
+      { voter: 'alice', author: 'a', permlink: 'p', weight: 100 },
+    ];
+    h.splat = `ops/${btoa(JSON.stringify([vote, vote, vote]))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')}`;
+    h.search = {};
+    render(<Sign />);
+    expect(await screen.findByText('3 операции')).toBeInTheDocument();
+    expect(screen.getByText('Показать операции')).toBeInTheDocument();
   });
 });

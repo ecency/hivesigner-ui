@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import { installTestDictionary } from '../test-i18n';
 import {
   type Operation,
   operationActors,
@@ -501,5 +502,83 @@ describe('an authority with no keys', () => {
     expect(rows.find((r) => r.label.includes('attacker'))?.untrusted).toBe(
       true,
     );
+  });
+});
+
+describe('in another language', () => {
+  let undo = async () => {};
+  afterEach(() => undo());
+
+  it("follows the translation's word order and keeps every value exact", async () => {
+    undo = await installTestDictionary('fa', {
+      summary: {
+        transfer: '{to} ← {amount} ارسال',
+        memo: 'یادداشت: {memo}',
+        keys_none: 'کلیدها: هیچ (کلید شما حذف می‌شود)',
+        threshold: 'آستانه {value}',
+      },
+      op_field: { posting_authority: 'مجوز ارسال', from: 'از' },
+      op_name: { claim_reward_balance: 'دریافت پاداش' },
+    });
+    const s = summarizeOperation([
+      'transfer',
+      { from: 'alice', to: 'bob', amount: '1.000 HIVE', memo: '{memo}' },
+    ]);
+    expect(s.titleParts).toEqual([
+      { value: '@bob' },
+      ' ← ',
+      { value: '1.000 HIVE' },
+      ' ارسال',
+    ]);
+    expect(s.detailParts).toEqual(['یادداشت: ', { value: '{memo}' }]);
+    expect(summarizeOperation(['claim_reward_balance', {}]).title).toBe(
+      'دریافت پاداش',
+    );
+    // A name this dictionary lacks falls back to English.
+    expect(summarizeOperation(['withdraw_vesting', {}]).title).toBe(
+      'Power down',
+    );
+
+    const rows = operationFields([
+      'account_update',
+      {
+        account: 'alice',
+        posting: { weight_threshold: 1, account_auths: [], key_auths: [] },
+      },
+    ]);
+    const posting = rows.find((r) => r.label === 'مجوز ارسال');
+    expect(posting?.parts).toEqual([
+      'آستانه ',
+      { value: '1' },
+      '; ',
+      'کلیدها: هیچ (کلید شما حذف می‌شود)',
+    ]);
+    // Field labels come from the dictionary, English where it has none.
+    expect(
+      operationFields([
+        'transfer_to_vesting',
+        { from: 'alice', to: 'bob', amount: '1.000 HIVE' },
+      ]).map((r) => r.label),
+    ).toEqual(['از', 'To', 'amount']);
+  });
+
+  it('does not hide a signer field under a translated label', async () => {
+    undo = await installTestDictionary('fa', {
+      // The label a signer row gets happens to read like another field.
+      op_field: { delegator: 'Vesting shares' },
+    });
+    const labels = operationFields([
+      'delegate_vesting_shares',
+      {
+        delegator: 'alice',
+        delegatee: 'bob',
+        vesting_shares: '1.000000 VESTS',
+      },
+    ]).map((r) => `${r.label}=${r.value}`);
+    expect(labels).toEqual([
+      'Vesting shares=@alice',
+      'delegatee=bob',
+      'vesting_shares=1.000000 VESTS',
+    ]);
   });
 });
