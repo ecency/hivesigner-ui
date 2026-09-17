@@ -14,6 +14,7 @@ import {
   mutedXs,
   page,
 } from '@/components/ui';
+import { authorityName } from '@/i18n/parts';
 import { getKeys } from '@/lib/accounts';
 import type { KeyRole } from '@/lib/hive';
 import {
@@ -126,7 +127,7 @@ function SignMessage() {
         >
           {heldRoles.map((r) => (
             <option key={r} value={r}>
-              {r}
+              {t(`authority.${r}`)}
             </option>
           ))}
         </select>
@@ -157,7 +158,7 @@ function SignMessage() {
             <span translate="no">{`@${payload.authors[0]}`}</span>
           </Field>
           <Field label={t('message_signing.authority_used')}>
-            {payload.authority}
+            {authorityName(t, payload.authority ?? '')}
           </Field>
           <Field label={t('message_signing.verification_token')}>
             {/* `mono` keeps the deliberate break-all on rendered values. */}

@@ -25,7 +25,7 @@ describe('sentenceParts', () => {
   });
 
   it('never reads a value as a placeholder, markup or marker', () => {
-    const tricky = '{to} <b>x</b> to {{amount}}';
+    const tricky = '{to} <b>x</b> \uE000to\uE001 {{amount}}';
     const parts = sentenceParts(i18n.t, 'summary.transfer', {
       amount: tricky,
       to: '@bob',
@@ -63,12 +63,27 @@ describe('sentenceParts', () => {
     ).toBe('Memo: m');
   });
 
-  it('leaves out a value the translation does not use rather than inventing one', async () => {
-    undo = await installTestDictionary('fa', {
-      summary: { transfer: 'ارسال {amount}' },
-    });
-    expect(
-      sentenceParts(i18n.t, 'summary.transfer', { amount: '1', to: '@bob' }),
-    ).toEqual(['ارسال ', { value: '1' }]);
+  it('shows the English sentence rather than one that lost a value', async () => {
+    const english = [
+      'Send ',
+      { value: '1.000 HIVE' },
+      ' to ',
+      { value: '@bob' },
+    ];
+    const values = { amount: '1.000 HIVE', to: '@bob' };
+    for (const broken of [
+      'ارسال {amount}',
+      '{{amount}} an {{to}} senden',
+      '{ {amount} an {to}',
+      '{amount} an {receiver}',
+    ]) {
+      await undo();
+      undo = await installTestDictionary('fa', {
+        summary: { transfer: broken },
+      });
+      expect(sentenceParts(i18n.t, 'summary.transfer', values), broken).toEqual(
+        english,
+      );
+    }
   });
 });

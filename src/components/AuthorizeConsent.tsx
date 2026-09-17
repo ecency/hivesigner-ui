@@ -190,7 +190,9 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           const activeKey = keys?.active;
           if (!activeKey) {
             setError(
-              t('authorize.active_key_needed', { account: selectedAccount }),
+              t('authorize.active_key_needed', {
+                account: `@${selectedAccount}`,
+              }),
             );
             return;
           }
@@ -379,7 +381,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           <div className={alertError}>
             <Sentence
               k="authorize.app_not_found"
-              values={{ app: clientLabel }}
+              values={{ app: `@${clientLabel}` }}
             />
           </div>
           <ReportIssue kind="app_not_found" tags={{ app: req.clientId }} />
@@ -494,7 +496,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           >
             <Sentence
               k="authorize.add_key_to_continue"
-              values={{ account: selectedAccount }}
+              values={{ account: `@${selectedAccount}` }}
             />
           </Link>
         ) : (

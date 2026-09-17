@@ -80,8 +80,9 @@ function AuthorizedApps() {
         <p className={`${muted} mt-1`}>
           <Trans
             i18nKey="apps.can_post_as"
-            values={{ account: selectedAccount }}
-            components={{ b: <b /> }}
+            values={{ account: `@${selectedAccount}` }}
+            // The account is data: exact, and in its own direction.
+            components={{ b: <b translate="no" /> }}
           />
         </p>
       </div>

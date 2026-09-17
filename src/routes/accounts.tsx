@@ -177,7 +177,11 @@ function AccountRow({
           aria-label={`${t('accounts.delete')} @${username}`}
           onClick={() => {
             // Removing wipes the only copy of the keys on this device; confirm.
-            if (window.confirm(t('accounts.remove_confirm', { username }))) {
+            if (
+              window.confirm(
+                t('accounts.remove_confirm', { username: `@${username}` }),
+              )
+            ) {
               // The confirm promised the keys would be deleted. If the write did
               // not reach storage the record comes back on reload, so say so
               // instead of silently leaving a false impression.

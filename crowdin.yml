@@ -3,6 +3,12 @@
 # fix a translation there, not in the file, or the next sync undoes it.
 # `i18next_json` makes Crowdin read and write the _one/_few/_many plural keys
 # each language needs.
+#
+# Setting the project up: upload the sources, then upload the translations
+# already in this folder ONCE with `crowdin upload translations
+# --auto-approve-imported`. The download workflow exports approved
+# translations only, so a project without them would send every language back
+# as English (the dictionary tests fail on that).
 preserve_hierarchy: true
 files:
   - source: /src/i18n/locales/en-US.json

@@ -69,7 +69,7 @@ export function AddActiveKey({ username }: { username: string }) {
         resolveCredential(account, typed.secret) ??
         resolveCredential(account, typed.secret.trim());
       if (!resolved?.active) {
-        setError(t('authorize.not_active_key', { account: username }));
+        setError(t('authorize.not_active_key', { account: `@${username}` }));
         return;
       }
       // Only what this screen needs. A master password also derives the
@@ -121,7 +121,7 @@ export function AddActiveKey({ username }: { username: string }) {
         <span className={labelText}>
           <Sentence
             k="authorize.active_key_label"
-            values={{ account: username }}
+            values={{ account: `@${username}` }}
           />
         </span>
         <SecretInput
@@ -165,7 +165,7 @@ export function AddActiveKey({ username }: { username: string }) {
           <span className={labelText}>
             <Sentence
               k="authorize.active_key_passcode"
-              values={{ account: username }}
+              values={{ account: `@${username}` }}
             />
           </span>
           <SecretInput

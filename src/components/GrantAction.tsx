@@ -182,7 +182,7 @@ export function GrantAction({
                 ? 'authorize.grant_explain_no_account'
                 : 'revoke.revoke_explain_no_account'
             }
-            values={{ app: appLabel }}
+            values={{ app: `@${appLabel}` }}
           />
         ) : (
           <Sentence
@@ -191,14 +191,11 @@ export function GrantAction({
                 ? 'authorize.grant_explain'
                 : 'revoke.revoke_explain'
             }
-            values={{ app: appLabel, account: selectedAccount }}
+            values={{ app: `@${appLabel}`, account: `@${selectedAccount}` }}
           />
         )}
         <div className="mt-2 text-[12.5px] text-warn">
-          {t('authorize.requires_active_key', { authority: 'active' }).replace(
-            /<\/?b>/g,
-            '',
-          )}
+          {t('authorize.requires_active_key')}
         </div>
       </div>
 
@@ -206,7 +203,7 @@ export function GrantAction({
         <output className={`${alertOk} block text-sm font-semibold`}>
           <Sentence
             k={mode === 'grant' ? 'authorize.granted' : 'revoke.revoked'}
-            values={{ app: appLabel }}
+            values={{ app: `@${appLabel}` }}
           />
           {/* Granted but not yet readable from the chain: say so, and leave
               Continue in place. The consent screen it leads to re-checks the
@@ -231,7 +228,7 @@ export function GrantAction({
         <div role="alert" className={alertError}>
           <Sentence
             k="authorize.account_missing"
-            values={{ account: selectedAccount ?? '' }}
+            values={{ account: `@${selectedAccount ?? ''}` }}
           />
         </div>
       )}

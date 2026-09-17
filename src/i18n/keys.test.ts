@@ -69,6 +69,13 @@ describe('translation keys', () => {
     expect(files.length).toBeGreaterThan(20);
   });
 
+  // An account's @ belongs to the value, which runs in its own direction; an
+  // @ in the dictionary lands on the wrong side on a right-to-left page.
+  it('no English string puts an @ before a placeholder', () => {
+    const glued = leaves(en as Tree).filter(([, text]) => /@\{/.test(text));
+    expect(glued.map(([key]) => key)).toEqual([]);
+  });
+
   it('every translation key used in the source exists in en-US', () => {
     const missing: string[] = [];
     let checked = 0;
@@ -119,7 +126,10 @@ const COMPUTED = [
   // ThemeToggle, settings: t(`theme.${theme}`)
   ...['system', 'light', 'dark'].map((v) => `theme.${v}`),
   // sign, signs: t(`authority.${authority}`)
-  ...['posting', 'active', 'owner', 'unknown'].map((v) => `authority.${v}`),
+  // signmessage, verifymessage, auths: authorityName()
+  ...['posting', 'active', 'owner', 'memo', 'unknown'].map(
+    (v) => `authority.${v}`,
+  ),
   // sign: `sign.signed_with_${authority}`, `sign.missing_${authority}_key`
   ...['posting', 'active', 'owner'].flatMap((v) => [
     `sign.signed_with_${v}`,
@@ -180,6 +190,13 @@ describe.each(
         problems.push(`${key}: placeholders ${placeholders(own)}`);
       if (tags(own).join() !== tags(text).join())
         problems.push(`${key}: markup ${tags(own)}`);
+      // i18next reads anything between braces as a variable and leaves one it
+      // does not know as text: `{{amount}}` or `{ {amount}` would drop the
+      // value. Only well-formed `{name}` may carry a brace.
+      if (/[{}]/.test(own.replace(/\{\w+\}/g, '')))
+        problems.push(`${key}: stray brace`);
+      if (/@\{/.test(own))
+        problems.push(`${key}: @ before a placeholder (the value carries it)`);
     }
     expect(problems).toEqual([]);
   });
@@ -197,12 +214,25 @@ describe.each(
         const own = translated.get(`${base}_${category}`);
         if (typeof own !== 'string' || !own.trim()) {
           problems.push(`${base}_${category}: missing`);
-        } else if (placeholders(own).some((name) => !wanted.includes(name))) {
+        } else if (
+          placeholders(own).some((name) => !wanted.includes(name)) ||
+          /[{}]/.test(own.replace(/\{\w+\}/g, ''))
+        ) {
           problems.push(`${base}_${category}: placeholders`);
         }
       }
     }
     expect(problems).toEqual([]);
+  });
+
+  // A Crowdin export fills every string it has no approved translation for
+  // with the English source. A language that is mostly English again is a
+  // broken sync, not a translation.
+  it('is translated rather than English again', () => {
+    const same = source.filter(
+      ([key, text]) => translated.get(key) === text,
+    ).length;
+    expect(same / source.length).toBeLessThan(0.15);
   });
 
   it('has nothing the English source does not', () => {

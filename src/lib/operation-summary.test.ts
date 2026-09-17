@@ -351,6 +351,17 @@ describe('authority resolution', () => {
     ).toEqual(['alice']);
   });
 
+  it('strips the separators that end a bidi paragraph inside a value', () => {
+    // U+2029 ends the paragraph, so even an isolated value lets the text
+    // after it reorder ("x\u2029א" then " 5 to" drew the 5 inside the value).
+    const s = summarizeOperation([
+      'transfer',
+      { to: 'bob', amount: '1.000 HIVE', memo: 'x\u2029א\u2028y' },
+    ]);
+    expect(s.detail).not.toMatch(/[\u2028\u2029]/);
+    expect(s.detail).toContain('x\ufffdא\ufffdy');
+  });
+
   it('strips bidi and control characters that make a value read as something else', () => {
     // U+202E (RLO) visually reverses the text that follows it.
     const s = summarizeOperation([

@@ -1,10 +1,18 @@
 name: Crowdin Download
 
-# Pulls the latest translations from Crowdin into ONE pull request against
-# development (branch l10n/crowdin), instead of a commit per language. Runs
-# weekly and on demand from the Actions tab; the pull request is updated in
-# place while it is open. Skipped until the repository variable
-# CROWDIN_PROJECT_ID is set.
+# Pulls APPROVED translations from Crowdin, runs the unit tests on them (the
+# dictionary tests check every language for missing strings, placeholders,
+# markup and plural forms, and that no language fell back to English), and
+# only then opens or updates ONE pull request against development from the
+# branch l10n/crowdin. Weekly and on demand from the Actions tab.
+#
+# The pull request is opened with GITHUB_TOKEN, so GitHub does not start the
+# pull-request workflows on it; the tests above stand in for them, and
+# Staging CI runs them again after merge, before it deploys. Opening it needs
+# the repository setting "Allow GitHub Actions to create and approve pull
+# requests".
+#
+# Skipped until the repository variable CROWDIN_PROJECT_ID is set.
 on:
   schedule:
     - cron: '0 6 * * 1'
@@ -13,6 +21,10 @@ on:
 permissions:
   contents: write
   pull-requests: write
+
+concurrency:
+  group: crowdin-download
+  cancel-in-progress: false
 
 jobs:
   download:
@@ -23,21 +35,51 @@ jobs:
         with:
           ref: development
 
-      - name: Download translations from Crowdin
-        uses: crowdin/github-action@v2
+      - name: Download approved translations from Crowdin
+        # Pinned to a commit: this step runs with a write token. v2.17.1.
+        uses: crowdin/github-action@8f01d54f70f1713ee3f09d82c2bbb2daeac28689
         with:
           upload_sources: false
           upload_translations: false
           download_translations: true
-          localization_branch_name: l10n/crowdin
-          create_pull_request: true
-          pull_request_title: 'Sync translations from Crowdin'
-          pull_request_body: 'Translations pulled from Crowdin. The dictionary tests check every language for missing strings, placeholders and plural forms.'
-          pull_request_base_branch_name: development
-          commit_message: 'Sync translations from Crowdin'
-          github_user_name: 'github-actions[bot]'
-          github_user_email: '41898282+github-actions[bot]@users.noreply.github.com'
+          # Only what a proofreader approved. A string without an approved
+          # translation comes back as the English source, which the app would
+          # show anyway.
+          export_only_approved: true
+          # Files only: the tests below decide whether they become a PR.
+          push_translations: false
+          create_pull_request: false
+          skip_ref_checkout: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CROWDIN_PROJECT_ID: ${{ vars.CROWDIN_PROJECT_ID }}
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The same checks Staging CI runs before a deploy.
+      - run: pnpm build
+      - run: pnpm test
+
+      - name: Open or update the translations pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- src/i18n/locales; then
+            echo "No translation changes."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -C l10n/crowdin
+          git add src/i18n/locales
+          git commit -m 'Sync translations from Crowdin'
+          git push --force origin l10n/crowdin
+          if [ -z "$(gh pr list --head l10n/crowdin --state open --json number --jq '.[0].number')" ]; then
+            gh pr create --base development --head l10n/crowdin \
+              --title 'Sync translations from Crowdin' \
+              --body 'Approved translations pulled from Crowdin. The unit tests, including every dictionary check, passed on these files before this pull request was opened.'
+          fi

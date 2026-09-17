@@ -83,6 +83,9 @@ function isUnsafeDisplayChar(cp: number): boolean {
     (cp >= 0x7f && cp <= 0x9f) || // DEL + C1 controls
     cp === 0x61c || // ARABIC LETTER MARK
     (cp >= 0x200b && cp <= 0x200f) || // zero-width marks + LRM/RLM
+    cp === 0x2028 || // LINE SEPARATOR
+    cp === 0x2029 || // PARAGRAPH SEPARATOR: ends the bidi paragraph, so it
+    // breaks a value's isolation and drags the text after it inside
     (cp >= 0x202a && cp <= 0x202e) || // bidi embeddings and overrides
     (cp >= 0x2066 && cp <= 0x2069) || // bidi isolates
     cp === 0xfeff // BOM / zero-width no-break space

@@ -124,9 +124,13 @@ test('an English browser stays in English, and the menu offers every language by
   );
 });
 
-/** Whether the first character of `text` is drawn left of the second. */
+/**
+ * Whether the first character of `text` is drawn left of the second, for
+ * every place the page shows it.
+ */
 async function readsLeftToRight(page: Page, text: string) {
-  return page.evaluate((wanted) => {
+  const found = await page.evaluate((wanted) => {
+    const results: boolean[] = [];
     const walker = document.createTreeWalker(
       document.body,
       NodeFilter.SHOW_TEXT,
@@ -140,10 +144,12 @@ async function readsLeftToRight(page: Page, text: string) {
         range.setEnd(node, at + i + 1);
         return range.getBoundingClientRect().x;
       };
-      return box(0) < box(1);
+      results.push(box(0) < box(1));
     }
-    throw new Error(`no text ${wanted}`);
+    return results;
   }, text);
+  if (found.length === 0) throw new Error(`no text ${text}`);
+  return found.every(Boolean);
 }
 
 test('Arabic keeps names, amounts and hosts reading as they are', async ({
@@ -200,6 +206,11 @@ test('Arabic keeps names, amounts and hosts reading as they are', async ({
         el.getBoundingClientRect().right,
     );
   expect(gap).toBeLessThan(2);
+
+  // An account inside a translated sentence, on the grant page.
+  await page.goto('/authorize/peakd.app', { waitUntil: 'networkidle' });
+  await expect(page.locator('main')).toContainText('@peakd.app');
+  expect(await readsLeftToRight(page, '@peakd.app')).toBe(true);
 });
 
 test('Arabic lays the page out right to left', async ({ page }) => {

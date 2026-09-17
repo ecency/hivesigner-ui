@@ -54,7 +54,7 @@ describe('/signmessage', () => {
     expect(
       screen.getByText(i18n.t('message_signing.authority_used'))
         .nextElementSibling,
-    ).toHaveTextContent('posting');
+    ).toHaveTextContent(i18n.t('authority.posting'));
     const [token] = screen.getAllByRole('code').map((c) => c.textContent ?? '');
     const decoded = decodeToken(token);
     expect(decoded?.payload.authors).toEqual(['alice']);
@@ -72,6 +72,7 @@ describe('/signmessage', () => {
     await addAccount('alice', { active: active.toString() });
     render(<SignMessage />);
     const options = screen.getAllByRole('option').map((o) => o.textContent);
-    expect(options).toEqual(['active']);
+    expect(options).toEqual([i18n.t('authority.active')]);
+    expect(screen.getByRole('combobox')).toHaveValue('active');
   });
 });

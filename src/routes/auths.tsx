@@ -66,7 +66,7 @@ function Auths() {
           const heldKey = keys?.[role];
           return (
             <div key={role} className={`${card} flex flex-col gap-2`}>
-              <div className="font-bold capitalize">{role}</div>
+              <div className="font-bold">{t(`authority.${role}`)}</div>
               {authority?.key_auths.map(([k, w]) => (
                 <div key={k} className={`${mutedXs} ${mono}`}>
                   <span translate="no">{k}</span>
