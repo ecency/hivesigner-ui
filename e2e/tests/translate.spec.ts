@@ -206,7 +206,7 @@ test('sign: without a callback the success screen is shown', async ({
   await expect(page.locator('main')).toContainText(/successfully/i);
   await translationSettled(page);
   await expect(page.locator('main')).toContainText(
-    translated('Transaction has been successfully broadcasted'),
+    translated('Transaction broadcast successfully'),
   );
   expect(problems).toEqual([]);
 });
@@ -292,7 +292,7 @@ test('grant: authorizing an app waits for the grant, then returns to the login',
   await expect(done).toContainText('…');
   await translationSettled(page);
   await expect(done).toContainText(translated(' is authorized.'));
-  await expect(done.locator('[translate="no"]')).toHaveText('new.app');
+  await expect(done.locator('[translate="no"]')).toHaveText('@new.app');
   await expectNamesKept(page);
   await page.waitForURL('**/login?**', { timeout: 30_000 });
   await translationSettled(page);

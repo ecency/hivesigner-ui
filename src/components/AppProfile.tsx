@@ -72,20 +72,14 @@ export function AppProfile({ username }: { username: string }) {
         <Avatar username={username} size="lg" />
         <div className="min-w-0 flex-1">
           {name && (
-            <div
-              className="text-base font-semibold break-words [unicode-bidi:isolate]"
-              translate="no"
-            >
-              {name}
+            <div className="text-base font-semibold break-words" translate="no">
+              <bdi>{name}</bdi>
             </div>
           )}
           {/* Always shown: the handle is the only part of the identity the app
               cannot choose freely, so it is what a user can actually check. */}
-          <div
-            className={`${mutedXs} break-all [unicode-bidi:isolate]`}
-            translate="no"
-          >
-            {handle}
+          <div className={`${mutedXs} break-all`} translate="no">
+            <bdi>{handle}</bdi>
           </div>
           {site && (
             <a
@@ -103,8 +97,8 @@ export function AppProfile({ username }: { username: string }) {
       </div>
 
       {about && (
-        <p className={`${mutedXs} leading-[1.5] [unicode-bidi:isolate]`}>
-          {about}
+        <p className={`${mutedXs} leading-[1.5]`}>
+          <bdi>{about}</bdi>
         </p>
       )}
 

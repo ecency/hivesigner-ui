@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CurrentAccount } from '@/components/CurrentAccount';
 import { ReportIssue } from '@/components/ReportIssue';
-import { Handle } from '@/components/Untranslated';
+import { Sentence } from '@/components/Untranslated';
 import {
   alertError,
   alertWarn,
@@ -100,16 +100,33 @@ function InvalidSignRequest({
  * values never are. The parts of one line are fixed for a request, so React
  * never inserts or removes loose text among them.
  */
-function Parts({ parts }: { parts: TextPart[] }) {
-  return parts.map((part, i) =>
-    typeof part === 'string' ? (
-      part
-    ) : (
-      // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one fixed line
-      <span key={i} translate="no" className="[unicode-bidi:isolate]">
-        {part.value}
-      </span>
-    ),
+function Parts({
+  parts,
+  valueClassName,
+}: {
+  parts: TextPart[];
+  valueClassName?: string;
+}) {
+  const { i18n } = useTranslation();
+  // Keyed by language, like Sentence: another language builds the line fresh
+  // instead of rewriting copy a page translator may already have replaced.
+  return (
+    <span key={i18n.language}>
+      {parts.map((part, i) =>
+        typeof part === 'string' ? (
+          part
+        ) : (
+          <span
+            // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one fixed line
+            key={i}
+            translate="no"
+            className={valueClassName}
+          >
+            {part.value}
+          </span>
+        ),
+      )}
+    </span>
   );
 }
 
@@ -277,25 +294,30 @@ function Sign() {
           element (see lib/translation-guard.ts). */}
       {host && (
         <div className={alertWarn}>
-          {t('sign.going_redirect_to')} <b translate="no">{host}</b>.
+          <Sentence k="sign.going_redirect_to" values={{ host }} bold />
         </div>
       )}
 
       {foreignActors.length > 0 && (
         <div role="alert" className={alertWarn}>
-          This acts as{' '}
-          {foreignActors.map((a) => (
-            <b key={a} translate="no">{`@${a} `}</b>
-          ))}
-          , not <Handle name={selectedAccount ?? ''} />. Only continue if you
-          manage that account.
+          <Sentence
+            k="sign.acts_as"
+            values={{
+              actors: foreignActors.map((a) => `@${a}`).join(', '),
+              account: `@${selectedAccount ?? ''}`,
+            }}
+            bold
+          />
         </div>
       )}
 
       {displayOps.length > 1 && (
         <div className="text-[13px] text-muted">
-          This request contains <b>{displayOps.length} operations</b>. Review
-          every one before approving.
+          <Sentence
+            k="sign.contains_operations"
+            count={displayOps.length}
+            values={{}}
+          />
         </div>
       )}
 
@@ -306,7 +328,7 @@ function Sign() {
         return (
           <div key={`${op[0]}-${i}`} className={`${card} flex flex-col gap-2`}>
             <div className="flex flex-wrap items-baseline gap-2">
-              <div className="min-w-0 flex-1 break-words text-lg font-bold">
+              <div className="min-w-0 flex-1 break-words text-lg font-bold hyphens-auto">
                 {displayOps.length > 1 && `${i + 1}. `}
                 <Parts parts={s.titleParts} />
               </div>
@@ -318,7 +340,7 @@ function Sign() {
                     : 'bg-danger-bg text-danger'
                 }`}
               >
-                {opAuthority ?? 'unknown'}
+                {t(`authority.${opAuthority ?? 'unknown'}`)}
               </span>
             </div>
             {s.detailParts && (
@@ -337,24 +359,26 @@ function Sign() {
                     shape: break-all on it rendered "P/e/r/m/l/i/n/k" at 320px
                     beside a long value. A label that is a JSON KEY is
                     caller-chosen, so it may be arbitrarily long and must wrap
-                    instead of pushing the value off-screen; isolate it too,
-                    since it can carry bidi controls. */}
+                    instead of pushing the value off-screen, and it is data
+                    (translate="no"), so it is isolated in its own direction:
+                    it can carry bidi controls. */}
                 <span
-                  className={`${f.untrusted ? 'break-all' : 'shrink-0 whitespace-nowrap'} text-muted [unicode-bidi:isolate]`}
+                  className={`${f.untrusted ? 'break-all' : 'shrink-0 whitespace-nowrap [unicode-bidi:isolate]'} text-muted`}
                   translate={f.untrusted ? 'no' : undefined}
                 >
                   {`${f.label}:`}
                 </span>
-                {/* isolate: a value cannot reorder the text around it. */}
+                {/* A value runs in its own direction and cannot reorder the
+                    text around it (globals.css). */}
                 {f.parts ? (
-                  <span className="break-all [unicode-bidi:isolate]">
-                    <Parts parts={f.parts} />
+                  // break-words on the copy, break-all only on the values (keys
+                  // are long unbroken strings): a translated warning must not
+                  // split mid-word.
+                  <span className="break-words [unicode-bidi:isolate]">
+                    <Parts parts={f.parts} valueClassName="break-all" />
                   </span>
                 ) : (
-                  <span
-                    className="break-all [unicode-bidi:isolate]"
-                    translate="no"
-                  >
+                  <span className="break-all" translate="no">
                     {f.value}
                   </span>
                 )}
@@ -366,14 +390,22 @@ function Sign() {
 
       {req.preservedTx && (
         <div className={`${card} text-[12.5px] break-words text-muted`}>
-          This request supplied its own transaction header. Expires:{' '}
-          <b translate="no">{safeText(String(req.preservedTx.expiration))}</b>
+          <Sentence
+            k="sign.own_header"
+            values={{
+              expiration: safeText(String(req.preservedTx.expiration)),
+            }}
+            bold
+          />
           {Array.isArray(req.preservedTx.signatures) &&
             req.preservedTx.signatures.length > 0 && (
               <>
                 {' '}
-                and it already carries{' '}
-                <b>{req.preservedTx.signatures.length}</b> signature(s).
+                <Sentence
+                  k="sign.carries_signatures"
+                  count={req.preservedTx.signatures.length}
+                  values={{}}
+                />
               </>
             )}
         </div>
@@ -381,20 +413,15 @@ function Sign() {
 
       <div className={`${card} flex items-center gap-2 text-[13.5px]`}>
         {authority ? (
-          <span>
-            Signed with your <b>{authority}</b> key
-          </span>
+          <span>{t(`sign.signed_with_${authority}`)}</span>
         ) : (
-          <span className="text-warn">
-            This transaction needs more than one authority and cannot be signed
-            with a single key.
-          </span>
+          <span className="text-warn">{t('sign.mixed_authorities')}</span>
         )}
       </div>
 
       <details className={`${card} px-3.5 py-3`}>
         <summary className="cursor-pointer text-[13.5px] font-semibold text-muted">
-          Show raw operation{displayOps.length > 1 ? 's' : ''}
+          {t('sign.show_raw', { count: displayOps.length })}
         </summary>
         <pre
           className="mt-3 overflow-x-auto font-mono text-xs text-ink"
@@ -429,8 +456,11 @@ function Sign() {
         {!authority ? null : signerMismatch ? (
           <>
             <div className="text-[13px] text-warn">
-              This request must be signed by{' '}
-              <b translate="no">{`@${req.signer}`}</b>. Switch to that account.
+              <Sentence
+                k="sign.must_be_signed_by"
+                values={{ account: `@${req.signer}` }}
+                bold
+              />
             </div>
             <Link
               to="/accounts"
@@ -456,14 +486,18 @@ function Sign() {
             search={{ next: here() }}
             className={btnPrimary}
           >
-            {`${t('accounts.unlock')} `}
-            <Handle name={selectedAccount} />
+            <Sentence
+              k="accounts.unlock_account"
+              values={{ account: `@${selectedAccount}` }}
+            />
           </Link>
         ) : !signingKey ? (
           <>
             <div className="text-[13px] text-warn">
-              This needs your <b>{authority}</b> key, which{' '}
-              <Handle name={selectedAccount} /> does not have here.
+              <Sentence
+                k={`sign.missing_${authority}_key`}
+                values={{ account: `@${selectedAccount}` }}
+              />
             </div>
             <Link to="/import" search={{ next: here() }} className={btnPrimary}>
               {t('accounts.add_another')}
@@ -473,7 +507,7 @@ function Sign() {
           <>
             {rateBlocked && (
               <div className="text-[13px] text-warn">
-                Loading the current HIVE Power rate…
+                {t('sign.loading_rate')}
               </div>
             )}
             <button

@@ -1,0 +1,31 @@
+name: Crowdin Upload Sources
+
+# Sends new and changed English strings to Crowdin whenever the source
+# dictionary changes on development. One way (repo to Crowdin); it makes no
+# commits here. Skipped until the repository variable CROWDIN_PROJECT_ID is set.
+on:
+  push:
+    branches: [development]
+    paths:
+      - 'src/i18n/locales/en-US.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    if: vars.CROWDIN_PROJECT_ID != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload sources to Crowdin
+        # Pinned to a commit, like the download workflow. v2.17.1.
+        uses: crowdin/github-action@8f01d54f70f1713ee3f09d82c2bbb2daeac28689
+        with:
+          upload_sources: true
+          upload_translations: false
+          download_translations: false
+        env:
+          CROWDIN_PROJECT_ID: ${{ vars.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}

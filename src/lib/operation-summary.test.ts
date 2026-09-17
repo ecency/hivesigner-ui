@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import i18n from '../i18n';
+import { installTestDictionary } from '../test-i18n';
 import {
   type Operation,
   operationActors,
@@ -7,6 +9,7 @@ import {
   requiredAuthority,
   summarizeOperation,
 } from './operation-summary';
+import { OPERATIONS } from './operations';
 import { resolveSigner } from './sign-tx';
 
 describe('summarizeOperation', () => {
@@ -80,10 +83,18 @@ describe('summarizeOperation', () => {
     expect(summarizeOperation(reply).title).toBe('Reply to @bob/p');
   });
 
-  it('falls back to a readable title for an unmapped operation', () => {
+  it('titles an operation without a summary by its name', () => {
     expect(summarizeOperation(['claim_reward_balance', {}]).title).toBe(
-      'Claim reward balance',
+      'Redeem rewards',
     );
+  });
+
+  it('falls back to a readable title for an operation it has no name for', () => {
+    expect(summarizeOperation(['some_future_op', {}]).title).toBe(
+      'Some future op',
+    );
+    // Never a property every object has.
+    expect(summarizeOperation(['constructor', {}]).title).toBe('Constructor');
   });
 });
 
@@ -178,7 +189,7 @@ describe('authority resolution', () => {
         },
       },
     ]);
-    const activeRow = rows.find((r) => r.label === 'active authority');
+    const activeRow = rows.find((r) => r.label === 'Active authority');
     expect(activeRow?.value).toContain('STM_ATTACKER');
   });
 
@@ -273,7 +284,7 @@ describe('authority resolution', () => {
         },
       },
     ]);
-    expect(rows.find((r) => r.label === 'owner authority')?.value).toContain(
+    expect(rows.find((r) => r.label === 'Owner authority')?.value).toContain(
       'threshold 9',
     );
   });
@@ -292,7 +303,7 @@ describe('authority resolution', () => {
         },
       },
     ]);
-    const row = rows.find((r) => r.label === 'posting authority')?.value;
+    const row = rows.find((r) => r.label === 'Posting authority')?.value;
     expect(row).toContain('threshold 2');
     expect(row).toContain('@attacker');
   });
@@ -302,7 +313,7 @@ describe('authority resolution', () => {
       'account_update',
       { account: 'victim', owner: { account_auths: [], key_auths: [] } },
     ]);
-    expect(rows.find((r) => r.label === 'owner authority')?.value).toContain(
+    expect(rows.find((r) => r.label === 'Owner authority')?.value).toContain(
       'NOT SET',
     );
   });
@@ -340,6 +351,17 @@ describe('authority resolution', () => {
     expect(
       operationActors(['custom_json', { required_posting_auths: ['alice'] }]),
     ).toEqual(['alice']);
+  });
+
+  it('strips the separators that end a bidi paragraph inside a value', () => {
+    // U+2029 ends the paragraph, so even an isolated value lets the text
+    // after it reorder ("x\u2029א" then " 5 to" drew the 5 inside the value).
+    const s = summarizeOperation([
+      'transfer',
+      { to: 'bob', amount: '1.000 HIVE', memo: 'x\u2029א\u2028y' },
+    ]);
+    expect(s.detail).not.toMatch(/[\u2028\u2029]/);
+    expect(s.detail).toContain('x\ufffdא\ufffdy');
   });
 
   it('strips bidi and control characters that make a value read as something else', () => {
@@ -475,7 +497,7 @@ describe('an authority with no keys', () => {
         },
       },
     ]);
-    const posting = rows.find((r) => r.label === 'posting authority');
+    const posting = rows.find((r) => r.label === 'Posting authority');
     expect(posting?.value).toMatch(/keys: NONE/);
     expect(posting?.value).toMatch(/@evil.app/);
   });
@@ -493,5 +515,107 @@ describe('an authority with no keys', () => {
     expect(rows.find((r) => r.label.includes('attacker'))?.untrusted).toBe(
       true,
     );
+  });
+});
+
+describe('in another language', () => {
+  let undo = async () => {};
+  afterEach(() => undo());
+
+  it("follows the translation's word order and keeps every value exact", async () => {
+    undo = await installTestDictionary('fa', {
+      summary: {
+        transfer: '{to} ← {amount} ارسال',
+        memo: 'یادداشت: {memo}',
+        keys_none: 'کلیدها: هیچ (کلید شما حذف می‌شود)',
+        threshold: 'آستانه {value}',
+      },
+      op_field: { posting_authority: 'مجوز ارسال', from: 'از' },
+      op_name: { claim_reward_balance: 'دریافت پاداش' },
+    });
+    const s = summarizeOperation([
+      'transfer',
+      { from: 'alice', to: 'bob', amount: '1.000 HIVE', memo: '{memo}' },
+    ]);
+    expect(s.titleParts).toEqual([
+      { value: '@bob' },
+      ' ← ',
+      { value: '1.000 HIVE' },
+      ' ارسال',
+    ]);
+    expect(s.detailParts).toEqual(['یادداشت: ', { value: '{memo}' }]);
+    expect(summarizeOperation(['claim_reward_balance', {}]).title).toBe(
+      'دریافت پاداش',
+    );
+    // A name this dictionary lacks falls back to English.
+    expect(summarizeOperation(['withdraw_vesting', {}]).title).toBe(
+      'Power down',
+    );
+
+    const rows = operationFields([
+      'account_update',
+      {
+        account: 'alice',
+        posting: { weight_threshold: 1, account_auths: [], key_auths: [] },
+      },
+    ]);
+    const posting = rows.find((r) => r.label === 'مجوز ارسال');
+    expect(posting?.parts).toEqual([
+      'آستانه ',
+      { value: '1' },
+      '; ',
+      'کلیدها: هیچ (کلید شما حذف می‌شود)',
+    ]);
+    // Field labels come from the dictionary, English where it has none.
+    expect(
+      operationFields([
+        'transfer_to_vesting',
+        { from: 'alice', to: 'bob', amount: '1.000 HIVE' },
+      ]).map((r) => r.label),
+    ).toEqual(['از', 'To', 'Amount']);
+  });
+
+  it('does not hide a signer field under a translated label', async () => {
+    undo = await installTestDictionary('fa', {
+      // The label a signer row gets happens to read like another field.
+      op_field: { delegator: 'Vesting shares' },
+    });
+    const labels = operationFields([
+      'delegate_vesting_shares',
+      {
+        delegator: 'alice',
+        delegatee: 'bob',
+        vesting_shares: '1.000000 VESTS',
+      },
+    ]).map((r) => `${r.label}=${r.value}`);
+    expect(labels).toEqual([
+      'Vesting shares=@alice',
+      'Delegatee=bob',
+      'Vesting shares=1.000000 VESTS',
+    ]);
+  });
+});
+
+describe('field labels', () => {
+  it('has a label for every field of every operation', () => {
+    const missing: string[] = [];
+    for (const [name, op] of Object.entries(OPERATIONS)) {
+      for (const field of Object.keys(op.schema)) {
+        if (!i18n.exists(`op_field.${field}`)) missing.push(`${name}.${field}`);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('labels schema fields and leaves any other key as it is', () => {
+    const rows = operationFields([
+      'withdraw_vesting',
+      { account: 'alice', vesting_shares: '1.000000 VESTS', surprise: 'x' },
+    ]);
+    expect(rows.map((r) => r.label)).toEqual([
+      'Account',
+      'Vesting shares',
+      'surprise',
+    ]);
   });
 });

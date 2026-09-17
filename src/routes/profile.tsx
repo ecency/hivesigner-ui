@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Handle } from '@/components/Untranslated';
+import { Handle, Sentence } from '@/components/Untranslated';
 import {
   alertError,
   btnPrimary,
@@ -115,6 +115,8 @@ function Profile() {
     'idle',
   );
   const [error, setError] = useState('');
+  // Callbacks the form refused, shown exactly (not inside translated copy).
+  const [badUris, setBadUris] = useState('');
   const current =
     form !== null && formFor === (account?.name ?? null) ? form : initial;
 
@@ -143,13 +145,13 @@ function Profile() {
       .filter((u) => !isValidRedirectUri(u));
     if (bad.length > 0) {
       setStatus('error');
-      setError(
-        `Not a usable callback (https, or http on localhost): ${bad.join(', ')}`,
-      );
+      setError('');
+      setBadUris(bad.join(', '));
       return;
     }
     setStatus('busy');
     setError('');
+    setBadUris('');
     try {
       const op = [
         'account_update2',
@@ -225,8 +227,18 @@ function Profile() {
       <p className={`${mutedXs} m-0`}>{t('profile.one_uri_line')}</p>
 
       {status === 'error' && (
-        <div role="alert" className={alertError}>
-          {error}
+        // Keyed by kind: a sentence and a plain message are built fresh
+        // rather than reworked into each other (see translation-guard.ts).
+        <div
+          key={badUris ? 'uris' : 'error'}
+          role="alert"
+          className={alertError}
+        >
+          {badUris ? (
+            <Sentence k="profile.bad_callbacks" values={{ uris: badUris }} />
+          ) : (
+            error
+          )}
         </div>
       )}
       {status === 'done' && (
@@ -244,8 +256,10 @@ function Profile() {
           to="/accounts"
           className={`${btnPrimary} sm:self-start`}
         >
-          {`${t('accounts.unlock')} `}
-          <Handle name={selectedAccount} />
+          <Sentence
+            k="accounts.unlock_account"
+            values={{ account: `@${selectedAccount}` }}
+          />
         </Link>
       ) : (
         <button

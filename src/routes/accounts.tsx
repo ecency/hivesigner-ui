@@ -141,7 +141,7 @@ function AccountRow({
         <div className="min-w-0 flex-1">
           {/* Data, not copy: a page translator must leave the name alone. */}
           <div className="text-[15px] font-semibold break-all" translate="no">
-            {`@${username}`}
+            <bdi>{`@${username}`}</bdi>
           </div>
           {/* Each part in its own element. This line changes while the page
               is open, and a page translator swaps loose text for its own
@@ -177,7 +177,11 @@ function AccountRow({
           aria-label={`${t('accounts.delete')} @${username}`}
           onClick={() => {
             // Removing wipes the only copy of the keys on this device; confirm.
-            if (window.confirm(t('accounts.remove_confirm', { username }))) {
+            if (
+              window.confirm(
+                t('accounts.remove_confirm', { username: `@${username}` }),
+              )
+            ) {
               // The confirm promised the keys would be deleted. If the write did
               // not reach storage the record comes back on reload, so say so
               // instead of silently leaving a false impression.
@@ -284,7 +288,7 @@ function Accounts() {
       <Link
         to="/import"
         search={next ? { next } : {}}
-        className="inline-flex h-11 max-w-full items-center justify-center self-start rounded-lg border border-dashed border-line-strong px-4 font-semibold text-ink no-underline"
+        className="inline-flex min-h-11 max-w-full items-center justify-center self-start rounded-lg border border-dashed border-line-strong px-4 py-2 text-center font-semibold text-ink no-underline"
       >
         + {t('accounts.add_another')}
       </Link>

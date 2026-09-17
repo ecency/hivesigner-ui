@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
 import { PostingAbilities } from '@/components/PostingAbilities';
+import { Sentence } from '@/components/Untranslated';
 import { btnPrimary, btnSecondary, card, link, mutedXs } from '@/components/ui';
 
 /** The app shown in the illustration. A real, registered app, so the card
@@ -44,7 +45,7 @@ export function ConsentPreview() {
           className={`${card} pointer-events-none relative flex flex-col gap-4 p-5 shadow-[0_24px_60px_-20px_rgb(0_0_0/0.45)] select-none [transform:rotateY(-5deg)_rotateX(2deg)] sm:p-6 lg:[transform:rotateY(-9deg)_rotateX(4deg)_translateX(6px)]`}
         >
           {/* A badge that says what this is, in the picture itself. */}
-          <span className="absolute -top-3 right-5 rounded-full border border-line bg-canvas px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-muted uppercase">
+          <span className="absolute -top-3 end-5 rounded-full border border-line bg-canvas px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-muted uppercase rtl:tracking-normal">
             {t('index.preview_badge')}
           </span>
           <div className="flex items-center gap-3">
@@ -61,7 +62,7 @@ export function ConsentPreview() {
               @
             </span>
             <span className="min-w-0 flex-1 truncate text-[14px] font-semibold">
-              @{t('index.preview_account')}
+              <bdi>{`@${t('index.preview_account')}`}</bdi>
             </span>
             <svg
               width="16"
@@ -87,17 +88,23 @@ export function ConsentPreview() {
           <PostingAbilities app={DEMO_APP} brief />
 
           <div className={mutedXs}>
-            {t('authorize.sends_you_to')}{' '}
-            <b className="text-ink">{DEMO_HOST}</b>
+            <Sentence
+              k="authorize.sends_you_to"
+              values={{ host: DEMO_HOST }}
+              bold
+              valueClassName="text-ink"
+            />
           </div>
 
           {/* Spans, not buttons: this is a picture. */}
+          {/* min-w-0 and truncate: a long label in some languages must not
+              push the picture wider than a phone. */}
           <div className="flex gap-3">
-            <span className={`${btnPrimary} h-11 flex-1 text-[15px]`}>
-              {t('authorize.authorize')}
+            <span className={`${btnPrimary} h-11 min-w-0 flex-1 text-[15px]`}>
+              <span className="truncate">{t('authorize.authorize')}</span>
             </span>
-            <span className={`${btnSecondary} h-11 flex-1 text-[15px]`}>
-              {t('common.cancel')}
+            <span className={`${btnSecondary} h-11 min-w-0 flex-1 text-[15px]`}>
+              <span className="truncate">{t('common.cancel')}</span>
             </span>
           </div>
         </div>

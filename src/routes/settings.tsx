@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LanguageSelect } from '@/components/LanguageSelect';
 import { ThemeIcon } from '@/components/ThemeToggle';
 import {
   cardTight,
-  field,
   formColumn,
   h1,
   label,
@@ -12,8 +12,6 @@ import {
   mutedXs,
   page,
 } from '@/components/ui';
-import { supportedLngs } from '@/i18n/locales';
-import { getLanguage, type Language, setLanguage } from '@/lib/prefs';
 import { themes } from '@/lib/theme';
 import { useTheme } from '@/lib/use-theme';
 
@@ -24,20 +22,11 @@ export const Route = createFileRoute('/settings')({
   component: Settings,
 });
 
-const LANGUAGE_NAMES: Record<string, string> = { en: 'English', ru: 'Русский' };
-
 function Settings() {
-  const { t, i18n } = useTranslation();
-  const [lang, setLang] = useState<Language>(getLanguage());
+  const { t } = useTranslation();
   const [saved, setSaved] = useState(false);
+  const languageId = useId();
   const { theme, setTheme } = useTheme();
-
-  function change(next: Language) {
-    setLang(next);
-    setLanguage(next);
-    i18n.changeLanguage(next);
-    setSaved(true);
-  }
 
   return (
     // A settings form, so it stays one readable column instead of stretching
@@ -46,21 +35,12 @@ function Settings() {
       <h1 className={h1}>{t('settings.settings')}</h1>
 
       {/* The control itself stays a comfortable field width on a desktop. */}
-      <label className={`${label} max-w-sm`}>
-        <span className={labelText}>{t('settings.language')}</span>
-        <select
-          className={field}
-          aria-label={t('settings.language')}
-          value={lang}
-          onChange={(e) => change(e.target.value as Language)}
-        >
-          {supportedLngs.map((l) => (
-            <option key={l} value={l}>
-              {LANGUAGE_NAMES[l] ?? l}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className={`${label} max-w-sm`}>
+        <label htmlFor={languageId} className={labelText}>
+          {t('settings.language')}
+        </label>
+        <LanguageSelect id={languageId} tall onPicked={setSaved} />
+      </div>
 
       {saved && (
         <output className="block text-[13px] text-ok">

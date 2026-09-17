@@ -35,11 +35,13 @@ export function CurrentAccount({
   const { t } = useTranslation();
   return (
     <div
-      className={`${cardTight} flex items-center gap-3`}
+      className={`${cardTight} flex flex-wrap items-center gap-x-3 gap-y-1`}
       data-testid="current-account"
     >
       <Avatar username={username} size="md" />
-      <div className="min-w-0 flex-1">
+      {/* Room for the label and the name first: a long "switch" label in
+          some languages moves to its own line instead of squeezing them. */}
+      <div className="min-w-0 flex-[1_1_9rem]">
         <div className="text-[11px] text-muted">{label}</div>
         {/* break-all, never truncate: the row exists so the user can check
             the EXACT account, and a 16-character name at 320px would lose
@@ -49,14 +51,14 @@ export function CurrentAccount({
           className="break-all text-[15px] font-semibold text-ink"
           translate="no"
         >
-          {`@${username}`}
+          <bdi>{`@${username}`}</bdi>
         </div>
       </div>
       {!busy && (
         <Link
           to="/accounts"
           search={{ next }}
-          className={`${link} shrink-0 text-[13px]`}
+          className={`${link} ms-auto shrink-0 text-[13px]`}
         >
           {t('login.switch_an_account')}
         </Link>

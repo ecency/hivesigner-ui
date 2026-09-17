@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { Trans, useTranslation } from 'react-i18next';
 import { BrandMark } from '@/components/Brand';
+import { LanguageSelect } from '@/components/LanguageSelect';
 import { gutter } from '@/components/ui';
 
 const GITHUB = 'https://github.com/ecency/hivesigner-ui';
@@ -63,6 +64,10 @@ export function AppFooter() {
               }}
             />
           </p>
+          {/* Where people look for it on any site, and on every page: someone
+              who landed in a language they cannot read must not have to find
+              Settings first. */}
+          <LanguageSelect className="mt-2 w-full max-w-[220px]" />
         </div>
 
         {/* Two columns on a phone, three from sm: eleven short links, so a

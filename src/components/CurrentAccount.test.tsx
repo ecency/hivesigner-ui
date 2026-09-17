@@ -47,9 +47,10 @@ describe('CurrentAccount', () => {
         next="/sign/x"
       />,
     );
-    const name = screen.getByText('@abcdefghijklmnop');
-    expect(name.className).toContain('break-all');
-    expect(name.className).not.toContain('truncate');
+    // The text sits in a <bdi> for its direction; the block around it wraps.
+    const name = screen.getByText('@abcdefghijklmnop').parentElement;
+    expect(name?.className).toContain('break-all');
+    expect(name?.className).not.toContain('truncate');
   });
 
   it('still names the account when the name cannot have an avatar', () => {

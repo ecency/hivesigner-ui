@@ -3,9 +3,9 @@ import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import './globals.css';
-import './i18n';
 import { ErrorPage } from './components/ErrorPage';
 import { NotFound } from './components/NotFound';
+import { startLanguage } from './i18n';
 import {
   autoUnlockPlaintext,
   migrateLegacyKeychain,
@@ -72,14 +72,25 @@ const queryClient = new QueryClient({
   },
 });
 
-const rootElement = document.getElementById('root');
-if (rootElement && !rootElement.innerHTML) {
-  document.documentElement.setAttribute('data-build', __BUILD_SHA__);
-  ReactDOM.createRoot(rootElement).render(
-    <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </StrictMode>,
-  );
+// Someone reading in another language gets the first screen in it rather than
+// a flash of English: the render waits for that dictionary, which is one small
+// file. A slow network does not hold the page for long; the language then
+// switches when its file arrives (on a screen being approved, at the next
+// page).
+const LANGUAGE_WAIT_MS = 3000;
+
+function render() {
+  const rootElement = document.getElementById('root');
+  if (rootElement && !rootElement.innerHTML) {
+    document.documentElement.setAttribute('data-build', __BUILD_SHA__);
+    ReactDOM.createRoot(rootElement).render(
+      <StrictMode>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>
+      </StrictMode>,
+    );
+  }
 }
+
+startLanguage(LANGUAGE_WAIT_MS).then(render);

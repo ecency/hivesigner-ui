@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { BrandMark } from '@/components/Brand';
 import { card, h1, link, muted, page } from '@/components/ui';
 
@@ -13,7 +13,7 @@ function About() {
     <section className={page}>
       <h1 className={`${h1} flex items-center gap-3`}>
         <BrandMark size={32} />
-        <span>{t('about.about')} Hivesigner</span>
+        <span>{t('about.title')}</span>
       </h1>
       {/* Capped so the line length stays readable once the shell widens. */}
       <p className={`${muted} m-0 max-w-2xl leading-normal`}>
@@ -26,16 +26,22 @@ function About() {
         className={`${card} mt-1 text-center text-sm text-ink sm:w-auto sm:self-center`}
       >
         <div>
-          Built with <span className="text-brand">♥</span> by the{' '}
-          <a
-            href="https://ecency.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-brand-ink"
-          >
-            Ecency
-          </a>{' '}
-          team
+          {/* The footer's sentence, so word order is the translation's. */}
+          <Trans
+            i18nKey="footer.built_by"
+            components={{
+              heart: <span className="text-brand" />,
+              ecency: (
+                // biome-ignore lint/a11y/useAnchorContent: Trans fills in the text
+                <a
+                  href="https://ecency.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-brand-ink"
+                />
+              ),
+            }}
+          />
         </div>
       </div>
 

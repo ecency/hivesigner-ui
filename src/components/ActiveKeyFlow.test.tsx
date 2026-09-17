@@ -118,7 +118,7 @@ function renderConsent(req: Partial<AuthRequest> = {}) {
 const keyField = () =>
   // The label also wraps the hint, so its text is longer than the name.
   screen.getByLabelText(
-    i18n.t('authorize.active_key_label', { account: 'alice' }),
+    i18n.t('authorize.active_key_label', { account: '@alice' }),
     { exact: false },
   );
 const addButton = () =>
@@ -216,7 +216,7 @@ describe('consent with only a posting key on this device', () => {
     await user.type(keyField(), posting.toString());
     await user.click(addButton());
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      i18n.t('authorize.not_active_key', { account: 'alice' }),
+      i18n.t('authorize.not_active_key', { account: '@alice' }),
     );
     expect(getKeys('alice')?.active).toBeUndefined();
 
@@ -359,7 +359,7 @@ describe('consent with only a posting key on this device', () => {
     const user = userEvent.setup();
     await screen.findByTestId('add-active-key');
     const passcode = screen.getByLabelText(
-      i18n.t('authorize.active_key_passcode', { account: 'alice' }),
+      i18n.t('authorize.active_key_passcode', { account: '@alice' }),
       { exact: false },
     );
     // Password managers are told to leave both fields alone (#136).
@@ -421,7 +421,7 @@ describe('consent with only a posting key on this device', () => {
     renderConsent({ clientId: 'ghost.app' });
     expect(
       await screen.findByText(
-        wholeText(i18n.t('authorize.app_not_found', { app: 'ghost.app' })),
+        wholeText(i18n.t('authorize.app_not_found', { app: '@ghost.app' })),
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^authorize$/i })).toBeDisabled();
@@ -487,7 +487,7 @@ describe('consent with neither posting nor active on this device', () => {
       name: /^Add a posting or active key for @\s?alice\s?to continue$/,
     });
     expect(link).toHaveTextContent(
-      i18n.t('authorize.add_key_to_continue', { account: 'alice' }),
+      i18n.t('authorize.add_key_to_continue', { account: '@alice' }),
     );
     expect(link).toHaveAttribute('href', '/import');
     expect(link.getAttribute('data-search')).toContain('/oauth2/authorize');
@@ -531,7 +531,7 @@ describe('the grant page when the account cannot be used', () => {
     wrap(<GrantAction appName="ecency.app" mode="grant" query={{}} />);
     expect(
       await screen.findByText(
-        wholeText(i18n.t('authorize.account_missing', { account: 'alice' })),
+        wholeText(i18n.t('authorize.account_missing', { account: '@alice' })),
       ),
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '…' })).toBeNull();
@@ -563,7 +563,7 @@ describe('an app name taken from the link', () => {
     renderConsent({ clientId: `ecency.app${RLO}` });
     expect(
       await screen.findByText(
-        wholeText(i18n.t('authorize.app_not_found', { app: 'ecency.app�' })),
+        wholeText(i18n.t('authorize.app_not_found', { app: '@ecency.app�' })),
       ),
     ).toBeInTheDocument();
     expect(document.body.textContent).not.toContain(RLO);

@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { installTestDictionary } from '../test-i18n';
 import { wholeText } from '../test-text';
 
 // Regression tests for the sign route wiring (findings: no_broadcast must not
@@ -118,8 +119,9 @@ describe('sign route', () => {
     h.splat = 'transfer';
     h.search = { from: 'treasury', to: 'attacker', amount: '10.000 HIVE' };
     render(<Sign />);
-    expect(await screen.findByRole('alert')).toHaveTextContent(/@treasury/);
-    expect(screen.getByRole('alert')).toHaveTextContent(/not @alice/);
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'This does not act as @alice but as @treasury. Only continue if you manage that account too.',
+    );
   });
 
   it('shows no actor warning when the operation acts as the selected account', async () => {
@@ -183,7 +185,9 @@ describe('untrusted text cannot push the layout sideways', () => {
     h.search = { author: 'alice', permlink: 'a'.repeat(250), weight: '10000' };
     render(<Sign />);
     // The title is copy around the request's values (each its own element).
-    const title = await screen.findByText(wholeText(/^Upvote @alice\/a+$/));
+    // The line is keyed by language inside the element that lays it out.
+    const line = await screen.findByText(wholeText(/^Upvote @alice\/a+$/));
+    const title = line.parentElement as HTMLElement;
     expect(WRAPS.test(title.className), title.className).toBe(true);
     // min-w-0 is what actually lets a flex child shrink below min-content.
     expect(title.className).toContain('min-w-0');
@@ -194,7 +198,8 @@ describe('untrusted text cannot push the layout sideways', () => {
     h.splat = 'transfer';
     h.search = { to: 'bob', amount: '1.000 HIVE', memo: `#${'A'.repeat(300)}` };
     render(<Sign />);
-    const detail = await screen.findByText(wholeText(/^Memo: #A+$/));
+    const line = await screen.findByText(wholeText(/^Memo: #A+$/));
+    const detail = line.parentElement as HTMLElement;
     expect(WRAPS.test(detail.className), detail.className).toBe(true);
   });
 
@@ -380,5 +385,85 @@ describe('a translated page', () => {
     );
     expect(row).not.toHaveAttribute('translate');
     expect(kept(row)).toEqual(['1', '@app (1)']);
+  });
+});
+
+describe('in another language', () => {
+  let undo = async () => {};
+  afterEach(() => undo());
+  const kept = (el: Element) =>
+    Array.from(el.querySelectorAll('[translate="no"]'), (n) => n.textContent);
+
+  it('reads in that language, with the request values exact and in its word order', async () => {
+    undo = await installTestDictionary('fa', {
+      sign: {
+        confirm_transaction: 'تأیید تراکنش',
+        going_redirect_to: 'به {host} هدایت می‌شوید.',
+        signed_with_active: 'با کلید فعال شما امضا می‌شود',
+        show_raw_one: 'نمایش عملیات خام',
+      },
+      summary: { transfer: '{to} ← {amount} ارسال' },
+      authority: { active: 'فعال' },
+    });
+    h.splat = 'transfer';
+    h.search = {
+      from: 'alice',
+      to: 'bob',
+      amount: '1.000 HIVE',
+      redirect_uri: 'https://app.example/done',
+    };
+    render(<Sign />);
+    expect(
+      await screen.findByRole('heading', { name: 'تأیید تراکنش' }),
+    ).toBeInTheDocument();
+    const title = screen.getByText(wholeText('@bob ← 1.000 HIVE ارسال'));
+    expect(kept(title)).toEqual(['@bob', '1.000 HIVE']);
+    const redirect = screen.getByText(
+      wholeText('به app.example هدایت می‌شوید.'),
+    );
+    expect(redirect.querySelector('b')).toHaveAttribute('translate', 'no');
+    expect(screen.getByText('فعال')).toBeInTheDocument();
+    expect(screen.getByText('با کلید فعال شما امضا می‌شود')).toBeInTheDocument();
+    expect(screen.getByText('نمایش عملیات خام')).toBeInTheDocument();
+  });
+
+  it('builds a summary line fresh when the language changes', async () => {
+    // A page translator may have replaced its copy; reworking that text in
+    // place would leave the old language beside the new one.
+    h.splat = 'transfer';
+    h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
+    render(<Sign />);
+    const before = await screen.findByText(
+      wholeText('Send 1.000 HIVE to @bob'),
+    );
+    undo = await installTestDictionary('fa', {
+      summary: { transfer: '{to} ← {amount} ارسال' },
+    });
+    const after = screen.getByText(wholeText('@bob ← 1.000 HIVE ارسال'));
+    expect(after).not.toBe(before);
+    expect(before.isConnected).toBe(false);
+  });
+
+  it('counts operations with the plural form the language needs', async () => {
+    undo = await installTestDictionary('ru', {
+      sign: {
+        contains_operations_one: '{count} операция',
+        contains_operations_few: '{count} операции',
+        contains_operations_many: '{count} операций',
+        show_raw_few: 'Показать операции',
+      },
+    });
+    const vote = [
+      'vote',
+      { voter: 'alice', author: 'a', permlink: 'p', weight: 100 },
+    ];
+    h.splat = `ops/${btoa(JSON.stringify([vote, vote, vote]))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')}`;
+    h.search = {};
+    render(<Sign />);
+    expect(await screen.findByText('3 операции')).toBeInTheDocument();
+    expect(screen.getByText('Показать операции')).toBeInTheDocument();
   });
 });

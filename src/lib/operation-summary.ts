@@ -3,28 +3,43 @@
 // raw JSON"). The summary is what the user reads; the raw op is collapsed
 // beneath it. Authority is driven by the operation schema (operations.json), so
 // it matches what the Nuxt app signs with.
-import { type HiveAuthority, OPERATIONS } from './operations';
+import i18n from '@/i18n';
+import { joinParts, sentenceParts, type TextPart } from '@/i18n/parts';
+import { type HiveAuthority, isKnownOperation, OPERATIONS } from './operations';
 
 export type { HiveAuthority } from './operations';
 export type Operation = [string, Record<string, unknown>];
 
-/**
- * A piece of a line the confirm screen shows: copy, which a page translator
- * may translate, or a value taken from the request, which the screen shows
- * exactly as it is. "Send 1.000 HIVE to @bob" is the copy "Send " and " to "
- * around the values "1.000 HIVE" and "@bob": the user approves the values,
- * not a translation of them.
- */
-export type TextPart = string | { value: string };
-
-/** The plain text of a line made of parts. */
-export function joinParts(parts: TextPart[]): string {
-  return parts
-    .map((part) => (typeof part === 'string' ? part : part.value))
-    .join('');
-}
+// A line the confirm screen shows is copy from the dictionary around values
+// from the request. "Send 1.000 HIVE to @bob" is the copy "Send " and " to "
+// around "1.000 HIVE" and "@bob": the user approves the values, never a
+// translation of them (see i18n/parts.ts). Everything here reads the current
+// language, and the screen re-renders when it changes.
+export { joinParts, type TextPart };
 
 const data = (value: string): TextPart => ({ value });
+
+/** A dictionary sentence with request values in it. */
+function sentence(
+  key: string,
+  values: Record<string, string> = {},
+): TextPart[] {
+  return sentenceParts(i18n.t, key, values);
+}
+
+/** A field label from the dictionary, or the field's own name made readable. */
+function fieldLabel(field: string): string {
+  const key = `op_field.${field}`;
+  return i18n.exists(key) ? i18n.t(key) : humanizeName(field);
+}
+
+/** The name of an operation, in the current language. */
+export function operationName(name: string): string {
+  const key = `op_name.${name}`;
+  return isKnownOperation(name) && i18n.exists(key)
+    ? i18n.t(key)
+    : humanizeName(name);
+}
 
 export interface OperationSummary {
   /** One-line human sentence, e.g. "Send 10.000 HIVE to @bob". */
@@ -68,6 +83,9 @@ function isUnsafeDisplayChar(cp: number): boolean {
     (cp >= 0x7f && cp <= 0x9f) || // DEL + C1 controls
     cp === 0x61c || // ARABIC LETTER MARK
     (cp >= 0x200b && cp <= 0x200f) || // zero-width marks + LRM/RLM
+    cp === 0x2028 || // LINE SEPARATOR
+    cp === 0x2029 || // PARAGRAPH SEPARATOR: ends the bidi paragraph, so it
+    // breaks a value's isolation and drags the text after it inside
     (cp >= 0x202a && cp <= 0x202e) || // bidi embeddings and overrides
     (cp >= 0x2066 && cp <= 0x2069) || // bidi isolates
     cp === 0xfeff // BOM / zero-width no-break space
@@ -164,37 +182,47 @@ export function summarizeOperation(op: Operation): OperationSummary {
     case 'transfer':
       return summary(
         authority,
-        ['Send ', data(txt(p.amount)), ' to ', data(`@${txt(p.to)}`)],
-        p.memo ? ['Memo: ', data(txt(p.memo))] : undefined,
+        sentence('summary.transfer', {
+          amount: txt(p.amount),
+          to: `@${txt(p.to)}`,
+        }),
+        p.memo ? sentence('summary.memo', { memo: txt(p.memo) }) : undefined,
       );
     case 'vote': {
       const weight = Number(p.weight ?? 0);
       const pct = Math.round(weight / 100);
-      const target = data(`@${txt(p.author)}/${txt(p.permlink)}`);
+      const post = `@${txt(p.author)}/${txt(p.permlink)}`;
       if (weight === 0)
-        return summary(authority, ['Remove vote from ', target]);
-      const verb = weight < 0 ? 'Downvote' : 'Upvote';
-      return summary(authority, [`${verb} `, target], [data(`${pct}%`)]);
+        return summary(authority, sentence('summary.unvote', { post }));
+      return summary(
+        authority,
+        sentence(weight < 0 ? 'summary.downvote' : 'summary.upvote', { post }),
+        [data(`${pct}%`)],
+      );
     }
     case 'comment': {
       const isReply = str(p.parent_author) !== '';
       return summary(
         authority,
         isReply
-          ? [
-              'Reply to ',
-              data(`@${txt(p.parent_author)}/${txt(p.parent_permlink)}`),
-            ]
-          : ['Publish post "', data(txt(p.title) || txt(p.permlink)), '"'],
+          ? sentence('summary.reply', {
+              post: `@${txt(p.parent_author)}/${txt(p.parent_permlink)}`,
+            })
+          : sentence('summary.post', {
+              title: txt(p.title) || txt(p.permlink),
+            }),
       );
     }
     case 'custom_json':
-      return summary(authority, ['Custom action (', data(txt(p.id)), ')']);
+      return summary(
+        authority,
+        sentence('summary.custom_json', { id: txt(p.id) }),
+      );
     case 'account_update':
     case 'account_update2':
-      return summary(authority, ['Update account authorities']);
+      return summary(authority, sentence('summary.account_update'));
     default:
-      return summary(authority, [humanizeName(name)]);
+      return summary(authority, [operationName(name)]);
   }
 }
 
@@ -208,6 +236,8 @@ export interface OperationField {
   parts?: TextPart[];
   /** The label is a key from a JSON payload, i.e. chosen by the caller. */
   untrusted?: boolean;
+  /** The operation field a row names, for a row that names one. */
+  field?: string;
 }
 
 function describeAuthority(value: unknown): TextPart[] {
@@ -240,19 +270,22 @@ function describeAuthority(value: unknown): TextPart[] {
   // The warnings are copy, so a translated page translates them; the values
   // around them are data.
   const threshold: TextPart[] = present(a.weight_threshold)
-    ? ['threshold ', data(txt(a.weight_threshold))]
-    : ['threshold NOT SET (signs as 0)'];
+    ? sentence('summary.threshold', { value: txt(a.weight_threshold) })
+    : sentence('summary.threshold_missing');
   const sections: TextPart[][] = [
     threshold,
     // An empty key list is the MATERIAL fact when an authority is replaced:
     // it removes the user's own key. Say it rather than print nothing.
     keys.length
-      ? ['keys: ', data(keys.join(', '))]
-      : ['keys: NONE (your key is removed)'],
-    accts.length ? ['accounts: ', data(accts.join(', '))] : [],
+      ? sentence('summary.keys', { keys: keys.join(', ') })
+      : sentence('summary.keys_none'),
+    accts.length
+      ? sentence('summary.accounts', { accounts: accts.join(', ') })
+      : [],
   ].filter((section) => section.length > 0);
+  const separator = i18n.t('summary.separator');
   return sections.flatMap((section, i) =>
-    i === 0 ? section : ['; ', ...section],
+    i === 0 ? section : [separator, ...section],
   );
 }
 
@@ -360,7 +393,8 @@ function actorRows(name: string, p: Record<string, unknown>): OperationField[] {
   for (const [field, spec] of Object.entries(OPERATIONS[name]?.schema ?? {})) {
     if (spec.defaultValue !== '__signer') continue;
     const v = str(p[field]);
-    if (v) rows.push({ label: humanizeName(field), value: `@${safeText(v)}` });
+    if (v)
+      rows.push({ label: fieldLabel(field), value: `@${safeText(v)}`, field });
   }
   return rows;
 }
@@ -388,13 +422,17 @@ export function operationFields(op: Operation): OperationField[] {
       // json_metadata are otherwise hidden, so a comment op could carry content
       // (or metadata) the user never sees. Show them here.
       if (str(p.permlink))
-        rows.push({ label: 'Permlink', value: txt(p.permlink) });
+        rows.push({ label: fieldLabel('permlink'), value: txt(p.permlink) });
       // For a top-level post parent_permlink is the primary tag/community.
       if (str(p.parent_author) === '' && str(p.parent_permlink))
-        rows.push({ label: 'Community/tag', value: txt(p.parent_permlink) });
-      if (str(p.body)) rows.push({ label: 'Body', value: txt(p.body) });
+        rows.push({
+          label: fieldLabel('community'),
+          value: txt(p.parent_permlink),
+        });
+      if (str(p.body))
+        rows.push({ label: fieldLabel('body'), value: txt(p.body) });
       if (str(p.json_metadata))
-        pushJsonRows(rows, 'Metadata', str(p.json_metadata));
+        pushJsonRows(rows, fieldLabel('metadata'), str(p.json_metadata));
       return rows;
     }
     case 'account_update':
@@ -403,32 +441,38 @@ export function operationFields(op: Operation): OperationField[] {
         if (p[role] !== undefined) {
           const parts = describeAuthority(p[role]);
           rows.push({
-            label: `${role} authority`,
+            label: fieldLabel(`${role}_authority`),
             value: joinParts(parts),
             parts,
           });
         }
       }
       if (str(p.memo_key))
-        rows.push({ label: 'Memo key', value: txt(p.memo_key) });
+        rows.push({ label: fieldLabel('memo_key'), value: txt(p.memo_key) });
       // Flatten the metadata rather than describing it. posting_json_metadata
       // holds the profile AND, for an app account, `redirect_uris`, which the
       // OAuth screen trusts as that app's registered callbacks - so "profile
       // metadata changes" could hide registering an attacker's callback.
       if (str(p.json_metadata))
-        pushJsonRows(rows, 'Metadata', str(p.json_metadata));
+        pushJsonRows(rows, fieldLabel('metadata'), str(p.json_metadata));
       if (str(p.posting_json_metadata))
-        pushJsonRows(rows, 'Profile', str(p.posting_json_metadata));
+        pushJsonRows(rows, fieldLabel('profile'), str(p.posting_json_metadata));
       return rows;
     }
     case 'custom_json': {
-      rows.push({ label: 'ID', value: txt(p.id) });
+      rows.push({ label: fieldLabel('id'), value: txt(p.id) });
       const active = p.required_auths;
       if (Array.isArray(active) && active.length)
-        rows.push({ label: 'Active auths', value: txt(active.join(', ')) });
+        rows.push({
+          label: fieldLabel('active_auths'),
+          value: txt(active.join(', ')),
+        });
       const posting = p.required_posting_auths;
       if (Array.isArray(posting) && posting.length)
-        rows.push({ label: 'Posting auths', value: txt(posting.join(', ')) });
+        rows.push({
+          label: fieldLabel('posting_auths'),
+          value: txt(posting.join(', ')),
+        });
       // Flatten the JSON so every leaf is visible instead of cutting the string
       // at a fixed length (which could hide a transfer amount past the cut).
       if (str(p.json)) pushJsonRows(rows, 'json', str(p.json));
@@ -437,10 +481,14 @@ export function operationFields(op: Operation): OperationField[] {
     default:
       for (const [k, v] of Object.entries(p)) {
         // Skip the signer-slot fields actorRows already named.
-        if (rows.some((r) => r.label === humanizeName(k))) continue;
+        if (rows.some((r) => r.field === k)) continue;
+        // A schema field gets its label; anything else keeps its own name.
+        const label = Object.hasOwn(OPERATIONS[name]?.schema ?? {}, k)
+          ? fieldLabel(k)
+          : k;
         if (typeof v === 'object' && v !== null)
-          pushJsonRows(rows, k, JSON.stringify(v));
-        else rows.push({ label: k, value: txt(v) });
+          pushJsonRows(rows, label, JSON.stringify(v));
+        else rows.push({ label, value: txt(v), field: k });
       }
       return rows;
   }

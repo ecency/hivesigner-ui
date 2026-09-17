@@ -52,4 +52,11 @@ describe('AppFooter', () => {
     );
     expect(screen.queryByRole('navigation')).toBeNull();
   });
+
+  it('offers the language menu on every page', () => {
+    render(<AppFooter />);
+    expect(
+      screen.getByRole('combobox', { name: 'Language' }),
+    ).toBeInTheDocument();
+  });
 });

@@ -39,7 +39,7 @@ export function AppNav() {
     // five items genuinely do not fit. The row still scrolls by wheel,
     // trackpad, touch and keyboard.
     <nav
-      aria-label="Main"
+      aria-label={t('footer.main_nav')}
       className="scroll-row -mx-1 flex items-center gap-4 overflow-x-auto overflow-y-hidden px-1 whitespace-nowrap text-[13px] text-muted lg:gap-6"
     >
       {links.map((l) => (

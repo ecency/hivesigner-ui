@@ -80,8 +80,9 @@ function AuthorizedApps() {
         <p className={`${muted} mt-1`}>
           <Trans
             i18nKey="apps.can_post_as"
-            values={{ account: selectedAccount }}
-            components={{ b: <b /> }}
+            values={{ account: `@${selectedAccount}` }}
+            // The account is data: exact, and in its own direction.
+            components={{ b: <b translate="no" /> }}
           />
         </p>
       </div>
@@ -100,10 +101,10 @@ function AuthorizedApps() {
             <div key={app} className={`${cardTight} flex items-center gap-3`}>
               <Avatar username={app} size="md" />
               <div
-                className="min-w-0 flex-1 break-all text-[15px] font-semibold [unicode-bidi:isolate]"
+                className="min-w-0 flex-1 break-all text-[15px] font-semibold"
                 translate="no"
               >
-                {`@${app}`}
+                <bdi>{`@${app}`}</bdi>
               </div>
               {!isUnlocked || !activeKey ? (
                 <Link
@@ -127,9 +128,7 @@ function AuthorizedApps() {
         </div>
       )}
 
-      <p className={mutedXs}>
-        Revoking is an on-chain change and needs your active key once.
-      </p>
+      <p className={mutedXs}>{t('apps.revoke_needs_active')}</p>
     </section>
   );
 }

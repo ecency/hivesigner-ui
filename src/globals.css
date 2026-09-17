@@ -173,6 +173,24 @@ body {
   outline-offset: 2px;
 }
 
+/* Values shown exactly as an account or a request has them: names, hosts,
+ * amounts, keys (the inline elements marked translate="no"). Each runs in the
+ * direction of its own first letter, so "@bob" keeps its @ in front on an
+ * Arabic page and an Arabic memo reads right to left on an English one, and
+ * it stays isolated from the text around it (see isUnsafeDisplayChar). A
+ * block that holds such a value wraps it in <bdi>, which does the same
+ * without making the block align to the value's direction. The raw operation
+ * is JSON, so it is always left to right. */
+@layer base {
+  :is(span, b, a, code)[translate="no"] {
+    unicode-bidi: plaintext;
+  }
+  pre[translate="no"] {
+    direction: ltr;
+    text-align: left;
+  }
+}
+
 /* A row that scrolls sideways WITHOUT drawing scrollbar chrome.
  *
  * For the nav bar, which is a deliberate scroll row: on a platform with classic

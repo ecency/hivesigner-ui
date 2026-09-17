@@ -64,7 +64,7 @@ describe('/verifymessage', () => {
     expect(
       await screen.findByText(wholeText(/^signature is valid for alice$/i)),
     ).toBeInTheDocument();
-    expect(screen.getByText('posting')).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('authority.posting'))).toBeInTheDocument();
     expect(screen.getByText(pub)).toBeInTheDocument();
   });
 

@@ -16,6 +16,7 @@ import {
   mutedXs,
   page,
 } from '@/components/ui';
+import { authorityName } from '@/i18n/parts';
 import { getAccount } from '@/lib/hive';
 import { decodeToken, matchAuthority } from '@/lib/message-token';
 
@@ -181,7 +182,9 @@ function VerifyMessage() {
             </code>
           </Row>
           <Row label={t('message_verification.matched_authority')}>
-            {result.authority ?? t('message_verification.unknown_authority')}
+            {result.authority
+              ? authorityName(t, result.authority)
+              : t('message_verification.unknown_authority')}
           </Row>
           <Row label={t('message_verification.message_preview')}>
             <span translate="no">{result.message}</span>

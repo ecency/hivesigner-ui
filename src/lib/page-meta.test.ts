@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { applyPageMeta, metaFor } from './page-meta';
+import en from '@/i18n/locales/en-US.json';
+import { applyPageMeta, metaFor, PUBLIC_PAGES } from './page-meta';
 
 beforeEach(() => {
   document.head.innerHTML = '';
@@ -104,5 +105,70 @@ describe('applyPageMeta', () => {
       document.querySelector('link[rel="canonical"]')?.getAttribute('href'),
     ).toBe('https://hivesigner.com/developers');
     expect(document.querySelector('meta[name="robots"]')).toBeNull();
+  });
+});
+
+describe('titles in the reader language', () => {
+  const english = (key: string) => {
+    let node: unknown = en;
+    for (const part of key.split('.'))
+      node = (node as Record<string, unknown>)[part];
+    return node as string;
+  };
+
+  it('keeps the English titles, which the prerendered pages use, equal to the dictionary', () => {
+    const paths = [
+      '/',
+      '/apps',
+      '/developers',
+      '/about',
+      '/signs',
+      '/sign/vote',
+      '/login',
+      '/login-request/x',
+      '/oauth2/authorize',
+      '/authorize/x',
+      '/revoke/x',
+      '/import',
+      '/accounts',
+      '/auths',
+      '/profile',
+      '/settings',
+      '/authorized-apps',
+      '/signmessage',
+      '/verifymessage',
+    ];
+    for (const path of paths) {
+      const meta = metaFor(path);
+      expect(meta.titleKey, path).toMatch(/^meta\./);
+      expect(meta.title, path).toBe(english(meta.titleKey ?? ''));
+    }
+    expect(PUBLIC_PAGES['/'].title.startsWith('Hivesigner')).toBe(true);
+  });
+
+  it('translates the tab title and nothing a crawler reads', () => {
+    const translate = (key: string) => `«${key}»`;
+    const meta = applyPageMeta('/apps', 'https://hivesigner.com', translate);
+    expect(document.title).toBe('«meta.apps» · Hivesigner');
+    expect(meta.description).toBe(PUBLIC_PAGES['/apps'].description);
+    expect(
+      document.querySelector('link[rel="canonical"]')?.getAttribute('href'),
+    ).toBe('https://hivesigner.com/apps');
+    applyPageMeta('/sign/transfer', 'https://hivesigner.com', translate);
+    expect(document.title).toBe('«meta.sign» · Hivesigner');
+  });
+
+  it('names an unknown screen by the site, never by an inherited property', () => {
+    const translate = (key: string) => `«${key}»`;
+    for (const path of [
+      '/nowhere',
+      '/constructor',
+      '/toString',
+      '/__proto__',
+    ]) {
+      const meta = metaFor(path, translate);
+      expect(meta.title, path).toBe('Hivesigner');
+      expect(meta.titleKey, path).toBeUndefined();
+    }
   });
 });

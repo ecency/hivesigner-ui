@@ -104,11 +104,17 @@ function Import() {
           : { to: '/accounts' },
       );
     } catch (e) {
-      // Surface keystore/accounts messages verbatim: a wrong passcode on an
-      // already-protected account now throws here, and telling the user to "try
-      // again later" would send them into retrying the same wrong passcode.
+      // Say what the keystore said: a wrong passcode on an already-protected
+      // account throws here, and "try again later" would send the user into
+      // retrying the same wrong passcode.
       const msg = e instanceof Error ? e.message : '';
-      setError(/passcode|protected/i.test(msg) ? msg : t('common.try_again'));
+      setError(
+        /protected|passcode required/i.test(msg)
+          ? t('import.passcode_needed')
+          : /passcode|password/i.test(msg)
+            ? t('authorize.wrong_passcode')
+            : t('common.try_again'),
+      );
     } finally {
       setBusy(false);
     }

@@ -13,7 +13,7 @@ describe('Handle', () => {
     render(<Handle name="alice" className="font-bold" />);
     const el = screen.getByText('@alice');
     expect(el).toHaveAttribute('translate', 'no');
-    expect(el.className).toBe('[unicode-bidi:isolate] font-bold');
+    expect(el.className).toBe('font-bold');
     expect(el.childNodes).toHaveLength(1);
   });
 });
@@ -67,5 +67,29 @@ describe('Sentence', () => {
     expect(container.textContent).toBe(
       i18n.t('authorize.granted', { app: 'ecency.app' }),
     );
+  });
+
+  it('bolds values when asked, with any extra class', () => {
+    const { container } = render(
+      <Sentence
+        k="sign.going_redirect_to"
+        values={{ host: 'app.example' }}
+        bold
+        valueClassName="text-ink"
+      />,
+    );
+    const value = container.querySelector('b');
+    expect(value).toHaveTextContent('app.example');
+    expect(value).toHaveAttribute('translate', 'no');
+    expect(value?.className).toBe('text-ink');
+  });
+
+  it('picks the plural form from count', () => {
+    const { container, rerender } = render(
+      <Sentence k="sign.carries_signatures" count={1} values={{}} />,
+    );
+    expect(container.textContent).toBe('It already carries 1 signature.');
+    rerender(<Sentence k="sign.carries_signatures" count={2} values={{}} />);
+    expect(container.textContent).toBe('It already carries 2 signatures.');
   });
 });

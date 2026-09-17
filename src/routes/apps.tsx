@@ -50,22 +50,22 @@ function AppCard({ app }: { app: DirectoryApp }) {
     >
       <Avatar username={app.username} size="md" className="mt-0.5" />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[15px] font-semibold [unicode-bidi:isolate]">
-          {title}
+        {/* <bdi>: an app's own name, handle and blurb run in their own
+            direction, whatever the page's. */}
+        <div className="truncate text-[15px] font-semibold">
+          <bdi>{title}</bdi>
         </div>
         {/* The handle is shown alongside any display name: it is the only part
             of the identity the app cannot choose freely, so it is what a user
             can actually check against the account they are authorizing. */}
         {showHandle && (
-          <div className={`${mutedXs} truncate [unicode-bidi:isolate]`}>
-            {handle}
+          <div className={`${mutedXs} truncate`}>
+            <bdi>{handle}</bdi>
           </div>
         )}
         {about && (
-          <div
-            className={`${mutedXs} mt-1 line-clamp-2 [unicode-bidi:isolate]`}
-          >
-            {about}
+          <div className={`${mutedXs} mt-1 line-clamp-2`}>
+            <bdi>{about}</bdi>
           </div>
         )}
       </div>
