@@ -2,12 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AddActiveKey } from '@/components/AddActiveKey';
 import { AppProfile } from '@/components/AppProfile';
 import { Avatar } from '@/components/Avatar';
 import {
   alertError,
   alertOk,
   btnPrimary,
+  btnSecondary,
   card,
   formColumn,
   h1,
@@ -22,6 +24,7 @@ import {
 } from '@/lib/grant';
 import { type Account, getAccount } from '@/lib/hive';
 import { grantReturnTarget } from '@/lib/oauth';
+import { safeText } from '@/lib/operation-summary';
 import { accountKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
@@ -63,7 +66,12 @@ export function GrantAction({
   );
   const [error, setError] = useState('');
 
-  const { data: account, refetch } = useQuery({
+  const {
+    data: account,
+    refetch,
+    isError: accountFailed,
+    isFetching: accountFetching,
+  } = useQuery({
     queryKey: accountKey(selectedAccount),
     queryFn: (): Promise<Account | null> =>
       selectedAccount ? getAccount(selectedAccount) : Promise.resolve(null),
@@ -117,6 +125,22 @@ export function GrantAction({
   }
 
   const verb = mode === 'grant' ? t('authorize.authorize') : t('revoke.revoke');
+  // The app name comes from the URL: shown only with control and bidi
+  // characters stripped.
+  const appLabel = safeText(appName);
+
+  // The states that sit between "unlocked" and "act", each with its own
+  // answer. `undefined` is a read still running or one that failed; `null` is
+  // an account the chain does not know. Both used to leave a button that did
+  // nothing, for ever.
+  const pending =
+    !!selectedAccount && isUnlocked && !alreadyDone && status !== 'done';
+  const readFailed = pending && account === undefined && accountFailed;
+  const accountMissing = pending && account === null;
+  // An unlocked account without its active key is asked for it in place. The
+  // unlock link this used to show led to an account that was already
+  // unlocked, and the request was lost on the way.
+  const askForKey = pending && !!account && !activeKey;
 
   return (
     // A confirm-and-act screen, so it stays one readable column instead of
@@ -127,7 +151,7 @@ export function GrantAction({
       <h1 className={`${h1} flex flex-wrap items-center gap-2 break-words`}>
         <Avatar username={appName} size="md" />
         <span className="min-w-0 break-words [unicode-bidi:isolate]">
-          {verb} @{appName}
+          {verb} @{appLabel}
         </span>
       </h1>
 
@@ -148,15 +172,15 @@ export function GrantAction({
               mode === 'grant'
                 ? 'authorize.grant_explain_no_account'
                 : 'revoke.revoke_explain_no_account',
-              { app: appName },
+              { app: appLabel },
             )
           : mode === 'grant'
             ? t('authorize.grant_explain', {
-                app: appName,
+                app: appLabel,
                 account: selectedAccount,
               })
             : t('revoke.revoke_explain', {
-                app: appName,
+                app: appLabel,
                 account: selectedAccount,
               })}
         <div className="mt-2 text-[12.5px] text-warn">
@@ -170,8 +194,8 @@ export function GrantAction({
       {status === 'done' || alreadyDone ? (
         <output className={`${alertOk} block text-sm font-semibold`}>
           {mode === 'grant'
-            ? t('authorize.granted', { app: appName })
-            : t('revoke.revoked', { app: appName })}
+            ? t('authorize.granted', { app: appLabel })
+            : t('revoke.revoked', { app: appLabel })}
           {/* Granted but not yet readable from the chain: say so, and leave
               Continue in place. The consent screen it leads to re-checks the
               authority itself. */}
@@ -185,6 +209,22 @@ export function GrantAction({
         </div>
       )}
 
+      {readFailed && (
+        <div role="alert" className={alertError}>
+          {t('authorize.read_failed')}
+        </div>
+      )}
+      {accountMissing && (
+        <div role="alert" className={alertError}>
+          {t('authorize.account_missing', { account: selectedAccount })}
+        </div>
+      )}
+      {/* Above the actions, not in their row: the form is a block of its own
+          and would otherwise be squeezed beside Cancel from sm up. */}
+      {askForKey && selectedAccount && (
+        <AddActiveKey username={selectedAccount} />
+      )}
+
       {/* Full-width actions on a phone; from sm they sit inline at their own
           width with the cancel link beside them. */}
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
@@ -192,7 +232,7 @@ export function GrantAction({
           <Link to="/import" className={btnPrimary}>
             {t('common.continue')}
           </Link>
-        ) : !isUnlocked || !activeKey ? (
+        ) : !isUnlocked ? (
           <Link to="/accounts" className={btnPrimary}>
             {t('accounts.unlock')} @{selectedAccount}
           </Link>
@@ -206,7 +246,20 @@ export function GrantAction({
           >
             {t('common.continue')}
           </Link>
-        ) : (
+        ) : readFailed ? (
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={accountFetching}
+            className={btnSecondary}
+          >
+            {accountFetching ? '…' : t('authorize.retry')}
+          </button>
+        ) : accountMissing ? null : !account ? (
+          <button type="button" disabled className={btnPrimary}>
+            …
+          </button>
+        ) : askForKey ? null : (
           <button
             type="button"
             onClick={submit}

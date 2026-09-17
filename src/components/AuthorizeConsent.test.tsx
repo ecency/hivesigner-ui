@@ -23,8 +23,14 @@ const h = vi.hoisted(() => ({
   assign: vi.fn(),
 }));
 vi.mock('@/lib/use-accounts', () => ({ useAccounts: () => h.accounts }));
-vi.mock('@/lib/accounts', () => ({ getKeys: () => h.keys }));
-vi.mock('@/lib/hive', () => ({ getAccount: h.getAccount }));
+vi.mock('@/lib/accounts', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/accounts')>()),
+  getKeys: () => h.keys,
+}));
+vi.mock('@/lib/hive', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/hive')>()),
+  getAccount: h.getAccount,
+}));
 vi.mock('@/lib/sign-tx', () => ({
   broadcastOperations: h.broadcastOperations,
 }));
@@ -173,6 +179,8 @@ describe('AuthorizeConsent', () => {
     expect(
       await screen.findByText(/first-time authorization/i),
     ).toHaveTextContent(/active key once/i);
+    // With no active key on the device, it is asked for right there.
+    expect(screen.getByTestId('add-active-key')).toBeInTheDocument();
   });
 
   it('confirms the username for a site with no app account: a bare login token to its callback', async () => {
