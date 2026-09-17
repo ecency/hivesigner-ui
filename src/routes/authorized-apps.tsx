@@ -99,8 +99,11 @@ function AuthorizedApps() {
           {apps.map((app) => (
             <div key={app} className={`${cardTight} flex items-center gap-3`}>
               <Avatar username={app} size="md" />
-              <div className="min-w-0 flex-1 break-all text-[15px] font-semibold [unicode-bidi:isolate]">
-                @{app}
+              <div
+                className="min-w-0 flex-1 break-all text-[15px] font-semibold [unicode-bidi:isolate]"
+                translate="no"
+              >
+                {`@${app}`}
               </div>
               {!isUnlocked || !activeKey ? (
                 <Link

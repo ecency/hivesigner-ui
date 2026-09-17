@@ -133,22 +133,32 @@ function AccountRow({
         'flex flex-col gap-2.5',
         current && 'bg-brand-tint!',
       )}
+      data-testid="account-row"
     >
       <div className="flex flex-wrap items-center gap-3">
         <Avatar username={username} size="md" />
         <div className="min-w-0 flex-1">
-          <div className="text-[15px] font-semibold break-all">@{username}</div>
+          {/* Data, not copy: a page translator must leave the name alone. */}
+          <div className="text-[15px] font-semibold break-all" translate="no">
+            {`@${username}`}
+          </div>
+          {/* Each part in its own element. This line changes while the page
+              is open, and a page translator swaps loose text for its own
+              elements: React then updates or inserts next to text that is no
+              longer there (see lib/translation-guard.ts). */}
           <div className={`${mutedXs} mt-0.5 flex gap-1.5`}>
             {current && (
               <span className="font-semibold text-brand-ink">
                 {t('accounts.current')}
               </span>
             )}
-            {encrypted
-              ? unlocked
-                ? t('accounts.unlocked')
-                : t('accounts.protected')
-              : t('accounts.no_passcode')}
+            <span>
+              {encrypted
+                ? unlocked
+                  ? t('accounts.unlocked')
+                  : t('accounts.protected')
+                : t('accounts.no_passcode')}
+            </span>
           </div>
         </div>
         {(!current || !unlocked) && (
@@ -198,7 +208,7 @@ function AccountRow({
               carries the account it unlocks. */}
           <label className={label}>
             <span className={labelText}>
-              {t('accounts.passcode')} · @{username}
+              {`${t('accounts.passcode')} · @${username}`}
             </span>
             {/* Not the site's password: kept out of managers' save and
                 update prompts (see SecretInput for what each one honours). */}

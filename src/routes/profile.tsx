@@ -208,9 +208,7 @@ function Profile() {
     // A form, so it stays one readable column: the shell widens on a desktop,
     // but stretching these inputs across it would only make them harder to read.
     <section className={`${page} ${formColumn} sm:max-w-xl`}>
-      <h1 className={h1}>
-        {t('profile.profile')} · @{selectedAccount}
-      </h1>
+      <h1 className={h1}>{`${t('profile.profile')} · @${selectedAccount}`}</h1>
 
       {field('name', t('profile.name'))}
       {field('about', t('profile.about'), true)}
@@ -235,7 +233,7 @@ function Profile() {
       {/* Full width under the thumb on a phone, its own size once there is room. */}
       {!isUnlocked || !postingKey ? (
         <Link to="/accounts" className={`${btnPrimary} sm:self-start`}>
-          {t('accounts.unlock')} @{selectedAccount}
+          {`${t('accounts.unlock')} @${selectedAccount}`}
         </Link>
       ) : (
         <button

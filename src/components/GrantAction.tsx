@@ -151,7 +151,7 @@ export function GrantAction({
       <h1 className={`${h1} flex flex-wrap items-center gap-2 break-words`}>
         <Avatar username={appName} size="md" />
         <span className="min-w-0 break-words [unicode-bidi:isolate]">
-          {verb} @{appLabel}
+          {`${verb} @${appLabel}`}
         </span>
       </h1>
 
@@ -193,13 +193,15 @@ export function GrantAction({
 
       {status === 'done' || alreadyDone ? (
         <output className={`${alertOk} block text-sm font-semibold`}>
-          {mode === 'grant'
-            ? t('authorize.granted', { app: appLabel })
-            : t('revoke.revoked', { app: appLabel })}
           {/* Granted but not yet readable from the chain: say so, and leave
               Continue in place. The consent screen it leads to re-checks the
-              authority itself. */}
-          {status === 'done' && confirming ? ' …' : null}
+              authority itself. One string, because the ellipsis goes away
+              while the screen is open (see lib/translation-guard.ts). */}
+          {`${
+            mode === 'grant'
+              ? t('authorize.granted', { app: appLabel })
+              : t('revoke.revoked', { app: appLabel })
+          }${status === 'done' && confirming ? ' …' : ''}`}
         </output>
       ) : null}
 
@@ -234,7 +236,7 @@ export function GrantAction({
           </Link>
         ) : !isUnlocked ? (
           <Link to="/accounts" className={btnPrimary}>
-            {t('accounts.unlock')} @{selectedAccount}
+            {`${t('accounts.unlock')} @${selectedAccount}`}
           </Link>
         ) : alreadyDone || status === 'done' ? (
           // Already granted, or just granted: continue to the callback that

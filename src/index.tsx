@@ -14,10 +14,18 @@ import {
 import { parseSearch, stringifySearch } from './lib/search';
 import { initErrorReporting } from './lib/sentry';
 import { initTheme } from './lib/theme';
+import {
+  installTranslationGuard,
+  reportTranslationConflict,
+} from './lib/translation-guard';
 import { routeTree } from './routeTree.gen';
 
 // Before anything else, so a failure during startup is still reported.
 initErrorReporting();
+
+// Before the first render: a translated page must not take React down (see
+// translation-guard.ts).
+installTranslationGuard(reportTranslationConflict);
 
 // Put a stored light/dark choice on <html> BEFORE the first render. The CSS
 // handles the default "follows your device" on its own, so this is only the

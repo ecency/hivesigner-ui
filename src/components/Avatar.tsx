@@ -64,6 +64,7 @@ export function Avatar({
         className={`${box} ${text} font-bold uppercase text-brand-ink`}
         style={{ width: px, height: px }}
         aria-hidden="true"
+        translate="no"
       >
         {username.slice(0, 1)}
       </div>

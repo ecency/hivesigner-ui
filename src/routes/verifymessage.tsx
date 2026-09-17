@@ -160,17 +160,25 @@ function VerifyMessage() {
         <div
           className={`${card} flex flex-col gap-2 text-[13px] sm:grid sm:grid-cols-2 sm:gap-x-6`}
         >
-          <Row label={t('message_verification.author')}>@{result.author}</Row>
+          {/* What was verified is data: a page translator must leave the
+              name, the key and the message as they are (translate="no"), and
+              since the result changes in place on the next check, the name is
+              one string (see lib/translation-guard.ts). */}
+          <Row label={t('message_verification.author')}>
+            <span translate="no">{`@${result.author}`}</span>
+          </Row>
           <Row label={t('message_verification.recovered_key')}>
             {/* break-all is deliberate: it stops a crafted key from running
                 off the line. `mono` carries it. */}
-            <code className={`${mono} text-[11px]`}>{result.signer}</code>
+            <code className={`${mono} text-[11px]`} translate="no">
+              {result.signer}
+            </code>
           </Row>
           <Row label={t('message_verification.matched_authority')}>
             {result.authority ?? t('message_verification.unknown_authority')}
           </Row>
           <Row label={t('message_verification.message_preview')}>
-            {result.message}
+            <span translate="no">{result.message}</span>
           </Row>
         </div>
       )}

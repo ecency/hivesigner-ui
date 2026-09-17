@@ -53,9 +53,7 @@ function Auths() {
     <section className={page}>
       <h1 className={`${h1} flex flex-wrap items-center gap-2`}>
         <Avatar username={selectedAccount} size="md" />
-        <span>
-          {t('auths.auths')} · @{selectedAccount}
-        </span>
+        <span>{`${t('auths.auths')} · @${selectedAccount}`}</span>
       </h1>
 
       <div className={cardGrid}>

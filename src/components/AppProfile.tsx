@@ -102,7 +102,7 @@ export function AppProfile({ username }: { username: string }) {
 
       {creator && (
         <div className={`${mutedXs} [unicode-bidi:isolate]`}>
-          {t('apps.creator')}: @{creator}
+          {`${t('apps.creator')}: @${creator}`}
         </div>
       )}
 

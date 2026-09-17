@@ -255,9 +255,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const grantNotice = grantNeeded && (
     <div className={alertWarn}>
       First-time authorization: this adds{' '}
-      <b className="[unicode-bidi:isolate]">@{clientLabel}</b> to your posting
-      authority on-chain and needs your active key once. That account will be
-      able to post as you until you revoke it.
+      <b className="[unicode-bidi:isolate]" translate="no">
+        {`@${clientLabel}`}
+      </b>{' '}
+      to your posting authority on-chain and needs your active key once. That
+      account will be able to post as you until you revoke it.
     </div>
   );
   // The two integration failures an app author can fix, reported once per
@@ -306,7 +308,9 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           // No app account: the requester IS the callback host, which is the
           // one thing about it the user can check.
           <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
-            <b className="[unicode-bidi:isolate]">{callbackHost ?? '?'}</b>{' '}
+            <b className="[unicode-bidi:isolate]" translate="no">
+              {callbackHost ?? '?'}
+            </b>{' '}
             {t('authorize.request_verify')}
           </h1>
         ) : (
@@ -320,7 +324,9 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
               className="mx-auto"
             />
             <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
-              <b className="[unicode-bidi:isolate]">{appName}</b>{' '}
+              <b className="[unicode-bidi:isolate]" translate="no">
+                {appName}
+              </b>{' '}
               {t('authorize.request_access')}
             </h1>
           </>
@@ -333,13 +339,15 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           {!loginOnly && (
             <>
               {t('authorize.hive_account')}{' '}
-              <b className="[unicode-bidi:isolate]">@{clientLabel}</b>
+              <b className="[unicode-bidi:isolate]" translate="no">
+                {`@${clientLabel}`}
+              </b>
             </>
           )}
           {callbackHost && (
             <>
               {loginOnly ? '' : ' · '}
-              {t('authorize.sends_you_to')} <b>{callbackHost}</b>
+              {t('authorize.sends_you_to')} <b translate="no">{callbackHost}</b>
             </>
           )}
         </div>
@@ -450,7 +458,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             search={{ next: window.location.pathname + window.location.search }}
             className={btnPrimary}
           >
-            {t('accounts.unlock')} @{selectedAccount}
+            {`${t('accounts.unlock')} @${selectedAccount}`}
           </Link>
         ) : postingScope && !accountLoaded ? (
           // Never issue a posting token before we can confirm the on-chain
