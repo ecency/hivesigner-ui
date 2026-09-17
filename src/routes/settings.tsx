@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelect } from '@/components/LanguageSelect';
 import { ThemeIcon } from '@/components/ThemeToggle';
@@ -25,6 +25,7 @@ export const Route = createFileRoute('/settings')({
 function Settings() {
   const { t } = useTranslation();
   const [saved, setSaved] = useState(false);
+  const languageId = useId();
   const { theme, setTheme } = useTheme();
 
   return (
@@ -33,13 +34,12 @@ function Settings() {
     <section className={`${page} ${formColumn} sm:max-w-xl`}>
       <h1 className={h1}>{t('settings.settings')}</h1>
 
-      {/* The control itself stays a comfortable field width on a desktop.
-          The menu names itself (aria-label), so this heading is visual. */}
+      {/* The control itself stays a comfortable field width on a desktop. */}
       <div className={`${label} max-w-sm`}>
-        <span className={labelText} aria-hidden="true">
+        <label htmlFor={languageId} className={labelText}>
           {t('settings.language')}
-        </span>
-        <LanguageSelect tall onPicked={setSaved} />
+        </label>
+        <LanguageSelect id={languageId} tall onPicked={setSaved} />
       </div>
 
       {saved && (

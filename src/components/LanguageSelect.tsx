@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { switchLanguage } from '@/i18n';
 import { isLanguage, LANGUAGES, type Language } from '@/i18n/languages';
@@ -24,6 +24,22 @@ function GlobeIcon() {
   );
 }
 
+// Keys that move through a closed <select> on Windows and Linux, changing its
+// value on every press. Moving through the list must not switch the whole
+// page each time (WCAG 3.2.2), so a keyboard choice applies on Enter, when the
+// menu loses focus, or once the keys have rested this long.
+const BROWSE_KEYS = new Set([
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'Home',
+  'End',
+  'PageUp',
+  'PageDown',
+]);
+export const KEYBOARD_SETTLE_MS = 1200;
+
 /**
  * The language menu, in the footer and on the settings page. Each language is
  * listed by its own name, which someone who cannot read the current one still
@@ -31,10 +47,13 @@ function GlobeIcon() {
  * remembered on this device and wins over the browser's language from then on.
  */
 export function LanguageSelect({
+  id,
   className = '',
   tall = false,
   onPicked,
 }: {
+  /** For a visible <label htmlFor>. */
+  id?: string;
   className?: string;
   /** Form-field height, for the settings page. */
   tall?: boolean;
@@ -49,6 +68,11 @@ export function LanguageSelect({
   // report on the newer one's behalf.
   const newest = useRef('');
   const current: Language = isLanguage(i18n.language) ? i18n.language : 'en';
+  // A choice being made with the keyboard: shown, not applied yet.
+  const [browsed, setBrowsed] = useState<Language | null>(null);
+  const keyboard = useRef(false);
+  const settle = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(settle.current), []);
 
   async function pick(value: string) {
     if (!isLanguage(value)) return;
@@ -63,16 +87,49 @@ export function LanguageSelect({
     onPicked?.(applied);
   }
 
+  function commit() {
+    clearTimeout(settle.current);
+    keyboard.current = false;
+    if (browsed === null) return;
+    setBrowsed(null);
+    if (browsed !== (pending ?? current)) pick(browsed);
+  }
+
+  function change(value: string) {
+    if (!isLanguage(value)) return;
+    if (!keyboard.current) {
+      pick(value);
+      return;
+    }
+    setBrowsed(value);
+    clearTimeout(settle.current);
+    settle.current = setTimeout(() => {
+      keyboard.current = false;
+      setBrowsed(null);
+      pick(value);
+    }, KEYBOARD_SETTLE_MS);
+  }
+
   return (
     <div className={className}>
       <div className="relative">
         <GlobeIcon />
         {/* The names are each language's own: never machine-translated. */}
         <select
+          id={id}
           translate="no"
           aria-label={t('settings.language')}
-          value={pending ?? current}
-          onChange={(e) => pick(e.target.value)}
+          value={browsed ?? pending ?? current}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commit();
+            else if (BROWSE_KEYS.has(e.key) || e.key.length === 1)
+              keyboard.current = true;
+          }}
+          onPointerDown={() => {
+            keyboard.current = false;
+          }}
+          onBlur={commit}
+          onChange={(e) => change(e.target.value)}
           className={`${tall ? 'h-11 text-[15px]' : 'h-9 text-[13px]'} w-full cursor-pointer rounded-lg border border-line bg-surface ps-8 pe-3 text-ink`}
         >
           {LANGUAGES.map((l) => (

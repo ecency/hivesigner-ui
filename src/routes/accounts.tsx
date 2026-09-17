@@ -288,7 +288,7 @@ function Accounts() {
       <Link
         to="/import"
         search={next ? { next } : {}}
-        className="inline-flex h-11 max-w-full items-center justify-center self-start rounded-lg border border-dashed border-line-strong px-4 font-semibold text-ink no-underline"
+        className="inline-flex min-h-11 max-w-full items-center justify-center self-start rounded-lg border border-dashed border-line-strong px-4 py-2 text-center font-semibold text-ink no-underline"
       >
         + {t('accounts.add_another')}
       </Link>

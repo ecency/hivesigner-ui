@@ -149,7 +149,9 @@ function Home() {
           <path d="M135.13 1.42C134.76.79 135.22 0 135.95 0h28.62c.34 0 .65.18.82.47l54.49 94.06c.17.29.17.65 0 .94l-54.49 94.06a.95.95 0 0 1-.82.47h-28.62c-.73 0-1.18-.79-.82-1.42L189.34 95 135.13 1.42ZM111.87 94.52c.17.3.17.66 0 .95l-54.75 94.06c-.36.63-1.28.63-1.64 0L.13 95.48a.95.95 0 0 1 0-.95L54.87.47c.37-.62 1.28-.63 1.65 0l55.35 94.05Z" />
         </svg>
 
-        <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
+        {/* minmax(0, …): a column never grows past the page to fit a long word
+            or a wide button, which the section's clip would then cut off. */}
+        <div className="grid grid-cols-[minmax(0,1fr)] items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-12">
           <div className="flex flex-col gap-5">
             <div className="text-[11.5px] font-semibold tracking-[0.18em] text-muted uppercase rtl:tracking-normal">
               {t('index.eyebrow')}

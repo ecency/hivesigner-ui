@@ -18,7 +18,7 @@ export const cardTight =
   'rounded-xl border border-line bg-surface px-3.5 py-3 shadow-card';
 
 /** Page heading. Scales up a little once there is room. */
-export const h1 = 'm-0 text-xl font-bold sm:text-2xl';
+export const h1 = 'm-0 text-xl font-bold hyphens-auto sm:text-2xl';
 
 /** Section heading, below h1. */
 export const h2 = 'm-0 text-base font-semibold sm:text-lg';

@@ -62,7 +62,7 @@ export function ConsentPreview() {
               @
             </span>
             <span className="min-w-0 flex-1 truncate text-[14px] font-semibold">
-              @{t('index.preview_account')}
+              <bdi>{`@${t('index.preview_account')}`}</bdi>
             </span>
             <svg
               width="16"
@@ -97,12 +97,14 @@ export function ConsentPreview() {
           </div>
 
           {/* Spans, not buttons: this is a picture. */}
+          {/* min-w-0 and truncate: a long label in some languages must not
+              push the picture wider than a phone. */}
           <div className="flex gap-3">
-            <span className={`${btnPrimary} h-11 flex-1 text-[15px]`}>
-              {t('authorize.authorize')}
+            <span className={`${btnPrimary} h-11 min-w-0 flex-1 text-[15px]`}>
+              <span className="truncate">{t('authorize.authorize')}</span>
             </span>
-            <span className={`${btnSecondary} h-11 flex-1 text-[15px]`}>
-              {t('common.cancel')}
+            <span className={`${btnSecondary} h-11 min-w-0 flex-1 text-[15px]`}>
+              <span className="truncate">{t('common.cancel')}</span>
             </span>
           </div>
         </div>

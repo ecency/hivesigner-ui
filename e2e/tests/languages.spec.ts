@@ -49,9 +49,60 @@ async function setUp(page: Page): Promise<string[]> {
     'condenser_api.get_accounts': ([names]: string[][]) =>
       names.map((n) => appAccount(n, [CALLBACK])),
   });
+  // The app directory is the production API: never called from a test.
+  await page.route('**/api/apps', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        apps: [
+          { username: 'peakd.app', about: 'Hive frontend', users: 3 },
+          { username: 'granted.app', name: 'Granted', users: 2 },
+        ],
+        featured: [],
+      }),
+    }),
+  );
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   return errors;
+}
+
+/**
+ * Text drawn outside the viewport. A clipping parent (`overflow: hidden`)
+ * keeps the page from widening, so the document width alone misses it; a
+ * row that scrolls on purpose (the nav) is left out.
+ */
+async function textOutsideViewport(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const scrolls = (el: Element | null): boolean => {
+      for (let node = el; node; node = node.parentElement) {
+        const { overflowX } = getComputedStyle(node);
+        if (overflowX === 'auto' || overflowX === 'scroll') return true;
+      }
+      return false;
+    };
+    const out: string[] = [];
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+    );
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const text = node.textContent?.trim();
+      const parent = node.parentElement;
+      if (!text || !parent || scrolls(parent)) continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      for (const rect of range.getClientRects()) {
+        if (rect.width === 0) continue;
+        if (rect.right > window.innerWidth + 1 || rect.left < -1) {
+          out.push(text.slice(0, 40));
+          break;
+        }
+      }
+    }
+    return out;
+  });
 }
 
 /** Open the app with `code` picked on this device. */
@@ -96,6 +147,25 @@ test.describe('in a Spanish browser', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
     await expect(menu).toHaveValue('fr');
     await expect(page).toHaveTitle(`${text('fr', 'meta.apps')} · Hivesigner`);
+  });
+});
+
+test.describe('on a slow connection', () => {
+  test.use({ locale: 'es-ES' });
+
+  test('the first screen waits for the language instead of flashing English', async ({
+    page,
+  }) => {
+    await setUp(page);
+    await page.route('**/static/js/async/lang-es.*.js', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      await route.continue();
+    });
+    await page.goto('/', { waitUntil: 'commit' });
+    const heading = page.locator('main h1');
+    await heading.waitFor();
+    // Read the moment it first appears: no retrying into the Spanish text.
+    expect(await heading.innerText()).toContain(text('es', 'index.hero_title'));
   });
 });
 
@@ -186,16 +256,6 @@ test('Arabic keeps names, amounts and hosts reading as they are', async ({
 
   // A name in a block of its own reads the same and still lines up with the
   // page's right edge.
-  await page.route('**/api/apps', (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        apps: [{ username: 'peakd.app', about: 'Hive frontend', users: 3 }],
-        featured: [],
-      }),
-    }),
-  );
   await page.goto('/apps', { waitUntil: 'networkidle' });
   expect(await readsLeftToRight(page, '@peakd.app')).toBe(true);
   const gap = await page
@@ -237,8 +297,10 @@ for (const language of LANGUAGES) {
 
     for (const path of [
       '/',
+      '/apps',
       '/accounts',
       '/signs',
+      '/authorize/granted.app',
       TRANSFER,
       `/oauth2/authorize?client_id=granted.app&redirect_uri=${encodeURIComponent(CALLBACK)}&scope=posting`,
     ]) {
@@ -259,6 +321,8 @@ for (const language of LANGUAGES) {
         overflow,
         `${path} overflows by ${overflow}px`,
       ).toBeLessThanOrEqual(0);
+      // Nor is any text cut off at the edge by a clipping parent.
+      expect(await textOutsideViewport(page), path).toEqual([]);
 
       if (path === TRANSFER) {
         // The summary is the translated sentence with the request's values

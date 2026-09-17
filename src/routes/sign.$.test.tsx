@@ -185,7 +185,9 @@ describe('untrusted text cannot push the layout sideways', () => {
     h.search = { author: 'alice', permlink: 'a'.repeat(250), weight: '10000' };
     render(<Sign />);
     // The title is copy around the request's values (each its own element).
-    const title = await screen.findByText(wholeText(/^Upvote @alice\/a+$/));
+    // The line is keyed by language inside the element that lays it out.
+    const line = await screen.findByText(wholeText(/^Upvote @alice\/a+$/));
+    const title = line.parentElement as HTMLElement;
     expect(WRAPS.test(title.className), title.className).toBe(true);
     // min-w-0 is what actually lets a flex child shrink below min-content.
     expect(title.className).toContain('min-w-0');
@@ -196,7 +198,8 @@ describe('untrusted text cannot push the layout sideways', () => {
     h.splat = 'transfer';
     h.search = { to: 'bob', amount: '1.000 HIVE', memo: `#${'A'.repeat(300)}` };
     render(<Sign />);
-    const detail = await screen.findByText(wholeText(/^Memo: #A+$/));
+    const line = await screen.findByText(wholeText(/^Memo: #A+$/));
+    const detail = line.parentElement as HTMLElement;
     expect(WRAPS.test(detail.className), detail.className).toBe(true);
   });
 
@@ -422,6 +425,23 @@ describe('in another language', () => {
     expect(screen.getByText('فعال')).toBeInTheDocument();
     expect(screen.getByText('با کلید فعال شما امضا می‌شود')).toBeInTheDocument();
     expect(screen.getByText('نمایش عملیات خام')).toBeInTheDocument();
+  });
+
+  it('builds a summary line fresh when the language changes', async () => {
+    // A page translator may have replaced its copy; reworking that text in
+    // place would leave the old language beside the new one.
+    h.splat = 'transfer';
+    h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
+    render(<Sign />);
+    const before = await screen.findByText(
+      wholeText('Send 1.000 HIVE to @bob'),
+    );
+    undo = await installTestDictionary('fa', {
+      summary: { transfer: '{to} ← {amount} ارسال' },
+    });
+    const after = screen.getByText(wholeText('@bob ← 1.000 HIVE ارسال'));
+    expect(after).not.toBe(before);
+    expect(before.isConnected).toBe(false);
   });
 
   it('counts operations with the plural form the language needs', async () => {

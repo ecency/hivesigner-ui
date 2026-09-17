@@ -100,16 +100,33 @@ function InvalidSignRequest({
  * values never are. The parts of one line are fixed for a request, so React
  * never inserts or removes loose text among them.
  */
-function Parts({ parts }: { parts: TextPart[] }) {
-  return parts.map((part, i) =>
-    typeof part === 'string' ? (
-      part
-    ) : (
-      // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one fixed line
-      <span key={i} translate="no">
-        {part.value}
-      </span>
-    ),
+function Parts({
+  parts,
+  valueClassName,
+}: {
+  parts: TextPart[];
+  valueClassName?: string;
+}) {
+  const { i18n } = useTranslation();
+  // Keyed by language, like Sentence: another language builds the line fresh
+  // instead of rewriting copy a page translator may already have replaced.
+  return (
+    <span key={i18n.language}>
+      {parts.map((part, i) =>
+        typeof part === 'string' ? (
+          part
+        ) : (
+          <span
+            // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one fixed line
+            key={i}
+            translate="no"
+            className={valueClassName}
+          >
+            {part.value}
+          </span>
+        ),
+      )}
+    </span>
   );
 }
 
@@ -311,7 +328,7 @@ function Sign() {
         return (
           <div key={`${op[0]}-${i}`} className={`${card} flex flex-col gap-2`}>
             <div className="flex flex-wrap items-baseline gap-2">
-              <div className="min-w-0 flex-1 break-words text-lg font-bold">
+              <div className="min-w-0 flex-1 break-words text-lg font-bold hyphens-auto">
                 {displayOps.length > 1 && `${i + 1}. `}
                 <Parts parts={s.titleParts} />
               </div>
@@ -354,8 +371,11 @@ function Sign() {
                 {/* A value runs in its own direction and cannot reorder the
                     text around it (globals.css). */}
                 {f.parts ? (
-                  <span className="break-all [unicode-bidi:isolate]">
-                    <Parts parts={f.parts} />
+                  // break-words on the copy, break-all only on the values (keys
+                  // are long unbroken strings): a translated warning must not
+                  // split mid-word.
+                  <span className="break-words [unicode-bidi:isolate]">
+                    <Parts parts={f.parts} valueClassName="break-all" />
                   </span>
                 ) : (
                   <span className="break-all" translate="no">

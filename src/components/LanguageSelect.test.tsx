@@ -1,4 +1,10 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../i18n';
@@ -30,7 +36,7 @@ vi.mock('@/i18n', async (importOriginal) => {
   };
 });
 
-import { LanguageSelect } from './LanguageSelect';
+import { KEYBOARD_SETTLE_MS, LanguageSelect } from './LanguageSelect';
 
 beforeEach(() => localStorage.clear());
 afterEach(async () => {
@@ -96,6 +102,59 @@ describe('LanguageSelect', () => {
     expect(onPicked.mock.calls).toEqual([[true]]);
     expect(screen.queryByRole('status')).toBeNull();
     expect(screen.getByRole('combobox')).toHaveValue('it');
+  });
+
+  it('shows a pick while its dictionary is on the way', async () => {
+    render(<LanguageSelect />);
+    h.slowNext = true;
+    await userEvent.setup().selectOptions(screen.getByRole('combobox'), 'fa');
+    expect(screen.getByRole('combobox')).toHaveValue('fa');
+    expect(i18n.language).toBe('en');
+    h.finishSlow();
+  });
+
+  it('does not switch the page while the keyboard moves through the list', async () => {
+    render(<LanguageSelect />);
+    const menu = screen.getByRole('combobox');
+    for (const value of ['ar', 'bg', 'bn']) {
+      fireEvent.keyDown(menu, { key: 'ArrowDown' });
+      fireEvent.change(menu, { target: { value } });
+    }
+    expect(menu).toHaveValue('bn');
+    expect(i18n.language).toBe('en');
+    expect(localStorage.getItem('hs_lang')).toBeNull();
+    // Enter applies what is showing.
+    fireEvent.keyDown(menu, { key: 'Enter' });
+    await waitFor(() => expect(i18n.language).toBe('bn'));
+    expect(localStorage.getItem('hs_lang')).toBe('bn');
+  });
+
+  it('applies a keyboard choice when the menu loses focus, or once the keys rest', async () => {
+    render(<LanguageSelect />);
+    const menu = screen.getByRole('combobox');
+    fireEvent.keyDown(menu, { key: 'ArrowUp' });
+    fireEvent.change(menu, { target: { value: 'de' } });
+    fireEvent.blur(menu);
+    await waitFor(() => expect(i18n.language).toBe('de'));
+
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    fireEvent.change(menu, { target: { value: 'es' } });
+    expect(i18n.language).toBe('de');
+    await waitFor(() => expect(i18n.language).toBe('es'), {
+      timeout: KEYBOARD_SETTLE_MS + 1000,
+    });
+  });
+
+  it('applies a pointer pick at once, even after the keyboard was used', async () => {
+    render(<LanguageSelect />);
+    const menu = screen.getByRole('combobox');
+    fireEvent.keyDown(menu, { key: 'Tab' });
+    fireEvent.change(menu, { target: { value: 'it' } });
+    await waitFor(() => expect(i18n.language).toBe('it'));
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    fireEvent.pointerDown(menu);
+    fireEvent.change(menu, { target: { value: 'ja' } });
+    await waitFor(() => expect(i18n.language).toBe('ja'));
   });
 
   it('follows a language changed elsewhere', async () => {
