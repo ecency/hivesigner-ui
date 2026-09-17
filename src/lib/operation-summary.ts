@@ -283,8 +283,9 @@ function describeAuthority(value: unknown): TextPart[] {
       ? sentence('summary.accounts', { accounts: accts.join(', ') })
       : [],
   ].filter((section) => section.length > 0);
+  const separator = i18n.t('summary.separator');
   return sections.flatMap((section, i) =>
-    i === 0 ? section : ['; ', ...section],
+    i === 0 ? section : [separator, ...section],
   );
 }
 
@@ -481,9 +482,13 @@ export function operationFields(op: Operation): OperationField[] {
       for (const [k, v] of Object.entries(p)) {
         // Skip the signer-slot fields actorRows already named.
         if (rows.some((r) => r.field === k)) continue;
+        // A schema field gets its label; anything else keeps its own name.
+        const label = Object.hasOwn(OPERATIONS[name]?.schema ?? {}, k)
+          ? fieldLabel(k)
+          : k;
         if (typeof v === 'object' && v !== null)
-          pushJsonRows(rows, k, JSON.stringify(v));
-        else rows.push({ label: k, value: txt(v) });
+          pushJsonRows(rows, label, JSON.stringify(v));
+        else rows.push({ label, value: txt(v), field: k });
       }
       return rows;
   }

@@ -115,6 +115,8 @@ function Profile() {
     'idle',
   );
   const [error, setError] = useState('');
+  // Callbacks the form refused, shown exactly (not inside translated copy).
+  const [badUris, setBadUris] = useState('');
   const current =
     form !== null && formFor === (account?.name ?? null) ? form : initial;
 
@@ -143,11 +145,13 @@ function Profile() {
       .filter((u) => !isValidRedirectUri(u));
     if (bad.length > 0) {
       setStatus('error');
-      setError(t('profile.bad_callbacks', { uris: bad.join(', ') }));
+      setError('');
+      setBadUris(bad.join(', '));
       return;
     }
     setStatus('busy');
     setError('');
+    setBadUris('');
     try {
       const op = [
         'account_update2',
@@ -223,8 +227,18 @@ function Profile() {
       <p className={`${mutedXs} m-0`}>{t('profile.one_uri_line')}</p>
 
       {status === 'error' && (
-        <div role="alert" className={alertError}>
-          {error}
+        // Keyed by kind: a sentence and a plain message are built fresh
+        // rather than reworked into each other (see translation-guard.ts).
+        <div
+          key={badUris ? 'uris' : 'error'}
+          role="alert"
+          className={alertError}
+        >
+          {badUris ? (
+            <Sentence k="profile.bad_callbacks" values={{ uris: badUris }} />
+          ) : (
+            error
+          )}
         </div>
       )}
       {status === 'done' && (

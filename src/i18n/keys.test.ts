@@ -169,13 +169,16 @@ describe.each(
   ) as Tree;
   const translated = new Map(leaves(dictionary));
   const source = leaves(en as Tree);
-  // The forms a count on these screens can take. French, Spanish, Italian and
-  // Portuguese also have a `many` for round millions, which neither Crowdin
-  // nor a count of apps or accounts ever reaches.
+  // The forms a count on these screens can take, with the counts each covers.
+  // French, Spanish, Italian and Portuguese also have a `many` for round
+  // millions, which neither Crowdin nor a count of apps or accounts reaches.
   const rules = new Intl.PluralRules(code);
-  const categories = new Set(
-    Array.from({ length: 1001 }, (_, n) => rules.select(n)),
-  );
+  const covered = new Map<string, number>();
+  for (let n = 0; n <= 1000; n++) {
+    const category = rules.select(n);
+    covered.set(category, (covered.get(category) ?? 0) + 1);
+  }
+  const categories = [...covered.keys()];
 
   it('has every string, with the same placeholders and markup', () => {
     const problems: string[] = [];
@@ -211,15 +214,24 @@ describe.each(
     for (const base of bases) {
       const wanted = placeholders(en_other(base));
       for (const category of categories) {
-        const own = translated.get(`${base}_${category}`);
+        const key = `${base}_${category}`;
+        const own = translated.get(key);
         if (typeof own !== 'string' || !own.trim()) {
-          problems.push(`${base}_${category}: missing`);
-        } else if (
-          placeholders(own).some((name) => !wanted.includes(name)) ||
-          /[{}]/.test(own.replace(/\{\w+\}/g, ''))
-        ) {
-          problems.push(`${base}_${category}: placeholders`);
+          problems.push(`${key}: missing`);
+          continue;
         }
+        const names = placeholders(own);
+        // A form that covers more than one count must say which: Russian
+        // `one` is also 21, 31 and 41. One that covers a single count (Arabic
+        // `two`) may leave the number out. Never twice, never another value.
+        const needed = (covered.get(category) ?? 0) > 1 ? wanted : [];
+        const extra = names.filter((name) => !wanted.includes(name));
+        const twice = names.length !== new Set(names).size;
+        const lost = needed.some((name) => !names.includes(name));
+        if (extra.length || twice || lost)
+          problems.push(`${key}: placeholders {${names}}`);
+        if (/[{}]/.test(own.replace(/\{\w+\}/g, '')))
+          problems.push(`${key}: stray brace`);
       }
     }
     expect(problems).toEqual([]);

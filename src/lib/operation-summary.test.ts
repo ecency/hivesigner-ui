@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import i18n from '../i18n';
 import { installTestDictionary } from '../test-i18n';
 import {
   type Operation,
@@ -8,6 +9,7 @@ import {
   requiredAuthority,
   summarizeOperation,
 } from './operation-summary';
+import { OPERATIONS } from './operations';
 import { resolveSigner } from './sign-tx';
 
 describe('summarizeOperation', () => {
@@ -570,7 +572,7 @@ describe('in another language', () => {
         'transfer_to_vesting',
         { from: 'alice', to: 'bob', amount: '1.000 HIVE' },
       ]).map((r) => r.label),
-    ).toEqual(['از', 'To', 'amount']);
+    ).toEqual(['از', 'To', 'Amount']);
   });
 
   it('does not hide a signer field under a translated label', async () => {
@@ -588,8 +590,32 @@ describe('in another language', () => {
     ]).map((r) => `${r.label}=${r.value}`);
     expect(labels).toEqual([
       'Vesting shares=@alice',
-      'delegatee=bob',
-      'vesting_shares=1.000000 VESTS',
+      'Delegatee=bob',
+      'Vesting shares=1.000000 VESTS',
+    ]);
+  });
+});
+
+describe('field labels', () => {
+  it('has a label for every field of every operation', () => {
+    const missing: string[] = [];
+    for (const [name, op] of Object.entries(OPERATIONS)) {
+      for (const field of Object.keys(op.schema)) {
+        if (!i18n.exists(`op_field.${field}`)) missing.push(`${name}.${field}`);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('labels schema fields and leaves any other key as it is', () => {
+    const rows = operationFields([
+      'withdraw_vesting',
+      { account: 'alice', vesting_shares: '1.000000 VESTS', surprise: 'x' },
+    ]);
+    expect(rows.map((r) => r.label)).toEqual([
+      'Account',
+      'Vesting shares',
+      'surprise',
     ]);
   });
 });
