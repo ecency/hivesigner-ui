@@ -113,6 +113,11 @@ describe('/sign-buffer', () => {
       'site.example asks you to sign a message.',
     );
     expect(screen.getByText(message)).toBeInTheDocument();
+    // Named again next to the button, where a long message cannot push it.
+    expect(
+      screen.getByRole('button', { name: /^sign$/i }).parentElement
+        ?.textContent,
+    ).toContain('Sends you to site.example');
     await sign();
     const { url, signer } = answer(message);
     expect(url.origin + url.pathname).toBe('https://site.example/cb');
@@ -148,6 +153,7 @@ describe('/sign-buffer', () => {
       { redirect_uri: 'javascript:alert(1)' },
       { redirect_uri: '' },
       { redirect_uri: 'https://site.example/cb', message: '' },
+      { redirect_uri: 'https://site.example/cb', message: ' \n\t' },
       { redirect_uri: 'https://site.example/cb', authority: 'owner' },
       { redirect_uri: 'https://site.example/cb', authority: 'memo' },
     ];

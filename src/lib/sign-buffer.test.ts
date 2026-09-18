@@ -109,6 +109,12 @@ describe('signBuffer', () => {
 });
 
 describe('visibleMessage', () => {
+  it('keeps a CRLF line break as a line break', () => {
+    expect(visibleMessage('one\r\ntwo')).toEqual([
+      { text: 'one\r\ntwo', escaped: false },
+    ]);
+  });
+
   it('keeps plain text, line breaks, tabs and emoji as they are', () => {
     expect(visibleMessage('line one\nline\ttwo 👋')).toEqual([
       { text: 'line one\nline\ttwo 👋', escaped: false },

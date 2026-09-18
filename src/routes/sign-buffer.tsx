@@ -70,7 +70,6 @@ function SignBuffer() {
   const {
     data: profile,
     isLoading,
-    isError,
     isFetching,
     refetch,
   } = useQuery({
@@ -87,7 +86,7 @@ function SignBuffer() {
   // app author would fix. Every callback must be a secure URL, and a
   // client_id's must also be registered to that app.
   const refusal: IntegrationIssue | null =
-    !req.message || !req.authority || !callback
+    !req.message.trim() || !req.authority || !callback
       ? 'sign_buffer_invalid'
       : !isValidRedirectUri(callback)
         ? callbackHost
@@ -150,16 +149,16 @@ function SignBuffer() {
         <div role="alert" className={alertError}>
           {t('authorize.read_failed')}
         </div>
-        {isError && (
-          <button
-            type="button"
-            disabled={isFetching}
-            onClick={() => refetch()}
-            className={btnSecondary}
-          >
-            {isFetching ? '…' : t('authorize.retry')}
-          </button>
-        )}
+        {/* Offered offline too: the read waits for the network, and the
+            button says it is on its way. */}
+        <button
+          type="button"
+          disabled={isFetching}
+          onClick={() => refetch()}
+          className={btnSecondary}
+        >
+          {isFetching ? '…' : t('authorize.retry')}
+        </button>
       </section>
     );
   }
@@ -253,6 +252,16 @@ function SignBuffer() {
       )}
 
       <div className="flex flex-col gap-2.5">
+        {/* Where the signature goes, again next to the button: a long
+            message pushes the heading out of sight, and its last lines
+            could claim another requester. */}
+        <p className={`${mutedXs} m-0`}>
+          <Sentence
+            k="authorize.sends_you_to"
+            values={{ host: callbackHost ?? '?' }}
+            bold
+          />
+        </p>
         {selectedAccount && (
           <CurrentAccount
             username={selectedAccount}

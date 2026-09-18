@@ -45,13 +45,17 @@ elsewhere.
   the logged-out "needs a key" state, and the unknown-operation error.
 - `tests/oauth.spec.ts` - `/oauth2/authorize` scope normalisation, the app-consent header, and a
   login-only request from a site with no app account.
+- `tests/sign-buffer.spec.ts` - a message signed for a site (#84): the signature on the callback, a
+  message padded to hide its end, and a Hivesigner token body that is never signed.
 
 ## What lives elsewhere
 
 Everything that needs a stored account is a Vitest test under `src/`: token issuance and the exact
 redirect URL, the grant-before-token ordering, key import and the local passcode, grant and revoke
-broadcasts, sign and verify message, account switching. This suite stays logged out on purpose, so
-it needs no key fixture and can run against any deployment.
+broadcasts, sign and verify message, account switching. Most of this suite stays logged out, so
+it needs no key fixture and can run against any deployment. The specs that go through an unlock
+(`leave`, `password-managers`, `translate`, `sign-buffer`) import a throwaway key that is not an
+account on chain, into the browser under test only.
 
 The RPC fixture also blocks Sentry's ingest host, so a run against a deployed build (which
 carries a DSN) reports nothing: the unknown-operation spec is a real invalid request and would

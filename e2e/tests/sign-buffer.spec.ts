@@ -100,7 +100,7 @@ test('padding cannot push the rest of a message out of sight', async ({
   const button = await page
     .getByRole('button', { name: /^sign$/i })
     .boundingBox();
-  expect(last && button && last.y < button.y).toBe(true);
+  expect(last && button && last.y + last.height <= button.y).toBe(true);
   expect(errors).toEqual([]);
 });
 

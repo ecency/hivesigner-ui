@@ -73,22 +73,28 @@ export function signBuffer(
  * The message in parts to show, exactly as it will be signed. Characters
  * that would hide or reorder text on screen (controls, zero-width and bidi
  * marks) are shown as escapes: stripping them would show a message other
- * than the one signed. Line breaks and tabs stay as they are.
+ * than the one signed. Line breaks (CRLF included) and tabs stay as they
+ * are.
  */
 export function visibleMessage(
   message: string,
 ): { text: string; escaped: boolean }[] {
   const parts: { text: string; escaped: boolean }[] = [];
-  for (const ch of message) {
+  const chars = [...message];
+  chars.forEach((ch, i) => {
     const cp = ch.codePointAt(0) ?? 0;
-    const escaped = cp !== 0x0a && cp !== 0x09 && isUnsafeDisplayChar(cp);
+    // A carriage return that ends a line (CRLF, as Windows writes them) is
+    // part of the line break, not something hidden.
+    const lineEnd = cp === 0x0d && chars[i + 1] === '\n';
+    const escaped =
+      cp !== 0x0a && cp !== 0x09 && !lineEnd && isUnsafeDisplayChar(cp);
     const text = escaped
       ? `\\u{${cp.toString(16).toUpperCase().padStart(4, '0')}}`
       : ch;
     const last = parts.at(-1);
     if (last && !last.escaped && !escaped) last.text += text;
     else parts.push({ text, escaped });
-  }
+  });
   return parts;
 }
 
