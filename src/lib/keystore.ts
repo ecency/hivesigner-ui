@@ -174,6 +174,12 @@ export function isEncrypted(field: string): boolean {
   return detectFormat(field) !== 'plain';
 }
 
+/** Whether an unlock failed on the passcode itself (the v1 envelope's or the
+    legacy triplesec message), not on a record that cannot be read at all. */
+export function isWrongPasscode(e: unknown): boolean {
+  return e instanceof Error && /wrong pass/i.test(e.message);
+}
+
 /**
  * Read an account's keys from its stored `password` field. `passcode` is
  * required for an encrypted account (triplesec or v1) and ignored for plaintext.

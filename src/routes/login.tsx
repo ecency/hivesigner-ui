@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { AuthorizeConsent } from '@/components/AuthorizeConsent';
 import { CurrentAccount } from '@/components/CurrentAccount';
 import { UnlockAndContinue } from '@/components/UnlockAndContinue';
-import { formColumn, h1, link, muted, page } from '@/components/ui';
+import { btnPrimary, formColumn, h1, link, muted, page } from '@/components/ui';
 import { stillSelected } from '@/lib/accounts';
 import { resolveInternalPath } from '@/lib/internal-path';
 import {
@@ -54,42 +54,22 @@ function LocalLogin({ next }: { next?: string }) {
   const dest = resolveInternalPath(next) ?? { pathname: '/', search: '' };
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
   const search = dest.search ? parseSearch(dest.search) : {};
-  const sent = useRef(false);
-  const go = () => {
-    if (sent.current) return;
-    sent.current = true;
+  // On its way to the target: the page gives way to an ellipsis until it
+  // lands. At once for an account unlocked on arrival; after that only on
+  // this page's own sign-in click. An account unlocked any other way (the
+  // user left during the unlock and came back, another tab chose one open
+  // here) is named below with a Continue: the page does not move on for an
+  // account the user did not sign in with here.
+  const [moving, setMoving] = useState(isUnlocked);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the target is fixed for this page (remountDeps)
+  useEffect(() => {
     // In place of this page: Back from the target must not land on a sign-in
     // that sends the user straight on again.
-    navigate({ to: dest.pathname, search, replace: true } as never);
-  };
+    if (moving) navigate({ to: dest.pathname, search, replace: true } as never);
+  }, [moving]);
   const leave = useLeaveLatch();
-  // Set when this page's own passcode opened the account: that click moves
-  // on (onUnlocked below) unless the user set off elsewhere meanwhile, and a
-  // Switch account clicked while the passcode was checked must not be
-  // overridden here.
-  const clicked = useRef(false);
 
-  // An account unlocked already (on arrival) moves on at once.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: go is new every render; sent keeps it to one navigation
-  useEffect(() => {
-    if (isUnlocked && !clicked.current) go();
-  }, [isUnlocked]);
-
-  if (isUnlocked) {
-    // On its way. Only a user who left during the unlock and came back
-    // before the other page loaded stays here, and gets the way on.
-    return (
-      <section className={page}>
-        <Link
-          to={dest.pathname as never}
-          search={search as never}
-          className={link}
-        >
-          {t('common.continue')}
-        </Link>
-      </section>
-    );
-  }
+  if (moving) return <section className={page}>…</section>;
 
   const target = `${dest.pathname}${dest.search}`;
   return (
@@ -130,21 +110,33 @@ function LocalLogin({ next }: { next?: string }) {
             label={t('authorize.signing_in_as')}
             next={window.location.pathname + window.location.search}
           />
-          <UnlockAndContinue
-            key={`unlock:${selectedAccount}`}
-            username={selectedAccount}
-            action={t('authorize.sign_in')}
-            autoFocus
-            leave={leave}
-            onOpened={() => {
-              clicked.current = true;
-            }}
-            onUnlocked={() => {
-              // Not when another tab chose someone else meanwhile: this page
-              // now asks for that account.
-              if (stillSelected(selectedAccount)) go();
-            }}
-          />
+          {isUnlocked ? (
+            // Unlocked but not on its way: the user left during the unlock
+            // and came back before the other page loaded, or another tab
+            // chose this account meanwhile. The way on is a click, for the
+            // account named above.
+            <Link
+              to={dest.pathname as never}
+              search={search as never}
+              replace
+              className={btnPrimary}
+            >
+              {t('common.continue')}
+            </Link>
+          ) : (
+            <UnlockAndContinue
+              key={`unlock:${selectedAccount}`}
+              username={selectedAccount}
+              action={t('authorize.sign_in')}
+              autoFocus
+              leave={leave}
+              onUnlocked={() => {
+                // Not when another tab chose someone else meanwhile: this page
+                // now names that account.
+                if (stillSelected(selectedAccount)) setMoving(true);
+              }}
+            />
+          )}
         </>
       ) : (
         <Link

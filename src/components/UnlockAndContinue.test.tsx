@@ -20,6 +20,9 @@ import { _resetKeyCache, addAccount, lockAccount } from '@/lib/accounts';
 import { useAccounts } from '@/lib/use-accounts';
 import { UnlockAndContinue } from './UnlockAndContinue';
 
+/** A screen nobody leaves. */
+const staying = { mark: () => () => false };
+
 // A password manager that captures a field as it leaves the page must find
 // it empty (#136). The screens that host UnlockAndContinue re-render from the
 // store the moment unlockAccount emits and drop the field before the unlock's
@@ -34,6 +37,7 @@ function Screen() {
     <UnlockAndContinue
       username="alice"
       action="Sign in"
+      leave={staying}
       onUnlocked={() => {}}
     />
   );
@@ -246,7 +250,9 @@ describe('what the screen gets before it shows the unlocked account', () => {
       <UnlockAndContinue
         username="alice"
         action="Sign in"
+        leave={staying}
         onOpened={(passcode) => setHeld(passcode)}
+        onUnlocked={() => {}}
       />
     );
   }

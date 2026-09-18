@@ -11,6 +11,7 @@ import {
 } from '@/components/ui';
 import { accountIsEncrypted, unlockAccount } from '@/lib/accounts';
 import type { Keys } from '@/lib/hive';
+import { isWrongPasscode } from '@/lib/keystore';
 import type { LeaveLatch } from '@/lib/use-leave-latch';
 
 /**
@@ -43,9 +44,9 @@ export function UnlockAndContinue({
   username: string;
   /** The screen's own verb: Sign in, Approve, Authorize. */
   action: string;
-  /** The screen's leave latch. Required with `onUnlocked`: an action must
-      never follow a user who left. */
-  leave?: LeaveLatch;
+  /** The screen's leave latch: an action must never follow a user who
+      left. */
+  leave: LeaveLatch;
   /** Runs just before the unlock is shown, with the passcode that opened
       the account (undefined for one without) and its keys, for the one step
       that needs the passcode again: adding a key to the protected record,
@@ -53,7 +54,7 @@ export function UnlockAndContinue({
       is in place in the same render as the unlocked screen. */
   onOpened?: (passcode: string | undefined, keys: Keys) => void;
   /** The screen's action (for the local login, moving on to its target). */
-  onUnlocked?: () => void;
+  onUnlocked: () => void;
   /** The screen is not ready to act yet (an account read still running). */
   disabled?: boolean;
   /** Only where the passcode is the next thing to do; never above a long
@@ -73,7 +74,7 @@ export function UnlockAndContinue({
     if (!ready) return;
     setError(null);
     const typed = encrypted ? passcode : undefined;
-    const left = leave?.mark();
+    const left = leave.mark();
     // Emptied BEFORE the unlock, so a password manager that captures on
     // removal finds nothing: the unlock notifies the store, the screen drops
     // this field before this function resumes, and a clear after the await
@@ -92,17 +93,20 @@ export function UnlockAndContinue({
       // Anything else (a record that fails to load, one removed in another
       // tab) is shown as it is, as the account list does: there is nothing
       // to correct in the field.
-      const message = e instanceof Error ? e.message : String(e);
       setError(
-        /wrong pass/i.test(message) ? t('login.invalid_hs_password') : message,
+        isWrongPasscode(e)
+          ? t('login.invalid_hs_password')
+          : e instanceof Error
+            ? e.message
+            : String(e),
       );
       setPasscode(typed ?? '');
       setBusy(false);
       return;
     }
     setBusy(false);
-    if (left?.()) return;
-    onUnlocked?.();
+    if (left()) return;
+    onUnlocked();
   }
 
   return (

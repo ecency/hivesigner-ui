@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import i18n from '../i18n';
 
 const rs = vi.hoisted(() => ({
   search: {} as { next?: string },
@@ -103,7 +104,9 @@ describe('accounts switcher', () => {
     await user.click(
       screen.getAllByRole('button', { name: /^unlock$/i }).at(-1)!,
     );
-    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('login.invalid_hs_password'),
+    );
     expect(getState().selectedAccount).toBe('alice');
 
     // Right passcode unlocks and switches.
@@ -393,5 +396,100 @@ describe('an unlock that finishes after the user set off', () => {
     release();
     await waitFor(() => expect(getState().selectedAccount).toBe('bob'));
     expect(rs.navigate).toHaveBeenCalled();
+  });
+});
+
+describe('more choices made while an unlock runs', () => {
+  beforeEach(() => {
+    rs.search = { next: '/oauth2/authorize?client_id=theapp' };
+  });
+
+  const row = (name: string) =>
+    screen
+      .getAllByTestId('account-row')
+      .find((r) => r.textContent?.includes(`@${name}`)) as HTMLElement;
+
+  function holdUnlocks() {
+    let release = () => {};
+    rs.unlockGate = new Promise<void>((r) => {
+      release = r;
+    });
+    return () => release();
+  }
+
+  it("opening another row's passcode form is a choice: nobody is taken away mid-typing", async () => {
+    await addAccount('alice', { posting: '5Ka' });
+    await addAccount('bob', { active: '5Kbob' }, 'pass');
+    await addAccount('dave', { active: '5Kdave' }, 'pass');
+    lockAccount('bob');
+    lockAccount('dave');
+    selectAccount('alice');
+    const release = holdUnlocks();
+    const user = userEvent.setup();
+    render(<Accounts />);
+    await user.click(
+      within(row('bob')).getByRole('button', { name: /^unlock$/i }),
+    );
+    await user.type(within(row('bob')).getByLabelText(/passcode/i), 'pass');
+    await user.click(within(row('bob')).getAllByRole('button').at(-1)!);
+    // While bob's passcode is checked, the user opens dave's form.
+    await user.click(
+      within(row('dave')).getByRole('button', { name: /^unlock$/i }),
+    );
+    release();
+    await waitFor(() => expect(isUnlocked('bob')).toBe(true));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(getState().selectedAccount).toBe('alice');
+    expect(rs.navigate).not.toHaveBeenCalled();
+    expect(within(row('dave')).getByLabelText(/passcode/i)).toBeInTheDocument();
+  });
+
+  it('an account without a passcode: a later choice wins too', async () => {
+    await addAccount('alice', { posting: '5Ka' });
+    await addAccount('bob', { posting: '5Kb' });
+    await addAccount('carol', { posting: '5Kc' });
+    selectAccount('alice');
+    // bob is on disk but not in memory, as after a reload.
+    lockAccount('bob');
+    const release = holdUnlocks();
+    const user = userEvent.setup();
+    render(<Accounts />);
+    await user.click(
+      within(row('bob')).getByRole('button', { name: /^unlock$/i }),
+    );
+    await user.click(
+      within(row('carol')).getByRole('button', { name: /switch an account/i }),
+    );
+    expect(getState().selectedAccount).toBe('carol');
+    release();
+    await waitFor(() => expect(isUnlocked('bob')).toBe(true));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(getState().selectedAccount).toBe('carol');
+  });
+});
+
+describe('a protected record that fails for another reason', () => {
+  it('says why, not "wrong passcode"', async () => {
+    await addAccount('alice', { posting: '5Ka' });
+    await addAccount('bob', { active: '5Kbob' }, 'pass');
+    lockAccount('bob');
+    selectAccount('alice');
+    // Its key-derivation cost is out of the range ever written: it fails
+    // before any passcode is tried.
+    const raw = JSON.parse(localStorage.getItem('vuex__accounts') as string);
+    const envelope = JSON.parse(raw.accountsKeychains.bob.password);
+    envelope.kdf.N = 2 ** 30;
+    raw.accountsKeychains.bob.password = JSON.stringify(envelope);
+    localStorage.setItem('vuex__accounts', JSON.stringify(raw));
+    const user = userEvent.setup();
+    render(<Accounts />);
+    await user.click(screen.getByRole('button', { name: /^unlock$/i }));
+    await user.type(screen.getByLabelText(/passcode/i), 'pass');
+    await user.click(
+      screen.getAllByRole('button', { name: /^unlock$/i }).at(-1)!,
+    );
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /unsupported key-derivation cost/,
+    );
   });
 });

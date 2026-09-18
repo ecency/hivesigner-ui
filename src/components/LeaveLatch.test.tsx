@@ -279,6 +279,34 @@ describe('Cancel pressed while the unlock runs, the next page still loading', ()
     expect(chain.broadcastOperations).not.toHaveBeenCalled();
   });
 
+  it('grant page: Cancel during the read, then Back: the button works again', async () => {
+    const router = renderAt('/authorize/ecency.app', deferred().promise);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^authorize$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    const read = deferred();
+    chain.readGate = read.promise;
+    const reads = aliceReads();
+    await user.click(button);
+    await waitFor(() => expect(aliceReads()).toBeGreaterThan(reads));
+    await user.click(screen.getByRole('link', { name: /cancel/i }));
+    await settle();
+    router.history.back();
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe('/authorize/ecency.app'),
+    );
+    chain.readGate = null;
+    read.resolve();
+    await settle();
+    expect(chain.broadcastOperations).not.toHaveBeenCalled();
+    // Not a dead button: that click is spent, a new one grants.
+    const again = await screen.findByRole('button', { name: /^authorize$/i });
+    await waitFor(() => expect(again).toBeEnabled());
+    await user.click(again);
+    await waitFor(() => expect(chain.broadcastOperations).toHaveBeenCalled());
+  });
+
   it('consent: hands the app no token and grants nothing', async () => {
     const chunk = deferred();
     const unlock = deferred();
@@ -433,6 +461,69 @@ describe('local sign-in: Switch account pressed while the passcode is checked', 
     );
   });
 
+  it('only an ellipsis while the target loads, no Continue', async () => {
+    const chunk = deferred();
+    const router = renderAt('/login?redirect=%2Faccounts', chunk.promise);
+    await signIn();
+    await waitFor(() =>
+      expect(router.latestLocation.pathname).toBe('/accounts'),
+    );
+    await settle();
+    expect(screen.queryByRole('link', { name: /continue/i })).toBeNull();
+    expect(screen.getByText('…')).toBeInTheDocument();
+    chunk.resolve();
+    expect(
+      await screen.findByRole('heading', { name: 'account list' }),
+    ).toBeInTheDocument();
+  });
+
+  it('another tab choosing an account unlocked here: names it, moves on only on a click', async () => {
+    // carol is open in this tab; after a reload this tab has made no choice
+    // of its own, so the stored one (another tab's) is adopted on the unlock.
+    await addAccount('carol', { posting: posting.toString() });
+    selectAccount('alice');
+    _resetKeyCache();
+    await unlockAccount('carol');
+    const unlock = deferred();
+    chain.unlockGate = unlock.promise;
+    const router = renderAt(
+      ['/authorize/ecency.app', '/login?redirect=%2Fprofile'],
+      deferred().promise,
+    );
+    const user = await signIn();
+    const raw = JSON.parse(localStorage.getItem('vuex__accounts') as string);
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({ ...raw, selectedAccount: 'carol' }),
+    );
+    unlock.resolve();
+    await waitFor(() => expect(getKeys('alice')).toBeTruthy());
+    await settle();
+    expect(router.latestLocation.pathname).toBe('/login');
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@carol');
+    await user.click(screen.getByRole('link', { name: /continue/i }));
+    expect(
+      await screen.findByRole('heading', { name: 'profile page' }),
+    ).toBeInTheDocument();
+    // In place of the sign-in: Back does not land on it.
+    router.history.back();
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe('/authorize/ecency.app'),
+    );
+  });
+
+  it('another tab choosing an account unlocked here, no click: names it, stays', async () => {
+    await addAccount('carol', { posting: posting.toString() });
+    selectAccount('alice');
+    const router = renderAt('/login?redirect=%2Fprofile', deferred().promise);
+    await screen.findByRole('button', { name: /^sign in$/i });
+    selectAccount('carol');
+    await settle();
+    expect(router.latestLocation.pathname).toBe('/login');
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@carol');
+    expect(screen.getByRole('link', { name: /continue/i })).toBeInTheDocument();
+  });
+
   it('back before the list loaded: not sent on, but the way on is there', async () => {
     const unlock = deferred();
     chain.unlockGate = unlock.promise;
@@ -446,6 +537,7 @@ describe('local sign-in: Switch account pressed while the passcode is checked', 
     await waitFor(() => expect(getKeys('alice')).toBeTruthy());
     await settle();
     expect(router.state.location.pathname).toBe('/login');
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@alice');
     await user.click(screen.getByRole('link', { name: /continue/i }));
     expect(
       await screen.findByRole('heading', { name: 'profile page' }),

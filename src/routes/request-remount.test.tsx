@@ -41,6 +41,7 @@ vi.mock('@/components/AppProfile', () => ({ AppProfile: () => null }));
 import { PrivateKey } from '@ecency/sdk/hive';
 import { _resetKeyCache, addAccount } from '@/lib/accounts';
 import { parseSearch, stringifySearch } from '@/lib/search';
+import i18n from '../i18n';
 import { routeTree } from '../routeTree.gen';
 
 const MASTER = 'P5-test-master-password';
@@ -178,6 +179,98 @@ describe('a second request on the same route is a fresh screen', () => {
     );
     // other.app was never granted: the screen asks, it does not announce.
     await authorize();
+    await waitFor(() =>
+      expect(chain.broadcastOperations).toHaveBeenCalledTimes(2),
+    );
+  });
+});
+
+describe('more request routes: another request is a fresh screen', () => {
+  /** alice with both apps already authorized on posting. */
+  const granted = {
+    ...alice,
+    posting: {
+      ...alice.posting,
+      account_auths: [
+        ['new.app', 1],
+        ['other.app', 1],
+      ],
+    },
+  };
+  const app = (name: string) => ({
+    name,
+    posting_json_metadata: JSON.stringify({
+      profile: { name, redirect_uris: ['https://app.example/cb'] },
+    }),
+  });
+  let aliceFails = false;
+  beforeEach(() => {
+    aliceFails = false;
+    chain.getAccount.mockImplementation(async (name: string) => {
+      if (name === 'alice') {
+        if (aliceFails) throw new Error('node down');
+        return granted;
+      }
+      return name.endsWith('.app') ? app(name) : null;
+    });
+  });
+
+  const consent = (clientId: string) =>
+    new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: 'https://app.example/cb',
+      scope: 'posting',
+    });
+
+  for (const route of ['/oauth2/authorize', '/login'] as const) {
+    it(`${route}: a failure on one request is not shown on the next`, async () => {
+      const router = renderApp(`${route}?${consent('new.app')}`);
+      const user = userEvent.setup();
+      const signIn = await screen.findByRole('button', { name: /^sign in$/i });
+      await waitFor(() => expect(signIn).toBeEnabled());
+      aliceFails = true;
+      await user.click(signIn);
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        i18n.t('authorize.read_failed'),
+      );
+      aliceFails = false;
+      // In-app, the same route with another request.
+      await router.navigate({
+        to: route,
+        search: Object.fromEntries(consent('other.app')),
+      } as never);
+      await waitFor(() =>
+        expect(router.state.location.search).toMatchObject({
+          client_id: 'other.app',
+        }),
+      );
+      await screen.findByRole('button', { name: /^sign in$/i });
+      expect(screen.queryByRole('alert')).toBeNull();
+    });
+  }
+
+  it('revoke: another app after one was revoked is not announced as revoked', async () => {
+    const router = renderApp('/revoke/new.app');
+    const user = userEvent.setup();
+    const revoke = async () => {
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: /^revoke$/i })).toBeEnabled(),
+      );
+      await user.click(screen.getByRole('button', { name: /^revoke$/i }));
+    };
+    await revoke();
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      /@new\.app is revoked/i,
+    );
+    await router.navigate({
+      to: '/revoke/$username',
+      params: { username: 'other.app' },
+    });
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe('/revoke/other.app'),
+    );
+    // other.app was never revoked: the screen asks, it does not announce.
+    await revoke();
     await waitFor(() =>
       expect(chain.broadcastOperations).toHaveBeenCalledTimes(2),
     );

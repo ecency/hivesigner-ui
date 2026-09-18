@@ -11,6 +11,7 @@ import {
   lockAccount,
   removeAccount,
   selectAccount,
+  subscribe,
   unlockAccount,
 } from './accounts';
 
@@ -103,6 +104,24 @@ describe('unlocking', () => {
     const keys = await unlockAccount('bob', 'pass');
     expect(keys).toEqual({ active: '5Kactive' });
     expect(isUnlocked('bob')).toBe(true);
+  });
+
+  it("tells the screens even when the caller's hand-off throws", async () => {
+    await addAccount('carol', { posting: '5Kc' });
+    _resetKeyCache();
+    const heard = vi.fn();
+    const unsubscribe = subscribe(heard);
+    await expect(
+      unlockAccount('carol', undefined, () => {
+        throw new Error('hand-off failed');
+      }),
+    ).rejects.toThrow('hand-off failed');
+    unsubscribe();
+    // The keys are in memory, so a screen still showing the account as
+    // locked would ask for a passcode it no longer needs.
+    expect(isUnlocked('carol')).toBe(true);
+    expect(heard).toHaveBeenCalled();
+    expect(getState().unlocked).toContain('carol');
   });
 
   it('rejects a wrong passcode', async () => {

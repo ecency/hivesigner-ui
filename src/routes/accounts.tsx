@@ -27,6 +27,7 @@ import {
   unlockAccount,
 } from '@/lib/accounts';
 import { resolveInternalPath } from '@/lib/internal-path';
+import { isWrongPasscode } from '@/lib/keystore';
 import { parseSearch } from '@/lib/search';
 import { useAccounts } from '@/lib/use-accounts';
 import { useLeaveLatch } from '@/lib/use-leave-latch';
@@ -104,7 +105,10 @@ function AccountRow({
       return;
     }
     if (encrypted) {
-      // Needs a passcode: open the inline form.
+      // Needs a passcode: open the inline form. Choosing this row, so an
+      // unlock still running for another one does not take the user away
+      // while they type here.
+      choices++;
       setUnlocking(true);
       return;
     }
@@ -148,8 +152,16 @@ function AccountRow({
         setUnlocking(false);
       });
       done();
-    } catch {
-      setError(t('login.invalid_hs_password'));
+    } catch (e) {
+      // As on the request screens: only a passcode that does not open the
+      // record is a wrong passcode; anything else is shown as it is.
+      setError(
+        isWrongPasscode(e)
+          ? t('login.invalid_hs_password')
+          : e instanceof Error
+            ? e.message
+            : String(e),
+      );
     } finally {
       setBusy(false);
     }

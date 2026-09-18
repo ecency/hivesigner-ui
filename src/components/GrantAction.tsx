@@ -118,10 +118,10 @@ export function GrantAction({
       } catch {
         fresh = null;
       }
-      if (left()) return;
-      // Another tab selected someone else meanwhile: the screen names them
-      // now, so nothing is done for the account it showed before.
-      if (!stillSelected(name)) {
+      // The user set off elsewhere, or another tab selected someone else
+      // (the screen names them now): nothing is done for this click. The
+      // button is back, for a user who returns before the next page loaded.
+      if (left() || !stillSelected(name)) {
         setStatus('idle');
         return;
       }

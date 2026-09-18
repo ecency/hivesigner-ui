@@ -347,8 +347,13 @@ export async function unlockAccount(
   // anything acts on these keys, and the click cannot land on the unlocked
   // screen's own button instead.
   await new Promise((resolve) => setTimeout(resolve, 0));
-  onOpened?.(keys);
-  emit();
+  try {
+    onOpened?.(keys);
+  } finally {
+    // The keys are in memory whatever the caller did with them: every
+    // screen must hear it is unlocked.
+    emit();
+  }
   return keys;
 }
 
