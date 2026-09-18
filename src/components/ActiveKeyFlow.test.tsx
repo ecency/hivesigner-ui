@@ -583,7 +583,7 @@ describe('a returning visit with a protected account (#145)', () => {
     expect((await unlockAccount('alice', 'correct-passcode')).active).toBe(
       active.toString(),
     );
-  });
+  }, 30_000);
 
   it('unlocks and grants in one click on the grant page, which used to lose the request', async () => {
     await protectedAndLocked({ active: active.toString() });

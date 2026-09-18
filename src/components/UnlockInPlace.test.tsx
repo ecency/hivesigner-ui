@@ -56,7 +56,9 @@ import {
   addAccount,
   getKeys,
   lockAccount,
+  unlockAccount,
 } from '@/lib/accounts';
+import { writeKeys } from '@/lib/keystore';
 import type { AuthRequest } from '@/lib/oauth';
 import { accountKey } from '@/lib/query-keys';
 import { AuthorizeConsent } from './AuthorizeConsent';
@@ -257,5 +259,80 @@ describe('a screen that said nothing new is granted', () => {
     await new Promise((r) => setTimeout(r, 50));
     expect(chain.broadcastOperations).not.toHaveBeenCalled();
     expect(chain.assign).not.toHaveBeenCalled();
+  });
+});
+
+describe('the passcode typed to unlock, held for the active key', () => {
+  const activeKeyField = () =>
+    screen.getByLabelText(
+      i18n.t('authorize.active_key_label', { account: '@alice' }),
+      { exact: false },
+    );
+  const addButton = () =>
+    screen.getByRole('button', { name: i18n.t('authorize.add_active_key') });
+
+  it('asks for the passcode after all when the record was protected again under another one meanwhile', async () => {
+    await protectedAndLocked({ posting: posting.toString() });
+    renderConsent();
+    const user = userEvent.setup();
+    await user.type(
+      await screen.findByLabelText(i18n.t('accounts.passcode')),
+      'correct-passcode',
+    );
+    await user.click(screen.getByRole('button', { name: /^authorize$/i }));
+    await screen.findByTestId('add-active-key');
+    // Another tab removes the account and adds it again under another passcode.
+    const persisted = JSON.parse(
+      localStorage.getItem('vuex__accounts') ?? '{}',
+    );
+    persisted.accountsKeychains.alice = {
+      password: await writeKeys(
+        { posting: posting.toString() },
+        'other-passcode',
+      ),
+    };
+    localStorage.setItem('vuex__accounts', JSON.stringify(persisted));
+    await user.type(activeKeyField(), active.toString());
+    await user.click(addButton());
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('authorize.wrong_passcode'),
+    );
+    // Nothing was written under the held passcode.
+    _resetKeyCache();
+    await expect(unlockAccount('alice', 'correct-passcode')).rejects.toThrow();
+    // And the form now asks for the passcode that does open it.
+    const field = screen.getByLabelText(
+      i18n.t('authorize.active_key_passcode', { account: '@alice' }),
+      { exact: false },
+    );
+    await user.type(field, 'other-passcode');
+    await user.click(addButton());
+    // Stored: the form gives way to the action it was blocking.
+    await waitFor(() =>
+      expect(screen.queryByTestId('add-active-key')).toBeNull(),
+    );
+    lockAccount('alice');
+    expect((await unlockAccount('alice', 'other-passcode')).active).toBe(
+      active.toString(),
+    );
+  }, 30_000);
+
+  it('asks once when a sign-in judged on a cached grant turns into a first-time grant', async () => {
+    await protectedAndLocked({ posting: posting.toString() });
+    client.setQueryData(accountKey('alice'), alice(true));
+    const gate = deferred();
+    chain.readGate = gate.promise;
+    renderConsent();
+    const user = userEvent.setup();
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      /sign in to/i,
+    );
+    await user.type(passcodeField(), 'correct-passcode');
+    await user.click(screen.getByRole('button', { name: /^sign in$/i }));
+    gate.resolve();
+    await screen.findByText(/first-time authorization/i);
+    const form = await screen.findByTestId('add-active-key');
+    expect(form.querySelector('input[name=unlock-passcode]')).toBeNull();
+    expect(chain.broadcastOperations).not.toHaveBeenCalled();
   });
 });

@@ -264,6 +264,7 @@ export function GrantAction({
           {...(unlockedWith?.account === selectedAccount && {
             passcode: unlockedWith.passcode,
             autoFocus: true,
+            onAdded: () => setUnlockedWith(null),
           })}
         />
       )}

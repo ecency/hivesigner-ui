@@ -33,11 +33,14 @@ export function AddActiveKey({
   username,
   passcode: unlockedWith,
   autoFocus = false,
+  onAdded,
 }: {
   username: string;
   passcode?: string;
   /** This form has just replaced the field the user was typing in. */
   autoFocus?: boolean;
+  /** The key is stored: a held passcode can be let go. */
+  onAdded?: () => void;
 }) {
   const { t } = useTranslation();
   const [secret, setSecret] = useState('');
@@ -45,8 +48,11 @@ export function AddActiveKey({
   const [protect, setProtect] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // The held passcode no longer opens the record (it was protected again
+  // under another passcode meanwhile): ask for it instead of failing for ever.
+  const [heldRejected, setHeldRejected] = useState(false);
   const encrypted = accountIsEncrypted(username);
-  const known = encrypted ? unlockedWith : undefined;
+  const known = encrypted && !heldRejected ? unlockedWith : undefined;
 
   // A new passcode follows /import's minimum; an existing one is whatever the
   // user chose back then, so any non-empty entry is tried.
@@ -104,16 +110,17 @@ export function AddActiveKey({
         encrypted || protect ? (known ?? typed.passcode) : undefined,
       );
       added = true;
+      onAdded?.();
       // addAccount notifies the account store, so the screen re-renders with
       // the key and this form is replaced by the action it was blocking.
     } catch (err) {
       // A wrong passcode throws from the keystore; say so rather than
       // "try again", which would send the user round the same mistake.
       const msg = err instanceof Error ? err.message : '';
+      const wrongPasscode = /passcode|password|protected/i.test(msg);
+      if (wrongPasscode && known !== undefined) setHeldRejected(true);
       setError(
-        /passcode|password|protected/i.test(msg)
-          ? t('authorize.wrong_passcode')
-          : t('common.try_again'),
+        wrongPasscode ? t('authorize.wrong_passcode') : t('common.try_again'),
       );
     } finally {
       if (!added) {

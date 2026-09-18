@@ -529,10 +529,13 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
               autoFocus={signIn}
               onUnlocked={(passcode) => {
                 const active = getKeys(selectedAccount)?.active;
-                if (!active && (grantNeeded || authority === 'active')) {
+                // Held whenever the active key is missing, not only when the
+                // grant is known to need it: a sign-in judged on a cached
+                // account can turn into a first-time grant on the fresh read.
+                if (!active) {
                   setUnlockedWith({ account: selectedAccount, passcode });
-                  return;
                 }
+                if (!active && (grantNeeded || authority === 'active')) return;
                 approve();
               }}
             />
@@ -555,6 +558,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
               {...(unlockedWith?.account === selectedAccount && {
                 passcode: unlockedWith.passcode,
                 autoFocus: true,
+                onAdded: () => setUnlockedWith(null),
               })}
             />
           </>
