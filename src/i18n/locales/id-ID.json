@@ -136,7 +136,11 @@
     "still_confirming": "Otorisasi sudah dikirim tetapi masih menunggu konfirmasi. Silakan coba lagi sebentar lagi.",
     "first_time_grant": "Otorisasi pertama kali: tindakan ini menambahkan {app} ke otoritas posting Anda secara on-chain dan memerlukan kunci active Anda satu kali. Akun tersebut akan dapat memposting sebagai Anda sampai Anda mencabut izinnya.",
     "this_site": "Situs ini",
-    "authorize_app": "Otorisasi {app}"
+    "authorize_app": "Otorisasi {app}",
+    "sign_in_to": "Masuk ke {app}",
+    "sign_in": "Masuk",
+    "signing_in_as": "Masuk sebagai",
+    "already_authorized": "Anda sudah pernah mengotorisasi {app}. Tidak ada izin baru yang diberikan."
   },
   "import": {
     "username": "Nama pengguna",

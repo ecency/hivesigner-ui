@@ -30,6 +30,10 @@ vi.mock('@tanstack/react-router', () => ({
     </a>
   ),
   useNavigate: () => h.navigate,
+  useRouter: () => ({
+    state: { location: { pathname: '/login', searchStr: '' } },
+    subscribe: () => () => {},
+  }),
 }));
 vi.mock('@/lib/use-accounts', () => ({ useAccounts: () => h.accounts }));
 // The consent screen is covered by its own tests; here we only care WHICH flow
@@ -69,8 +73,13 @@ describe('/login flow selection', () => {
     };
     render(<Login />);
     expect(h.consent).not.toHaveBeenCalled();
-    // It offers an unlock that returns to the requested page.
+    // It names the target, the account, and unlocks right here (#145).
     expect(screen.getByText(/\/profile/)).toBeInTheDocument();
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@alice');
+    expect(
+      screen.getByRole('button', { name: /^sign in$/i }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^unlock$/i })).toBeNull();
   });
 
   it('navigates straight to the target when an account is already unlocked', async () => {
@@ -82,7 +91,11 @@ describe('/login flow selection', () => {
     };
     render(<Login />);
     await waitFor(() =>
-      expect(h.navigate).toHaveBeenCalledWith({ to: '/profile', search: {} }),
+      expect(h.navigate).toHaveBeenCalledWith({
+        to: '/profile',
+        search: {},
+        replace: true,
+      }),
     );
   });
 
@@ -94,7 +107,11 @@ describe('/login flow selection', () => {
     };
     render(<Login />);
     await waitFor(() =>
-      expect(h.navigate).toHaveBeenCalledWith({ to: '/', search: {} }),
+      expect(h.navigate).toHaveBeenCalledWith({
+        to: '/',
+        search: {},
+        replace: true,
+      }),
     );
   });
 
@@ -107,7 +124,11 @@ describe('/login flow selection', () => {
     };
     render(<Login />);
     await waitFor(() => expect(h.navigate).toHaveBeenCalled());
-    expect(h.navigate).toHaveBeenCalledWith({ to: '/', search: {} });
+    expect(h.navigate).toHaveBeenCalledWith({
+      to: '/',
+      search: {},
+      replace: true,
+    });
   });
 
   it('client_id + redirect_uri is APP CONSENT', () => {

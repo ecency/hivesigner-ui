@@ -4,6 +4,7 @@ import { GrantAction } from '@/components/GrantAction';
 // Grant an app posting authority (legacy /authorize/:username URL).
 export const Route = createFileRoute('/authorize/$username')({
   component: Authorize,
+  remountDeps: ({ params, search }) => ({ params, search }),
   // The legacy grant detour arrives with `redirect_uri` (see grantReturnTarget).
   validateSearch: (s: Record<string, unknown>) => s as Record<string, string>,
 });

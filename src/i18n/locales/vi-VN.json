@@ -136,7 +136,11 @@
     "still_confirming": "Yêu cầu cấp quyền đã được gửi nhưng vẫn đang chờ xác nhận. Vui lòng thử lại sau giây lát.",
     "first_time_grant": "Cấp quyền lần đầu: thao tác này thêm {app} vào quyền posting của bạn trên chuỗi và cần khóa active của bạn một lần. Tài khoản đó sẽ có thể đăng bài dưới danh nghĩa bạn cho đến khi bạn thu hồi quyền.",
     "this_site": "Trang web này",
-    "authorize_app": "Cấp quyền cho {app}"
+    "authorize_app": "Cấp quyền cho {app}",
+    "sign_in_to": "Đăng nhập vào {app}",
+    "sign_in": "Đăng nhập",
+    "signing_in_as": "Đăng nhập với tư cách",
+    "already_authorized": "Bạn đã cấp quyền cho {app} trước đây. Không có quyền mới nào được cấp."
   },
   "import": {
     "username": "Tên người dùng",

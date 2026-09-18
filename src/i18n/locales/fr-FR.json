@@ -137,7 +137,11 @@
     "still_confirming": "L’autorisation a été envoyée, mais sa confirmation est toujours en cours. Veuillez réessayer dans un instant.",
     "first_time_grant": "Première autorisation : cette opération ajoute {app} à votre autorité de publication sur la blockchain et nécessite une fois votre clé active. Ce compte pourra publier en votre nom jusqu’à ce que vous le révoquiez.",
     "this_site": "Ce site",
-    "authorize_app": "Autoriser {app}"
+    "authorize_app": "Autoriser {app}",
+    "sign_in_to": "Se connecter à {app}",
+    "sign_in": "Se connecter",
+    "signing_in_as": "Connexion en tant que",
+    "already_authorized": "Vous avez déjà autorisé {app}. Aucun nouvel accès n’est accordé."
   },
   "import": {
     "username": "Nom d’utilisateur",

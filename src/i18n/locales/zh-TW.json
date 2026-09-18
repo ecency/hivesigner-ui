@@ -136,7 +136,11 @@
     "still_confirming": "授權已送出，但仍在確認中。請稍候再試一次。",
     "first_time_grant": "首次授權：這會在鏈上將 {app} 加入你的發文權限，需要使用一次你的活躍金鑰。在你撤銷之前，該帳號都能以你的身分發文。",
     "this_site": "這個網站",
-    "authorize_app": "授權 {app}"
+    "authorize_app": "授權 {app}",
+    "sign_in_to": "登入 {app}",
+    "sign_in": "登入",
+    "signing_in_as": "登入帳號",
+    "already_authorized": "你之前已授權 {app}，不會授予新的權限。"
   },
   "import": {
     "username": "使用者名稱",

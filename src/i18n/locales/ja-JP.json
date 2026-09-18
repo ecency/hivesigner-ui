@@ -136,7 +136,11 @@
     "still_confirming": "承認は送信されましたが、まだ確認中です。少し待ってからもう一度お試しください。",
     "first_time_grant": "初回の承認：{app} をオンチェーンであなたの投稿権限に追加するため、アクティブキーが一度だけ必要です。あなたが取り消すまで、そのアカウントはあなたとして投稿できるようになります。",
     "this_site": "このサイト",
-    "authorize_app": "{app} を承認"
+    "authorize_app": "{app} を承認",
+    "sign_in_to": "{app} にログイン",
+    "sign_in": "ログイン",
+    "signing_in_as": "ログインするアカウント",
+    "already_authorized": "{app} はすでに承認済みです。新たな権限は付与されません。"
   },
   "import": {
     "username": "ユーザー名",

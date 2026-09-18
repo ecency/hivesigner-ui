@@ -4,6 +4,7 @@ import { GrantAction } from '@/components/GrantAction';
 // Revoke an app's posting authority (legacy /revoke/:username URL).
 export const Route = createFileRoute('/revoke/$username')({
   component: Revoke,
+  remountDeps: ({ params, search }) => ({ params, search }),
   // The legacy grant detour arrives with `redirect_uri` (see grantReturnTarget).
   validateSearch: (s: Record<string, unknown>) => s as Record<string, string>,
 });

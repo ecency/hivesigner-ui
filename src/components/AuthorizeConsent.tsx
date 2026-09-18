@@ -1,12 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AddActiveKey } from '@/components/AddActiveKey';
 import { Avatar } from '@/components/Avatar';
 import { CurrentAccount } from '@/components/CurrentAccount';
 import { PostingAbilities } from '@/components/PostingAbilities';
 import { ReportIssue } from '@/components/ReportIssue';
+import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import { Sentence } from '@/components/Untranslated';
 import {
   alertError,
@@ -17,9 +18,10 @@ import {
   mutedXs,
   page,
 } from '@/components/ui';
-import { getKeys } from '@/lib/accounts';
+import { readAccountNow } from '@/lib/account-now';
+import { getKeys, stillSelected } from '@/lib/accounts';
 import { buildGrantOperation, hasGrant, waitForGrant } from '@/lib/grant';
-import { type Account, getAccount } from '@/lib/hive';
+import { type Account, getAccount, type Keys } from '@/lib/hive';
 import { hostOf, reportIntegrationIssue } from '@/lib/integration-signal';
 import {
   type AppProfile,
@@ -35,6 +37,7 @@ import { safeText } from '@/lib/operation-summary';
 import { accountKey, oauthAppProfileKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // The consent screen (#106 pain #3): one screen naming the app and its scope in
 // plain words. For a posting-scope request it first confirms (and, if missing,
@@ -49,6 +52,24 @@ import { useAccounts } from '@/lib/use-accounts';
 // The shape of a Hive account name. A client_id that is not one names no app:
 // it is never looked up on-chain and never shown as typed.
 const HIVE_NAME = /^[a-z][a-z0-9.-]{2,15}$/;
+
+/**
+ * The key the token is signed with. The token is an off-chain proof of the
+ * username, and hivesigner-api accepts it signed by any of the account's
+ * posting, active or owner keys. So a login, or an app that already holds the
+ * grant, can use whichever of posting or active this device has; only an
+ * active-scope request insists on active. Chain writes are stricter: since
+ * HF28 an operation needs exactly its own authority, which is why the grant
+ * always takes the active key.
+ */
+function tokenSigner(
+  authority: 'posting' | 'active',
+  keys: Keys | null,
+): { role: 'posting' | 'active'; wif: string } | null {
+  if (authority === 'posting' && keys?.posting)
+    return { role: 'posting', wif: keys.posting };
+  return keys?.active ? { role: 'active', wif: keys.active } : null;
+}
 
 export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const { t } = useTranslation();
@@ -75,6 +96,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     refetch: refetchAccount,
     isError: accountFailed,
     isFetching: accountFetching,
+    isLoading: accountLoading,
   } = useQuery({
     queryKey: accountKey(selectedAccount),
     queryFn: (): Promise<Account | null> =>
@@ -84,17 +106,21 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
 
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  // Set when this screen is left, so an in-flight approve() cannot grant
-  // authority or redirect after the user withdrew consent. Setup MUST clear it:
-  // Strict Mode runs setup -> cleanup -> setup, so a cleanup-only effect would
-  // leave the latch stuck on and silently abort every approval in development.
-  const abandoned = useRef(false);
-  useEffect(() => {
-    abandoned.current = false;
-    return () => {
-      abandoned.current = true;
-    };
-  }, []);
+  // The passcode that unlocked the account on this screen, held only when
+  // its keys lack the active key, so adding it does not ask for the passcode
+  // a second time. Let go once the key is added, and gone with the screen.
+  const [unlockedWith, setUnlockedWith] = useState<{
+    account: string;
+    passcode: string | undefined;
+  } | null>(null);
+  // An approve() in flight must not grant authority or redirect after the
+  // user set off elsewhere: they withdrew consent.
+  const leave = useLeaveLatch();
+  const queryClient = useQueryClient();
+  // The account this screen just granted for: it now reads as granted, but
+  // the screen must not turn into a sign-in on the way to the app. Another
+  // account selected meanwhile is judged on its own.
+  const [grantedFor, setGrantedFor] = useState<string | null>(null);
 
   // A request with NO app account is a site asking only to confirm who the
   // user is (hivesearcher and the like): it holds no posting authority and
@@ -111,24 +137,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const authority = authorityForScope(effective.scope);
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
   const keys = selectedAccount ? getKeys(selectedAccount) : null;
-  // The token is an off-chain proof of the username, and hivesigner-api
-  // accepts it signed by any of the account's posting, active or owner keys.
-  // So a login, or an app that already holds the grant, can use whichever of
-  // posting or active this device has; only an active-scope request insists
-  // on active. Chain writes are stricter: since HF28 an operation needs
-  // exactly its own authority, which is why the grant always takes the
-  // active key below.
-  const tokenRole: 'posting' | 'active' | null =
-    authority === 'active'
-      ? keys?.active
-        ? 'active'
-        : null
-      : keys?.posting
-        ? 'posting'
-        : keys?.active
-          ? 'active'
-          : null;
-  const signingKey = tokenRole ? keys?.[tokenRole] : undefined;
+  const signingKey = tokenSigner(authority, keys)?.wif;
   const callback = req.redirectUri ?? '';
   const registered = profile
     ? isRegisteredRedirect(profile, callback)
@@ -156,10 +165,28 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   // /import for a key the account is merely missing lost them the flow.
   const needsActiveKey =
     isUnlocked && !keys?.active && (grantNeeded || authority === 'active');
+  // Nothing new is granted: a login, or a posting request from an app this
+  // account authorized before. The user is signing in, and the screen says so
+  // instead of presenting the scope as a fresh request every visit (#145). An
+  // active-scope request is never one: its token is signed with the active
+  // key, which the posting grant says nothing about.
+  const signIn =
+    grantedFor !== selectedAccount &&
+    !!selectedAccount &&
+    (effective.scope === 'login' ||
+      (postingScope &&
+        authority === 'posting' &&
+        !!account &&
+        hasGrant(account.posting, req.clientId as string)));
 
   async function approve() {
     setError(null);
-    if (!selectedAccount || !signingKey) return;
+    const left = leave.mark();
+    // Read now, not from this render: an unlock in the same click has only
+    // just put the keys in memory.
+    const keys = selectedAccount ? getKeys(selectedAccount) : null;
+    const signer = tokenSigner(authority, keys);
+    if (!selectedAccount || !signer) return;
     // Enforce redirect_uri registration (the Nuxt app does not; we do). A
     // site with no app account has nothing to register; its callback only
     // has to be a secure URL.
@@ -174,19 +201,35 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
       // unloaded account, and confirm the grant on the REFRESHED account after
       // granting rather than trusting the broadcast optimistically.
       if (postingScope && req.clientId) {
-        // Refetch fresh first, so a retry after a grant that already landed sees
-        // the authority and does not broadcast a second account_update.
-        const loaded = (await refetchAccount()).data ?? account;
-        // Re-check here, BEFORE the broadcast. The refetch is awaited, so the
+        // Read fresh first, so a retry after a grant that already landed sees
+        // the authority and does not broadcast a second account_update. By
+        // name, and never the cached copy when the read fails (readAccountNow).
+        let loaded: Account | null;
+        try {
+          loaded = await readAccountNow(queryClient, selectedAccount);
+        } catch {
+          // Nothing was done yet: a user who left meanwhile is not shown a
+          // failure on the screen they abandoned.
+          if (!left()) setError(t('authorize.read_failed'));
+          return;
+        }
+        // Re-check here, BEFORE the broadcast. The read is awaited, so the
         // user can cancel while it is in flight; granting posting authority is
         // an irreversible on-chain write, so withdrawn consent has to stop it
-        // at this point, not merely stop the token afterwards.
-        if (abandoned.current) return;
+        // at this point, not merely stop the token afterwards. Another tab
+        // may also have selected someone else: the screen now names them, so
+        // nothing is done for the account it showed before.
+        if (left() || !stillSelected(selectedAccount)) return;
         if (!loaded) {
           setError(t('common.try_again'));
           return;
         }
         if (!hasGrant(loaded.posting, req.clientId)) {
+          // The screen said nothing new would be granted: it was judged on a
+          // cached account that still showed the grant (revoked since, or a
+          // lagging read). The refetch has just redrawn it as a first-time
+          // request, so the user is asked again with that on screen.
+          if (!grantNeeded) return;
           const activeKey = keys?.active;
           if (!activeKey) {
             setError(
@@ -197,24 +240,25 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             return;
           }
           const op = buildGrantOperation(loaded, req.clientId);
+          setGrantedFor(selectedAccount);
           if (op) await broadcastOperations([op], activeKey, loaded.name);
           // Wait for the grant to be visible on-chain before issuing the token.
           if (!(await waitForGrant(loaded.name, req.clientId))) {
             setError(t('authorize.still_confirming'));
             return;
           }
-          await refetchAccount();
+          await readAccountNow(queryClient, selectedAccount).catch(() => null);
         }
       }
       // The grant poll can run for up to 16s. If the user left the consent
       // screen in the meantime (Cancel, or navigating away), do NOT hand the app
       // a token and redirect them - they withdrew consent mid-flow.
-      if (abandoned.current) return;
+      if (left() || !stillSelected(selectedAccount)) return;
       const token = buildAuthToken(
         effective,
         selectedAccount,
-        signingKey,
-        tokenRole ?? authority,
+        signer.wif,
+        signer.role,
       );
       window.location.assign(
         buildRedirectUrl(callback, token, effective, selectedAccount),
@@ -253,6 +297,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const readFailed =
     (!!req.clientId && profileFailed && profile === undefined) ||
     (postingScope && accountFailed && account === undefined);
+  const verb = signIn ? t('authorize.sign_in') : t('authorize.authorize');
   const grantNotice = grantNeeded && (
     <div className={alertWarn}>
       <Sentence
@@ -281,7 +326,10 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     }
   }, [unregistered, appMissing, insecure, invalid, req.clientId, callback]);
 
-  if (isLoading) {
+  // The account decides between a first-time request and a sign-in, so a
+  // posting request waits for it as well as for the app: otherwise a returning
+  // user watched the request turn into a sign-in as the second read landed.
+  if (isLoading || (postingScope && accountLoading)) {
     return <section className={page}>…</section>;
   }
 
@@ -327,8 +375,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
               className="mx-auto"
             />
             <h1 className="m-0 text-[19px] font-bold break-words sm:text-xl">
+              {/* Keyed: a different sentence is built fresh, not reworked
+                  (see lib/translation-guard.ts). */}
               <Sentence
-                k="authorize.request_access"
+                key={signIn ? 'sign-in' : 'request'}
+                k={signIn ? 'authorize.sign_in_to' : 'authorize.request_access'}
                 values={{ app: appName }}
                 bold
               />
@@ -402,15 +453,27 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
 
       {/* The scope, in the words the landing page uses. A posting request
           lists what the app will be able to do and says it is one grant; a
-          login request is one line, because that is all it is. */}
-      <div className={`${card} text-sm`}>
-        <div className="mb-1 text-xs text-muted">{t('authorize.scope')}</div>
-        {effective.scope === 'login' ? (
-          <div className="font-semibold">{t('authorize.scope_login')}</div>
-        ) : (
-          <PostingAbilities app={clientLabel} compact />
-        )}
-      </div>
+          login request is one line, because that is all it is. An app this
+          account already authorized gets one line too: it is shown the
+          first time, like any sign-in, not on every visit. */}
+      {signIn && postingScope ? (
+        <p className={`${mutedXs} text-center`}>
+          <Sentence
+            k="authorize.already_authorized"
+            values={{ app: `@${clientLabel}` }}
+            bold
+          />
+        </p>
+      ) : (
+        <div className={`${card} text-sm`}>
+          <div className="mb-1 text-xs text-muted">{t('authorize.scope')}</div>
+          {effective.scope === 'login' ? (
+            <div className="font-semibold">{t('authorize.scope_login')}</div>
+          ) : (
+            <PostingAbilities app={clientLabel} compact />
+          )}
+        </div>
+      )}
 
       {error && (
         <div role="alert" className={alertError}>
@@ -425,14 +488,18 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
         {selectedAccount && (
           <CurrentAccount
             username={selectedAccount}
-            label={t('authorize.authorizing_as')}
+            label={
+              signIn
+                ? t('authorize.signing_in_as')
+                : t('authorize.authorizing_as')
+            }
             next={window.location.pathname + window.location.search}
             busy={busy}
           />
         )}
         {refused ? (
           <button type="button" disabled className={btnPrimary}>
-            {t('authorize.authorize')}
+            {verb}
           </button>
         ) : readFailed ? (
           <>
@@ -460,21 +527,35 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             {t('common.continue')}
           </Link>
         ) : !isUnlocked ? (
-          // Carry the consent request through the unlock, or the app has to
-          // start the whole authorization over. Keyed: its children differ
-          // from the other links' plain labels, so React builds it fresh
-          // rather than reworking their text (see lib/translation-guard.ts).
-          <Link
-            key="unlock"
-            to="/accounts"
-            search={{ next: window.location.pathname + window.location.search }}
-            className={btnPrimary}
-          >
-            <Sentence
-              k="accounts.unlock_account"
-              values={{ account: `@${selectedAccount}` }}
+          // The passcode on this screen, and one click signs in (#145). The
+          // grant need is read from the chain, so a first-time grant still
+          // says so before the click; a missing active key only shows once
+          // the keys are open, and the screen then asks for it in place.
+          <>
+            {grantNotice}
+            <UnlockAndContinue
+              key={`unlock:${selectedAccount}`}
+              username={selectedAccount}
+              action={verb}
+              disabled={postingScope && !accountLoaded}
+              // Only on a sign-in: a first-time request is read first.
+              autoFocus={signIn}
+              leave={leave}
+              // Held whenever the active key is missing, not only when the
+              // grant is known to need it: a sign-in judged on a cached
+              // account can turn into a first-time grant on the fresh read.
+              onOpened={(passcode, keys) => {
+                if (!keys.active) {
+                  setUnlockedWith({ account: selectedAccount, passcode });
+                }
+              }}
+              onUnlocked={() => {
+                const active = getKeys(selectedAccount)?.active;
+                if (!active && (grantNeeded || authority === 'active')) return;
+                approve();
+              }}
             />
-          </Link>
+          </>
         ) : postingScope && !accountLoaded ? (
           // Never issue a posting token before we can confirm the on-chain
           // grant, and never ask for a key before knowing it is needed.
@@ -484,7 +565,14 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
         ) : needsActiveKey ? (
           <>
             {grantNotice}
-            <AddActiveKey username={selectedAccount} />
+            <AddActiveKey
+              username={selectedAccount}
+              {...(unlockedWith?.account === selectedAccount && {
+                passcode: unlockedWith.passcode,
+                autoFocus: true,
+                onAdded: () => setUnlockedWith(null),
+              })}
+            />
           </>
         ) : !signingKey ? (
           // Neither posting nor active on this device (a memo-only import)
@@ -508,7 +596,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
               disabled={busy}
               className={btnPrimary}
             >
-              {busy ? '…' : t('authorize.authorize')}
+              {busy ? '…' : verb}
             </button>
           </>
         )}

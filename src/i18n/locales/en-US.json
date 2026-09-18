@@ -137,7 +137,11 @@
     "still_confirming": "Authorization was submitted but is still confirming. Please try again in a moment.",
     "first_time_grant": "First-time authorization: this adds {app} to your posting authority on-chain and needs your active key once. That account will be able to post as you until you revoke it.",
     "this_site": "This site",
-    "authorize_app": "Authorize {app}"
+    "authorize_app": "Authorize {app}",
+    "sign_in_to": "Sign in to {app}",
+    "sign_in": "Sign in",
+    "signing_in_as": "Signing in as",
+    "already_authorized": "You authorized {app} before. Nothing new is granted."
   },
   "import": {
     "username": "Username",

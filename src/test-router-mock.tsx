@@ -54,6 +54,12 @@ export function routerMock() {
     Navigate: ({ to }: { to: string }) => <div data-navigate={to} />,
     Outlet: () => <div data-testid="outlet" />,
     useNavigate: () => routerState.navigate,
+    // For the leave latch: no navigation ever starts here, so it is set only
+    // when the component unmounts. The real-router tests cover the rest.
+    useRouter: () => ({
+      state: { location: { pathname: routerState.pathname, searchStr: '' } },
+      subscribe: () => () => {},
+    }),
     useRouterState: ({ select }: { select: (s: unknown) => unknown }) =>
       select({ location: { pathname: routerState.pathname } }),
   };

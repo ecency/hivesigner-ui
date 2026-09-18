@@ -199,6 +199,15 @@ export function accountIsEncrypted(username: string): boolean {
   return field ? fieldIsEncrypted(field) : false;
 }
 
+/**
+ * Whether `username` is still the account this tab acts as. Another tab can
+ * select someone else, and this tab adopts it on its next store update; a
+ * screen that awaited checks this before acting for the account it showed.
+ */
+export function stillSelected(username: string): boolean {
+  return getState().selectedAccount === username;
+}
+
 export function isUnlocked(username: string): boolean {
   return keyCache.has(username);
 }
@@ -292,10 +301,14 @@ export async function addAccount(
  * Unlock a stored account. `passcode` is required for an encrypted account.
  * Throws (keystore error) on a wrong passcode. A legacy triplesec account is
  * re-encrypted into the v1 envelope on success.
+ *
+ * `onOpened` runs with the keys just before the unlock is announced, so a
+ * screen can get ready for what it will show next and show it in one go.
  */
 export async function unlockAccount(
   username: string,
   passcode?: string,
+  onOpened?: (keys: Keys) => void,
 ): Promise<Keys> {
   const state = readPersisted();
   const field = state.accountsKeychains[username]?.password;
@@ -328,7 +341,19 @@ export async function unlockAccount(
       // keep the record as it is; the account is unlocked for this session
     }
   }
-  emit();
+  // Key derivation runs synchronously and freezes the page, so a click made
+  // meanwhile (Cancel, Switch account) waits in the queue. Let it run before
+  // the unlock takes effect: the screen being left then knows it before
+  // anything acts on these keys, and the click cannot land on the unlocked
+  // screen's own button instead.
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  try {
+    onOpened?.(keys);
+  } finally {
+    // The keys are in memory whatever the caller did with them: every
+    // screen must hear it is unlocked.
+    emit();
+  }
   return keys;
 }
 

@@ -27,8 +27,10 @@ import {
   unlockAccount,
 } from '@/lib/accounts';
 import { resolveInternalPath } from '@/lib/internal-path';
+import { isWrongPasscode } from '@/lib/keystore';
 import { parseSearch } from '@/lib/search';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // The account switcher (#106 pain #5): every stored account with its state,
 // switching that never logs the others out, and inline unlock for encrypted
@@ -41,6 +43,12 @@ export const Route = createFileRoute('/accounts')({
   validateSearch: (search: Record<string, unknown>): { next?: string } =>
     typeof search.next === 'string' ? { next: search.next } : {},
 });
+
+/** Counts the choices made on this page (a row clicked to switch or
+    unlock), so an unlock that finishes after a later one does not take it
+    back. This page's clicks only: another tab choosing someone else is not a
+    choice made here. */
+let choices = 0;
 
 function AccountRow({
   username,
@@ -59,6 +67,17 @@ function AccountRow({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
+  const leave = useLeaveLatch();
+
+  /**
+   * An unlock can take seconds, and clicks made meanwhile run before it
+   * finishes. The last click wins: when another row was chosen meanwhile, or
+   * the user set off elsewhere, this one is left unlocked but not chosen, and
+   * nothing navigates.
+   */
+  function stillWanted(left: () => boolean, choice: number) {
+    return !left() && choice === choices;
+  }
 
   function done() {
     // Return to the flow that sent the user here (an OAuth consent request
@@ -80,19 +99,26 @@ function AccountRow({
 
   async function activate() {
     if (unlocked) {
+      choices++;
       selectAccount(username);
       done();
       return;
     }
     if (encrypted) {
-      // Needs a passcode: open the inline form.
+      // Needs a passcode: open the inline form. Choosing this row, so an
+      // unlock still running for another one does not take the user away
+      // while they type here.
+      choices++;
       setUnlocking(true);
       return;
     }
     // Plaintext but not yet in memory (e.g. just after a reload): load and select.
+    const left = leave.mark();
+    const choice = ++choices;
     setBusy(true);
     try {
       await unlockAccount(username);
+      if (!stillWanted(left, choice)) return;
       selectAccount(username);
       done();
     } catch (e) {
@@ -106,19 +132,34 @@ function AccountRow({
 
   async function submitUnlock() {
     setError(null);
-    setBusy(true);
+    const left = leave.mark();
+    const choice = ++choices;
+    const typed = passcode;
+    // Emptied BEFORE the unlock, so a password manager that captures a field
+    // as it leaves the page finds nothing, even when the user leaves while
+    // the passcode is checked (#136). Put back if it was wrong.
+    flushSync(() => {
+      setPasscode('');
+      setBusy(true);
+    });
     try {
-      await unlockAccount(username, passcode);
+      await unlockAccount(username, typed);
+      setUnlocking(false);
+      if (!stillWanted(left, choice)) return;
       selectAccount(username);
-      // Emptied and removed before the page changes, so a password manager
-      // that captures on navigation finds nothing to offer to save.
-      flushSync(() => {
-        setPasscode('');
-        setUnlocking(false);
-      });
       done();
-    } catch {
-      setError(t('login.invalid_hs_password'));
+    } catch (e) {
+      // Only into an empty field: nothing typed since is overwritten.
+      setPasscode((current) => current || typed);
+      // As on the request screens: only a passcode that does not open the
+      // record is a wrong passcode; anything else is shown as it is.
+      setError(
+        isWrongPasscode(e)
+          ? t('login.invalid_hs_password')
+          : e instanceof Error
+            ? e.message
+            : String(e),
+      );
     } finally {
       setBusy(false);
     }
@@ -226,6 +267,7 @@ function AccountRow({
               onEnter={() => {
                 if (!busy && passcode.length > 0) submitUnlock();
               }}
+              readOnly={busy}
               autoFocus
             />
           </label>

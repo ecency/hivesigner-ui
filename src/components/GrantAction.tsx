@@ -1,10 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AddActiveKey } from '@/components/AddActiveKey';
 import { AppProfile } from '@/components/AppProfile';
 import { Avatar } from '@/components/Avatar';
+import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import { Sentence } from '@/components/Untranslated';
 import {
   alertError,
@@ -16,7 +17,8 @@ import {
   h1,
   page,
 } from '@/components/ui';
-import { getKeys } from '@/lib/accounts';
+import { readAccountNow } from '@/lib/account-now';
+import { getKeys, stillSelected } from '@/lib/accounts';
 import {
   buildGrantOperation,
   buildRevokeOperation,
@@ -29,6 +31,7 @@ import { safeText } from '@/lib/operation-summary';
 import { accountKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // Shared screen for /authorize/:username and /revoke/:username. Grant or revoke
 // the app's posting authority with the selected account's ACTIVE key.
@@ -50,22 +53,22 @@ export function GrantAction({
   // callback. Null means "no callback", or a revoke: the list screen.
   const returnTarget = grantReturnTarget(appName, query, mode);
   const listTo = mode === 'grant' ? '/accounts' : '/authorized-apps';
-  // Set when this screen is left, so an in-flight submit() cannot navigate
-  // after the user pressed Cancel. Setup clears it: Strict Mode runs
-  // setup -> cleanup -> setup, so a cleanup-only effect would leave the latch
-  // stuck on in development.
-  const abandoned = useRef(false);
-  useEffect(() => {
-    abandoned.current = false;
-    return () => {
-      abandoned.current = true;
-    };
-  }, []);
+  // A submit() in flight neither broadcasts nor navigates after the user
+  // set off elsewhere (Cancel stays live while it runs).
+  const leave = useLeaveLatch();
+  const queryClient = useQueryClient();
   const [confirming, setConfirming] = useState(false);
   const [status, setStatus] = useState<'idle' | 'busy' | 'done' | 'error'>(
     'idle',
   );
   const [error, setError] = useState('');
+  // The passcode that unlocked the account on this screen, held only when
+  // the active key turned out to be missing, so adding it does not ask for
+  // the passcode a second time.
+  const [unlockedWith, setUnlockedWith] = useState<{
+    account: string;
+    passcode: string | undefined;
+  } | null>(null);
 
   const {
     data: account,
@@ -95,11 +98,49 @@ export function GrantAction({
     (mode === 'grant' ? hasGrant(account.posting, appName) : op === null);
 
   async function submit() {
-    if (!account || !activeKey || !op) return;
+    const left = leave.mark();
+    // Read now, not from this render: an unlock in the same click has only
+    // just put the keys in memory.
+    const name = selectedAccount;
+    const activeKey = name ? getKeys(name)?.active : undefined;
+    if (!name || !account || !activeKey || !op) return;
     setStatus('busy');
     setError('');
     try {
-      await broadcastOperations([op], activeKey, account.name);
+      // Built from a fresh read, never from this render's copy: the
+      // account_update carries the WHOLE authority, and a change made
+      // meanwhile (another app granted or revoked elsewhere, during an unlock
+      // that took seconds) would be undone by a stale one. Read by name, and
+      // a failed read is an error, never the cached copy (readAccountNow).
+      let fresh: Account | null;
+      try {
+        fresh = await readAccountNow(queryClient, name);
+      } catch {
+        fresh = null;
+      }
+      // The user set off elsewhere, or another tab selected someone else
+      // (the screen names them now): nothing is done for this click. The
+      // button is back, for a user who returns before the next page loaded.
+      if (left() || !stillSelected(name)) {
+        setStatus('idle');
+        return;
+      }
+      if (!fresh) {
+        setError(t('authorize.read_failed'));
+        setStatus('error');
+        return;
+      }
+      const freshOp =
+        mode === 'grant'
+          ? buildGrantOperation(fresh, appName)
+          : buildRevokeOperation(fresh, appName);
+      // Already done meanwhile: the screen, redrawn from the fresh read,
+      // says so and offers Continue.
+      if (!freshOp) {
+        setStatus('idle');
+        return;
+      }
+      await broadcastOperations([freshOp], activeKey, fresh.name);
       setStatus('done');
       // The Nuxt page continued to the callback by itself after the broadcast,
       // and the login that brought the user here is waiting on it. Automatic
@@ -114,7 +155,7 @@ export function GrantAction({
         const visible = await waitForGrant(account.name, appName);
         setConfirming(false);
         await refetch();
-        if (abandoned.current) return;
+        if (left()) return;
         if (visible) navigate(returnTarget as never);
         return;
       }
@@ -130,18 +171,23 @@ export function GrantAction({
   // characters stripped.
   const appLabel = safeText(appName);
 
-  // The states that sit between "unlocked" and "act", each with its own
+  // The states that sit between "an account" and "act", each with its own
   // answer. `undefined` is a read still running or one that failed; `null` is
   // an account the chain does not know. Both used to leave a button that did
-  // nothing, for ever.
-  const pending =
-    !!selectedAccount && isUnlocked && !alreadyDone && status !== 'done';
+  // nothing, for ever. None of them needs the keys, so a locked account sees
+  // them too.
+  const pending = !!selectedAccount && !alreadyDone && status !== 'done';
   const readFailed = pending && account === undefined && accountFailed;
   const accountMissing = pending && account === null;
+  // A locked account is unlocked here, and the same click acts (#145). It
+  // used to be sent to the account list, and the request was lost there.
+  // It stays through a failed read (Retry is offered below), so a passcode
+  // being typed is not thrown away.
+  const locked = pending && !isUnlocked && !accountMissing;
   // An unlocked account without its active key is asked for it in place. The
   // unlock link this used to show led to an account that was already
   // unlocked, and the request was lost on the way.
-  const askForKey = pending && !!account && !activeKey;
+  const askForKey = pending && isUnlocked && !!account && !activeKey;
 
   return (
     // A confirm-and-act screen, so it stays one readable column instead of
@@ -235,7 +281,31 @@ export function GrantAction({
       {/* Above the actions, not in their row: the form is a block of its own
           and would otherwise be squeezed beside Cancel from sm up. */}
       {askForKey && selectedAccount && (
-        <AddActiveKey username={selectedAccount} />
+        <AddActiveKey
+          username={selectedAccount}
+          {...(unlockedWith?.account === selectedAccount && {
+            passcode: unlockedWith.passcode,
+            autoFocus: true,
+            onAdded: () => setUnlockedWith(null),
+          })}
+        />
+      )}
+      {locked && selectedAccount && (
+        <UnlockAndContinue
+          key={`unlock:${selectedAccount}`}
+          username={selectedAccount}
+          action={verb}
+          disabled={!account}
+          leave={leave}
+          onOpened={(passcode, keys) => {
+            if (!keys.active) {
+              setUnlockedWith({ account: selectedAccount, passcode });
+            }
+          }}
+          onUnlocked={() => {
+            if (getKeys(selectedAccount)?.active) submit();
+          }}
+        />
       )}
 
       {/* Full-width actions on a phone; from sm they sit inline at their own
@@ -244,15 +314,6 @@ export function GrantAction({
         {!selectedAccount ? (
           <Link to="/import" className={btnPrimary}>
             {t('common.continue')}
-          </Link>
-        ) : !isUnlocked ? (
-          // Keyed: its children differ from the other links' plain labels, so
-          // React builds it fresh rather than reworking their text.
-          <Link key="unlock" to="/accounts" className={btnPrimary}>
-            <Sentence
-              k="accounts.unlock_account"
-              values={{ account: `@${selectedAccount}` }}
-            />
           </Link>
         ) : alreadyDone || status === 'done' ? (
           // Already granted, or just granted: continue to the callback that
@@ -273,7 +334,7 @@ export function GrantAction({
           >
             {accountFetching ? '…' : t('authorize.retry')}
           </button>
-        ) : accountMissing ? null : !account ? (
+        ) : accountMissing || locked ? null : !account ? (
           <button type="button" disabled className={btnPrimary}>
             …
           </button>

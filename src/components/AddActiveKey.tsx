@@ -23,20 +23,41 @@ import { getAccount, type Keys, resolveCredential } from '@/lib/hive';
  * stored keys, under the account's passcode when it has one. An account with
  * no passcode is offered one, on by default as on /import: this is the key
  * that moves funds, and without a passcode it sits on disk unencrypted.
+ *
+ * A protected account unlocked on the same screen a moment ago passes the
+ * passcode it was opened with, so it is not asked for twice (#145). It lives
+ * only as long as the screen that asked for it; the keys it protects are in
+ * memory for the whole session anyway.
  */
-export function AddActiveKey({ username }: { username: string }) {
+export function AddActiveKey({
+  username,
+  passcode: unlockedWith,
+  autoFocus = false,
+  onAdded,
+}: {
+  username: string;
+  passcode?: string;
+  /** This form has just replaced the field the user was typing in. */
+  autoFocus?: boolean;
+  /** The key is stored: a held passcode can be let go. */
+  onAdded?: () => void;
+}) {
   const { t } = useTranslation();
   const [secret, setSecret] = useState('');
   const [passcode, setPasscode] = useState('');
   const [protect, setProtect] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // The held passcode no longer opens the record (it was protected again
+  // under another passcode meanwhile): ask for it instead of failing for ever.
+  const [heldRejected, setHeldRejected] = useState(false);
   const encrypted = accountIsEncrypted(username);
+  const known = encrypted && !heldRejected ? unlockedWith : undefined;
 
   // A new passcode follows /import's minimum; an existing one is whatever the
   // user chose back then, so any non-empty entry is tried.
   const passcodeOk = encrypted
-    ? passcode.length > 0
+    ? known !== undefined || passcode.length > 0
     : !protect || passcode.length >= 4;
   const canSubmit = secret.trim().length > 0 && passcodeOk && !busy;
 
@@ -86,19 +107,20 @@ export function AddActiveKey({ username }: { username: string }) {
       await addAccount(
         username,
         keys,
-        encrypted || protect ? typed.passcode : undefined,
+        encrypted || protect ? (known ?? typed.passcode) : undefined,
       );
       added = true;
+      onAdded?.();
       // addAccount notifies the account store, so the screen re-renders with
       // the key and this form is replaced by the action it was blocking.
     } catch (err) {
       // A wrong passcode throws from the keystore; say so rather than
       // "try again", which would send the user round the same mistake.
       const msg = err instanceof Error ? err.message : '';
+      const wrongPasscode = /passcode|password|protected/i.test(msg);
+      if (wrongPasscode && known !== undefined) setHeldRejected(true);
       setError(
-        /passcode|password|protected/i.test(msg)
-          ? t('authorize.wrong_passcode')
-          : t('common.try_again'),
+        wrongPasscode ? t('authorize.wrong_passcode') : t('common.try_again'),
       );
     } finally {
       if (!added) {
@@ -131,6 +153,7 @@ export function AddActiveKey({ username }: { username: string }) {
           onChange={setSecret}
           onEnter="submit-form"
           readOnly={busy}
+          autoFocus={autoFocus}
         />
         <span className={mutedXs}>{t('authorize.active_key_hint')}</span>
       </label>
@@ -160,7 +183,7 @@ export function AddActiveKey({ username }: { username: string }) {
           <span className={mutedXs}>{t('import.passcode_hint')}</span>
         </label>
       )}
-      {encrypted && (
+      {encrypted && known === undefined && (
         <label className={label}>
           <span className={labelText}>
             <Sentence

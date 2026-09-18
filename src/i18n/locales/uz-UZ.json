@@ -137,7 +137,11 @@
     "still_confirming": "Ruxsat yuborildi, lekin hali tasdiqlanmoqda. Birozdan soʻng qaytadan urinib koʻring.",
     "first_time_grant": "Birinchi marta ruxsat berish: bu amal {app} hisobini blokcheyndagi posting vakolatingizga qoʻshadi va bir marta active kalitingizni talab qiladi. Siz ruxsatni bekor qilmaguningizcha bu hisob sizning nomingizdan post joylay oladi.",
     "this_site": "Bu sayt",
-    "authorize_app": "{app} uchun ruxsat berish"
+    "authorize_app": "{app} uchun ruxsat berish",
+    "sign_in_to": "{app} ilovasiga kirish",
+    "sign_in": "Kirish",
+    "signing_in_as": "Kiruvchi hisob",
+    "already_authorized": "Siz {app} ilovasiga avval ruxsat bergansiz. Yangi ruxsat berilmaydi."
   },
   "import": {
     "username": "Foydalanuvchi nomi",

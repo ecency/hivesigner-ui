@@ -137,7 +137,11 @@
     "still_confirming": "L’autorizzazione è stata inviata, ma è ancora in fase di conferma. Riprova tra un momento.",
     "first_time_grant": "Prima autorizzazione: questa operazione aggiunge {app} alla tua autorità di pubblicazione sulla blockchain e richiede la tua chiave attiva una sola volta. Quell’account potrà pubblicare a tuo nome finché non lo revochi.",
     "this_site": "Questo sito",
-    "authorize_app": "Autorizza {app}"
+    "authorize_app": "Autorizza {app}",
+    "sign_in_to": "Accedi a {app}",
+    "sign_in": "Accedi",
+    "signing_in_as": "Accesso come",
+    "already_authorized": "Hai già autorizzato {app}. Non viene concesso nessun nuovo permesso."
   },
   "import": {
     "username": "Nome utente",

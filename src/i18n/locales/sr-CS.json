@@ -138,7 +138,11 @@
     "still_confirming": "Ovlašćenje je poslato, ali se još potvrđuje. Pokušajte ponovo za trenutak.",
     "first_time_grant": "Prvo ovlašćivanje: ovim se {app} dodaje u vaše ovlašćenje za objavljivanje u blokčejnu, za šta je jednom potreban vaš aktivni ključ. Taj nalog će moći da objavljuje u vaše ime dok mu ne opozovete pristup.",
     "this_site": "Ovaj sajt",
-    "authorize_app": "Ovlasti {app}"
+    "authorize_app": "Ovlasti {app}",
+    "sign_in_to": "Prijava na {app}",
+    "sign_in": "Prijavi se",
+    "signing_in_as": "Prijavljujete se kao",
+    "already_authorized": "Već ste ranije ovlastili aplikaciju {app}. Ne dodeljuju se nova ovlašćenja."
   },
   "import": {
     "username": "Korisničko ime",

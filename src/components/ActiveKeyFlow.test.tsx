@@ -162,7 +162,8 @@ describe('consent with only an active key on this device', () => {
     chain.granted = true;
     await addAccount('alice', { active: active.toString() });
     renderConsent();
-    const button = await screen.findByRole('button', { name: /authorize/i });
+    // Nothing new is granted, so it is a sign-in, not an authorization.
+    const button = await screen.findByRole('button', { name: /^sign in$/i });
     await waitFor(() => expect(button).toBeEnabled());
     await userEvent.setup().click(button);
     await waitFor(() => expect(chain.assign).toHaveBeenCalledTimes(1));
@@ -193,7 +194,7 @@ describe('consent with only a posting key on this device', () => {
     chain.granted = true;
     await addAccount('alice', { posting: posting.toString() });
     renderConsent();
-    const button = await screen.findByRole('button', { name: /authorize/i });
+    const button = await screen.findByRole('button', { name: /^sign in$/i });
     await waitFor(() => expect(button).toBeEnabled());
     expect(screen.queryByTestId('add-active-key')).toBeNull();
     await userEvent.setup().click(button);
@@ -463,6 +464,153 @@ describe('consent with only a posting key on this device', () => {
       .setup()
       .click(screen.getByRole('button', { name: i18n.t('authorize.retry') }));
     expect(await screen.findByTestId('add-active-key')).toBeInTheDocument();
+  });
+});
+
+describe('a returning visit with a protected account (#145)', () => {
+  const passcodeField = () =>
+    screen.getByLabelText(i18n.t('accounts.passcode'));
+
+  async function protectedAndLocked(keys: {
+    posting?: string;
+    active?: string;
+  }) {
+    await addAccount('alice', keys, 'correct-passcode');
+    // A reload drops the keys from memory; the record stays encrypted.
+    lockAccount('alice');
+  }
+
+  it('signs in to an app it already authorized with the passcode and one click', async () => {
+    chain.granted = true;
+    await protectedAndLocked({ posting: posting.toString() });
+    renderConsent();
+    const user = userEvent.setup();
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      /sign in to/i,
+    );
+    // The scope was shown when it was granted; a sign-in names no abilities.
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+    const button = screen.getByRole('button', { name: /^sign in$/i });
+    await waitFor(() => expect(button).toBeDisabled());
+    // A sign-in: the passcode is the next thing to do.
+    expect(passcodeField()).toHaveFocus();
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    await waitFor(() => expect(chain.assign).toHaveBeenCalledTimes(1));
+    expect(issuedToken()?.signer).toBe(pub(posting));
+    expect(chain.broadcastOperations).not.toHaveBeenCalled();
+    // No account list on the way: the request never left this screen.
+    expect(screen.queryByRole('link', { name: /unlock/i })).toBeNull();
+  });
+
+  it('keeps the request on screen after a wrong passcode', async () => {
+    chain.granted = true;
+    await protectedAndLocked({ posting: posting.toString() });
+    renderConsent();
+    const user = userEvent.setup();
+    await user.type(
+      await screen.findByLabelText(i18n.t('accounts.passcode')),
+      'nope',
+    );
+    await user.keyboard('{Enter}');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('login.invalid_hs_password'),
+    );
+    expect(getKeys('alice')).toBeNull();
+    expect(chain.assign).not.toHaveBeenCalled();
+    // Enter works as the button does.
+    await user.clear(passcodeField());
+    await user.type(passcodeField(), 'correct-passcode{Enter}');
+    await waitFor(() => expect(chain.assign).toHaveBeenCalledTimes(1));
+  });
+
+  it('grants a first-time app in the same click when the active key is stored', async () => {
+    await protectedAndLocked({
+      posting: posting.toString(),
+      active: active.toString(),
+    });
+    renderConsent();
+    const user = userEvent.setup();
+    // The grant is read from the chain, so it is announced before the passcode.
+    expect(
+      await screen.findByText(/first-time authorization/i),
+    ).toBeInTheDocument();
+    // A first-time request is read before anything is typed.
+    expect(passcodeField()).not.toHaveFocus();
+    await user.type(passcodeField(), 'correct-passcode');
+    await user.click(screen.getByRole('button', { name: /^authorize$/i }));
+    await waitFor(() => expect(chain.assign).toHaveBeenCalledTimes(1));
+    expect(chain.broadcastOperations).toHaveBeenCalledWith(
+      [expect.arrayContaining(['account_update'])],
+      active.toString(),
+      'alice',
+    );
+  });
+
+  it('asks for the active key once unlocked when a first-time grant needs it, broadcasting nothing', async () => {
+    await protectedAndLocked({ posting: posting.toString() });
+    renderConsent();
+    const user = userEvent.setup();
+    await user.type(
+      await screen.findByLabelText(i18n.t('accounts.passcode')),
+      'correct-passcode',
+    );
+    // The form must mount once, already knowing the passcode: a first
+    // render that asks for it again, even for a moment, is on screen.
+    const asked: string[] = [];
+    const observer = new MutationObserver(() => {
+      if (document.querySelector('input[name=unlock-passcode]'))
+        asked.push('unlock-passcode');
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    await user.click(screen.getByRole('button', { name: /^authorize$/i }));
+    expect(await screen.findByTestId('add-active-key')).toBeInTheDocument();
+    observer.disconnect();
+    expect(asked).toEqual([]);
+    // Not an error: the screen simply shows the next thing it needs.
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(chain.broadcastOperations).not.toHaveBeenCalled();
+    expect(chain.assign).not.toHaveBeenCalled();
+    // The passcode typed a moment ago is not asked for again, and the key
+    // field takes the focus the passcode field had.
+    expect(
+      screen.queryByLabelText(
+        i18n.t('authorize.active_key_passcode', { account: '@alice' }),
+        { exact: false },
+      ),
+    ).toBeNull();
+    expect(keyField()).toHaveFocus();
+    await user.type(keyField(), active.toString());
+    await user.click(addButton());
+    await user.click(
+      await screen.findByRole('button', { name: /^authorize$/i }),
+    );
+    await waitFor(() => expect(chain.assign).toHaveBeenCalledTimes(1));
+    // Stored under the same passcode, still protected.
+    expect(accountIsEncrypted('alice')).toBe(true);
+    lockAccount('alice');
+    expect((await unlockAccount('alice', 'correct-passcode')).active).toBe(
+      active.toString(),
+    );
+  }, 30_000);
+
+  it('unlocks and grants in one click on the grant page, which used to lose the request', async () => {
+    await protectedAndLocked({ active: active.toString() });
+    wrap(<GrantAction appName="ecency.app" mode="grant" />);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^authorize$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    await waitFor(() =>
+      expect(chain.broadcastOperations).toHaveBeenCalledWith(
+        [expect.arrayContaining(['account_update'])],
+        active.toString(),
+        'alice',
+      ),
+    );
+    expect(screen.queryByRole('link', { name: /unlock/i })).toBeNull();
   });
 });
 

@@ -136,7 +136,11 @@
     "still_confirming": "승인이 제출되었지만 아직 확인 중입니다. 잠시 후 다시 시도해 주세요.",
     "first_time_grant": "최초 승인: {app} 계정을 온체인에서 회원님의 게시 권한에 추가하므로 활성 키가 한 번 필요합니다. 회원님이 권한을 취소할 때까지 해당 계정은 회원님으로서 글을 게시할 수 있습니다.",
     "this_site": "이 사이트",
-    "authorize_app": "{app} 앱 승인"
+    "authorize_app": "{app} 앱 승인",
+    "sign_in_to": "{app} 앱에 로그인",
+    "sign_in": "로그인",
+    "signing_in_as": "로그인할 계정",
+    "already_authorized": "이미 {app} 앱을 승인했습니다. 새로 부여되는 권한은 없습니다."
   },
   "import": {
     "username": "사용자 이름",

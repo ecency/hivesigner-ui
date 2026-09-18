@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CurrentAccount } from '@/components/CurrentAccount';
 import { ReportIssue } from '@/components/ReportIssue';
+import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import { Sentence } from '@/components/Untranslated';
 import {
   alertError,
@@ -15,7 +16,7 @@ import {
   mono,
   page,
 } from '@/components/ui';
-import { getKeys } from '@/lib/accounts';
+import { getKeys, stillSelected } from '@/lib/accounts';
 import { getVestsToSp } from '@/lib/hive';
 import { resolveCallback } from '@/lib/hive-uri';
 import { reportIntegrationIssue } from '@/lib/integration-signal';
@@ -36,6 +37,7 @@ import {
   signOperations,
 } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // /sign/<op>?params, /sign/op|ops|tx/<b64>. Decode, schema-process, confirm,
 // and (when the selected account holds the required key) sign and broadcast
@@ -43,6 +45,9 @@ import { useAccounts } from '@/lib/use-accounts';
 // answer to the raw-JSON complaint.
 export const Route = createFileRoute('/sign/$')({
   component: Sign,
+  // Another request is another screen: built fresh, never this one's state
+  // (or its leave latch) carried over.
+  remountDeps: ({ params, search }) => ({ params, search }),
   validateSearch: (search: Record<string, unknown>) =>
     search as Record<string, string>,
 });
@@ -165,6 +170,10 @@ function Sign() {
   );
   const [outcome, setOutcome] = useState<BroadcastOutcome | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  // An approve that waited on an unlock or a broadcast can finish after the
+  // user switched account or went elsewhere; it must not act, or pull them
+  // to the callback, then.
+  const leave = useLeaveLatch();
 
   const request = parseSignRequest(_splat ?? '', search, vestsToSp.rate);
 
@@ -188,6 +197,7 @@ function Sign() {
   // An HP amount needs the live SP-per-VEST rate; block approval until it loads
   // so a fallback rate never signs the wrong VESTS amount.
   const rateBlocked = req.hpDependent && !vestsToSp.ready;
+  const verbLabel = req.noBroadcast ? t('sign.sign') : t('sign.approve');
   // The `s` param names the account the request must be signed by. Refuse to
   // sign it from a different selected account (the old app threw here).
   const signerMismatch =
@@ -214,6 +224,16 @@ function Sign() {
     : [];
 
   async function approve() {
+    const left = leave.mark();
+    // Another tab selected someone else (adopted on the unlock): the screen
+    // no longer shows the request as the user approved it.
+    if (!selectedAccount || !stillSelected(selectedAccount)) return;
+    // Read now, not from this render: an unlock in the same click has only
+    // just put the keys in memory.
+    const signingKey =
+      authority && selectedAccount
+        ? getKeys(selectedAccount)?.[authority]
+        : undefined;
     if (!selectedAccount || !signingKey || rateBlocked || signerMismatch)
       return;
     setStatus('signing');
@@ -239,7 +259,7 @@ function Sign() {
           );
       setOutcome(result);
       setStatus('done');
-      if (req.callback) redirectToCallback(req.callback, result);
+      if (req.callback && !left()) redirectToCallback(req.callback, result);
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : String(e));
       setStatus('error');
@@ -478,19 +498,24 @@ function Sign() {
             {t('common.continue')}
           </Link>
         ) : !isUnlocked ? (
-          // Keyed: its children differ from the other links' plain labels, so
-          // React builds it fresh rather than reworking their text.
-          <Link
-            key="unlock"
-            to="/accounts"
-            search={{ next: here() }}
-            className={btnPrimary}
-          >
-            <Sentence
-              k="accounts.unlock_account"
-              values={{ account: `@${selectedAccount}` }}
+          // The passcode here, and the same click approves (#145). An account
+          // without the key this needs returns from approve() and the screen,
+          // now unlocked, says which key is missing.
+          <>
+            {rateBlocked && (
+              <div className="text-[13px] text-warn">
+                {t('sign.loading_rate')}
+              </div>
+            )}
+            <UnlockAndContinue
+              key={`unlock:${selectedAccount}`}
+              username={selectedAccount}
+              action={verbLabel}
+              disabled={rateBlocked}
+              leave={leave}
+              onUnlocked={approve}
             />
-          </Link>
+          </>
         ) : !signingKey ? (
           <>
             <div className="text-[13px] text-warn">
@@ -516,11 +541,7 @@ function Sign() {
               disabled={status === 'signing' || rateBlocked}
               className={btnPrimary}
             >
-              {status === 'signing'
-                ? '…'
-                : request.noBroadcast
-                  ? t('sign.sign')
-                  : t('sign.approve')}
+              {status === 'signing' ? '…' : verbLabel}
             </button>
           </>
         )}

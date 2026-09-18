@@ -136,7 +136,11 @@
     "still_confirming": "授权已提交，但仍在确认中。请稍后再试。",
     "first_time_grant": "首次授权：此操作会在链上将 {app} 添加到您的发布权限中，需要使用一次您的活动密钥。在您撤销之前，该账户都可以以您的身份发布内容。",
     "this_site": "此网站",
-    "authorize_app": "授权 {app}"
+    "authorize_app": "授权 {app}",
+    "sign_in_to": "登录 {app}",
+    "sign_in": "登录",
+    "signing_in_as": "登录账户",
+    "already_authorized": "您之前已授权 {app}，不会授予新的权限。"
   },
   "import": {
     "username": "用户名",
