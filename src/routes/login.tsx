@@ -27,6 +27,7 @@ import { useAccounts } from '@/lib/use-accounts';
 //    invalid-request error even for an unlocked account.
 export const Route = createFileRoute('/login')({
   component: Login,
+  remountDeps: ({ search }) => search,
   validateSearch: (s: Record<string, unknown>) => s as Record<string, string>,
 });
 

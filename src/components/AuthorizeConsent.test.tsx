@@ -27,6 +27,7 @@ vi.mock('@/lib/use-accounts', () => ({ useAccounts: () => h.accounts }));
 vi.mock('@/lib/accounts', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/accounts')>()),
   getKeys: () => h.keys,
+  stillSelected: (name: string) => name === h.accounts.selectedAccount,
 }));
 vi.mock('@/lib/hive', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/hive')>()),

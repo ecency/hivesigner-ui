@@ -236,6 +236,38 @@ test('sign: a locked account is unlocked on the request and approves in one step
   expect(problems).toEqual([]);
 });
 
+test('sign: switching to a locked account unlocks it on the list and comes back', async ({
+  page,
+}) => {
+  const problems = await setUp(page);
+  await addAccount(page, 'trtwo', 'e2e-passcode');
+  await addAccount(page, 'trone');
+  await openTranslated(
+    page,
+    '/sign/vote?voter=trtwo&author=ecency&permlink=x&weight=10000',
+  );
+  await page
+    .getByTestId('current-account')
+    .locator('a[href^="/accounts"]')
+    .click();
+  await page.waitForURL('**/accounts?**');
+  await translationSettled(page);
+  await row(page, 'trtwo')
+    .getByRole('button', { name: /unlock/i })
+    .click();
+  const field = page.locator('input[name="passcode-trtwo"]');
+  await field.fill('e2e-passcode');
+  await field.press('Enter');
+  await page.waitForURL('**/sign/vote?**');
+  await translationSettled(page);
+  await expect(page.getByTestId('current-account')).toContainText('@trtwo');
+  await expect(page.getByRole('button', { name: /approve/i })).toHaveText(
+    translated('Approve'),
+  );
+  await expectNamesKept(page);
+  expect(problems).toEqual([]);
+});
+
 test('consent: an app the account already granted gets its token', async ({
   page,
 }) => {

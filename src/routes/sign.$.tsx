@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CurrentAccount } from '@/components/CurrentAccount';
 import { ReportIssue } from '@/components/ReportIssue';
@@ -16,7 +16,7 @@ import {
   mono,
   page,
 } from '@/components/ui';
-import { getKeys } from '@/lib/accounts';
+import { getKeys, stillSelected } from '@/lib/accounts';
 import { getVestsToSp } from '@/lib/hive';
 import { resolveCallback } from '@/lib/hive-uri';
 import { reportIntegrationIssue } from '@/lib/integration-signal';
@@ -37,6 +37,7 @@ import {
   signOperations,
 } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // /sign/<op>?params, /sign/op|ops|tx/<b64>. Decode, schema-process, confirm,
 // and (when the selected account holds the required key) sign and broadcast
@@ -44,6 +45,9 @@ import { useAccounts } from '@/lib/use-accounts';
 // answer to the raw-JSON complaint.
 export const Route = createFileRoute('/sign/$')({
   component: Sign,
+  // Another request is another screen: built fresh, never this one's state
+  // (or its leave latch) carried over.
+  remountDeps: ({ params, search }) => ({ params, search }),
   validateSearch: (search: Record<string, unknown>) =>
     search as Record<string, string>,
 });
@@ -166,17 +170,10 @@ function Sign() {
   );
   const [outcome, setOutcome] = useState<BroadcastOutcome | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
-  // Set when this screen is left. An approve that waited on an unlock can
-  // finish after the user switched account or went elsewhere; it must not
-  // broadcast or pull them to the callback then. Setup clears it (Strict Mode
-  // runs setup, cleanup, setup).
-  const abandoned = useRef(false);
-  useEffect(() => {
-    abandoned.current = false;
-    return () => {
-      abandoned.current = true;
-    };
-  }, []);
+  // Set once the user leaves (or sets off to). An approve that waited on an
+  // unlock can finish after they switched account or went elsewhere; it must
+  // not broadcast or pull them to the callback then.
+  const abandoned = useLeaveLatch();
 
   const request = parseSignRequest(_splat ?? '', search, vestsToSp.rate);
 
@@ -227,7 +224,14 @@ function Sign() {
     : [];
 
   async function approve() {
-    if (abandoned.current) return;
+    // Left, or another tab selected someone else: the screen no longer shows
+    // the request as the user approved it.
+    if (
+      abandoned.current ||
+      !selectedAccount ||
+      !stillSelected(selectedAccount)
+    )
+      return;
     // Read now, not from this render: an unlock in the same click has only
     // just put the keys in memory.
     const signingKey =

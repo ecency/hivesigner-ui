@@ -56,6 +56,7 @@ import {
   addAccount,
   getKeys,
   lockAccount,
+  selectAccount,
   unlockAccount,
 } from '@/lib/accounts';
 import { writeKeys } from '@/lib/keystore';
@@ -364,5 +365,202 @@ describe('the passcode typed to unlock, held for the active key', () => {
     const form = await screen.findByTestId('add-active-key');
     expect(form.querySelector('input[name=unlock-passcode]')).toBeNull();
     expect(chain.broadcastOperations).not.toHaveBeenCalled();
+  });
+});
+
+describe('another tab selects someone else while the unlock runs', () => {
+  const bobPosting = PrivateKey.fromSeed('bob-posting');
+  // bob holds the grant already; alice does not.
+  const bob = () => ({
+    ...alice(true),
+    name: 'bob',
+    posting: {
+      weight_threshold: 1,
+      account_auths: [['ecency.app', 1]],
+      key_auths: [[pub(bobPosting), 1]],
+    },
+  });
+
+  async function twoAccountsFreshTab() {
+    await addAccount(
+      'alice',
+      { posting: posting.toString(), active: active.toString() },
+      'correct-passcode',
+    );
+    await addAccount('bob', { posting: bobPosting.toString() }, 'bob-passcode');
+    // A tab opened just now: nothing chosen in it yet, both locked.
+    _resetKeyCache();
+    chain.getAccount.mockImplementation(async (name: string) =>
+      name === 'ecency.app'
+        ? appAccount
+        : name === 'alice'
+          ? alice()
+          : name === 'bob'
+            ? bob()
+            : null,
+    );
+  }
+  function otherTabSelects(name: string) {
+    const state = JSON.parse(localStorage.getItem('vuex__accounts') ?? '{}');
+    state.selectedAccount = name;
+    localStorage.setItem('vuex__accounts', JSON.stringify(state));
+  }
+
+  it('consent: no grant and no token for the account the screen no longer shows', async () => {
+    await twoAccountsFreshTab();
+    const gate = deferred();
+    chain.unlockGate = gate.promise;
+    renderConsent();
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^authorize$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    otherTabSelects('bob');
+    gate.resolve();
+    await waitFor(() =>
+      expect(screen.getByTestId('current-account')).toHaveTextContent('@bob'),
+    );
+    await new Promise((r) => setTimeout(r, 50));
+    expect(chain.broadcastOperations).not.toHaveBeenCalled();
+    expect(chain.assign).not.toHaveBeenCalled();
+  });
+
+  it('grant page: nothing is built for the new account or signed with the old key', async () => {
+    await twoAccountsFreshTab();
+    const gate = deferred();
+    chain.unlockGate = gate.promise;
+    wrap(<GrantAction appName="new.app" mode="grant" />);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^authorize$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    otherTabSelects('bob');
+    gate.resolve();
+    await waitFor(() => expect(getKeys('alice')).not.toBeNull());
+    await new Promise((r) => setTimeout(r, 50));
+    expect(chain.broadcastOperations).not.toHaveBeenCalled();
+  });
+
+  it('consent: the held passcode never reaches the other account', async () => {
+    await protectedAndLocked({ posting: posting.toString() });
+    await addAccount('bob', { posting: bobPosting.toString() }, 'bob-passcode');
+    selectAccount('alice');
+    chain.getAccount.mockImplementation(async (name: string) =>
+      name === 'ecency.app'
+        ? appAccount
+        : name === 'alice'
+          ? alice()
+          : name === 'bob'
+            ? { ...bob(), posting: { ...bob().posting, account_auths: [] } }
+            : null,
+    );
+    renderConsent();
+    const user = userEvent.setup();
+    await user.type(
+      await screen.findByLabelText(i18n.t('accounts.passcode')),
+      'correct-passcode',
+    );
+    await user.click(screen.getByRole('button', { name: /^authorize$/i }));
+    await screen.findByTestId('add-active-key');
+    selectAccount('bob');
+    await waitFor(() =>
+      expect(screen.getByTestId('current-account')).toHaveTextContent('@bob'),
+    );
+    // bob is unlocked and lacks the active key: the form is his, and asks
+    // for his passcode.
+    const form = await screen.findByTestId('add-active-key');
+    expect(form).toHaveTextContent('@bob');
+    expect(form.querySelector('input[name=unlock-passcode]')).not.toBeNull();
+  });
+});
+
+describe('the read a grant is built from fails', () => {
+  // The cached copy lists other.app, since revoked elsewhere. Built from it,
+  // the account_update would give other.app its authority back.
+  const cachedWithOther = () => ({
+    ...alice(false),
+    posting: {
+      ...alice(false).posting,
+      account_auths: [['other.app', 1]],
+    },
+  });
+
+  it('consent: says so and grants nothing from the cached copy', async () => {
+    await addAccount('alice', {
+      posting: posting.toString(),
+      active: active.toString(),
+    });
+    client.setQueryData(accountKey('alice'), cachedWithOther());
+    chain.getAccount.mockImplementation(async (name: string) => {
+      if (name === 'ecency.app') return appAccount;
+      throw new Error('node down');
+    });
+    renderConsent();
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole('button', { name: /^authorize$/i }),
+    );
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('authorize.read_failed'),
+    );
+    expect(chain.broadcastOperations).not.toHaveBeenCalled();
+  });
+
+  it('grant page: says so and grants nothing from the cached copy', async () => {
+    await addAccount('alice', { active: active.toString() });
+    client.setQueryData(accountKey('alice'), cachedWithOther());
+    chain.getAccount.mockImplementation(async () => {
+      throw new Error('node down');
+    });
+    wrap(<GrantAction appName="ecency.app" mode="grant" />);
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole('button', { name: /^authorize$/i }),
+    );
+    expect(
+      await screen.findByText(i18n.t('authorize.read_failed')),
+    ).toBeInTheDocument();
+    expect(chain.broadcastOperations).not.toHaveBeenCalled();
+  });
+});
+
+describe('revoking through the unlock', () => {
+  it('unlocks and revokes in one click', async () => {
+    chain.granted = true;
+    await protectedAndLocked({ active: active.toString() });
+    wrap(<GrantAction appName="ecency.app" mode="revoke" />);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^revoke$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    await waitFor(() => expect(chain.broadcastOperations).toHaveBeenCalled());
+    const [[op], wif] = chain.broadcastOperations.mock.calls[0];
+    expect(op[0]).toBe('account_update');
+    expect(op[1].posting.account_auths).toEqual([]);
+    expect(wif).toBe(active.toString());
+  });
+});
+
+describe('a first-time grant on its way to the app', () => {
+  it('stays a first-time request once its own grant lands', async () => {
+    await addAccount('alice', {
+      posting: posting.toString(),
+      active: active.toString(),
+    });
+    renderConsent();
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole('button', { name: /^authorize$/i }),
+    );
+    await waitFor(() => expect(chain.assign).toHaveBeenCalledTimes(1));
+    // The fresh read after the grant shows it, but this screen granted it:
+    // it must not turn into "nothing new is granted" on the way out.
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      /requesting access/i,
+    );
+    expect(screen.queryByText(/nothing new is granted/i)).toBeNull();
   });
 });

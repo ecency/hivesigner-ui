@@ -199,6 +199,15 @@ export function accountIsEncrypted(username: string): boolean {
   return field ? fieldIsEncrypted(field) : false;
 }
 
+/**
+ * Whether `username` is still the account this tab acts as. Another tab can
+ * select someone else, and this tab adopts it on its next store update; a
+ * screen that awaited checks this before acting for the account it showed.
+ */
+export function stillSelected(username: string): boolean {
+  return getState().selectedAccount === username;
+}
+
 export function isUnlocked(username: string): boolean {
   return keyCache.has(username);
 }
@@ -328,6 +337,12 @@ export async function unlockAccount(
       // keep the record as it is; the account is unlocked for this session
     }
   }
+  // Key derivation runs synchronously and freezes the page, so a click made
+  // meanwhile (Cancel, Switch account) waits in the queue. Let it run before
+  // the unlock takes effect: the screen being left then knows it before
+  // anything acts on these keys, and the click cannot land on the unlocked
+  // screen's own button instead.
+  await new Promise((resolve) => setTimeout(resolve, 0));
   emit();
   return keys;
 }

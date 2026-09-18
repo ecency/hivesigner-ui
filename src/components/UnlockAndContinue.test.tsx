@@ -1,5 +1,7 @@
 import { configure, getConfig, render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import i18n from '../i18n';
 
 const readKeysCalls = vi.hoisted(() => ({ count: 0 }));
 vi.mock('@/lib/keystore', async (importOriginal) => {
@@ -143,5 +145,40 @@ describe('double submission without act()', () => {
         globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
       ).IS_REACT_ACT_ENVIRONMENT = true;
     }
+  });
+});
+
+describe('what the field does not do', () => {
+  it('Enter on an empty passcode unlocks nothing', async () => {
+    const view = render(<Screen />);
+    const input = view.container.querySelector(
+      'input[type=password]',
+    ) as HTMLInputElement;
+    input.focus();
+    await userEvent.setup().keyboard('{Enter}');
+    await new Promise((r) => setTimeout(r, 20));
+    expect(readKeysCalls.count).toBe(0);
+    expect(view.queryByRole('alert')).toBeNull();
+  });
+
+  it('a record without a passcode that fails to load says why, not "wrong passcode"', async () => {
+    // No passcode, so no field: a wrong-passcode message would name
+    // something the user cannot fix here.
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({
+        accountsKeychains: { alice: { password: 'zz-not-hexdecrypted' } },
+        selectedAccount: 'alice',
+      }),
+    );
+    _resetKeyCache();
+    const view = render(<Screen />);
+    expect(view.container.querySelector('input[type=password]')).toBeNull();
+    await userEvent
+      .setup()
+      .click(view.getByRole('button', { name: 'Sign in' }));
+    const alert = await view.findByRole('alert');
+    expect(alert.textContent).not.toBe(i18n.t('login.invalid_hs_password'));
+    expect(alert.textContent?.length).toBeGreaterThan(0);
   });
 });

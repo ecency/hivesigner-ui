@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AddActiveKey } from '@/components/AddActiveKey';
 import { AppProfile } from '@/components/AppProfile';
@@ -17,7 +17,8 @@ import {
   h1,
   page,
 } from '@/components/ui';
-import { getKeys } from '@/lib/accounts';
+import { readAccountNow } from '@/lib/account-now';
+import { getKeys, stillSelected } from '@/lib/accounts';
 import {
   buildGrantOperation,
   buildRevokeOperation,
@@ -30,6 +31,7 @@ import { safeText } from '@/lib/operation-summary';
 import { accountKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // Shared screen for /authorize/:username and /revoke/:username. Grant or revoke
 // the app's posting authority with the selected account's ACTIVE key.
@@ -51,17 +53,10 @@ export function GrantAction({
   // callback. Null means "no callback", or a revoke: the list screen.
   const returnTarget = grantReturnTarget(appName, query, mode);
   const listTo = mode === 'grant' ? '/accounts' : '/authorized-apps';
-  // Set when this screen is left, so an in-flight submit() cannot navigate
-  // after the user pressed Cancel. Setup clears it: Strict Mode runs
-  // setup -> cleanup -> setup, so a cleanup-only effect would leave the latch
-  // stuck on in development.
-  const abandoned = useRef(false);
-  useEffect(() => {
-    abandoned.current = false;
-    return () => {
-      abandoned.current = true;
-    };
-  }, []);
+  // Set once the user leaves (or sets off to), so an in-flight submit()
+  // neither broadcasts nor navigates after they pressed Cancel.
+  const abandoned = useLeaveLatch();
+  const queryClient = useQueryClient();
   const [confirming, setConfirming] = useState(false);
   const [status, setStatus] = useState<'idle' | 'busy' | 'done' | 'error'>(
     'idle',
@@ -109,36 +104,46 @@ export function GrantAction({
     if (abandoned.current) return;
     // Read now, not from this render: an unlock in the same click has only
     // just put the keys in memory.
-    const activeKey = selectedAccount
-      ? getKeys(selectedAccount)?.active
-      : undefined;
-    if (!account || !activeKey || !op) return;
+    const name = selectedAccount;
+    const activeKey = name ? getKeys(name)?.active : undefined;
+    if (!name || !account || !activeKey || !op) return;
     setStatus('busy');
     setError('');
     try {
       // Built from a fresh read, never from this render's copy: the
       // account_update carries the WHOLE authority, and a change made
       // meanwhile (another app granted or revoked elsewhere, during an unlock
-      // that took seconds) would be undone by a stale one. Consent does the
-      // same before its grant.
-      const fresh = await refetch();
+      // that took seconds) would be undone by a stale one. Read by name, and
+      // a failed read is an error, never the cached copy (readAccountNow).
+      let fresh: Account | null;
+      try {
+        fresh = await readAccountNow(queryClient, name);
+      } catch {
+        fresh = null;
+      }
       if (abandoned.current) return;
-      if (fresh.isError || !fresh.data) {
+      // Another tab selected someone else meanwhile: the screen names them
+      // now, so nothing is done for the account it showed before.
+      if (!stillSelected(name)) {
+        setStatus('idle');
+        return;
+      }
+      if (!fresh) {
         setError(t('authorize.read_failed'));
         setStatus('error');
         return;
       }
       const freshOp =
         mode === 'grant'
-          ? buildGrantOperation(fresh.data, appName)
-          : buildRevokeOperation(fresh.data, appName);
+          ? buildGrantOperation(fresh, appName)
+          : buildRevokeOperation(fresh, appName);
       // Already done meanwhile: the screen, redrawn from the fresh read,
       // says so and offers Continue.
       if (!freshOp) {
         setStatus('idle');
         return;
       }
-      await broadcastOperations([freshOp], activeKey, fresh.data.name);
+      await broadcastOperations([freshOp], activeKey, fresh.name);
       setStatus('done');
       // The Nuxt page continued to the callback by itself after the broadcast,
       // and the login that brought the user here is waiting on it. Automatic
@@ -179,7 +184,9 @@ export function GrantAction({
   const accountMissing = pending && account === null;
   // A locked account is unlocked here, and the same click acts (#145). It
   // used to be sent to the account list, and the request was lost there.
-  const locked = pending && !isUnlocked && !readFailed && !accountMissing;
+  // It stays through a failed read (Retry is offered below), so a passcode
+  // being typed is not thrown away.
+  const locked = pending && !isUnlocked && !accountMissing;
   // An unlocked account without its active key is asked for it in place. The
   // unlock link this used to show led to an account that was already
   // unlocked, and the request was lost on the way.

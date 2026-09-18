@@ -23,6 +23,10 @@ vi.mock('@tanstack/react-router', () => ({
     </a>
   ),
   useNavigate: () => navigate,
+  useRouter: () => ({
+    state: { location: { href: '/' } },
+    subscribe: () => () => {},
+  }),
 }));
 vi.mock('@/lib/use-accounts', () => ({
   useAccounts: () => ({
@@ -33,6 +37,7 @@ vi.mock('@/lib/use-accounts', () => ({
 }));
 vi.mock('@/lib/accounts', () => ({
   getKeys: () => ({ active: '5JactiveKey', posting: '5JpostingKey' }),
+  stillSelected: (name: string) => name === 'alice',
 }));
 vi.mock('@/lib/hive', () => ({
   getAccount: async () => ({

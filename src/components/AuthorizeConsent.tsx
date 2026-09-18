@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AddActiveKey } from '@/components/AddActiveKey';
 import { Avatar } from '@/components/Avatar';
@@ -18,7 +18,8 @@ import {
   mutedXs,
   page,
 } from '@/components/ui';
-import { getKeys } from '@/lib/accounts';
+import { readAccountNow } from '@/lib/account-now';
+import { getKeys, stillSelected } from '@/lib/accounts';
 import { buildGrantOperation, hasGrant, waitForGrant } from '@/lib/grant';
 import { type Account, getAccount, type Keys } from '@/lib/hive';
 import { hostOf, reportIntegrationIssue } from '@/lib/integration-signal';
@@ -36,6 +37,7 @@ import { safeText } from '@/lib/operation-summary';
 import { accountKey, oauthAppProfileKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // The consent screen (#106 pain #3): one screen naming the app and its scope in
 // plain words. For a posting-scope request it first confirms (and, if missing,
@@ -111,17 +113,13 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     account: string;
     passcode: string | undefined;
   } | null>(null);
-  // Set when this screen is left, so an in-flight approve() cannot grant
-  // authority or redirect after the user withdrew consent. Setup MUST clear it:
-  // Strict Mode runs setup -> cleanup -> setup, so a cleanup-only effect would
-  // leave the latch stuck on and silently abort every approval in development.
-  const abandoned = useRef(false);
-  useEffect(() => {
-    abandoned.current = false;
-    return () => {
-      abandoned.current = true;
-    };
-  }, []);
+  // Set once the user leaves (or sets off to), so an in-flight approve()
+  // cannot grant authority or redirect after they withdrew consent.
+  const abandoned = useLeaveLatch();
+  const queryClient = useQueryClient();
+  // A grant went out from this screen: its account now reads as granted,
+  // but the screen must not turn into a sign-in on the way to the app.
+  const [granting, setGranting] = useState(false);
 
   // A request with NO app account is a site asking only to confirm who the
   // user is (hivesearcher and the like): it holds no posting authority and
@@ -172,6 +170,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   // active-scope request is never one: its token is signed with the active
   // key, which the posting grant says nothing about.
   const signIn =
+    !granting &&
     !!selectedAccount &&
     (effective.scope === 'login' ||
       (postingScope &&
@@ -200,14 +199,23 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
       // unloaded account, and confirm the grant on the REFRESHED account after
       // granting rather than trusting the broadcast optimistically.
       if (postingScope && req.clientId) {
-        // Refetch fresh first, so a retry after a grant that already landed sees
-        // the authority and does not broadcast a second account_update.
-        const loaded = (await refetchAccount()).data ?? account;
-        // Re-check here, BEFORE the broadcast. The refetch is awaited, so the
+        // Read fresh first, so a retry after a grant that already landed sees
+        // the authority and does not broadcast a second account_update. By
+        // name, and never the cached copy when the read fails (readAccountNow).
+        let loaded: Account | null;
+        try {
+          loaded = await readAccountNow(queryClient, selectedAccount);
+        } catch {
+          setError(t('authorize.read_failed'));
+          return;
+        }
+        // Re-check here, BEFORE the broadcast. The read is awaited, so the
         // user can cancel while it is in flight; granting posting authority is
         // an irreversible on-chain write, so withdrawn consent has to stop it
-        // at this point, not merely stop the token afterwards.
-        if (abandoned.current) return;
+        // at this point, not merely stop the token afterwards. Another tab
+        // may also have selected someone else: the screen now names them, so
+        // nothing is done for the account it showed before.
+        if (abandoned.current || !stillSelected(selectedAccount)) return;
         if (!loaded) {
           setError(t('common.try_again'));
           return;
@@ -228,19 +236,20 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             return;
           }
           const op = buildGrantOperation(loaded, req.clientId);
+          setGranting(true);
           if (op) await broadcastOperations([op], activeKey, loaded.name);
           // Wait for the grant to be visible on-chain before issuing the token.
           if (!(await waitForGrant(loaded.name, req.clientId))) {
             setError(t('authorize.still_confirming'));
             return;
           }
-          await refetchAccount();
+          await readAccountNow(queryClient, selectedAccount).catch(() => null);
         }
       }
       // The grant poll can run for up to 16s. If the user left the consent
       // screen in the meantime (Cancel, or navigating away), do NOT hand the app
       // a token and redirect them - they withdrew consent mid-flow.
-      if (abandoned.current) return;
+      if (abandoned.current || !stillSelected(selectedAccount)) return;
       const token = buildAuthToken(
         effective,
         selectedAccount,

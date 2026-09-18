@@ -70,8 +70,17 @@ export function UnlockAndContinue({
     });
     try {
       await unlockAccount(username, typed);
-    } catch {
-      setError(t('login.invalid_hs_password'));
+    } catch (e) {
+      // A protected record fails on a wrong passcode. One without a passcode
+      // failed to load for another reason, which there is no field to fix,
+      // so it is shown as it is (as the account list does).
+      setError(
+        encrypted
+          ? t('login.invalid_hs_password')
+          : e instanceof Error
+            ? e.message
+            : String(e),
+      );
       setPasscode(typed ?? '');
       setBusy(false);
       return;

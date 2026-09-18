@@ -34,6 +34,10 @@ vi.mock('@tanstack/react-router', () => ({
     useSearch: () => h.search,
   }),
   Link: ({ children }: { children: unknown }) => children,
+  useRouter: () => ({
+    state: { location: { href: '/' } },
+    subscribe: () => () => {},
+  }),
 }));
 // Two queries run here (app profile, selected account); dispatch on queryKey.
 //
@@ -46,9 +50,17 @@ vi.mock('@tanstack/react-query', () => ({
     opts.queryKey[0] === oauthAppProfileKey('x')[0]
       ? { data: h.profile, isLoading: false }
       : { data: h.account, refetch: h.refetchAccount },
+  // The fresh read before a grant (readAccountNow) goes through the same
+  // controllable call as the screen's refetch.
+  useQueryClient: () => ({
+    fetchQuery: async () => (await h.refetchAccount()).data,
+  }),
 }));
 vi.mock('@/lib/use-accounts', () => ({ useAccounts: () => h.accounts }));
-vi.mock('@/lib/accounts', () => ({ getKeys: () => h.keys }));
+vi.mock('@/lib/accounts', () => ({
+  getKeys: () => h.keys,
+  stillSelected: (name: string) => name === h.accounts.selectedAccount,
+}));
 vi.mock('@/lib/hive', () => ({ getAccount: h.getAccount }));
 vi.mock('@/lib/grant', () => ({
   // The real waitForGrant lives in this module and calls the module's OWN

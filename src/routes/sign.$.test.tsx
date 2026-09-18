@@ -50,6 +50,10 @@ vi.mock('@tanstack/react-router', () => ({
       {children as never}
     </a>
   ),
+  useRouter: () => ({
+    state: { location: { href: '/' } },
+    subscribe: () => () => {},
+  }),
 }));
 vi.mock('@tanstack/react-query', () => ({
   // The real queryFn (getVestsToSp) resolves to a NUMBER; model that.
@@ -59,6 +63,7 @@ vi.mock('@/lib/hive', () => ({ getVestsToSp: vi.fn() }));
 vi.mock('@/lib/use-accounts', () => ({ useAccounts: () => h.accounts }));
 vi.mock('@/lib/accounts', () => ({
   getKeys: () => h.keys,
+  stillSelected: (name: string) => name === h.accounts.selectedAccount,
   accountIsEncrypted: () => true,
   unlockAccount: h.unlockAccount,
 }));
