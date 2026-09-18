@@ -476,6 +476,31 @@ describe('another tab selects someone else while the unlock runs', () => {
   });
 });
 
+describe('the selection changes while a first-time grant is on its way', () => {
+  it('consent: the grant went out, but no token for an account the screen no longer shows', async () => {
+    await addAccount('alice', {
+      posting: posting.toString(),
+      active: active.toString(),
+    });
+    await addAccount('bob', { posting: posting.toString() });
+    selectAccount('alice');
+    // bob is chosen (here, or in another tab) while the grant broadcasts.
+    chain.broadcastOperations.mockImplementation(async () => {
+      chain.granted = true;
+      selectAccount('bob');
+      return { id: 'tx' };
+    });
+    renderConsent();
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole('button', { name: /^authorize$/i }),
+    );
+    await waitFor(() => expect(chain.broadcastOperations).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 50));
+    expect(chain.assign).not.toHaveBeenCalled();
+  });
+});
+
 describe('the read a grant is built from fails', () => {
   // The cached copy lists other.app, since revoked elsewhere. Built from it,
   // the account_update would give other.app its authority back.
@@ -562,5 +587,34 @@ describe('a first-time grant on its way to the app', () => {
       /requesting access/i,
     );
     expect(screen.queryByText(/nothing new is granted/i)).toBeNull();
+  });
+
+  it('judges another account chosen afterwards on its own grant', async () => {
+    await addAccount('alice', {
+      posting: posting.toString(),
+      active: active.toString(),
+    });
+    // bob already authorized the app.
+    await addAccount('bob', { posting: posting.toString() });
+    selectAccount('alice');
+    chain.getAccount.mockImplementation(async (name: string) =>
+      name === 'ecency.app'
+        ? appAccount
+        : name === 'alice'
+          ? alice()
+          : name === 'bob'
+            ? { ...alice(true), name: 'bob' }
+            : null,
+    );
+    renderConsent();
+    const user = userEvent.setup();
+    await user.click(
+      await screen.findByRole('button', { name: /^authorize$/i }),
+    );
+    await waitFor(() => expect(chain.assign).toHaveBeenCalledTimes(1));
+    selectAccount('bob');
+    expect(
+      await screen.findByRole('heading', { name: /sign in to/i }),
+    ).toBeInTheDocument();
   });
 });

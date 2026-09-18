@@ -1,5 +1,6 @@
 import { configure, getConfig, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useEffect, useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../i18n';
 
@@ -180,5 +181,97 @@ describe('what the field does not do', () => {
     const alert = await view.findByRole('alert');
     expect(alert.textContent).not.toBe(i18n.t('login.invalid_hs_password'));
     expect(alert.textContent?.length).toBeGreaterThan(0);
+  });
+});
+
+describe('a protected record that fails for another reason', () => {
+  it('says why, not "wrong passcode"', async () => {
+    const view = render(<Screen />);
+    const input = view.container.querySelector(
+      'input[type=password]',
+    ) as HTMLInputElement;
+    // Removed in another tab after this screen showed it.
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({ accountsKeychains: {}, selectedAccount: '' }),
+    );
+    const user = userEvent.setup();
+    await user.type(input, 'correct-passcode');
+    await user.click(view.getByRole('button', { name: 'Sign in' }));
+    const alert = await view.findByRole('alert');
+    expect(alert.textContent).not.toBe(i18n.t('login.invalid_hs_password'));
+    expect(alert).toHaveTextContent(/no such account/);
+  });
+
+  it('a wrong passcode still says so', async () => {
+    const view = render(<Screen />);
+    const user = userEvent.setup();
+    await user.type(
+      view.container.querySelector('input[type=password]') as HTMLElement,
+      'nope',
+    );
+    await user.click(view.getByRole('button', { name: 'Sign in' }));
+    expect(await view.findByRole('alert')).toHaveTextContent(
+      i18n.t('login.invalid_hs_password'),
+    );
+  });
+});
+
+describe('what the screen gets before it shows the unlocked account', () => {
+  // The screen stores the passcode in onOpened, and the form that needs it
+  // (the active key) must mount already knowing it: a first render without
+  // it asks for the passcode again. Two updates from the unlock (the screen's
+  // state and the store) would otherwise commit apart. No act() here, for the
+  // same reason as above.
+  function Unlocked({
+    held,
+    seen,
+  }: {
+    held?: string;
+    seen: (string | undefined)[];
+  }) {
+    useEffect(() => {
+      seen.push(held);
+    }, [held, seen]);
+    return <div data-testid="unlocked">…</div>;
+  }
+  function HandOff({ seen }: { seen: (string | undefined)[] }) {
+    const { unlocked } = useAccounts();
+    const [held, setHeld] = useState<string | undefined>();
+    if (unlocked.includes('alice')) return <Unlocked held={held} seen={seen} />;
+    return (
+      <UnlockAndContinue
+        username="alice"
+        action="Sign in"
+        onOpened={(passcode) => setHeld(passcode)}
+      />
+    );
+  }
+
+  it('is in place in the very first unlocked render', async () => {
+    const seen: (string | undefined)[] = [];
+    const view = render(<HandOff seen={seen} />);
+    const input = view.container.querySelector(
+      'input[type=password]',
+    ) as HTMLInputElement;
+    const button = view.getByRole('button', { name: 'Sign in' });
+    (
+      globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = false;
+    try {
+      valueSetter.call(input, 'correct-passcode');
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise((r) => setTimeout(r, 0));
+      button.click();
+      for (let i = 0; i < 200 && !view.queryByTestId('unlocked'); i++) {
+        await new Promise((r) => setTimeout(r, 10));
+      }
+      await new Promise((r) => setTimeout(r, 20));
+      expect(seen[0]).toBe('correct-passcode');
+    } finally {
+      (
+        globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+      ).IS_REACT_ACT_ENVIRONMENT = true;
+    }
   });
 });

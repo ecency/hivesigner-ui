@@ -170,10 +170,10 @@ function Sign() {
   );
   const [outcome, setOutcome] = useState<BroadcastOutcome | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
-  // Set once the user leaves (or sets off to). An approve that waited on an
-  // unlock can finish after they switched account or went elsewhere; it must
-  // not broadcast or pull them to the callback then.
-  const abandoned = useLeaveLatch();
+  // An approve that waited on an unlock or a broadcast can finish after the
+  // user switched account or went elsewhere; it must not act, or pull them
+  // to the callback, then.
+  const leave = useLeaveLatch();
 
   const request = parseSignRequest(_splat ?? '', search, vestsToSp.rate);
 
@@ -224,14 +224,10 @@ function Sign() {
     : [];
 
   async function approve() {
-    // Left, or another tab selected someone else: the screen no longer shows
-    // the request as the user approved it.
-    if (
-      abandoned.current ||
-      !selectedAccount ||
-      !stillSelected(selectedAccount)
-    )
-      return;
+    const left = leave.mark();
+    // Another tab selected someone else (adopted on the unlock): the screen
+    // no longer shows the request as the user approved it.
+    if (!selectedAccount || !stillSelected(selectedAccount)) return;
     // Read now, not from this render: an unlock in the same click has only
     // just put the keys in memory.
     const signingKey =
@@ -263,8 +259,7 @@ function Sign() {
           );
       setOutcome(result);
       setStatus('done');
-      if (req.callback && !abandoned.current)
-        redirectToCallback(req.callback, result);
+      if (req.callback && !left()) redirectToCallback(req.callback, result);
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : String(e));
       setStatus('error');
@@ -517,6 +512,7 @@ function Sign() {
               username={selectedAccount}
               action={verbLabel}
               disabled={rateBlocked}
+              leave={leave}
               onUnlocked={approve}
             />
           </>

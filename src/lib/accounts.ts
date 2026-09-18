@@ -301,10 +301,14 @@ export async function addAccount(
  * Unlock a stored account. `passcode` is required for an encrypted account.
  * Throws (keystore error) on a wrong passcode. A legacy triplesec account is
  * re-encrypted into the v1 envelope on success.
+ *
+ * `onOpened` runs with the keys just before the unlock is announced, so a
+ * screen can get ready for what it will show next and show it in one go.
  */
 export async function unlockAccount(
   username: string,
   passcode?: string,
+  onOpened?: (keys: Keys) => void,
 ): Promise<Keys> {
   const state = readPersisted();
   const field = state.accountsKeychains[username]?.password;
@@ -343,6 +347,7 @@ export async function unlockAccount(
   // anything acts on these keys, and the click cannot land on the unlocked
   // screen's own button instead.
   await new Promise((resolve) => setTimeout(resolve, 0));
+  onOpened?.(keys);
   emit();
   return keys;
 }

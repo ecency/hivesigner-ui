@@ -354,7 +354,11 @@ describe('the request survives import and unlock', () => {
     await user.type(screen.getByLabelText(/passcode/i), 'pass');
     await user.click(button);
     await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalled());
-    expect(h.unlockAccount).toHaveBeenCalledWith('alice', 'pass');
+    expect(h.unlockAccount).toHaveBeenCalledWith(
+      'alice',
+      'pass',
+      expect.any(Function),
+    );
     // Signed with the key the unlock opened, read after it, not before.
     expect(h.broadcastOperations.mock.calls[0][1]).toBe('5Kactive');
     h.accounts = { selectedAccount: 'alice', unlocked: ['alice'] };
@@ -425,11 +429,33 @@ describe('the request survives import and unlock', () => {
     vi.unstubAllGlobals();
   });
 
+  it('signs nothing once another account is selected during the unlock', async () => {
+    h.splat = 'transfer';
+    h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
+    h.accounts = { selectedAccount: 'alice', unlocked: [] };
+    const opened = h.keys;
+    h.keys = null;
+    h.unlockAccount.mockImplementation(async () => {
+      // Another tab chose bob; this tab adopts it with the unlock.
+      h.accounts = { selectedAccount: 'bob', unlocked: ['alice'] };
+      h.keys = opened;
+      return opened;
+    });
+    const user = userEvent.setup();
+    render(<Sign />);
+    await user.type(screen.getByLabelText(/passcode/i), 'pass');
+    await user.click(screen.getByRole('button', { name: /approve/i }));
+    await waitFor(() => expect(h.unlockAccount).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 20));
+    expect(h.broadcastOperations).not.toHaveBeenCalled();
+    h.accounts = { selectedAccount: 'alice', unlocked: ['alice'] };
+  });
+
   it('a wrong passcode signs nothing', async () => {
     h.splat = 'transfer';
     h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
     h.accounts = { selectedAccount: 'alice', unlocked: [] };
-    h.unlockAccount.mockRejectedValue(new Error('bad passcode'));
+    h.unlockAccount.mockRejectedValue(new Error('keystore: wrong passcode'));
     const user = userEvent.setup();
     render(<Sign />);
     await user.type(screen.getByLabelText(/passcode/i), 'nope{Enter}');

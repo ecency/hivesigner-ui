@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -6,7 +6,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const rs = vi.hoisted(() => ({
   search: {} as { next?: string },
   navigate: vi.fn(),
+  // Holds every unlock until released, when a test sets it.
+  unlockGate: null as null | Promise<void>,
 }));
+vi.mock('@/lib/keystore', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/lib/keystore')>();
+  return {
+    ...real,
+    readKeys: async (field: string, passcode?: string) => {
+      if (rs.unlockGate) await rs.unlockGate;
+      return real.readKeys(field, passcode);
+    },
+  };
+});
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => (opts: unknown) => ({
@@ -27,6 +39,10 @@ vi.mock('@tanstack/react-router', () => ({
     </a>
   ),
   useNavigate: () => rs.navigate,
+  useRouter: () => ({
+    state: { location: { pathname: '/accounts', searchStr: '' } },
+    subscribe: () => () => {},
+  }),
 }));
 
 import {
@@ -44,6 +60,8 @@ const Accounts = (Route as unknown as { component: ComponentType }).component;
 beforeEach(() => {
   localStorage.clear();
   _resetKeyCache();
+  rs.unlockGate = null;
+  rs.navigate.mockReset();
 });
 
 describe('accounts switcher', () => {
@@ -274,4 +292,38 @@ describe('unlock and password managers (#136)', () => {
     // Gone, or at least empty, by the time the page changes.
     expect(fieldAtNavigation === null || fieldAtNavigation === '').toBe(true);
   }, 30_000);
+});
+
+describe('a second choice made while an unlock runs', () => {
+  it('wins: the account being unlocked is opened but not chosen', async () => {
+    await addAccount('alice', { posting: '5Ka' });
+    await addAccount('bob', { active: '5Kbob' }, 'pass');
+    await addAccount('carol', { posting: '5Kc' });
+    lockAccount('bob');
+    selectAccount('alice');
+    let release = () => {};
+    rs.unlockGate = new Promise<void>((r) => {
+      release = r;
+    });
+    const user = userEvent.setup();
+    render(<Accounts />);
+    await user.click(screen.getByRole('button', { name: /^unlock$/i }));
+    const field = document.querySelector('input[type="password"]');
+    await user.type(field as HTMLElement, 'pass');
+    await user.click(
+      screen.getAllByRole('button', { name: /^unlock$/i }).at(-1)!,
+    );
+    // While bob's passcode is checked, the user picks carol.
+    const carol = screen
+      .getAllByTestId('account-row')
+      .find((row) => row.textContent?.includes('@carol')) as HTMLElement;
+    await user.click(
+      within(carol).getByRole('button', { name: /switch an account/i }),
+    );
+    expect(getState().selectedAccount).toBe('carol');
+    release();
+    await waitFor(() => expect(isUnlocked('bob')).toBe(true));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(getState().selectedAccount).toBe('carol');
+  });
 });

@@ -556,8 +556,18 @@ describe('a returning visit with a protected account (#145)', () => {
       await screen.findByLabelText(i18n.t('accounts.passcode')),
       'correct-passcode',
     );
+    // The form must mount once, already knowing the passcode: a first
+    // render that asks for it again, even for a moment, is on screen.
+    const asked: string[] = [];
+    const observer = new MutationObserver(() => {
+      if (document.querySelector('input[name=unlock-passcode]'))
+        asked.push('unlock-passcode');
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
     await user.click(screen.getByRole('button', { name: /^authorize$/i }));
     expect(await screen.findByTestId('add-active-key')).toBeInTheDocument();
+    observer.disconnect();
+    expect(asked).toEqual([]);
     // Not an error: the screen simply shows the next thing it needs.
     expect(screen.queryByRole('alert')).toBeNull();
     expect(chain.broadcastOperations).not.toHaveBeenCalled();

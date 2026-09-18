@@ -107,19 +107,20 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   // The passcode that unlocked the account on this screen, held only when
-  // the active key turned out to be missing, so adding it does not ask for
-  // the passcode a second time. Gone with the screen.
+  // its keys lack the active key, so adding it does not ask for the passcode
+  // a second time. Let go once the key is added, and gone with the screen.
   const [unlockedWith, setUnlockedWith] = useState<{
     account: string;
     passcode: string | undefined;
   } | null>(null);
-  // Set once the user leaves (or sets off to), so an in-flight approve()
-  // cannot grant authority or redirect after they withdrew consent.
-  const abandoned = useLeaveLatch();
+  // An approve() in flight must not grant authority or redirect after the
+  // user set off elsewhere: they withdrew consent.
+  const leave = useLeaveLatch();
   const queryClient = useQueryClient();
-  // A grant went out from this screen: its account now reads as granted,
-  // but the screen must not turn into a sign-in on the way to the app.
-  const [granting, setGranting] = useState(false);
+  // The account this screen just granted for: it now reads as granted, but
+  // the screen must not turn into a sign-in on the way to the app. Another
+  // account selected meanwhile is judged on its own.
+  const [grantedFor, setGrantedFor] = useState<string | null>(null);
 
   // A request with NO app account is a site asking only to confirm who the
   // user is (hivesearcher and the like): it holds no posting authority and
@@ -170,7 +171,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   // active-scope request is never one: its token is signed with the active
   // key, which the posting grant says nothing about.
   const signIn =
-    !granting &&
+    grantedFor !== selectedAccount &&
     !!selectedAccount &&
     (effective.scope === 'login' ||
       (postingScope &&
@@ -180,6 +181,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
 
   async function approve() {
     setError(null);
+    const left = leave.mark();
     // Read now, not from this render: an unlock in the same click has only
     // just put the keys in memory.
     const keys = selectedAccount ? getKeys(selectedAccount) : null;
@@ -215,7 +217,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
         // at this point, not merely stop the token afterwards. Another tab
         // may also have selected someone else: the screen now names them, so
         // nothing is done for the account it showed before.
-        if (abandoned.current || !stillSelected(selectedAccount)) return;
+        if (left() || !stillSelected(selectedAccount)) return;
         if (!loaded) {
           setError(t('common.try_again'));
           return;
@@ -236,7 +238,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             return;
           }
           const op = buildGrantOperation(loaded, req.clientId);
-          setGranting(true);
+          setGrantedFor(selectedAccount);
           if (op) await broadcastOperations([op], activeKey, loaded.name);
           // Wait for the grant to be visible on-chain before issuing the token.
           if (!(await waitForGrant(loaded.name, req.clientId))) {
@@ -249,7 +251,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
       // The grant poll can run for up to 16s. If the user left the consent
       // screen in the meantime (Cancel, or navigating away), do NOT hand the app
       // a token and redirect them - they withdrew consent mid-flow.
-      if (abandoned.current || !stillSelected(selectedAccount)) return;
+      if (left() || !stillSelected(selectedAccount)) return;
       const token = buildAuthToken(
         effective,
         selectedAccount,
@@ -536,14 +538,17 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
               disabled={postingScope && !accountLoaded}
               // Only on a sign-in: a first-time request is read first.
               autoFocus={signIn}
-              onUnlocked={(passcode) => {
-                const active = getKeys(selectedAccount)?.active;
-                // Held whenever the active key is missing, not only when the
-                // grant is known to need it: a sign-in judged on a cached
-                // account can turn into a first-time grant on the fresh read.
-                if (!active) {
+              leave={leave}
+              // Held whenever the active key is missing, not only when the
+              // grant is known to need it: a sign-in judged on a cached
+              // account can turn into a first-time grant on the fresh read.
+              onOpened={(passcode, keys) => {
+                if (!keys.active) {
                   setUnlockedWith({ account: selectedAccount, passcode });
                 }
+              }}
+              onUnlocked={() => {
+                const active = getKeys(selectedAccount)?.active;
                 if (!active && (grantNeeded || authority === 'active')) return;
                 approve();
               }}
@@ -560,10 +565,6 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             {grantNotice}
             <AddActiveKey
               username={selectedAccount}
-              // Built afresh once the passcode is held: the unlock renders this form
-              // a moment before the passcode reaches it, and focus is only taken on
-              // mount.
-              key={unlockedWith?.account === selectedAccount ? 'held' : 'ask'}
               {...(unlockedWith?.account === selectedAccount && {
                 passcode: unlockedWith.passcode,
                 autoFocus: true,

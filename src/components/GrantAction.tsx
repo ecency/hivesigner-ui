@@ -53,9 +53,9 @@ export function GrantAction({
   // callback. Null means "no callback", or a revoke: the list screen.
   const returnTarget = grantReturnTarget(appName, query, mode);
   const listTo = mode === 'grant' ? '/accounts' : '/authorized-apps';
-  // Set once the user leaves (or sets off to), so an in-flight submit()
-  // neither broadcasts nor navigates after they pressed Cancel.
-  const abandoned = useLeaveLatch();
+  // A submit() in flight neither broadcasts nor navigates after the user
+  // set off elsewhere (Cancel stays live while it runs).
+  const leave = useLeaveLatch();
   const queryClient = useQueryClient();
   const [confirming, setConfirming] = useState(false);
   const [status, setStatus] = useState<'idle' | 'busy' | 'done' | 'error'>(
@@ -98,10 +98,7 @@ export function GrantAction({
     (mode === 'grant' ? hasGrant(account.posting, appName) : op === null);
 
   async function submit() {
-    // The click may have started an unlock that finished after the user left
-    // (Cancel stays live while it runs): an irreversible broadcast must not
-    // follow them out.
-    if (abandoned.current) return;
+    const left = leave.mark();
     // Read now, not from this render: an unlock in the same click has only
     // just put the keys in memory.
     const name = selectedAccount;
@@ -121,7 +118,7 @@ export function GrantAction({
       } catch {
         fresh = null;
       }
-      if (abandoned.current) return;
+      if (left()) return;
       // Another tab selected someone else meanwhile: the screen names them
       // now, so nothing is done for the account it showed before.
       if (!stillSelected(name)) {
@@ -158,7 +155,7 @@ export function GrantAction({
         const visible = await waitForGrant(account.name, appName);
         setConfirming(false);
         await refetch();
-        if (abandoned.current) return;
+        if (left()) return;
         if (visible) navigate(returnTarget as never);
         return;
       }
@@ -286,10 +283,6 @@ export function GrantAction({
       {askForKey && selectedAccount && (
         <AddActiveKey
           username={selectedAccount}
-          // Built afresh once the passcode is held: the unlock renders this form
-          // a moment before the passcode reaches it, and focus is only taken on
-          // mount.
-          key={unlockedWith?.account === selectedAccount ? 'held' : 'ask'}
           {...(unlockedWith?.account === selectedAccount && {
             passcode: unlockedWith.passcode,
             autoFocus: true,
@@ -303,12 +296,14 @@ export function GrantAction({
           username={selectedAccount}
           action={verb}
           disabled={!account}
-          onUnlocked={(passcode) => {
-            if (!getKeys(selectedAccount)?.active) {
+          leave={leave}
+          onOpened={(passcode, keys) => {
+            if (!keys.active) {
               setUnlockedWith({ account: selectedAccount, passcode });
-              return;
             }
-            submit();
+          }}
+          onUnlocked={() => {
+            if (getKeys(selectedAccount)?.active) submit();
           }}
         />
       )}

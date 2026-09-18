@@ -10,6 +10,8 @@ import {
   labelText,
 } from '@/components/ui';
 import { accountIsEncrypted, unlockAccount } from '@/lib/accounts';
+import type { Keys } from '@/lib/hive';
+import type { LeaveLatch } from '@/lib/use-leave-latch';
 
 /**
  * A locked account's passcode, asked for on the screen that needs it, with
@@ -24,10 +26,16 @@ import { accountIsEncrypted, unlockAccount } from '@/lib/accounts';
  * at call time (this click's render still sees the account as locked). An
  * action that cannot go ahead with the keys found (a missing active key, say)
  * simply returns, and the screen, now unlocked, shows what it needs.
+ *
+ * The screen's leave latch is marked at the click: a user who set off
+ * elsewhere while the passcode was checked (Cancel, Switch account) gets no
+ * action, even if they came back before it finished.
  */
 export function UnlockAndContinue({
   username,
   action,
+  leave,
+  onOpened,
   onUnlocked,
   disabled = false,
   autoFocus = false,
@@ -35,12 +43,18 @@ export function UnlockAndContinue({
   username: string;
   /** The screen's own verb: Sign in, Approve, Authorize. */
   action: string;
+  /** The screen's leave latch. Required with `onUnlocked`: an action must
+      never follow a user who left. */
+  leave?: LeaveLatch;
+  /** Runs just before the unlock is shown, with the passcode that opened
+      the account (undefined for one without) and its keys, for the one step
+      that needs the passcode again: adding a key to the protected record,
+      which should not ask for what was typed a moment ago. Whatever it sets
+      is in place in the same render as the unlocked screen. */
+  onOpened?: (passcode: string | undefined, keys: Keys) => void;
   /** The screen's action. A screen that moves on by itself once the
-      account is unlocked (the local login) has none. It gets the passcode
-      that opened the account (undefined for one without a passcode), for
-      the one step that needs it again: adding a key to the protected
-      record, which should not ask for what was typed a moment ago. */
-  onUnlocked?: (passcode: string | undefined) => void;
+      account is unlocked (the local login) has none. */
+  onUnlocked?: () => void;
   /** The screen is not ready to act yet (an account read still running). */
   disabled?: boolean;
   /** Only where the passcode is the next thing to do; never above a long
@@ -60,6 +74,7 @@ export function UnlockAndContinue({
     if (!ready) return;
     setError(null);
     const typed = encrypted ? passcode : undefined;
+    const left = leave?.mark();
     // Emptied BEFORE the unlock, so a password manager that captures on
     // removal finds nothing: the unlock notifies the store, the screen drops
     // this field before this function resumes, and a clear after the await
@@ -69,24 +84,26 @@ export function UnlockAndContinue({
       setBusy(true);
     });
     try {
-      await unlockAccount(username, typed);
+      // Handed over before the store announces the unlock, in the same
+      // task, so what the screen sets renders together with the unlocked
+      // screen instead of in a second pass after it.
+      await unlockAccount(username, typed, (keys) => onOpened?.(typed, keys));
     } catch (e) {
-      // A protected record fails on a wrong passcode. One without a passcode
-      // failed to load for another reason, which there is no field to fix,
-      // so it is shown as it is (as the account list does).
+      // Only a passcode that does not open the record is a wrong passcode.
+      // Anything else (a record that fails to load, one removed in another
+      // tab) is shown as it is, as the account list does: there is nothing
+      // to correct in the field.
+      const message = e instanceof Error ? e.message : String(e);
       setError(
-        encrypted
-          ? t('login.invalid_hs_password')
-          : e instanceof Error
-            ? e.message
-            : String(e),
+        /wrong pass/i.test(message) ? t('login.invalid_hs_password') : message,
       );
       setPasscode(typed ?? '');
       setBusy(false);
       return;
     }
     setBusy(false);
-    onUnlocked?.(typed);
+    if (left?.()) return;
+    onUnlocked?.();
   }
 
   return (

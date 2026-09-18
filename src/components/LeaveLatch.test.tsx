@@ -288,17 +288,47 @@ describe('Cancel pressed while the unlock runs, the next page still loading', ()
     await waitFor(() => expect(chain.broadcastOperations).toHaveBeenCalled());
   });
 
-  it('an in-page fragment is not leaving: the screen still acts', async () => {
+  it('an in-page fragment during the unlock is not leaving: the click still acts', async () => {
+    const unlock = deferred();
+    chain.unlockGate = unlock.promise;
     const router = renderAt('/authorize/ecency.app', deferred().promise);
     const user = userEvent.setup();
     const button = await screen.findByRole('button', { name: /^authorize$/i });
-    // A hand-edited URL or an external link with a #fragment: same request.
-    router.history.push('/authorize/ecency.app#details');
-    await waitFor(() => expect(router.state.location.hash).toBe('details'));
-    await settle();
     await user.type(passcodeField(), 'correct-passcode');
     await waitFor(() => expect(button).toBeEnabled());
     await user.click(button);
+    // A hand-edited URL or an external link with a #fragment: same request.
+    router.history.push('/authorize/ecency.app#details');
+    await waitFor(() => expect(router.state.location.hash).toBe('details'));
+    unlock.resolve();
+    await waitFor(() => expect(chain.broadcastOperations).toHaveBeenCalled());
+  });
+
+  it('Cancel then Back during one unlock: that click is spent, a new one works', async () => {
+    const chunk = deferred();
+    const unlock = deferred();
+    chain.unlockGate = unlock.promise;
+    const router = renderAt('/authorize/ecency.app', chunk.promise);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^authorize$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    await user.click(screen.getByRole('link', { name: /cancel/i }));
+    await settle();
+    router.history.back();
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe('/authorize/ecency.app'),
+    );
+    unlock.resolve();
+    await waitFor(() => expect(getKeys('alice')?.active).toBeTruthy());
+    await settle();
+    // The user withdrew that click by leaving; coming back does not revive it.
+    expect(chain.broadcastOperations).not.toHaveBeenCalled();
+    // The screen still works for a click made now.
+    await user.click(
+      await screen.findByRole('button', { name: /^authorize$/i }),
+    );
     await waitFor(() => expect(chain.broadcastOperations).toHaveBeenCalled());
   });
 });

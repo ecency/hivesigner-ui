@@ -21,6 +21,7 @@ import {
 } from '@/components/ui';
 import {
   accountIsEncrypted,
+  getState,
   isUnlocked,
   removeAccount,
   selectAccount,
@@ -29,6 +30,7 @@ import {
 import { resolveInternalPath } from '@/lib/internal-path';
 import { parseSearch } from '@/lib/search';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // The account switcher (#106 pain #5): every stored account with its state,
 // switching that never logs the others out, and inline unlock for encrypted
@@ -59,6 +61,17 @@ function AccountRow({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
+  const leave = useLeaveLatch();
+
+  /**
+   * An unlock can take seconds, and clicks made meanwhile run before it
+   * finishes. The last click wins: when another row was chosen meanwhile, or
+   * the user set off elsewhere, this one is left unlocked but not chosen, and
+   * nothing navigates.
+   */
+  function stillWanted(left: () => boolean, chosen: string | null) {
+    return !left() && getState().selectedAccount === chosen;
+  }
 
   function done() {
     // Return to the flow that sent the user here (an OAuth consent request
@@ -90,9 +103,12 @@ function AccountRow({
       return;
     }
     // Plaintext but not yet in memory (e.g. just after a reload): load and select.
+    const left = leave.mark();
+    const chosen = getState().selectedAccount;
     setBusy(true);
     try {
       await unlockAccount(username);
+      if (!stillWanted(left, chosen)) return;
       selectAccount(username);
       done();
     } catch (e) {
@@ -106,9 +122,18 @@ function AccountRow({
 
   async function submitUnlock() {
     setError(null);
+    const left = leave.mark();
+    const chosen = getState().selectedAccount;
     setBusy(true);
     try {
       await unlockAccount(username, passcode);
+      if (!stillWanted(left, chosen)) {
+        flushSync(() => {
+          setPasscode('');
+          setUnlocking(false);
+        });
+        return;
+      }
       selectAccount(username);
       // Emptied and removed before the page changes, so a password manager
       // that captures on navigation finds nothing to offer to save.
