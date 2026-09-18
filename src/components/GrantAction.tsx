@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AddActiveKey } from '@/components/AddActiveKey';
 import { AppProfile } from '@/components/AppProfile';
 import { Avatar } from '@/components/Avatar';
+import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import { Sentence } from '@/components/Untranslated';
 import {
   alertError,
@@ -95,6 +96,11 @@ export function GrantAction({
     (mode === 'grant' ? hasGrant(account.posting, appName) : op === null);
 
   async function submit() {
+    // Read now, not from this render: an unlock in the same click has only
+    // just put the keys in memory.
+    const activeKey = selectedAccount
+      ? getKeys(selectedAccount)?.active
+      : undefined;
     if (!account || !activeKey || !op) return;
     setStatus('busy');
     setError('');
@@ -130,18 +136,21 @@ export function GrantAction({
   // characters stripped.
   const appLabel = safeText(appName);
 
-  // The states that sit between "unlocked" and "act", each with its own
+  // The states that sit between "an account" and "act", each with its own
   // answer. `undefined` is a read still running or one that failed; `null` is
   // an account the chain does not know. Both used to leave a button that did
-  // nothing, for ever.
-  const pending =
-    !!selectedAccount && isUnlocked && !alreadyDone && status !== 'done';
+  // nothing, for ever. None of them needs the keys, so a locked account sees
+  // them too.
+  const pending = !!selectedAccount && !alreadyDone && status !== 'done';
   const readFailed = pending && account === undefined && accountFailed;
   const accountMissing = pending && account === null;
+  // A locked account is unlocked here, and the same click acts (#145). It
+  // used to be sent to the account list, and the request was lost there.
+  const locked = pending && !isUnlocked && !readFailed && !accountMissing;
   // An unlocked account without its active key is asked for it in place. The
   // unlock link this used to show led to an account that was already
   // unlocked, and the request was lost on the way.
-  const askForKey = pending && !!account && !activeKey;
+  const askForKey = pending && isUnlocked && !!account && !activeKey;
 
   return (
     // A confirm-and-act screen, so it stays one readable column instead of
@@ -237,6 +246,15 @@ export function GrantAction({
       {askForKey && selectedAccount && (
         <AddActiveKey username={selectedAccount} />
       )}
+      {locked && selectedAccount && (
+        <UnlockAndContinue
+          key={`unlock:${selectedAccount}`}
+          username={selectedAccount}
+          action={verb}
+          disabled={!account}
+          onUnlocked={submit}
+        />
+      )}
 
       {/* Full-width actions on a phone; from sm they sit inline at their own
           width with the cancel link beside them. */}
@@ -244,15 +262,6 @@ export function GrantAction({
         {!selectedAccount ? (
           <Link to="/import" className={btnPrimary}>
             {t('common.continue')}
-          </Link>
-        ) : !isUnlocked ? (
-          // Keyed: its children differ from the other links' plain labels, so
-          // React builds it fresh rather than reworking their text.
-          <Link key="unlock" to="/accounts" className={btnPrimary}>
-            <Sentence
-              k="accounts.unlock_account"
-              values={{ account: `@${selectedAccount}` }}
-            />
           </Link>
         ) : alreadyDone || status === 'done' ? (
           // Already granted, or just granted: continue to the callback that
@@ -273,7 +282,7 @@ export function GrantAction({
           >
             {accountFetching ? '…' : t('authorize.retry')}
           </button>
-        ) : accountMissing ? null : !account ? (
+        ) : accountMissing || locked ? null : !account ? (
           <button type="button" disabled className={btnPrimary}>
             …
           </button>

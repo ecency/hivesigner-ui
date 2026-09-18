@@ -1,0 +1,109 @@
+import { useState } from 'react';
+import { flushSync } from 'react-dom';
+import { useTranslation } from 'react-i18next';
+import { SecretInput } from '@/components/SecretInput';
+import {
+  alertError,
+  btnPrimary,
+  field,
+  label,
+  labelText,
+} from '@/components/ui';
+import { accountIsEncrypted, unlockAccount } from '@/lib/accounts';
+
+/**
+ * A locked account's passcode, asked for on the screen that needs it, with
+ * that screen's own action on the button: one click unlocks and continues
+ * (#145).
+ *
+ * Keys live in memory only, so every visit after a reload starts locked. The
+ * screens used to answer that with an "Unlock" link to the account list, and
+ * a returning user went list, unlock, passcode, back, then the action they
+ * came for. Nothing here reaches past the screen: the passcode unlocks, then
+ * `onUnlocked` runs the screen's action, which reads the keys it signs with
+ * at call time (this click's render still sees the account as locked). An
+ * action that cannot go ahead with the keys found (a missing active key, say)
+ * simply returns, and the screen, now unlocked, shows what it needs.
+ */
+export function UnlockAndContinue({
+  username,
+  action,
+  onUnlocked,
+  disabled = false,
+  autoFocus = false,
+}: {
+  username: string;
+  /** The screen's own verb: Sign in, Approve, Authorize. */
+  action: string;
+  /** The screen's action. A screen that moves on by itself once the
+      account is unlocked (the local login) has none. */
+  onUnlocked?: () => void;
+  /** The screen is not ready to act yet (an account read still running). */
+  disabled?: boolean;
+  /** Only where the passcode is the next thing to do; never above a long
+      request the user still has to read. */
+  autoFocus?: boolean;
+}) {
+  const { t } = useTranslation();
+  const [passcode, setPasscode] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  // A no-passcode account is unlocked at startup; one still locked has a
+  // record that failed to load, and trying again says why.
+  const encrypted = accountIsEncrypted(username);
+  const ready = !busy && !disabled && (!encrypted || passcode.length > 0);
+
+  async function submit() {
+    if (!ready) return;
+    setError(null);
+    setBusy(true);
+    try {
+      await unlockAccount(username, encrypted ? passcode : undefined);
+    } catch {
+      setError(t('login.invalid_hs_password'));
+      setBusy(false);
+      return;
+    }
+    // Emptied before the screen moves on, so a password manager that
+    // captures on navigation or removal finds nothing to offer to save.
+    flushSync(() => {
+      setPasscode('');
+      setBusy(false);
+    });
+    onUnlocked?.();
+  }
+
+  return (
+    <div className="flex flex-col gap-2.5">
+      {encrypted && (
+        <label className={label}>
+          <span className={labelText}>{t('accounts.passcode')}</span>
+          {/* Not the site's password: kept out of managers' save and update
+              prompts (see SecretInput). */}
+          <SecretInput
+            className={field}
+            name={`passcode-${username}`}
+            value={passcode}
+            onChange={setPasscode}
+            onEnter={submit}
+            readOnly={busy}
+            autoFocus={autoFocus}
+          />
+        </label>
+      )}
+      {error && (
+        <div role="alert" className={alertError}>
+          {error}
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={submit}
+        disabled={!ready}
+        className={btnPrimary}
+      >
+        {busy ? '…' : action}
+      </button>
+    </div>
+  );
+}

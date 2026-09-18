@@ -137,7 +137,11 @@
     "still_confirming": "La autorización se ha enviado, pero aún se está confirmando. Vuelve a intentarlo en un momento.",
     "first_time_grant": "Primera autorización: esto añade {app} a tu autoridad de publicación en la cadena de bloques y requiere tu clave activa una sola vez. Esa cuenta podrá publicar en tu nombre hasta que la revoques.",
     "this_site": "Este sitio",
-    "authorize_app": "Autorizar {app}"
+    "authorize_app": "Autorizar {app}",
+    "sign_in_to": "Iniciar sesión en {app}",
+    "sign_in": "Iniciar sesión",
+    "signing_in_as": "Iniciando sesión como",
+    "already_authorized": "Ya autorizaste a {app}. No se concede ningún permiso nuevo."
   },
   "import": {
     "username": "Nombre de usuario",

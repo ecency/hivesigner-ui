@@ -139,7 +139,11 @@
     "still_confirming": "Autoryzacja została wysłana, ale wciąż czeka na potwierdzenie. Spróbuj ponownie za chwilę.",
     "first_time_grant": "Pierwsza autoryzacja: konto {app} zostanie dodane w blockchainie do Twojego uprawnienia do publikowania, co jednorazowo wymaga Twojego klucza aktywnego. To konto będzie mogło publikować w Twoim imieniu, dopóki nie cofniesz uprawnienia.",
     "this_site": "Ta witryna",
-    "authorize_app": "Autoryzuj {app}"
+    "authorize_app": "Autoryzuj {app}",
+    "sign_in_to": "Zaloguj się do aplikacji {app}",
+    "sign_in": "Zaloguj się",
+    "signing_in_as": "Logujesz się jako",
+    "already_authorized": "Aplikacja {app} została już wcześniej autoryzowana. Nie przyznajesz żadnych nowych uprawnień."
   },
   "import": {
     "username": "Nazwa użytkownika",

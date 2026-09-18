@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CurrentAccount } from '@/components/CurrentAccount';
 import { ReportIssue } from '@/components/ReportIssue';
+import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import { Sentence } from '@/components/Untranslated';
 import {
   alertError,
@@ -188,6 +189,7 @@ function Sign() {
   // An HP amount needs the live SP-per-VEST rate; block approval until it loads
   // so a fallback rate never signs the wrong VESTS amount.
   const rateBlocked = req.hpDependent && !vestsToSp.ready;
+  const verbLabel = req.noBroadcast ? t('sign.sign') : t('sign.approve');
   // The `s` param names the account the request must be signed by. Refuse to
   // sign it from a different selected account (the old app threw here).
   const signerMismatch =
@@ -214,6 +216,12 @@ function Sign() {
     : [];
 
   async function approve() {
+    // Read now, not from this render: an unlock in the same click has only
+    // just put the keys in memory.
+    const signingKey =
+      authority && selectedAccount
+        ? getKeys(selectedAccount)?.[authority]
+        : undefined;
     if (!selectedAccount || !signingKey || rateBlocked || signerMismatch)
       return;
     setStatus('signing');
@@ -478,19 +486,16 @@ function Sign() {
             {t('common.continue')}
           </Link>
         ) : !isUnlocked ? (
-          // Keyed: its children differ from the other links' plain labels, so
-          // React builds it fresh rather than reworking their text.
-          <Link
-            key="unlock"
-            to="/accounts"
-            search={{ next: here() }}
-            className={btnPrimary}
-          >
-            <Sentence
-              k="accounts.unlock_account"
-              values={{ account: `@${selectedAccount}` }}
-            />
-          </Link>
+          // The passcode here, and the same click approves (#145). An account
+          // without the key this needs returns from approve() and the screen,
+          // now unlocked, says which key is missing.
+          <UnlockAndContinue
+            key={`unlock:${selectedAccount}`}
+            username={selectedAccount}
+            action={verbLabel}
+            disabled={rateBlocked}
+            onUnlocked={approve}
+          />
         ) : !signingKey ? (
           <>
             <div className="text-[13px] text-warn">
@@ -516,11 +521,7 @@ function Sign() {
               disabled={status === 'signing' || rateBlocked}
               className={btnPrimary}
             >
-              {status === 'signing'
-                ? '…'
-                : request.noBroadcast
-                  ? t('sign.sign')
-                  : t('sign.approve')}
+              {status === 'signing' ? '…' : verbLabel}
             </button>
           </>
         )}

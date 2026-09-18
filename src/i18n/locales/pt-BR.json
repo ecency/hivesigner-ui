@@ -137,7 +137,11 @@
     "still_confirming": "A autorização foi enviada, mas ainda está sendo confirmada. Tente novamente em instantes.",
     "first_time_grant": "Primeira autorização: isto adiciona {app} à sua autoridade de postagem na blockchain e exige sua chave ativa uma única vez. Essa conta poderá postar em seu nome até que você revogue a autorização.",
     "this_site": "Este site",
-    "authorize_app": "Autorizar {app}"
+    "authorize_app": "Autorizar {app}",
+    "sign_in_to": "Entrar em {app}",
+    "sign_in": "Entrar",
+    "signing_in_as": "Entrando como",
+    "already_authorized": "Você já autorizou {app}. Nenhuma permissão nova é concedida."
   },
   "import": {
     "username": "Nome de usuário",

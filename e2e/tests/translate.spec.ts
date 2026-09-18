@@ -211,30 +211,27 @@ test('sign: without a callback the success screen is shown', async ({
   expect(problems).toEqual([]);
 });
 
-test('sign: a locked account is unlocked and the request comes back', async ({
+test('sign: a locked account is unlocked on the request and approves in one step', async ({
   page,
 }) => {
   const problems = await setUp(page);
   await addAccount(page, 'trtwo', 'e2e-passcode');
+  // The reload drops the keys from memory: the account is locked again.
   await openTranslated(
     page,
     '/sign/vote?voter=trtwo&author=ecency&permlink=x&weight=10000',
   );
   await expectNamesKept(page);
-  await page.getByRole('link', { name: /unlock/i }).click();
-  await page.waitForURL('**/accounts?**');
-  await translationSettled(page);
-  await row(page, 'trtwo')
-    .getByRole('button', { name: /unlock/i })
-    .click();
-  const field = page.locator('input[name="passcode-trtwo"]');
-  await field.fill('e2e-passcode');
-  await field.press('Enter');
-  await page.waitForURL('**/sign/vote?**');
-  await translationSettled(page);
   await expect(page.getByRole('button', { name: /approve/i })).toHaveText(
     translated('Approve'),
   );
+  const field = page.locator('input[name="passcode-trtwo"]');
+  await field.fill('e2e-passcode');
+  await field.press('Enter');
+  // Unlocked and broadcast by the same Enter; the account list never shows.
+  await expect(page.locator('main')).toContainText(/successfully/i);
+  expect(page.url()).toContain('/sign/vote?');
+  await translationSettled(page);
   await expectNamesKept(page);
   expect(problems).toEqual([]);
 });
@@ -250,7 +247,32 @@ test('consent: an app the account already granted gets its token', async ({
   );
   await expect(page.locator('main')).toContainText('@granted.app');
   await expectNamesKept(page);
-  await page.getByRole('button', { name: /authorize/i }).click();
+  // Nothing new is granted, so it is a sign-in.
+  await page.getByRole('button', { name: /sign in/i }).click();
+  await page.waitForURL(`${CALLBACK}?**`);
+  expect(page.url()).toContain('access_token=');
+  expect(problems).toEqual([]);
+});
+
+test('consent: a returning visit with a protected account is the passcode and one click', async ({
+  page,
+}) => {
+  const problems = await setUp(page);
+  await addAccount(page, 'trthree', 'e2e-passcode');
+  await openTranslated(
+    page,
+    `/oauth2/authorize?client_id=granted.app&redirect_uri=${encodeURIComponent(CALLBACK)}&scope=posting`,
+  );
+  await expect(page.locator('main h1')).toContainText(
+    translated('Sign in to '),
+  );
+  // The scope was shown when it was granted; not again on every visit.
+  await expect(page.locator('main li')).toHaveCount(0);
+  await expectNamesKept(page);
+  const field = page.locator('input[name="passcode-trthree"]');
+  await expect(field).toBeFocused();
+  await field.fill('e2e-passcode');
+  await page.getByRole('button', { name: /sign in/i }).click();
   await page.waitForURL(`${CALLBACK}?**`);
   expect(page.url()).toContain('access_token=');
   expect(problems).toEqual([]);

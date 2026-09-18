@@ -19,6 +19,7 @@ const h = vi.hoisted(() => ({
   > | null,
   signOperations: vi.fn(),
   broadcastOperations: vi.fn(),
+  unlockAccount: vi.fn(),
 }));
 
 const sig = vi.hoisted(() => ({ report: vi.fn() }));
@@ -56,7 +57,11 @@ vi.mock('@tanstack/react-query', () => ({
 }));
 vi.mock('@/lib/hive', () => ({ getVestsToSp: vi.fn() }));
 vi.mock('@/lib/use-accounts', () => ({ useAccounts: () => h.accounts }));
-vi.mock('@/lib/accounts', () => ({ getKeys: () => h.keys }));
+vi.mock('@/lib/accounts', () => ({
+  getKeys: () => h.keys,
+  accountIsEncrypted: () => true,
+  unlockAccount: h.unlockAccount,
+}));
 // Mock only the signing/broadcast calls. resolveSigner stays REAL: the route
 // uses it to resolve __signer for display, and the whole point is that display
 // and signing share one resolver, so stubbing it would hide a divergence.
@@ -80,6 +85,7 @@ beforeEach(() => {
     .mockReset()
     .mockResolvedValue({ id: 'tx1', signature: 'SIG' });
   h.broadcastOperations.mockReset().mockResolvedValue({ id: 'tx1' });
+  h.unlockAccount.mockReset().mockResolvedValue({});
 });
 
 describe('sign route', () => {
@@ -308,18 +314,46 @@ describe('the signing account is visible', () => {
 });
 
 describe('the request survives import and unlock', () => {
-  // A passcode user arriving from an app deep link pressed Unlock, landed on
-  // the account list and the request was gone. The consent screen carried
-  // `next`; the sign route did not.
-  it('the unlock link carries the request as next', async () => {
+  // A passcode user arriving from an app deep link used to be sent to the
+  // account list to unlock, and back. The passcode is asked for here, and the
+  // same click approves (#145).
+  it('a locked account is unlocked and approves in one click, never leaving the request', async () => {
     h.splat = 'transfer';
     h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
     h.accounts = { selectedAccount: 'alice', unlocked: [] };
+    // Locked: no keys in memory until the unlock opens them.
+    const opened = h.keys;
+    h.keys = null;
+    h.unlockAccount.mockImplementation(async () => {
+      h.keys = opened;
+      return opened;
+    });
+    const user = userEvent.setup();
     render(<Sign />);
-    const link = await screen.findByRole('link', { name: /unlock/i });
-    expect(link).toHaveAttribute('href', '/accounts');
-    const search = JSON.parse(link.getAttribute('data-search') ?? '{}');
-    expect(search.next).toBe(window.location.pathname + window.location.search);
+    expect(screen.queryByRole('link', { name: /unlock/i })).toBeNull();
+    const button = screen.getByRole('button', { name: /approve/i });
+    expect(button).toBeDisabled();
+    await user.type(screen.getByLabelText(/passcode/i), 'pass');
+    await user.click(button);
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalled());
+    expect(h.unlockAccount).toHaveBeenCalledWith('alice', 'pass');
+    // Signed with the key the unlock opened, read after it, not before.
+    expect(h.broadcastOperations.mock.calls[0][1]).toBe('5Kactive');
+    h.accounts = { selectedAccount: 'alice', unlocked: ['alice'] };
+  });
+
+  it('a wrong passcode signs nothing', async () => {
+    h.splat = 'transfer';
+    h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
+    h.accounts = { selectedAccount: 'alice', unlocked: [] };
+    h.unlockAccount.mockRejectedValue(new Error('bad passcode'));
+    const user = userEvent.setup();
+    render(<Sign />);
+    await user.type(screen.getByLabelText(/passcode/i), 'nope{Enter}');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /wrong passcode/i,
+    );
+    expect(h.broadcastOperations).not.toHaveBeenCalled();
     h.accounts = { selectedAccount: 'alice', unlocked: ['alice'] };
   });
 

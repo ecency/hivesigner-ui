@@ -2,6 +2,8 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { AuthorizeConsent } from '@/components/AuthorizeConsent';
+import { CurrentAccount } from '@/components/CurrentAccount';
+import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import { formColumn, h1, link, muted, page } from '@/components/ui';
 import { resolveInternalPath } from '@/lib/internal-path';
 import {
@@ -92,6 +94,23 @@ function LocalLogin({ next }: { next?: string }) {
         >
           {t('accounts.add_another')}
         </Link>
+      ) : selectedAccount ? (
+        // The passcode here (#145): once unlocked, the effect above moves on.
+        // Switching comes back to this page, not to the target, so a locked
+        // account picked on the list is unlocked here too.
+        <>
+          <CurrentAccount
+            username={selectedAccount}
+            label={t('authorize.signing_in_as')}
+            next={window.location.pathname + window.location.search}
+          />
+          <UnlockAndContinue
+            key={`unlock:${selectedAccount}`}
+            username={selectedAccount}
+            action={t('authorize.sign_in')}
+            autoFocus
+          />
+        </>
       ) : (
         <Link
           to="/accounts"

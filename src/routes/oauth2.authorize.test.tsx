@@ -161,7 +161,8 @@ describe('oauth consent screen', () => {
     h.hasGrant.mockReturnValue(true);
     const user = userEvent.setup();
     render(<Authorize />, { wrapper: StrictMode });
-    await user.click(screen.getByRole('button', { name: /authorize/i }));
+    // Already granted: a sign-in.
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
     await waitFor(() =>
       expect(h.assign).toHaveBeenCalledWith(
         'https://app.example/cb?access_token=TOKEN',

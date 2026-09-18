@@ -106,11 +106,15 @@ beforeEach(() => {
 
 describe('AuthorizeConsent', () => {
   it('names the app, its account and the callback host, and lists what posting authority allows as one grant', async () => {
+    h.getAccount.mockImplementation(async (name: string) =>
+      name === 'ecency.app' ? appAccount : userAccount([]),
+    );
     renderConsent({});
     expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
       /Ecency/,
     );
-    expect(screen.getByText('@ecency.app')).toBeInTheDocument();
+    // In the header, and again in the grant line.
+    expect(screen.getAllByText('@ecency.app').length).toBeGreaterThan(1);
     expect(screen.getByText('ecency.com')).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -123,6 +127,34 @@ describe('AuthorizeConsent', () => {
     ).toBeInTheDocument();
     // The account the token will be issued for is named, so a wrong selection is visible.
     expect(screen.getByTestId('current-account')).toHaveTextContent('@alice');
+    expect(screen.getByTestId('current-account')).toHaveTextContent(
+      /authorizing as/i,
+    );
+  });
+
+  it('treats an app the account already authorized as a sign-in, not a new request (#145)', async () => {
+    renderConsent({});
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      /sign in to ecency/i,
+    );
+    expect(
+      screen.getByText(
+        wholeText(
+          i18n.t('authorize.already_authorized', { app: '@ecency.app' }),
+        ),
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+    expect(screen.getByTestId('current-account')).toHaveTextContent(
+      /signing in as/i,
+    );
+    expect(
+      await screen.findByRole('button', { name: /^sign in$/i }),
+    ).toBeInTheDocument();
+    // Who is asking and where the answer goes stay on screen.
+    // In the header, and again in the grant line.
+    expect(screen.getAllByText('@ecency.app').length).toBeGreaterThan(1);
+    expect(screen.getByText('ecency.com')).toBeInTheDocument();
   });
 
   it('describes a login-only request as exactly that, with no abilities list', async () => {
@@ -153,7 +185,7 @@ describe('AuthorizeConsent', () => {
 
   it('issues a code the app can verify and sends the user to the registered callback', async () => {
     renderConsent({ state: 'xyz' });
-    const button = await screen.findByRole('button', { name: /authorize/i });
+    const button = await screen.findByRole('button', { name: /sign in/i });
     await waitFor(() => expect(button).toBeEnabled());
     await userEvent.setup().click(button);
     await waitFor(() => expect(h.assign).toHaveBeenCalledTimes(1));
@@ -200,7 +232,7 @@ describe('AuthorizeConsent', () => {
       screen.getByText(i18n.t('authorize.scope_login')),
     ).toBeInTheDocument();
     expect(screen.queryAllByRole('listitem')).toHaveLength(0);
-    const button = await screen.findByRole('button', { name: /authorize/i });
+    const button = await screen.findByRole('button', { name: /sign in/i });
     await waitFor(() => expect(button).toBeEnabled());
     await userEvent.setup().click(button);
     await waitFor(() => expect(h.assign).toHaveBeenCalledTimes(1));
@@ -222,7 +254,7 @@ describe('AuthorizeConsent', () => {
       scope: 'login,offline',
       responseType: 'code',
     });
-    const button = await screen.findByRole('button', { name: /authorize/i });
+    const button = await screen.findByRole('button', { name: /sign in/i });
     await waitFor(() => expect(button).toBeEnabled());
     await userEvent.setup().click(button);
     await waitFor(() => expect(h.assign).toHaveBeenCalledTimes(1));
@@ -283,7 +315,7 @@ describe('AuthorizeConsent', () => {
     );
     renderConsent({});
     const chip = await screen.findByTestId('current-account');
-    expect(chip).toHaveTextContent(/authorizing as/i);
+    expect(chip).toHaveTextContent(/signing in as/i);
     expect(chip).toHaveTextContent('@alice');
     expect(chip.querySelector('img')).toHaveAttribute(
       'src',
@@ -294,7 +326,7 @@ describe('AuthorizeConsent', () => {
     expect(link.getAttribute('data-search')).toContain('/oauth2/authorize');
   });
 
-  it('shows the account even while it is locked, so the unlock button names the right one', async () => {
+  it('shows the account even while it is locked, and asks for its passcode right here', async () => {
     h.accounts = {
       selectedAccount: 'alice',
       unlocked: [],
@@ -304,7 +336,11 @@ describe('AuthorizeConsent', () => {
     expect(await screen.findByTestId('current-account')).toHaveTextContent(
       '@alice',
     );
-    expect(screen.getByRole('link', { name: /unlock/i })).toBeInTheDocument();
+    // No detour to the account list: that lost a returning user four steps.
+    expect(screen.queryByRole('link', { name: /unlock/i })).toBeNull();
+    expect(
+      screen.getByRole('button', { name: /^sign in$/i }),
+    ).toBeInTheDocument();
     h.accounts = {
       selectedAccount: 'alice',
       unlocked: ['alice'],

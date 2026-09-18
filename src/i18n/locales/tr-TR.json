@@ -137,7 +137,11 @@
     "still_confirming": "Yetkilendirme gönderildi ancak hâlâ onaylanıyor. Lütfen birazdan tekrar deneyin.",
     "first_time_grant": "İlk yetkilendirme: Bu adım {app} hesabını zincir üzerindeki gönderi yetkinize ekler ve bunun için bir kez aktif anahtarınız gerekir. Siz yetkiyi iptal edene kadar bu hesap sizin adınıza gönderi paylaşabilecek.",
     "this_site": "Bu site",
-    "authorize_app": "Yetkilendir: {app}"
+    "authorize_app": "Yetkilendir: {app}",
+    "sign_in_to": "{app} uygulamasına giriş yap",
+    "sign_in": "Giriş yap",
+    "signing_in_as": "Giriş yapan hesap",
+    "already_authorized": "{app} uygulamasını daha önce yetkilendirdiniz. Yeni bir izin verilmiyor."
   },
   "import": {
     "username": "Kullanıcı adı",

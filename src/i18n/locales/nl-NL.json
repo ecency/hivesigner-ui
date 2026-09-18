@@ -137,7 +137,11 @@
     "still_confirming": "De autorisatie is verzonden, maar wordt nog bevestigd. Probeer het zo meteen opnieuw.",
     "first_time_grant": "Eerste autorisatie: hiermee wordt {app} op de blockchain toegevoegd aan je posting-bevoegdheid, waarvoor eenmalig je active-sleutel nodig is. Dat account kan dan namens jou posten totdat je de toegang intrekt.",
     "this_site": "Deze site",
-    "authorize_app": "{app} autoriseren"
+    "authorize_app": "{app} autoriseren",
+    "sign_in_to": "Inloggen bij {app}",
+    "sign_in": "Inloggen",
+    "signing_in_as": "Inloggen als",
+    "already_authorized": "Je hebt {app} al eerder geautoriseerd. Er worden geen nieuwe rechten verleend."
   },
   "import": {
     "username": "Gebruikersnaam",

@@ -69,8 +69,13 @@ describe('/login flow selection', () => {
     };
     render(<Login />);
     expect(h.consent).not.toHaveBeenCalled();
-    // It offers an unlock that returns to the requested page.
+    // It names the target, the account, and unlocks right here (#145).
     expect(screen.getByText(/\/profile/)).toBeInTheDocument();
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@alice');
+    expect(
+      screen.getByRole('button', { name: /^sign in$/i }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^unlock$/i })).toBeNull();
   });
 
   it('navigates straight to the target when an account is already unlocked', async () => {
