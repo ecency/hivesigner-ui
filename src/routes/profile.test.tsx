@@ -11,7 +11,19 @@ vi.mock('@tanstack/react-router', async () =>
 const h = vi.hoisted(() => ({
   getAccount: vi.fn(),
   broadcastOperations: vi.fn(),
+  // Holds every unlock until released, when a test sets it.
+  unlockGate: null as null | Promise<void>,
 }));
+vi.mock('@/lib/keystore', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/lib/keystore')>();
+  return {
+    ...real,
+    readKeys: async (field: string, passcode?: string) => {
+      if (h.unlockGate) await h.unlockGate;
+      return real.readKeys(field, passcode);
+    },
+  };
+});
 vi.mock('@/lib/hive', () => ({ getAccount: h.getAccount }));
 vi.mock('@/lib/sign-tx', () => ({
   broadcastOperations: h.broadcastOperations,
@@ -54,6 +66,7 @@ beforeEach(() => {
   h.getAccount.mockReset();
   h.broadcastOperations.mockReset();
   h.getAccount.mockResolvedValue(account);
+  h.unlockGate = null;
 });
 
 describe('buildProfileMetadata', () => {
@@ -184,6 +197,30 @@ describe('/profile', () => {
     await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
     const [ops, key] = h.broadcastOperations.mock.calls[0];
     expect(key).toBe('5Kposting');
+    expect(JSON.parse(ops[0][1].posting_json_metadata).profile.name).toBe(
+      'Alice B',
+    );
+  }, 30_000);
+
+  it('saves what the form holds when the unlock ends, not when it was clicked', async () => {
+    await addAccount('alice', { posting: '5Kposting' }, 'pass');
+    lockAccount('alice');
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    let release = () => {};
+    h.unlockGate = new Promise<void>((r) => {
+      release = r;
+    });
+    const user = userEvent.setup();
+    renderPage();
+    const name = () => screen.getByLabelText(/^name/i);
+    await waitFor(() => expect(name()).toHaveValue('Alice'));
+    await user.type(screen.getByLabelText(i18n.t('accounts.passcode')), 'pass');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    // Typed while the passcode is checked: the fields stay editable.
+    await user.type(name(), ' B');
+    release();
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops] = h.broadcastOperations.mock.calls[0];
     expect(JSON.parse(ops[0][1].posting_json_metadata).profile.name).toBe(
       'Alice B',
     );

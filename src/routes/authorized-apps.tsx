@@ -144,9 +144,9 @@ function AuthorizedApps() {
               >
                 <bdi>{`@${app}`}</bdi>
               </div>
-              {!isUnlocked || !activeKey ? (
-                // The revoke page asks for the passcode and, when missing,
-                // the active key in place.
+              {!isUnlocked ? null : !activeKey ? (
+                // Locked, the passcode above is the one next step. Without
+                // the active key, the revoke page asks for it in place.
                 <Link
                   to="/revoke/$username"
                   params={{ username: app }}

@@ -116,6 +116,10 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const setError = (text: string | null) =>
     setFailure(text === null ? null : { account: selectedAccount, text });
   const [busy, setBusy] = useState(false);
+  // Switched in place since this screen opened (#146). A posting-scope
+  // request reads the new account first, and that loading state unmounts
+  // the switch button the user just used; it gets the focus back.
+  const [openedFor] = useState(selectedAccount);
   // The passcode that unlocked the account on this screen, held only when
   // its keys lack the active key, so adding it does not ask for the passcode
   // a second time. Let go once the key is added, and gone with the screen.
@@ -505,6 +509,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             }
             next={window.location.pathname + window.location.search}
             busy={busy}
+            focusSwitch={selectedAccount !== openedFor}
           />
         )}
         {refused ? (
@@ -576,6 +581,9 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           <>
             {grantNotice}
             <AddActiveKey
+              // One form per account: what was typed for another (and its
+              // failure) never shows under the one picked since (#146).
+              key={`add-key:${selectedAccount}`}
               username={selectedAccount}
               {...(unlockedWith?.account === selectedAccount && {
                 passcode: unlockedWith.passcode,

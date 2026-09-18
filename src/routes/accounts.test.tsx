@@ -165,6 +165,32 @@ describe('removing an account', () => {
   });
 });
 
+describe('removing an account when storage refuses the write', () => {
+  it('says the account will come back on reload', async () => {
+    await addAccount('alice', { posting: '5Ka' });
+    await addAccount('bob', { posting: '5Kb' });
+    vi.stubGlobal('confirm', () => true);
+    render(<Accounts />);
+    const setItem = vi
+      .spyOn(Storage.prototype, 'setItem')
+      .mockImplementation(() => {
+        throw new Error('QuotaExceededError');
+      });
+    try {
+      await userEvent.click(
+        screen.getByRole('button', {
+          name: `${i18n.t('accounts.delete')} @bob`,
+        }),
+      );
+      expect(within(row('bob')).getByRole('alert')).toHaveTextContent(
+        i18n.t('accounts.remove_failed'),
+      );
+    } finally {
+      setItem.mockRestore();
+    }
+  });
+});
+
 describe('returning to the flow that sent the user here', () => {
   const assign = vi.fn();
 

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import { Handle, Sentence } from '@/components/Untranslated';
@@ -121,6 +121,11 @@ function Profile() {
   const [badUris, setBadUris] = useState('');
   const current =
     form !== null && formFor === (account?.name ?? null) ? form : initial;
+  // What a save sends is the form as it is when the save runs. Unlocking in
+  // the same click takes seconds, the fields stay editable meanwhile, and the
+  // click's own render would send what they held before (#146).
+  const formNow = useRef(current);
+  formNow.current = current;
 
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
   const leave = useLeaveLatch();
@@ -146,7 +151,8 @@ function Profile() {
     // Reject a callback that could never be used: isRegisteredRedirect now
     // refuses non-loopback http, so saving one would register something the
     // consent screen silently declines. Fail here, where it can be corrected.
-    const bad = current.redirect_uris
+    const values = formNow.current;
+    const bad = values.redirect_uris
       .split('\n')
       .map((u) => u.trim())
       .filter(Boolean)
@@ -166,7 +172,7 @@ function Profile() {
         {
           account: account.name,
           json_metadata: '',
-          posting_json_metadata: buildProfileMetadata(account, current),
+          posting_json_metadata: buildProfileMetadata(account, values),
           extensions: [],
         },
       ] as [string, Record<string, unknown>];

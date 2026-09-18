@@ -24,6 +24,7 @@ export function CurrentAccount({
   next,
   busy = false,
   defaultOpen = false,
+  focusSwitch = false,
 }: {
   username: string;
   /** "Authorizing as" / "Signing as": the verb this screen is about. */
@@ -40,6 +41,10 @@ export function CurrentAccount({
   busy?: boolean;
   /** The list starts open: this account cannot do what the screen asks. */
   defaultOpen?: boolean;
+  /** The screen went through a loading state after a switch (a consent
+      screen reads the new account first), which took the switch button
+      and its focus with it: this one takes the focus back. */
+  focusSwitch?: boolean;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(defaultOpen);
@@ -58,6 +63,13 @@ export function CurrentAccount({
   useEffect(() => {
     if (defaultOpen) setOpen(true);
   }, [defaultOpen, username]);
+  // Only focus that fell to the page: a passcode field that takes it for
+  // the new account keeps it.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: on mount only
+  useEffect(() => {
+    if (focusSwitch && document.activeElement === document.body)
+      toggle.current?.focus();
+  }, []);
   const close = () => {
     setOpen(false);
     toggle.current?.focus();

@@ -114,6 +114,11 @@ describe('/authorized-apps', () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findByText('@ecency.app');
+    // One next step while locked: the passcode, not a revoke per row.
+    expect(screen.queryAllByRole('link', { name: /revoke/i })).toHaveLength(0);
+    expect(screen.queryAllByRole('button', { name: /revoke/i })).toHaveLength(
+      0,
+    );
     await user.type(screen.getByLabelText(i18n.t('accounts.passcode')), 'pass');
     await user.click(screen.getByRole('button', { name: /^unlock$/i }));
     await waitFor(

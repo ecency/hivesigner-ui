@@ -660,6 +660,59 @@ describe('switching in place while the passcode is checked (#146)', () => {
     await user.click(within(row).getByRole('button'));
   }
 
+  it('the switch gets the focus back once the screen has read the account picked', async () => {
+    await addAccount('bob', { posting: posting.toString() });
+    selectAccount('alice');
+    const bobRead = deferred();
+    chain.getAccount.mockImplementation(async (name: string) => {
+      if (name === 'ecency.app') return appAccount;
+      if (name === 'bob') {
+        await bobRead.promise;
+        return { ...alice(), name: 'bob' };
+      }
+      return name === 'alice' ? alice() : null;
+    });
+    renderAt('/oauth2/authorize', deferred().promise);
+    const user = userEvent.setup();
+    await screen.findByRole('button', { name: /^authorize$/i });
+    await switchTo(user, 'bob');
+    // A posting request reads bob first: the screen waits for it.
+    expect(screen.queryByTestId('current-account')).toBeNull();
+    bobRead.resolve();
+    expect(await screen.findByTestId('current-account')).toHaveTextContent(
+      '@bob',
+    );
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: /switch an account/i }),
+    );
+  });
+
+  it('an active key typed for one account never shows under the next one', async () => {
+    await addAccount('carol', { posting: posting.toString() });
+    await addAccount('dave', { posting: posting.toString() });
+    selectAccount('carol');
+    chain.getAccount.mockImplementation(async (name: string) =>
+      name === 'ecency.app' ? appAccount : { ...alice(), name },
+    );
+    renderAt('/oauth2/authorize', deferred().promise);
+    const user = userEvent.setup();
+    const activeKey = () =>
+      document.querySelector('input[name="active-key"]') as HTMLInputElement;
+    await waitFor(() => expect(activeKey()).toBeTruthy());
+    // Both accounts read once, so later switches need no loading state and
+    // the screen keeps its parts.
+    await switchTo(user, 'dave');
+    await waitFor(() =>
+      expect(screen.getByTestId('current-account')).toHaveTextContent('@dave'),
+    );
+    await switchTo(user, 'carol');
+    await waitFor(() => expect(activeKey()).toBeTruthy());
+    await user.type(activeKey(), 'typed-for-carol');
+    await switchTo(user, 'dave');
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@dave');
+    expect(activeKey()).toHaveValue('');
+  });
+
   it('sign-in to an app: no token for the account the screen no longer shows', async () => {
     await addAccount('bob', { posting: posting.toString() });
     selectAccount('alice');

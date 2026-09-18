@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import '../i18n';
+import i18n from '../i18n';
 
 // /login served TWO flows in the Nuxt app and both are contract: app consent
 // (client_id + redirect_uri) issues a token, while a bare /login or
@@ -113,6 +113,37 @@ describe('/login flow selection', () => {
         replace: true,
       }),
     );
+  });
+
+  it("keeps the target's own query when it moves on", async () => {
+    h.search = { redirect: '/profile?tab=keys' };
+    h.accounts = {
+      usernames: ['alice'],
+      selectedAccount: 'alice',
+      unlocked: ['alice'],
+    };
+    render(<Login />);
+    await waitFor(() =>
+      expect(h.navigate).toHaveBeenCalledWith({
+        to: '/profile',
+        search: { tab: 'keys' },
+        replace: true,
+      }),
+    );
+  });
+
+  it('with accounts but none chosen, links to choose one as "Log in"', () => {
+    h.search = { redirect: '/profile' };
+    h.accounts = {
+      usernames: ['alice', 'bob'],
+      selectedAccount: null,
+      unlocked: [],
+    };
+    render(<Login />);
+    // The account list only picks now; the passcode is asked back here.
+    const link = screen.getByRole('link', { name: i18n.t('footer.login') });
+    expect(link.getAttribute('href')).toMatch(/^\/accounts\?next=\/profile/);
+    expect(screen.queryByRole('link', { name: /^unlock$/i })).toBeNull();
   });
 
   it('discards an off-site redirect instead of following it', async () => {
