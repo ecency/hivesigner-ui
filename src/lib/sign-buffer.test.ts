@@ -24,12 +24,15 @@ describe('parseSignBufferRequest', () => {
   it('signs with the posting key unless active is asked for, in any case', () => {
     expect(parseSignBufferRequest({ message: 'm' }).authority).toBe('posting');
     expect(
+      parseSignBufferRequest({ message: 'm', authority: '' }).authority,
+    ).toBe('posting');
+    expect(
       parseSignBufferRequest({ message: 'm', authority: 'Active' }).authority,
     ).toBe('active');
   });
 
   it('names no key for owner, memo or anything else', () => {
-    for (const authority of ['owner', 'memo', 'posting ', ''])
+    for (const authority of ['owner', 'memo', 'posting '])
       expect(
         parseSignBufferRequest({ message: 'm', authority }).authority,
       ).toBeNull();

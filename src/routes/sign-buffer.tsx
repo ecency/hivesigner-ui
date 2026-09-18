@@ -11,6 +11,7 @@ import {
   alertError,
   alertWarn,
   btnPrimary,
+  btnSecondary,
   card,
   mutedXs,
   page,
@@ -66,7 +67,13 @@ function SignBuffer() {
   const { selectedAccount, unlocked } = useAccounts();
   const leave = useLeaveLatch();
   const clientIdValid = !req.clientId || HIVE_NAME.test(req.clientId);
-  const { data: profile, isLoading } = useQuery({
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useQuery({
     queryKey: oauthAppProfileKey(req.clientId ?? ''),
     queryFn: (): Promise<AppProfile | null> =>
       req.clientId ? loadAppProfile(req.clientId) : Promise.resolve(null),
@@ -77,22 +84,23 @@ function SignBuffer() {
   const callbackHost = hostOf(callback) ?? null;
   const tokenBody = isTokenBody(req.message);
   // Anything that makes the request unusable, as the integration issue an
-  // app author would fix. A client_id's callback must be registered to it;
-  // without one, a secure URL is all there is to check.
+  // app author would fix. Every callback must be a secure URL, and a
+  // client_id's must also be registered to that app.
   const refusal: IntegrationIssue | null =
     !req.message || !req.authority || !callback
       ? 'sign_buffer_invalid'
-      : req.clientId && (!clientIdValid || profile === null)
-        ? 'app_not_found'
-        : req.clientId
-          ? profile && !isRegisteredRedirect(profile, callback)
+      : !isValidRedirectUri(callback)
+        ? callbackHost
+          ? 'callback_insecure'
+          : 'callback_invalid'
+        : req.clientId && (!clientIdValid || profile === null)
+          ? 'app_not_found'
+          : req.clientId && profile && !isRegisteredRedirect(profile, callback)
             ? 'redirect_not_registered'
-            : null
-          : isValidRedirectUri(callback)
-            ? null
-            : callbackHost
-              ? 'callback_insecure'
-              : 'callback_invalid';
+            : null;
+  // An app whose profile could not be read has no registration to check the
+  // callback against: nothing is signed until it is read.
+  const appUnread = !!req.clientId && !profile;
   useEffect(() => {
     if (refusal)
       reportIntegrationIssue(refusal, {
@@ -120,7 +128,8 @@ function SignBuffer() {
       selectedAccount && authority
         ? getKeys(selectedAccount)?.[authority]
         : undefined;
-    if (!selectedAccount || !authority || !wif || refusal || tokenBody) return;
+    if (!selectedAccount || !authority || !wif) return;
+    if (refusal || appUnread || tokenBody) return;
     // Another tab chose someone else meanwhile: the screen now names them.
     if (!stillSelected(selectedAccount)) return;
     const { signature, publicKey } = signBuffer(req.message, wif);
@@ -132,6 +141,26 @@ function SignBuffer() {
         authority,
         state: req.state,
       }),
+    );
+  }
+
+  if (!refusal && appUnread) {
+    return (
+      <section className={page}>
+        <div role="alert" className={alertError}>
+          {t('authorize.read_failed')}
+        </div>
+        {isError && (
+          <button
+            type="button"
+            disabled={isFetching}
+            onClick={() => refetch()}
+            className={btnSecondary}
+          >
+            {isFetching ? '…' : t('authorize.retry')}
+          </button>
+        )}
+      </section>
     );
   }
 
@@ -182,11 +211,14 @@ function SignBuffer() {
         <div className="text-xs text-muted">
           {t('message_signing.message_label')}
         </div>
-        {/* Exactly what is signed. Data, not copy: never translated. */}
+        {/* Exactly what is signed, all of it in the page: a box of its own
+            height would let padding push the rest out of sight. Data, not
+            copy: never translated. */}
         <div
           dir="auto"
           translate="no"
-          className="max-h-72 overflow-y-auto font-mono text-[13px] break-words whitespace-pre-wrap"
+          data-testid="signed-message"
+          className="font-mono text-[13px] break-words whitespace-pre-wrap"
         >
           {visibleMessage(req.message).map((part, i) =>
             part.escaped ? (

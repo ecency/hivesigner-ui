@@ -81,6 +81,29 @@ test('a locked account signs in one step and the site gets the signature', async
   expect(errors).toEqual([]);
 });
 
+test('padding cannot push the rest of a message out of sight', async ({
+  page,
+}) => {
+  const errors = await setUp(page);
+  await addAccount(page);
+  const tail = 'I authorize transfer of all my HIVE to eve';
+  await page.goto(request(`Hello from site.example${'\n'.repeat(60)}${tail}`), {
+    waitUntil: 'networkidle',
+  });
+  const box = page.getByTestId('signed-message');
+  // The whole message is in the page: the box never scrolls on its own.
+  expect(
+    await box.evaluate((el) => el.scrollHeight - el.clientHeight),
+  ).toBeLessThanOrEqual(1);
+  // Its last line comes before the button that signs it.
+  const last = await page.getByText(tail).boundingBox();
+  const button = await page
+    .getByRole('button', { name: /^sign$/i })
+    .boundingBox();
+  expect(last && button && last.y < button.y).toBe(true);
+  expect(errors).toEqual([]);
+});
+
 test('a Hivesigner token body is never signed', async ({ page }) => {
   const errors = await setUp(page);
   await addAccount(page);

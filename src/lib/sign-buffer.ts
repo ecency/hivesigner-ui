@@ -4,7 +4,7 @@
 // bytes, signed with the key, so an app verifies it with the code it already
 // has for Keychain.
 import { PrivateKey } from '@ecency/sdk/hive';
-import { sha256 } from '@noble/hashes/sha2.js';
+import { signMessage } from './hive';
 import { appendToCallback } from './oauth';
 import { isUnsafeDisplayChar } from './operation-summary';
 
@@ -19,12 +19,13 @@ export interface SignBufferRequest {
   state?: string;
 }
 
-/** The /sign-buffer query. `authority` defaults to posting and, as Keychain
-    spells it, is read in any case ("Posting"). Owner is never used. */
+/** The /sign-buffer query. `authority` is posting when absent or empty and,
+    as Keychain spells it, is read in any case ("Posting"). Owner is never
+    used. */
 export function parseSignBufferRequest(
   query: Record<string, string>,
 ): SignBufferRequest {
-  const named = (query.authority ?? 'posting').toLowerCase();
+  const named = (query.authority || 'posting').toLowerCase();
   return {
     message: query.message ?? '',
     authority: named === 'posting' || named === 'active' ? named : null,
@@ -62,10 +63,9 @@ export function signBuffer(
   message: string,
   wif: string,
 ): { signature: string; publicKey: string } {
-  const key = PrivateKey.fromString(wif);
   return {
-    signature: key.sign(sha256(new TextEncoder().encode(message))).toString(),
-    publicKey: key.createPublic().toString(),
+    signature: signMessage(message, wif),
+    publicKey: PrivateKey.fromString(wif).createPublic().toString(),
   };
 }
 

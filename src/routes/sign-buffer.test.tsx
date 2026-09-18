@@ -26,7 +26,10 @@ vi.mock('@/lib/keystore', async (importOriginal) => {
     },
   };
 });
-vi.mock('@/lib/hive', () => ({ getAccount: h.getAccount }));
+vi.mock('@/lib/hive', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/hive')>()),
+  getAccount: h.getAccount,
+}));
 
 import {
   _resetKeyCache,
@@ -139,6 +142,8 @@ describe('/sign-buffer', () => {
       { client_id: 'app', redirect_uri: 'https://evil.example/cb' },
       { client_id: 'noapp', redirect_uri: 'https://app.example/cb' },
       { client_id: 'Not An App', redirect_uri: 'https://app.example/cb' },
+      { client_id: 'app', redirect_uri: 'http://app.example/cb' },
+      { client_id: 'app', redirect_uri: 'javascript:alert(1)' },
       { redirect_uri: 'http://site.example/cb' },
       { redirect_uri: 'javascript:alert(1)' },
       { redirect_uri: '' },
@@ -154,6 +159,31 @@ describe('/sign-buffer', () => {
       expect(screen.queryByRole('button', { name: /^sign$/i })).toBeNull();
       cleanup();
     }
+    expect(h.assign).not.toHaveBeenCalled();
+  });
+
+  it("signs nothing until the app's profile is read, and offers to retry", async () => {
+    h.getAccount.mockRejectedValue(new Error('node down'));
+    renderPage({
+      message: 'Log in to the app, nonce 7f3a',
+      client_id: 'app',
+      redirect_uri: 'https://evil.example/cb',
+    });
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('authorize.read_failed'),
+    );
+    expect(screen.queryByRole('button', { name: /^sign$/i })).toBeNull();
+    expect(screen.queryByRole('heading')).toBeNull();
+    // Read now: the callback is checked, and it is not the app's.
+    h.getAccount.mockImplementation(async (name: string) =>
+      name === 'app' ? app : null,
+    );
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: i18n.t('authorize.retry') }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('sign_buffer.refused'),
+    );
     expect(h.assign).not.toHaveBeenCalled();
   });
 

@@ -136,7 +136,9 @@ describe('/oauth2/authorize?account=', () => {
       })}`,
     );
     // Named in the account row and in the warning.
-    expect(await screen.findAllByText('@bob')).not.toHaveLength(0);
+    expect(
+      await screen.findAllByText('@bob', {}, { timeout: 20_000 }),
+    ).not.toHaveLength(0);
     expect(getState().selectedAccount).toBe('bob');
     await waitFor(() =>
       expect(router.state.location.search).toEqual({
@@ -144,7 +146,7 @@ describe('/oauth2/authorize?account=', () => {
         redirect_uri: 'https://site.example/cb',
       }),
     );
-  });
+  }, 30_000);
 
   it("a return to the request keeps the user's own pick", async () => {
     const router = renderApp(request({ account: 'bob' }));

@@ -58,12 +58,15 @@ so do it deliberately and say so in the release notes.
 ## Message signing requests (`/sign-buffer`)
 
 - An app asks for a message signed with one of the account's keys, as with Hive Keychain's
-  `requestSignBuffer`. Query: `message` (the exact text), `authority` (`posting`, the default, or
-  `active`, in any case; anything else is refused), `redirect_uri`, optional `client_id`/`clientId`,
-  `state` and `account` (read as on `/oauth2/authorize`).
-- The callback rules are the consent screen's: with a `client_id` the callback must be registered
-  to that app; without one the callback host is shown as the requester and must be https, or http
-  on loopback. A request without a message or a callback is refused with a Report button.
+  `requestSignBuffer`. Query: `message` (the exact text), `authority` (`posting` when absent or
+  empty, or `active`, in any case; anything else is refused), `redirect_uri`, optional
+  `client_id`/`clientId`, `state` and `account` (read as on `/oauth2/authorize`).
+- Every callback must be https, or http on loopback. With a `client_id` it must also be registered
+  to that app, and nothing is signed while the app's profile cannot be read (a retry is offered).
+  Without one the callback host is shown as the requester. A request without a message or a
+  callback is refused with a Report button.
+- The whole message is shown in the page, with controls, zero-width and bidi characters as
+  visible escapes.
 - The signature is Keychain's: secp256k1 over sha256 of the message's UTF-8 bytes, as a hex string.
   A message that is a JSON object with a `signed_message` key (a Hivesigner token body) is never
   signed.
