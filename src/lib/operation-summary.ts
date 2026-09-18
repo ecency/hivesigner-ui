@@ -77,7 +77,7 @@ function str(value: unknown): string {
 // text on a confirm screen, so a memo reading "pay 0001 ot" must not be able to
 // hide that the bytes say something else. Tabs and newlines collapse to a space
 // so a value cannot push the rest of a row out of view.
-function isUnsafeDisplayChar(cp: number): boolean {
+export function isUnsafeDisplayChar(cp: number): boolean {
   return (
     cp <= 0x1f || // C0 controls
     (cp >= 0x7f && cp <= 0x9f) || // DEL + C1 controls

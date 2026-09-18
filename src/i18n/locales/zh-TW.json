@@ -204,6 +204,12 @@
     "verification_link": "驗證連結",
     "unable_to_sign": "無法簽署。請檢查你的訊息和所選的金鑰。"
   },
+  "sign_buffer": {
+    "request": "{app} 請你簽署一則訊息。",
+    "warning": "你的簽章會向任何看到它的人證明 {account} 簽署了這段確切的文字。只簽署你理解的訊息。",
+    "token_refused": "這則訊息是 Hivesigner 權杖。簽署它會讓該網站取得你帳號的存取權，因此無法簽署。",
+    "refused": "這個簽署要求無法使用：它需要一則訊息、一把發文或活躍金鑰，以及為該應用程式註冊的安全重新導向網址。請回到該網站再試一次。"
+  },
   "message_verification": {
     "title": "驗證訊息",
     "description": "貼上驗證權杖或開啟分享的連結，以確認簽章。",

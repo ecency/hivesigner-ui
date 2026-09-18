@@ -204,6 +204,12 @@
     "verification_link": "Liên kết xác minh",
     "unable_to_sign": "Không thể ký. Vui lòng kiểm tra thông điệp và khóa đã chọn."
   },
+  "sign_buffer": {
+    "request": "{app} yêu cầu bạn ký một thông điệp.",
+    "warning": "Chữ ký của bạn chứng minh với bất kỳ ai nhìn thấy rằng {account} đã ký đúng văn bản này. Chỉ ký thông điệp mà bạn hiểu.",
+    "token_refused": "Thông điệp này là một token của Hivesigner. Ký nó sẽ cho trang web quyền truy cập vào tài khoản của bạn, nên không thể ký.",
+    "refused": "Không thể dùng yêu cầu ký này: cần có thông điệp, khóa posting hoặc active và một URL chuyển hướng an toàn đã đăng ký cho ứng dụng. Hãy quay lại trang web và thử lại."
+  },
   "message_verification": {
     "title": "Xác minh thông điệp",
     "description": "Dán token xác minh hoặc mở liên kết được chia sẻ để xác nhận chữ ký.",

@@ -206,6 +206,12 @@
     "verification_link": "Doğrulama bağlantısı",
     "unable_to_sign": "İmzalanamadı. Lütfen mesajınızı ve seçili anahtarı kontrol edin."
   },
+  "sign_buffer": {
+    "request": "{app} bir mesajı imzalamanızı istiyor.",
+    "warning": "İmzanız, onu gören herkese {account} hesabının tam olarak bu metni imzaladığını kanıtlar. Yalnızca anladığınız bir mesajı imzalayın.",
+    "token_refused": "Bu mesaj bir Hivesigner token'ıdır. İmzalamak siteye hesabınıza erişim verir, bu yüzden imzalanamaz.",
+    "refused": "Bu imza isteği kullanılamaz: bir mesaj, bir gönderi veya aktif anahtar ve uygulama için kayıtlı güvenli bir yönlendirme URL'si gerekir. Siteye dönüp tekrar deneyin."
+  },
   "message_verification": {
     "title": "Mesaj doğrula",
     "description": "İmzayı doğrulamak için doğrulama token'ını yapıştırın veya paylaşılan bir bağlantıyı açın.",

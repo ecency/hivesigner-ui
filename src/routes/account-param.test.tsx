@@ -127,6 +127,25 @@ describe('/oauth2/authorize?account=', () => {
     }
   });
 
+  it('/sign-buffer reads it the same way', async () => {
+    const router = renderApp(
+      `/sign-buffer?${new URLSearchParams({
+        message: 'hello',
+        redirect_uri: 'https://site.example/cb',
+        account: 'bob',
+      })}`,
+    );
+    // Named in the account row and in the warning.
+    expect(await screen.findAllByText('@bob')).not.toHaveLength(0);
+    expect(getState().selectedAccount).toBe('bob');
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({
+        message: 'hello',
+        redirect_uri: 'https://site.example/cb',
+      }),
+    );
+  });
+
   it("a return to the request keeps the user's own pick", async () => {
     const router = renderApp(request({ account: 'bob' }));
     expect(await screen.findByText('@bob')).toBeInTheDocument();

@@ -206,6 +206,12 @@
     "verification_link": "Verifizierungslink",
     "unable_to_sign": "Signieren nicht möglich. Bitte prüfen Sie Ihre Nachricht und den gewählten Schlüssel."
   },
+  "sign_buffer": {
+    "request": "{app} bittet Sie, eine Nachricht zu signieren.",
+    "warning": "Ihre Signatur beweist jedem, der sie sieht, dass {account} genau diesen Text signiert hat. Signieren Sie nur eine Nachricht, die Sie verstehen.",
+    "token_refused": "Diese Nachricht ist ein Hivesigner-Token. Wer sie signiert, gibt der Website Zugriff auf sein Konto, deshalb kann sie nicht signiert werden.",
+    "refused": "Diese Signaturanfrage kann nicht verwendet werden: Sie braucht eine Nachricht, einen Posting- oder Active-Schlüssel und eine sichere, für die App registrierte Weiterleitungs-URL. Gehen Sie zurück zur Website und versuchen Sie es erneut."
+  },
   "message_verification": {
     "title": "Nachricht verifizieren",
     "description": "Fügen Sie das Verifizierungstoken ein oder öffnen Sie einen geteilten Link, um die Signatur zu bestätigen.",

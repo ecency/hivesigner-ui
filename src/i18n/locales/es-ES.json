@@ -206,6 +206,12 @@
     "verification_link": "Enlace de verificación",
     "unable_to_sign": "No se ha podido firmar. Revisa tu mensaje y la clave seleccionada."
   },
+  "sign_buffer": {
+    "request": "{app} te pide que firmes un mensaje.",
+    "warning": "Tu firma demuestra a cualquiera que la vea que {account} firmó exactamente este texto. Firma solo un mensaje que entiendas.",
+    "token_refused": "Este mensaje es un token de Hivesigner. Firmarlo daría al sitio acceso a tu cuenta, así que no se puede firmar.",
+    "refused": "Esta solicitud de firma no se puede usar: necesita un mensaje, una clave de publicación o activa y una URL de redirección segura registrada para la aplicación. Vuelve al sitio e inténtalo de nuevo."
+  },
   "message_verification": {
     "title": "Verificar mensaje",
     "description": "Pega el token de verificación o abre un enlace compartido para confirmar la firma.",

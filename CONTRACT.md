@@ -10,7 +10,7 @@ so do it deliberately and say so in the release notes.
 - Pages: `/`, `/about`, `/accounts`, `/apps`, `/auths`, `/authorized-apps`, `/developers`,
   `/import`, `/login`, `/oauth2/authorize`, `/profile`, `/settings`, `/signmessage`,
   `/verifymessage`, `/signs`, `/authorize/:username`, `/revoke/:username`,
-  `/login-request/:clientId`, `/login-request/*`, `/sign/*`.
+  `/login-request/:clientId`, `/login-request/*`, `/sign/*`, `/sign-buffer`.
 - Query read on auth flows: `redirect_uri` (decoded), `client_id`/`clientId`, `scope`,
   `response_type`, `state`, `authority`.
 - Scope normalisation on `/oauth2/authorize`: `login` stays login; any value containing `offline`
@@ -54,6 +54,22 @@ so do it deliberately and say so in the release notes.
   (`custom_json` needs active only when `required_auths` is non-empty), else none when they
   disagree.
 - A request that acts as an account other than the selected one says so before approval.
+
+## Message signing requests (`/sign-buffer`)
+
+- An app asks for a message signed with one of the account's keys, as with Hive Keychain's
+  `requestSignBuffer`. Query: `message` (the exact text), `authority` (`posting`, the default, or
+  `active`, in any case; anything else is refused), `redirect_uri`, optional `client_id`/`clientId`,
+  `state` and `account` (read as on `/oauth2/authorize`).
+- The callback rules are the consent screen's: with a `client_id` the callback must be registered
+  to that app; without one the callback host is shown as the requester and must be https, or http
+  on loopback. A request without a message or a callback is refused with a Report button.
+- The signature is Keychain's: secp256k1 over sha256 of the message's UTF-8 bytes, as a hex string.
+  A message that is a JSON object with a `signed_message` key (a Hivesigner token body) is never
+  signed.
+- Redirect: the callback gets `signature`, `public_key`, `username`, `authority` and, when the
+  request had one, `state`, appended as in the token flow below. Cancel returns nothing to the
+  app.
 
 ## Token and redirect shape
 

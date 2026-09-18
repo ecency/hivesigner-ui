@@ -206,6 +206,12 @@
     "verification_link": "Verificatielink",
     "unable_to_sign": "Ondertekenen mislukt. Controleer je bericht en de gekozen sleutel."
   },
+  "sign_buffer": {
+    "request": "{app} vraagt je een bericht te ondertekenen.",
+    "warning": "Je handtekening bewijst aan iedereen die haar ziet dat {account} precies deze tekst heeft ondertekend. Onderteken alleen een bericht dat je begrijpt.",
+    "token_refused": "Dit bericht is een Hivesigner-token. Het ondertekenen zou de site toegang tot je account geven, daarom kan het niet worden ondertekend.",
+    "refused": "Dit ondertekeningsverzoek is niet bruikbaar: het heeft een bericht, een posting- of active-sleutel en een veilige doorstuur-URL nodig die voor de app is geregistreerd. Ga terug naar de site en probeer het opnieuw."
+  },
   "message_verification": {
     "title": "Bericht verifiëren",
     "description": "Plak het verificatietoken of open een gedeelde link om de handtekening te controleren.",

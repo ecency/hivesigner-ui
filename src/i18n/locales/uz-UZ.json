@@ -206,6 +206,12 @@
     "verification_link": "Tekshirish havolasi",
     "unable_to_sign": "Imzolab boʻlmadi. Xabaringizni va tanlangan kalitni tekshiring."
   },
+  "sign_buffer": {
+    "request": "{app} sizdan xabarni imzolashni soʻramoqda.",
+    "warning": "Imzoingiz uni koʻrgan har kimga {account} aynan shu matnni imzolaganini isbotlaydi. Faqat tushungan xabaringizni imzolang.",
+    "token_refused": "Bu xabar Hivesigner tokeni. Uni imzolash saytga hisobingizga kirish huquqini beradi, shuning uchun uni imzolab boʻlmaydi.",
+    "refused": "Bu imzo soʻrovidan foydalanib boʻlmaydi: unga xabar, posting yoki active kalit va ilova uchun roʻyxatdan oʻtkazilgan xavfsiz yoʻnaltirish URL manzili kerak. Saytga qayting va qaytadan urinib koʻring."
+  },
   "message_verification": {
     "title": "Xabarni tekshirish",
     "description": "Imzoni tasdiqlash uchun tekshirish tokenini joylashtiring yoki ulashilgan havolani oching.",

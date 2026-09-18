@@ -204,6 +204,12 @@
     "verification_link": "Tautan verifikasi",
     "unable_to_sign": "Tidak dapat menandatangani. Periksa pesan dan kunci yang Anda pilih."
   },
+  "sign_buffer": {
+    "request": "{app} meminta Anda menandatangani sebuah pesan.",
+    "warning": "Tanda tangan Anda membuktikan kepada siapa pun yang melihatnya bahwa {account} menandatangani teks persis ini. Tanda tangani hanya pesan yang Anda pahami.",
+    "token_refused": "Pesan ini adalah token Hivesigner. Menandatanganinya akan memberi situs akses ke akun Anda, jadi pesan ini tidak dapat ditandatangani.",
+    "refused": "Permintaan tanda tangan ini tidak dapat digunakan: diperlukan pesan, kunci posting atau active dan URL pengalihan aman yang terdaftar untuk aplikasi. Kembali ke situs dan coba lagi."
+  },
   "message_verification": {
     "title": "Verifikasi pesan",
     "description": "Tempelkan token verifikasi atau buka tautan yang dibagikan untuk mengonfirmasi tanda tangan.",
