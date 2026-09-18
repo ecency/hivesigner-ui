@@ -224,6 +224,36 @@ describe('leaving the screen while the unlock runs', () => {
   });
 });
 
+describe('an authority that changes while the unlock runs', () => {
+  it('grant page: the broadcast keeps what was granted elsewhere meanwhile', async () => {
+    await protectedAndLocked({ active: active.toString() });
+    // Another app is granted from elsewhere while the passcode is checked.
+    let elsewhere = false;
+    chain.getAccount.mockImplementation(async (name: string) => {
+      if (name !== 'alice') return name === 'ecency.app' ? appAccount : null;
+      const account = alice();
+      if (elsewhere) account.posting.account_auths = [['other.app', 1]];
+      return account;
+    });
+    const gate = deferred();
+    chain.unlockGate = gate.promise;
+    wrap(<GrantAction appName="ecency.app" mode="grant" />);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^authorize$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    elsewhere = true;
+    gate.resolve();
+    await waitFor(() => expect(chain.broadcastOperations).toHaveBeenCalled());
+    const [[op]] = chain.broadcastOperations.mock.calls[0];
+    expect(op[1].posting.account_auths).toEqual([
+      ['ecency.app', 1],
+      ['other.app', 1],
+    ]);
+  });
+});
+
 describe('a screen that said nothing new is granted', () => {
   it('never grants on that click when the fresh read finds the grant gone, and asks again', async () => {
     // Unlocked, no passcode, posting + active on the device.

@@ -116,7 +116,29 @@ export function GrantAction({
     setStatus('busy');
     setError('');
     try {
-      await broadcastOperations([op], activeKey, account.name);
+      // Built from a fresh read, never from this render's copy: the
+      // account_update carries the WHOLE authority, and a change made
+      // meanwhile (another app granted or revoked elsewhere, during an unlock
+      // that took seconds) would be undone by a stale one. Consent does the
+      // same before its grant.
+      const fresh = await refetch();
+      if (abandoned.current) return;
+      if (fresh.isError || !fresh.data) {
+        setError(t('authorize.read_failed'));
+        setStatus('error');
+        return;
+      }
+      const freshOp =
+        mode === 'grant'
+          ? buildGrantOperation(fresh.data, appName)
+          : buildRevokeOperation(fresh.data, appName);
+      // Already done meanwhile: the screen, redrawn from the fresh read,
+      // says so and offers Continue.
+      if (!freshOp) {
+        setStatus('idle');
+        return;
+      }
+      await broadcastOperations([freshOp], activeKey, fresh.data.name);
       setStatus('done');
       // The Nuxt page continued to the callback by itself after the broadcast,
       // and the login that brought the user here is waiting on it. Automatic
