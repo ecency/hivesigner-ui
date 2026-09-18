@@ -82,8 +82,14 @@ function AuthorizedApps() {
       // The read is awaited: a user who left meanwhile, or whose other tab
       // selected someone else, gets no on-chain change for this click.
       if (left() || !stillSelected(name)) return;
-      const op = fresh ? buildRevokeOperation(fresh, app) : null;
-      if (fresh && op) await broadcastOperations([op], activeKey, fresh.name);
+      // No account came back (a lagging node): nothing to build on.
+      if (!fresh) {
+        setError(t('common.try_again'));
+        return;
+      }
+      // null: the app holds no authority any more, nothing to revoke.
+      const op = buildRevokeOperation(fresh, app);
+      if (op) await broadcastOperations([op], activeKey, fresh.name);
       await qc.invalidateQueries({ queryKey: accountKey(selectedAccount) });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

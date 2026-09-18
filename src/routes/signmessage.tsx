@@ -67,9 +67,9 @@ function SignMessage() {
     return (
       <section className={page}>
         <h1 className={h1}>{t('message_signing.title')}</h1>
-        <p className={muted}>{t('message_signing.login_prompt')}</p>
         {selectedAccount && !isUnlocked ? (
-          // Unlocked here (#146); the form follows.
+          // Unlocked here (#146); the form follows. No "log in" prompt: the
+          // passcode is all that is asked.
           <div className="sm:max-w-md">
             <UnlockAndContinue
               key={`unlock:${selectedAccount}`}
@@ -80,9 +80,12 @@ function SignMessage() {
             />
           </div>
         ) : (
-          <Link to="/accounts" className={linkClass}>
-            {t('footer.login')}
-          </Link>
+          <>
+            <p className={muted}>{t('message_signing.login_prompt')}</p>
+            <Link to="/accounts" className={linkClass}>
+              {t('footer.login')}
+            </Link>
+          </>
         )}
       </section>
     );

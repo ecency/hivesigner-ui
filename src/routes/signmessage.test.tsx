@@ -45,6 +45,10 @@ describe('/signmessage', () => {
     render(<SignMessage />);
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(screen.queryByRole('link', { name: /login/i })).toBeNull();
+    // The passcode is all that is asked: no "log in and choose a key".
+    expect(
+      screen.queryByText(i18n.t('message_signing.login_prompt')),
+    ).toBeNull();
     await user.type(screen.getByLabelText(i18n.t('accounts.passcode')), 'pass');
     await user.click(screen.getByRole('button', { name: /^unlock$/i }));
     expect(

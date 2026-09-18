@@ -196,6 +196,20 @@ describe('/authorized-apps', () => {
     });
   });
 
+  it('a fresh read that finds no account stops the revoke and says so', async () => {
+    await addAccount('alice', { active: '5Kactive' });
+    renderPage();
+    await screen.findByText('@ecency.app');
+    h.getAccount.mockResolvedValue(null);
+    await userEvent
+      .setup()
+      .click(screen.getAllByRole('button', { name: /revoke/i })[0]);
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('common.try_again'),
+    );
+    expect(h.broadcastOperations).not.toHaveBeenCalled();
+  });
+
   it('a failed read before a revoke stops it and says so', async () => {
     await addAccount('alice', { active: '5Kactive' });
     renderPage();
