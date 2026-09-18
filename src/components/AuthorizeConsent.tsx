@@ -104,6 +104,13 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
 
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // The passcode that unlocked the account on this screen, held only when
+  // the active key turned out to be missing, so adding it does not ask for
+  // the passcode a second time. Gone with the screen.
+  const [unlockedWith, setUnlockedWith] = useState<{
+    account: string;
+    passcode: string | undefined;
+  } | null>(null);
   // Set when this screen is left, so an in-flight approve() cannot grant
   // authority or redirect after the user withdrew consent. Setup MUST clear it:
   // Strict Mode runs setup -> cleanup -> setup, so a cleanup-only effect would
@@ -206,6 +213,11 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           return;
         }
         if (!hasGrant(loaded.posting, req.clientId)) {
+          // The screen said nothing new would be granted: it was judged on a
+          // cached account that still showed the grant (revoked since, or a
+          // lagging read). The refetch has just redrawn it as a first-time
+          // request, so the user is asked again with that on screen.
+          if (!grantNeeded) return;
           const activeKey = keys?.active;
           if (!activeKey) {
             setError(
@@ -436,6 +448,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           <Sentence
             k="authorize.already_authorized"
             values={{ app: `@${clientLabel}` }}
+            bold
           />
         </p>
       ) : (
@@ -473,7 +486,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
         )}
         {refused ? (
           <button type="button" disabled className={btnPrimary}>
-            {t('authorize.authorize')}
+            {verb}
           </button>
         ) : readFailed ? (
           <>
@@ -512,9 +525,14 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
               username={selectedAccount}
               action={verb}
               disabled={postingScope && !accountLoaded}
-              autoFocus
-              onUnlocked={() => {
-                if (grantNeeded && !getKeys(selectedAccount)?.active) return;
+              // Only on a sign-in: a first-time request is read first.
+              autoFocus={signIn}
+              onUnlocked={(passcode) => {
+                const active = getKeys(selectedAccount)?.active;
+                if (!active && (grantNeeded || authority === 'active')) {
+                  setUnlockedWith({ account: selectedAccount, passcode });
+                  return;
+                }
                 approve();
               }}
             />
@@ -528,7 +546,17 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
         ) : needsActiveKey ? (
           <>
             {grantNotice}
-            <AddActiveKey username={selectedAccount} />
+            <AddActiveKey
+              username={selectedAccount}
+              // Built afresh once the passcode is held: the unlock renders this form
+              // a moment before the passcode reaches it, and focus is only taken on
+              // mount.
+              key={unlockedWith?.account === selectedAccount ? 'held' : 'ask'}
+              {...(unlockedWith?.account === selectedAccount && {
+                passcode: unlockedWith.passcode,
+                autoFocus: true,
+              })}
+            />
           </>
         ) : !signingKey ? (
           // Neither posting nor active on this device (a memo-only import)

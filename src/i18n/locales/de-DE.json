@@ -138,7 +138,7 @@
     "first_time_grant": "Erstmalige Autorisierung: Dadurch wird {app} on-chain zu Ihrer Posting-Berechtigung hinzugefügt, wofür einmalig Ihr Active-Schlüssel nötig ist. Dieses Konto kann dann in Ihrem Namen posten, bis Sie die Berechtigung widerrufen.",
     "this_site": "Diese Website",
     "authorize_app": "{app} autorisieren",
-    "sign_in_to": "Bei {app} anmelden",
+    "sign_in_to": "Anmelden bei {app}",
     "sign_in": "Anmelden",
     "signing_in_as": "Anmelden als",
     "already_authorized": "Sie haben {app} bereits autorisiert. Es werden keine neuen Rechte erteilt."

@@ -159,6 +159,19 @@ describe('sign route', () => {
       screen.getByText(/loading the current hive power rate/i),
     ).toBeInTheDocument();
   });
+
+  it('says why approval waits on the rate while the account is still locked too', async () => {
+    h.search = { to: 'bob', amount: '1 HP' };
+    h.splat = 'transfer';
+    h.vests = { rate: 1, ready: false };
+    h.accounts = { selectedAccount: 'alice', unlocked: [] };
+    render(<Sign />);
+    expect(screen.getByRole('button', { name: /approve/i })).toBeDisabled();
+    expect(
+      screen.getByText(/loading the current hive power rate/i),
+    ).toBeInTheDocument();
+    h.accounts = { selectedAccount: 'alice', unlocked: ['alice'] };
+  });
 });
 
 describe('an unknown operation', () => {
@@ -340,6 +353,71 @@ describe('the request survives import and unlock', () => {
     // Signed with the key the unlock opened, read after it, not before.
     expect(h.broadcastOperations.mock.calls[0][1]).toBe('5Kactive');
     h.accounts = { selectedAccount: 'alice', unlocked: ['alice'] };
+  });
+
+  it('leaving while the unlock runs broadcasts nothing and redirects nowhere', async () => {
+    h.splat = 'transfer';
+    h.search = {
+      from: 'alice',
+      to: 'bob',
+      amount: '1.000 HIVE',
+      redirect_uri: 'https://app.example/done',
+    };
+    h.accounts = { selectedAccount: 'alice', unlocked: [] };
+    const opened = h.keys;
+    h.keys = null;
+    let release = () => {};
+    h.unlockAccount.mockImplementation(async () => {
+      await new Promise<void>((r) => {
+        release = r;
+      });
+      h.keys = opened;
+      return opened;
+    });
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    const user = userEvent.setup();
+    const view = render(<Sign />);
+    await user.type(screen.getByLabelText(/passcode/i), 'pass');
+    await user.click(screen.getByRole('button', { name: /approve/i }));
+    // The unlock is running and the switch link is still live: the user
+    // takes it, and this screen goes.
+    view.unmount();
+    release();
+    await waitFor(() => expect(h.unlockAccount).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 20));
+    expect(h.broadcastOperations).not.toHaveBeenCalled();
+    expect(assign).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+    h.accounts = { selectedAccount: 'alice', unlocked: ['alice'] };
+  });
+
+  it('leaving while the broadcast runs does not pull the user to the callback', async () => {
+    h.splat = 'transfer';
+    h.search = {
+      from: 'alice',
+      to: 'bob',
+      amount: '1.000 HIVE',
+      redirect_uri: 'https://app.example/done',
+    };
+    let land = () => {};
+    h.broadcastOperations.mockImplementation(
+      () =>
+        new Promise((r) => {
+          land = () => r({ id: 'tx1' });
+        }),
+    );
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    const user = userEvent.setup();
+    const view = render(<Sign />);
+    await user.click(screen.getByRole('button', { name: /approve/i }));
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalled());
+    view.unmount();
+    land();
+    await new Promise((r) => setTimeout(r, 20));
+    expect(assign).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
   });
 
   it('a wrong passcode signs nothing', async () => {

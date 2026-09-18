@@ -70,7 +70,7 @@ function LocalLogin({ next }: { next?: string }) {
     // Not a form, but the same reading rule applies: one column that stops at a
     // comfortable measure instead of stretching across the widened shell.
     <section className={`${page} ${formColumn} sm:max-w-md`}>
-      <h1 className={h1}>{t('footer.login')}</h1>
+      <h1 className={h1}>{t('authorize.sign_in')}</h1>
       {/* `target` is built from the redirect param, so it is a rendered value:
           isolate it and let it break instead of pushing the page sideways at
           320px. */}

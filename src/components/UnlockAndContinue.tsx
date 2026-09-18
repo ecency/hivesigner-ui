@@ -36,8 +36,11 @@ export function UnlockAndContinue({
   /** The screen's own verb: Sign in, Approve, Authorize. */
   action: string;
   /** The screen's action. A screen that moves on by itself once the
-      account is unlocked (the local login) has none. */
-  onUnlocked?: () => void;
+      account is unlocked (the local login) has none. It gets the passcode
+      that opened the account (undefined for one without a passcode), for
+      the one step that needs it again: adding a key to the protected
+      record, which should not ask for what was typed a moment ago. */
+  onUnlocked?: (passcode: string | undefined) => void;
   /** The screen is not ready to act yet (an account read still running). */
   disabled?: boolean;
   /** Only where the passcode is the next thing to do; never above a long
@@ -56,21 +59,25 @@ export function UnlockAndContinue({
   async function submit() {
     if (!ready) return;
     setError(null);
-    setBusy(true);
+    const typed = encrypted ? passcode : undefined;
+    // Emptied BEFORE the unlock, so a password manager that captures on
+    // removal finds nothing: the unlock notifies the store, the screen drops
+    // this field before this function resumes, and a clear after the await
+    // never reaches the DOM. Put back if the passcode was wrong.
+    flushSync(() => {
+      setPasscode('');
+      setBusy(true);
+    });
     try {
-      await unlockAccount(username, encrypted ? passcode : undefined);
+      await unlockAccount(username, typed);
     } catch {
       setError(t('login.invalid_hs_password'));
+      setPasscode(typed ?? '');
       setBusy(false);
       return;
     }
-    // Emptied before the screen moves on, so a password manager that
-    // captures on navigation or removal finds nothing to offer to save.
-    flushSync(() => {
-      setPasscode('');
-      setBusy(false);
-    });
-    onUnlocked?.();
+    setBusy(false);
+    onUnlocked?.(typed);
   }
 
   return (

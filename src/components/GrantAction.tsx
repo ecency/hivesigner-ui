@@ -67,6 +67,13 @@ export function GrantAction({
     'idle',
   );
   const [error, setError] = useState('');
+  // The passcode that unlocked the account on this screen, held only when
+  // the active key turned out to be missing, so adding it does not ask for
+  // the passcode a second time.
+  const [unlockedWith, setUnlockedWith] = useState<{
+    account: string;
+    passcode: string | undefined;
+  } | null>(null);
 
   const {
     data: account,
@@ -96,6 +103,10 @@ export function GrantAction({
     (mode === 'grant' ? hasGrant(account.posting, appName) : op === null);
 
   async function submit() {
+    // The click may have started an unlock that finished after the user left
+    // (Cancel stays live while it runs): an irreversible broadcast must not
+    // follow them out.
+    if (abandoned.current) return;
     // Read now, not from this render: an unlock in the same click has only
     // just put the keys in memory.
     const activeKey = selectedAccount
@@ -244,7 +255,17 @@ export function GrantAction({
       {/* Above the actions, not in their row: the form is a block of its own
           and would otherwise be squeezed beside Cancel from sm up. */}
       {askForKey && selectedAccount && (
-        <AddActiveKey username={selectedAccount} />
+        <AddActiveKey
+          username={selectedAccount}
+          // Built afresh once the passcode is held: the unlock renders this form
+          // a moment before the passcode reaches it, and focus is only taken on
+          // mount.
+          key={unlockedWith?.account === selectedAccount ? 'held' : 'ask'}
+          {...(unlockedWith?.account === selectedAccount && {
+            passcode: unlockedWith.passcode,
+            autoFocus: true,
+          })}
+        />
       )}
       {locked && selectedAccount && (
         <UnlockAndContinue
@@ -252,7 +273,13 @@ export function GrantAction({
           username={selectedAccount}
           action={verb}
           disabled={!account}
-          onUnlocked={submit}
+          onUnlocked={(passcode) => {
+            if (!getKeys(selectedAccount)?.active) {
+              setUnlockedWith({ account: selectedAccount, passcode });
+              return;
+            }
+            submit();
+          }}
         />
       )}
 

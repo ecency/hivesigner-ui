@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CurrentAccount } from '@/components/CurrentAccount';
 import { ReportIssue } from '@/components/ReportIssue';
@@ -166,6 +166,17 @@ function Sign() {
   );
   const [outcome, setOutcome] = useState<BroadcastOutcome | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  // Set when this screen is left. An approve that waited on an unlock can
+  // finish after the user switched account or went elsewhere; it must not
+  // broadcast or pull them to the callback then. Setup clears it (Strict Mode
+  // runs setup, cleanup, setup).
+  const abandoned = useRef(false);
+  useEffect(() => {
+    abandoned.current = false;
+    return () => {
+      abandoned.current = true;
+    };
+  }, []);
 
   const request = parseSignRequest(_splat ?? '', search, vestsToSp.rate);
 
@@ -216,6 +227,7 @@ function Sign() {
     : [];
 
   async function approve() {
+    if (abandoned.current) return;
     // Read now, not from this render: an unlock in the same click has only
     // just put the keys in memory.
     const signingKey =
@@ -247,7 +259,8 @@ function Sign() {
           );
       setOutcome(result);
       setStatus('done');
-      if (req.callback) redirectToCallback(req.callback, result);
+      if (req.callback && !abandoned.current)
+        redirectToCallback(req.callback, result);
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : String(e));
       setStatus('error');
@@ -489,13 +502,20 @@ function Sign() {
           // The passcode here, and the same click approves (#145). An account
           // without the key this needs returns from approve() and the screen,
           // now unlocked, says which key is missing.
-          <UnlockAndContinue
-            key={`unlock:${selectedAccount}`}
-            username={selectedAccount}
-            action={verbLabel}
-            disabled={rateBlocked}
-            onUnlocked={approve}
-          />
+          <>
+            {rateBlocked && (
+              <div className="text-[13px] text-warn">
+                {t('sign.loading_rate')}
+              </div>
+            )}
+            <UnlockAndContinue
+              key={`unlock:${selectedAccount}`}
+              username={selectedAccount}
+              action={verbLabel}
+              disabled={rateBlocked}
+              onUnlocked={approve}
+            />
+          </>
         ) : !signingKey ? (
           <>
             <div className="text-[13px] text-warn">

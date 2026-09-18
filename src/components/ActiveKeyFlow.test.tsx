@@ -492,6 +492,8 @@ describe('a returning visit with a protected account (#145)', () => {
     expect(screen.queryAllByRole('listitem')).toHaveLength(0);
     const button = screen.getByRole('button', { name: /^sign in$/i });
     await waitFor(() => expect(button).toBeDisabled());
+    // A sign-in: the passcode is the next thing to do.
+    expect(passcodeField()).toHaveFocus();
     await user.type(passcodeField(), 'correct-passcode');
     await waitFor(() => expect(button).toBeEnabled());
     await user.click(button);
@@ -534,6 +536,8 @@ describe('a returning visit with a protected account (#145)', () => {
     expect(
       await screen.findByText(/first-time authorization/i),
     ).toBeInTheDocument();
+    // A first-time request is read before anything is typed.
+    expect(passcodeField()).not.toHaveFocus();
     await user.type(passcodeField(), 'correct-passcode');
     await user.click(screen.getByRole('button', { name: /^authorize$/i }));
     await waitFor(() => expect(chain.assign).toHaveBeenCalledTimes(1));
@@ -558,6 +562,27 @@ describe('a returning visit with a protected account (#145)', () => {
     expect(screen.queryByRole('alert')).toBeNull();
     expect(chain.broadcastOperations).not.toHaveBeenCalled();
     expect(chain.assign).not.toHaveBeenCalled();
+    // The passcode typed a moment ago is not asked for again, and the key
+    // field takes the focus the passcode field had.
+    expect(
+      screen.queryByLabelText(
+        i18n.t('authorize.active_key_passcode', { account: '@alice' }),
+        { exact: false },
+      ),
+    ).toBeNull();
+    expect(keyField()).toHaveFocus();
+    await user.type(keyField(), active.toString());
+    await user.click(addButton());
+    await user.click(
+      await screen.findByRole('button', { name: /^authorize$/i }),
+    );
+    await waitFor(() => expect(chain.assign).toHaveBeenCalledTimes(1));
+    // Stored under the same passcode, still protected.
+    expect(accountIsEncrypted('alice')).toBe(true);
+    lockAccount('alice');
+    expect((await unlockAccount('alice', 'correct-passcode')).active).toBe(
+      active.toString(),
+    );
   });
 
   it('unlocks and grants in one click on the grant page, which used to lose the request', async () => {

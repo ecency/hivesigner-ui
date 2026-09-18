@@ -179,7 +179,7 @@ describe('AuthorizeConsent', () => {
     );
     expect(JSON.stringify(sig.report.mock.calls)).not.toContain('SECRET');
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /authorize/i })).toBeDisabled(),
+      expect(screen.getByRole('button', { name: /sign in/i })).toBeDisabled(),
     );
   });
 
@@ -290,7 +290,7 @@ describe('AuthorizeConsent', () => {
       screen.queryByText(i18n.t('authorize.callback_insecure')),
     ).toBeNull();
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /authorize/i })).toBeDisabled(),
+      expect(screen.getByRole('button', { name: /sign in/i })).toBeDisabled(),
     );
     expect(sig.report).toHaveBeenCalledWith('callback_invalid', {});
   });
@@ -306,7 +306,7 @@ describe('AuthorizeConsent', () => {
       await screen.findByText(i18n.t('authorize.callback_insecure')),
     ).toBeInTheDocument();
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /authorize/i })).toBeDisabled(),
+      expect(screen.getByRole('button', { name: /sign in/i })).toBeDisabled(),
     );
     expect(sig.report).toHaveBeenCalledWith('callback_insecure', {
       callback_host: 'hivesearcher.example',
