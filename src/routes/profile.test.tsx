@@ -365,6 +365,19 @@ describe('/profile', () => {
     expect(meta.profile).toMatchObject({ name: 'Bob', about: 'new about' });
   });
 
+  it('saves nothing when the read comes from a node that leaves the metadata out', async () => {
+    await addAccount('alice', { posting: '5Kposting' });
+    h.getAccount
+      .mockResolvedValueOnce(account)
+      .mockResolvedValue({ ...account, posting_json_metadata: '' });
+    renderPage();
+    await editNameAndSave();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('common.try_again'),
+    );
+    expect(h.broadcastOperations).not.toHaveBeenCalled();
+  });
+
   it('saves what was typed while the account was read', async () => {
     await addAccount('alice', { posting: '5Kposting' });
     h.broadcastOperations.mockResolvedValue({ id: 'tx' });

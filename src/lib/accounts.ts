@@ -363,7 +363,13 @@ export function selectAccount(username: string): void {
   const state = readPersisted();
   // An account may exist only in memory (its write was rejected). It is listed
   // and unlocked, so it has to be selectable or its keys are unusable.
-  if (!state.accountsKeychains[username] && !keyCache.has(username)) return;
+  // Own records only: a name from a URL (#83) such as "constructor" finds an
+  // Object.prototype member, and would replace the saved choice with nobody.
+  if (
+    !Object.hasOwn(state.accountsKeychains, username) &&
+    !keyCache.has(username)
+  )
+    return;
   sessionSelected = username;
   state.selectedAccount = username;
   writePersisted(state);

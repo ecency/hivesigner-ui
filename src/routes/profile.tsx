@@ -186,7 +186,13 @@ function Profile() {
       setStatus('idle');
       return;
     }
-    if (!fresh) {
+    // No account, or one without the metadata the page had: some nodes leave
+    // posting_json_metadata out, and building on that would blank every field
+    // not edited here and drop an app's registered callbacks.
+    if (
+      !fresh ||
+      (!fresh.posting_json_metadata && account.posting_json_metadata)
+    ) {
       setError(t('common.try_again'));
       setStatus('error');
       return;

@@ -12,3 +12,6 @@ self.onmessage = (e: MessageEvent<KdfJob>) => {
     });
   }
 };
+
+// Loaded and listening: the page times the derivation from here.
+self.postMessage({ ready: true });

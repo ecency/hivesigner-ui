@@ -4,7 +4,7 @@ import {
   createRouter,
   RouterProvider,
 } from '@tanstack/react-router';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { StrictMode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -103,6 +103,22 @@ describe('/oauth2/authorize?account=', () => {
     await waitFor(() =>
       expect(router.state.location.search).not.toHaveProperty('account'),
     );
+  });
+
+  it('ignores a name the device only has as an Object member', async () => {
+    for (const account of ['constructor', '__proto__', 'toString']) {
+      const router = renderApp(request({ account }));
+      expect(await screen.findByText('@alice')).toBeInTheDocument();
+      await waitFor(() =>
+        expect(router.state.location.search).not.toHaveProperty('account'),
+      );
+      expect(getState().selectedAccount).toBe('alice');
+      expect(
+        JSON.parse(localStorage.getItem('vuex__accounts') as string)
+          .selectedAccount,
+      ).toBe('alice');
+      cleanup();
+    }
   });
 
   it("a return to the request keeps the user's own pick", async () => {
