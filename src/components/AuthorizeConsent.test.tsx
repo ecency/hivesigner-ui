@@ -183,6 +183,18 @@ describe('AuthorizeConsent', () => {
     );
   });
 
+  it('never calls an active-scope request a sign-in, even from an app that holds the posting grant', async () => {
+    h.keys = { posting: posting.toString(), active: posting.toString() };
+    renderConsent({ scope: 'active' });
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      /requesting access/i,
+    );
+    expect(screen.queryByText(/nothing new is granted/i)).toBeNull();
+    expect(
+      await screen.findByRole('button', { name: /^authorize$/i }),
+    ).toBeInTheDocument();
+  });
+
   it('issues a code the app can verify and sends the user to the registered callback', async () => {
     renderConsent({ state: 'xyz' });
     const button = await screen.findByRole('button', { name: /sign in/i });

@@ -159,14 +159,16 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   // /import for a key the account is merely missing lost them the flow.
   const needsActiveKey =
     isUnlocked && !keys?.active && (grantNeeded || authority === 'active');
-  // Nothing new is granted: a login, or an app this account authorized
-  // before. The user is signing in, and the screen says so instead of
-  // presenting the scope as a fresh request every visit (#145). Unknown while
-  // the account loads, when it stays the first-time screen.
+  // Nothing new is granted: a login, or a posting request from an app this
+  // account authorized before. The user is signing in, and the screen says so
+  // instead of presenting the scope as a fresh request every visit (#145). An
+  // active-scope request is never one: its token is signed with the active
+  // key, which the posting grant says nothing about.
   const signIn =
     !!selectedAccount &&
     (effective.scope === 'login' ||
       (postingScope &&
+        authority === 'posting' &&
         !!account &&
         hasGrant(account.posting, req.clientId as string)));
 
