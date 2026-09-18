@@ -341,11 +341,13 @@ export async function unlockAccount(
       // keep the record as it is; the account is unlocked for this session
     }
   }
-  // Key derivation runs synchronously and freezes the page, so a click made
-  // meanwhile (Cancel, Switch account) waits in the queue. Let it run before
-  // the unlock takes effect: the screen being left then knows it before
-  // anything acts on these keys, and the click cannot land on the unlocked
-  // screen's own button instead.
+  // Key derivation runs in a worker (kdf.ts), so a click made meanwhile
+  // (Cancel, Switch account) is handled as it comes. Where it had to run on
+  // the page instead, the page froze and the click waited in the queue: let
+  // it run before the unlock takes effect, so the screen being left knows it
+  // before anything acts on these keys, and the click cannot land on the
+  // unlocked screen's own button instead. (A queued click in Chromium and
+  // Firefox; WebKit hands it over later, which is what the worker is for.)
   await new Promise((resolve) => setTimeout(resolve, 0));
   try {
     onOpened?.(keys);

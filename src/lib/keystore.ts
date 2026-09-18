@@ -9,8 +9,8 @@
 // by the old app during the transition). A passcode account is re-encrypted
 // into the v1 envelope on its first successful unlock.
 
-import { scrypt } from '@noble/hashes/scrypt.js';
 import { base64 } from '@scure/base';
+import { scryptOffThread } from './kdf';
 import { decryptTriplesec } from './triplesec';
 
 export interface Keys {
@@ -94,7 +94,14 @@ async function deriveAesKey(
   r: number,
   p: number,
 ) {
-  const keyBytes = scrypt(encodeUtf8(passcode), salt, { N, r, p, dkLen: 32 });
+  const keyBytes = await scryptOffThread({
+    password: encodeUtf8(passcode),
+    salt,
+    N,
+    r,
+    p,
+    dkLen: 32,
+  });
   return crypto.subtle.importKey(
     'raw',
     buf(keyBytes),
@@ -132,9 +139,9 @@ async function decryptV1(field: string, passcode: string): Promise<Keys> {
   const env = JSON.parse(field) as EnvelopeV1;
   if (env.v !== 1)
     throw new Error(`keystore: unsupported envelope version ${env.v}`);
-  // N/r/p come from persisted data. scrypt here is synchronous, so an absurd N
-  // (or a non-number) would hang the tab instead of failing; bound them to the
-  // range we ever write (N = 2^17, r = 8, p = 1).
+  // N/r/p come from persisted data, and an absurd N (or a non-number) would
+  // run the derivation for ever instead of failing; bound them to the range
+  // we ever write (N = 2^17, r = 8, p = 1).
   const { N, r, p } = env.kdf;
   const pow2 = (n: unknown) =>
     typeof n === 'number' &&
@@ -194,7 +201,9 @@ export async function readKeys(
       return decodePlain(field);
     case 'triplesec': {
       if (!passcode) throw new Error('keystore: passcode required');
-      return parseKeys(decodeUtf8(decryptTriplesec(fromHex(field), passcode)));
+      return parseKeys(
+        decodeUtf8(await decryptTriplesec(fromHex(field), passcode)),
+      );
     }
     case 'v1':
       if (!passcode) throw new Error('keystore: passcode required');

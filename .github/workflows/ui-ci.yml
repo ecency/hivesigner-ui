@@ -52,7 +52,7 @@ jobs:
           node-version: 24.x
       - run: npm ci
         working-directory: e2e
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
         working-directory: e2e
       - run: npx playwright test --reporter=line
         working-directory: e2e

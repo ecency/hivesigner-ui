@@ -24,5 +24,19 @@ export default defineConfig({
       ? { executablePath: process.env.CHROME_PATH }
       : undefined,
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    // The leave during an unlock, in Safari's engine: WebKit delivers a click
+    // made while the page is busy later than the others do (see leave.spec).
+    // CI only: WebKit needs system libraries a dev machine may not have.
+    ...(process.env.CI
+      ? [
+          {
+            name: 'webkit',
+            use: { ...devices['Desktop Safari'] },
+            testMatch: /leave\.spec\.ts/,
+          },
+        ]
+      : []),
+  ],
 });
