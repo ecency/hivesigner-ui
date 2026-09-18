@@ -134,12 +134,9 @@ test('the unlock passcode is nobody’s password, and Enter unlocks', async ({
 }) => {
   await setUp(page);
   await importWithPasscode(page, 'pmunlock');
-  // A reload drops the in-memory keys, so the account has to be unlocked.
-  await page.reload({ waitUntil: 'networkidle' });
-  await page
-    .getByRole('button', { name: /^unlock$/i })
-    .first()
-    .click();
+  // A fresh load drops the in-memory keys, so the account has to be
+  // unlocked; a page that needs the keys asks for the passcode in place.
+  await page.goto('/auths', { waitUntil: 'networkidle' });
   const field = page.locator('input[name="passcode-pmunlock"]');
   await expect(field).toBeVisible();
   expect(await field.getAttribute('autocomplete')).toBe('one-time-code');

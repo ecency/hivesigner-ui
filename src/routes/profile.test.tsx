@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import '../i18n';
+import i18n from '../i18n';
 
 vi.mock('@tanstack/react-router', async () =>
   (await import('../test-router-mock')).routerMock(),
@@ -17,7 +17,7 @@ vi.mock('@/lib/sign-tx', () => ({
   broadcastOperations: h.broadcastOperations,
 }));
 
-import { _resetKeyCache, addAccount } from '@/lib/accounts';
+import { _resetKeyCache, addAccount, lockAccount } from '@/lib/accounts';
 import { buildProfileMetadata, Route } from './profile';
 
 const Profile = (Route as unknown as { component: ComponentType }).component;
@@ -156,16 +156,36 @@ describe('/profile', () => {
     expect(await screen.findByText(/saved/i)).toBeInTheDocument();
   });
 
-  it('offers unlock instead of save without a posting key', async () => {
+  it('says which key is missing instead of offering save without a posting key', async () => {
     await addAccount('alice', { active: '5Kactive' });
     renderPage();
     await waitFor(() =>
       expect(screen.getByLabelText(/^name/i)).toHaveValue('Alice'),
     );
     expect(screen.queryByRole('button', { name: /save/i })).toBeNull();
-    expect(screen.getByRole('link', { name: /unlock/i })).toHaveAttribute(
-      'href',
-      '/accounts',
-    );
+    expect(document.body.textContent).toMatch(/needs your posting key/i);
+    // Nothing on the account list would add it: no link there.
+    expect(screen.queryByRole('link', { name: /unlock/i })).toBeNull();
   });
+
+  it('a locked account: the passcode here, and the same click saves (#146)', async () => {
+    await addAccount('alice', { posting: '5Kposting' }, 'pass');
+    lockAccount('alice');
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/^name/i)).toHaveValue('Alice'),
+    );
+    await user.clear(screen.getByLabelText(/^name/i));
+    await user.type(screen.getByLabelText(/^name/i), 'Alice B');
+    await user.type(screen.getByLabelText(i18n.t('accounts.passcode')), 'pass');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops, key] = h.broadcastOperations.mock.calls[0];
+    expect(key).toBe('5Kposting');
+    expect(JSON.parse(ops[0][1].posting_json_metadata).profile.name).toBe(
+      'Alice B',
+    );
+  }, 30_000);
 });

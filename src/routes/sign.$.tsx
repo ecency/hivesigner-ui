@@ -460,10 +460,20 @@ function Sign() {
       )}
 
       <div className="flex flex-col gap-2.5">
+        {/* Who has to sign, read before the account list open below it. */}
+        {authority && signerMismatch && (
+          <div className="text-[13px] text-warn">
+            <Sentence
+              k="sign.must_be_signed_by"
+              values={{ account: `@${req.signer}` }}
+              bold
+            />
+          </div>
+        )}
         {authority && selectedAccount && (
           // Under a signer mismatch the selected account is NOT signing, so
           // the row must not say it is; it names the selection and the warning
-          // below names who has to sign.
+          // above names who has to sign.
           <CurrentAccount
             username={selectedAccount}
             label={
@@ -471,26 +481,12 @@ function Sign() {
             }
             next={here()}
             busy={status === 'signing'}
+            // The account that has to sign may be on this device: the list
+            // is open to pick it.
+            defaultOpen={signerMismatch}
           />
         )}
-        {!authority ? null : signerMismatch ? (
-          <>
-            <div className="text-[13px] text-warn">
-              <Sentence
-                k="sign.must_be_signed_by"
-                values={{ account: `@${req.signer}` }}
-                bold
-              />
-            </div>
-            <Link
-              to="/accounts"
-              search={{ next: here() }}
-              className={btnPrimary}
-            >
-              {t('login.switch_an_account')}
-            </Link>
-          </>
-        ) : !selectedAccount ? (
+        {!authority || signerMismatch ? null : !selectedAccount ? (
           // `next` carries the request through import and unlock, as the
           // consent screen does. Without it a passcode user arriving from an
           // app deep link unlocked and landed on the account list, request gone.

@@ -92,14 +92,14 @@ async function openLocked(
   page: Page,
   url = '/authorize/new.app',
   action = /^authorize$/i,
-  away = /^cancel$/i,
+  away = (p: Page) => p.getByRole('link', { name: /^cancel$/i }),
 ) {
   await page.goto(url, { waitUntil: 'networkidle' });
   const passcode = page.locator(`input[name="passcode-${USER}"]`);
   await passcode.fill(PASSCODE);
   const authorize = page.getByRole('button', { name: action });
   await expect(authorize).toBeEnabled();
-  const cancel = page.getByRole('link', { name: away });
+  const cancel = away(page);
   await expect(cancel).toBeVisible();
   // From here on every lazy chunk takes seconds to arrive, so the screen
   // Cancel leaves stays mounted well past the unlock.
@@ -168,16 +168,19 @@ test('the same click without Cancel grants (the harness can broadcast)', async (
   expect(errors).toEqual([]);
 });
 
-test('Switch account queued behind a local sign-in wins', async ({ page }) => {
-  // The local sign-in moves on to its target once unlocked. A Switch account
-  // pressed during the unlock started first, so that is where the user goes.
+test('a link elsewhere queued behind a local sign-in wins', async ({
+  page,
+}) => {
+  // The local sign-in moves on to its target once unlocked. The header's
+  // Accounts link pressed during the unlock started first, so that is where
+  // the user goes. (Switching accounts itself happens in place, #146.)
   const { errors } = await setUp(page);
   await addAccount(page, USER, PASSCODE);
   const at = await openLocked(
     page,
     '/login?redirect=%2Fauthorized-apps',
     /^sign in$/i,
-    /switch/i,
+    (p) => p.locator('header').getByRole('link', { name: /^accounts$/i }),
   );
   await Promise.all([
     page.mouse.click(at.authorize.x, at.authorize.y),
@@ -188,9 +191,16 @@ test('Switch account queued behind a local sign-in wins', async ({ page }) => {
   });
   await settle(6000);
   expect(new URL(page.url()).pathname).toBe('/accounts');
-  const row = page.locator('main [data-testid="account-row"]');
-  await expect(row).toHaveCount(1);
+  await expect(page.locator('main [data-testid="account-row"]')).toHaveCount(1);
   // The sign-in click landed too: the account was unlocked, not just left.
-  await expect(row).toContainText(/unlocked/i);
+  // Message signing shows its form only to an unlocked account (and asks
+  // for the passcode otherwise); reached in-app, so the keys stay in memory.
+  await page
+    .locator('header')
+    .getByRole('link', { name: /^signer$/i })
+    .click();
+  await page.getByRole('link', { name: /^sign message$/i }).click();
+  await expect(page.getByRole('textbox')).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator(`input[name="passcode-${USER}"]`)).toHaveCount(0);
   expect(errors).toEqual([]);
 });

@@ -54,14 +54,11 @@
     "delete": "Hapus dari Hivesigner",
     "unlock": "Buka kunci",
     "add_another": "Tambahkan akun lain",
-    "current": "Saat ini",
-    "unlocked": "Terbuka",
-    "protected": "Terlindungi",
+    "search": "Cari akun",
     "no_passcode": "Tanpa kode sandi",
     "passcode": "Kode sandi",
     "remove_confirm": "Hapus {username} dari perangkat ini? Kunci akun ini yang tersimpan di sini akan dihapus.",
-    "remove_failed": "Hanya dihapus untuk sesi ini: penyimpanan tidak tersedia, sehingga akun ini akan muncul kembali saat Anda memuat ulang halaman.",
-    "unlock_account": "Buka kunci {account}"
+    "remove_failed": "Hanya dihapus untuk sesi ini: penyimpanan tidak tersedia, sehingga akun ini akan muncul kembali saat Anda memuat ulang halaman."
   },
   "apps": {
     "self_declared": "Semua informasi di atas dipublikasikan oleh akun aplikasi itu sendiri. Hivesigner tidak memverifikasi satu pun darinya.",

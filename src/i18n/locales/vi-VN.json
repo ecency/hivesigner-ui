@@ -54,14 +54,11 @@
     "delete": "Xóa khỏi Hivesigner",
     "unlock": "Mở khóa",
     "add_another": "Thêm tài khoản khác",
-    "current": "Hiện tại",
-    "unlocked": "Đã mở khóa",
-    "protected": "Được bảo vệ",
+    "search": "Tìm kiếm tài khoản",
     "no_passcode": "Không có mã mở khóa",
     "passcode": "Mã mở khóa",
     "remove_confirm": "Xóa {username} khỏi thiết bị này? Các khóa của tài khoản này được lưu tại đây sẽ bị xóa.",
-    "remove_failed": "Chỉ xóa trong phiên này: bộ nhớ lưu trữ không khả dụng, nên tài khoản này sẽ xuất hiện lại khi bạn tải lại trang.",
-    "unlock_account": "Mở khóa {account}"
+    "remove_failed": "Chỉ xóa trong phiên này: bộ nhớ lưu trữ không khả dụng, nên tài khoản này sẽ xuất hiện lại khi bạn tải lại trang."
   },
   "apps": {
     "self_declared": "Mọi thông tin ở trên đều do chính tài khoản của ứng dụng công bố. Hivesigner không xác minh bất kỳ thông tin nào trong số đó.",

@@ -60,7 +60,10 @@ vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({ data: h.vests.rate, isSuccess: h.vests.ready }),
 }));
 vi.mock('@/lib/hive', () => ({ getVestsToSp: vi.fn() }));
-vi.mock('@/lib/use-accounts', () => ({ useAccounts: () => h.accounts }));
+// The accounts on the device, for the switcher's list, unless a test says.
+vi.mock('@/lib/use-accounts', () => ({
+  useAccounts: () => ({ usernames: ['alice', 'bob'], ...h.accounts }),
+}));
 vi.mock('@/lib/accounts', () => ({
   getKeys: () => h.keys,
   stillSelected: (name: string) => name === h.accounts.selectedAccount,
@@ -158,7 +161,7 @@ describe('sign route', () => {
     h.splat = 'transfer';
     h.vests = { rate: 1, ready: false }; // rate not loaded yet
     render(<Sign />);
-    const btn = screen.getByRole('button');
+    const btn = screen.getByRole('button', { name: /approve/i });
     expect(btn).toBeDisabled();
     expect(
       screen.getByText(/loading the current hive power rate/i),
@@ -261,7 +264,7 @@ describe('untrusted text cannot push the layout sideways', () => {
 });
 
 describe('the signing account is visible', () => {
-  it('names the selected account with its avatar and a switch link carrying the request', async () => {
+  it('names the selected account with its avatar and a switch that keeps the request', async () => {
     h.splat = 'transfer';
     h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
     render(<Sign />);
@@ -272,9 +275,12 @@ describe('the signing account is visible', () => {
       'src',
       expect.stringContaining('/u/alice/avatar/'),
     );
-    const link = screen.getByRole('link', { name: /switch/i });
-    expect(link).toHaveAttribute('href', '/accounts');
-    expect(JSON.parse(link.getAttribute('data-search') ?? '{}').next).toBe(
+    // In place (#146); adding an account not on the device comes back here.
+    await userEvent.click(
+      screen.getByRole('button', { name: /switch an account/i }),
+    );
+    const add = screen.getByRole('link', { name: /add another/i });
+    expect(JSON.parse(add.getAttribute('data-search') ?? '{}').next).toBe(
       window.location.pathname + window.location.search,
     );
   });
@@ -293,11 +299,16 @@ describe('the signing account is visible', () => {
     expect(chip).toHaveTextContent(/selected account/i);
     expect(chip).not.toHaveTextContent(/signing as/i);
     expect(chip).toHaveTextContent('@alice');
-    // The warning still names who has to sign.
+    // The warning still names who has to sign, and the accounts are open
+    // to pick that one, with no page to go to (#146).
     expect(document.body.textContent).toMatch(/signed by @bob/i);
+    expect(
+      screen.getAllByTestId('account-row').map((r) => r.textContent),
+    ).toContainEqual(expect.stringContaining('@bob'));
+    expect(screen.queryByRole('link', { name: /switch/i })).toBeNull();
   });
 
-  it('removes the switch link while the operation is in flight', async () => {
+  it('removes the switch while the operation is in flight', async () => {
     h.splat = 'transfer';
     h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
     let finish: (v: unknown) => void = () => {};
@@ -310,11 +321,11 @@ describe('the signing account is visible', () => {
     const user = userEvent.setup();
     render(<Sign />);
     expect(
-      await screen.findByRole('link', { name: /switch/i }),
+      await screen.findByRole('button', { name: /switch/i }),
     ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /approve/i }));
     await waitFor(() =>
-      expect(screen.queryByRole('link', { name: /switch/i })).toBeNull(),
+      expect(screen.queryByRole('button', { name: /switch/i })).toBeNull(),
     );
     expect(screen.getByTestId('current-account')).toHaveTextContent('@alice');
     finish({ id: 'tx' });

@@ -54,14 +54,11 @@
     "delete": "Hivesigner에서 삭제",
     "unlock": "잠금 해제",
     "add_another": "다른 계정 추가",
-    "current": "사용 중",
-    "unlocked": "잠금 해제됨",
-    "protected": "보호됨",
+    "search": "계정 검색",
     "no_passcode": "패스코드 없음",
     "passcode": "패스코드",
     "remove_confirm": "이 기기에서 {username} 계정을 삭제할까요? 이 기기에 저장된 해당 계정의 키가 삭제됩니다.",
-    "remove_failed": "이번 세션에서만 삭제되었습니다. 저장소를 사용할 수 없어 페이지를 새로 고치면 이 계정이 다시 나타납니다.",
-    "unlock_account": "{account} 계정 잠금 해제"
+    "remove_failed": "이번 세션에서만 삭제되었습니다. 저장소를 사용할 수 없어 페이지를 새로 고치면 이 계정이 다시 나타납니다."
   },
   "apps": {
     "self_declared": "위의 모든 정보는 앱 계정이 직접 게시한 것입니다. Hivesigner는 이 정보를 전혀 검증하지 않습니다.",

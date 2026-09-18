@@ -54,14 +54,11 @@
     "delete": "从 Hivesigner 中移除",
     "unlock": "解锁",
     "add_another": "添加其他账户",
-    "current": "当前",
-    "unlocked": "已解锁",
-    "protected": "受保护",
+    "search": "搜索账户",
     "no_passcode": "未设置本地密码",
     "passcode": "本地密码",
     "remove_confirm": "要从此设备中移除 {username} 吗？该账户保存在此设备上的密钥将被删除。",
-    "remove_failed": "仅在本次会话中移除：存储不可用，重新加载后该账户会重新出现。",
-    "unlock_account": "解锁 {account}"
+    "remove_failed": "仅在本次会话中移除：存储不可用，重新加载后该账户会重新出现。"
   },
   "apps": {
     "self_declared": "以上所有信息均由应用账户自行发布，Hivesigner 不会对其进行任何核实。",

@@ -334,9 +334,11 @@ describe('AuthorizeConsent', () => {
       'src',
       expect.stringContaining('/u/alice/avatar/'),
     );
-    const link = screen.getByRole('link', { name: /switch/i });
-    expect(link).toHaveAttribute('href', '/accounts');
-    expect(link.getAttribute('data-search')).toContain('/oauth2/authorize');
+    // Switching stays on this request (#146): a button, not a link away.
+    expect(
+      screen.getByRole('button', { name: /switch an account/i }),
+    ).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('link', { name: /switch/i })).toBeNull();
   });
 
   it('shows the account even while it is locked, and asks for its passcode right here', async () => {

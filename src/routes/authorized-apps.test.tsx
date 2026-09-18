@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import '../i18n';
+import i18n from '../i18n';
 
 vi.mock('@tanstack/react-router', async () =>
   (await import('../test-router-mock')).routerMock(),
@@ -17,7 +17,7 @@ vi.mock('@/lib/sign-tx', () => ({
   broadcastOperations: h.broadcastOperations,
 }));
 
-import { _resetKeyCache, addAccount } from '@/lib/accounts';
+import { _resetKeyCache, addAccount, lockAccount } from '@/lib/accounts';
 import { Route } from './authorized-apps';
 
 const AuthorizedApps = (Route as unknown as { component: ComponentType })
@@ -90,15 +90,74 @@ describe('/authorized-apps', () => {
     expect(ops[0][1].posting.account_auths).toEqual([['peakd.app', 1]]);
   });
 
-  it('offers unlock instead of revoke when the active key is not available', async () => {
+  it('sends a revoke without the active key to the revoke page, which asks for it', async () => {
     await addAccount('alice', { posting: '5Kposting' });
     renderPage();
     await screen.findByText('@ecency.app');
     expect(screen.queryByRole('button', { name: /revoke/i })).toBeNull();
-    expect(screen.getAllByRole('link', { name: /unlock/i })[0]).toHaveAttribute(
-      'href',
-      '/accounts',
+    expect(
+      screen
+        .getAllByRole('link', { name: /revoke/i })
+        .map((l) => l.getAttribute('href')),
+    ).toEqual(['/revoke/ecency.app', '/revoke/peakd.app']);
+    expect(screen.queryByRole('link', { name: /unlock/i })).toBeNull();
+  });
+
+  it('a locked account is unlocked here, then revokes (#146)', async () => {
+    await addAccount('alice', { active: '5Kactive' }, 'pass');
+    lockAccount('alice');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('@ecency.app');
+    await user.type(screen.getByLabelText(i18n.t('accounts.passcode')), 'pass');
+    await user.click(screen.getByRole('button', { name: /^unlock$/i }));
+    await waitFor(
+      () =>
+        expect(screen.getAllByRole('button', { name: /revoke/i })).toHaveLength(
+          2,
+        ),
+      { timeout: 10_000 },
     );
+  }, 30_000);
+
+  it('builds the revoke from a fresh read, keeping a grant made elsewhere since', async () => {
+    await addAccount('alice', { active: '5Kactive' });
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    renderPage();
+    await screen.findByText('@ecency.app');
+    // Another app was authorized elsewhere after this page loaded.
+    h.getAccount.mockResolvedValue({
+      ...account,
+      posting: {
+        ...account.posting,
+        account_auths: [...account.posting.account_auths, ['new.app', 1]],
+      },
+    });
+    await userEvent
+      .setup()
+      .click(screen.getAllByRole('button', { name: /revoke/i })[0]);
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops] = h.broadcastOperations.mock.calls[0];
+    // A stale copy would have dropped new.app along with ecency.app.
+    expect(ops[0][1].posting.account_auths).toEqual([
+      ['peakd.app', 1],
+      ['new.app', 1],
+    ]);
+  });
+
+  it('a failed read before a revoke stops it and says so', async () => {
+    await addAccount('alice', { active: '5Kactive' });
+    renderPage();
+    await screen.findByText('@ecency.app');
+    h.getAccount.mockRejectedValue(new Error('node down'));
+    await userEvent
+      .setup()
+      .click(screen.getAllByRole('button', { name: /revoke/i })[0]);
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('authorize.read_failed'),
+    );
+    expect(h.broadcastOperations).not.toHaveBeenCalled();
+    expect(screen.getByText('@ecency.app')).toBeInTheDocument();
   });
 
   it('says so when nothing is authorized', async () => {

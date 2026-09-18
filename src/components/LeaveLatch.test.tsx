@@ -8,7 +8,7 @@ import {
   Outlet,
   RouterProvider,
 } from '@tanstack/react-router';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../i18n';
@@ -425,7 +425,7 @@ describe('Cancel pressed while the unlock runs, the next page still loading', ()
   });
 });
 
-describe('local sign-in: Switch account pressed while the passcode is checked', () => {
+describe('local sign-in: the user sets off while the passcode is checked', () => {
   const signIn = async () => {
     const user = userEvent.setup();
     const button = await screen.findByRole('button', { name: /^sign in$/i });
@@ -444,13 +444,15 @@ describe('local sign-in: Switch account pressed while the passcode is checked', 
     expect(router.state.location.pathname).toBe('/profile');
   });
 
-  it('the switch wins over the sign-in finishing', async () => {
+  it('leaving (the account list, say) wins over the sign-in finishing', async () => {
     const chunk = deferred();
     const unlock = deferred();
     chain.unlockGate = unlock.promise;
     const router = renderAt('/login?redirect=%2Fprofile', chunk.promise);
-    const user = await signIn();
-    await user.click(screen.getByRole('link', { name: /switch/i }));
+    await signIn();
+    // A link elsewhere on the page (the header's Accounts): switching
+    // itself happens in place and goes nowhere (#146).
+    void router.navigate({ to: '/accounts' });
     await settle();
     unlock.resolve();
     await waitFor(() => expect(getKeys('alice')).toBeTruthy());
@@ -565,7 +567,9 @@ describe('local sign-in: Switch account pressed while the passcode is checked', 
     chain.unlockGate = unlock.promise;
     const router = renderAt('/login?redirect=%2Fprofile', deferred().promise);
     const user = await signIn();
-    await user.click(screen.getByRole('link', { name: /switch/i }));
+    // A link elsewhere on the page (the header's Accounts): switching
+    // itself happens in place and goes nowhere (#146).
+    void router.navigate({ to: '/accounts' });
     await settle();
     router.history.back();
     await waitFor(() => expect(router.state.location.pathname).toBe('/login'));
@@ -629,5 +633,33 @@ describe('Cancel pressed while the grant is confirmed on chain', () => {
   it('grant page: not pulled back to the login after Cancel', async () => {
     const router = await authorizeAndHold(grantUrl, true);
     expect(router.latestLocation.pathname).toBe('/accounts');
+  });
+});
+
+describe('switching in place while the passcode is checked (#146)', () => {
+  it('consent: acts for nobody, and shows the account picked', async () => {
+    await addAccount('bob', { posting: posting.toString() });
+    selectAccount('alice');
+    const unlock = deferred();
+    chain.unlockGate = unlock.promise;
+    renderAt('/oauth2/authorize', deferred().promise);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^authorize$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    await user.click(
+      screen.getByRole('button', { name: /switch an account/i }),
+    );
+    const bob = screen
+      .getAllByTestId('account-row')
+      .find((r) => r.textContent?.includes('@bob')) as HTMLElement;
+    await user.click(within(bob).getByRole('button'));
+    unlock.resolve();
+    await waitFor(() => expect(getKeys('alice')).toBeTruthy());
+    await settle();
+    expect(chain.broadcastOperations).not.toHaveBeenCalled();
+    expect(chain.assign).not.toHaveBeenCalled();
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@bob');
   });
 });

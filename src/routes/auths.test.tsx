@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import '../i18n';
+import i18n from '../i18n';
 
 vi.mock('@tanstack/react-router', async () =>
   (await import('../test-router-mock')).routerMock(),
@@ -11,7 +11,7 @@ vi.mock('@tanstack/react-router', async () =>
 const h = vi.hoisted(() => ({ getAccount: vi.fn() }));
 vi.mock('@/lib/hive', () => ({ getAccount: h.getAccount }));
 
-import { _resetKeyCache, addAccount } from '@/lib/accounts';
+import { _resetKeyCache, addAccount, lockAccount } from '@/lib/accounts';
 import { Route } from './auths';
 
 const Auths = (Route as unknown as { component: ComponentType }).component;
@@ -87,4 +87,22 @@ describe('/auths', () => {
     await userEvent.setup().click(reveal[0]);
     expect(screen.getByText('5KpostingSecret')).toBeInTheDocument();
   });
+
+  it('a locked account is unlocked here, and its keys can then be shown (#146)', async () => {
+    await addAccount('alice', { posting: '5Kposting' }, 'pass');
+    lockAccount('alice');
+    const user = userEvent.setup();
+    renderPage();
+    expect(screen.queryByRole('button', { name: /reveal/i })).toBeNull();
+    await user.type(screen.getByLabelText(i18n.t('accounts.passcode')), 'pass');
+    await user.click(screen.getByRole('button', { name: /^unlock$/i }));
+    expect(
+      await screen.findByRole(
+        'button',
+        { name: /reveal/i },
+        { timeout: 10_000 },
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText(i18n.t('accounts.passcode'))).toBeNull();
+  }, 30_000);
 });

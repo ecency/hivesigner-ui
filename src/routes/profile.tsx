@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import { Handle, Sentence } from '@/components/Untranslated';
 import {
   alertError,
@@ -21,6 +22,7 @@ import { isValidRedirectUri } from '@/lib/oauth';
 import { accountKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // Edit the selected account's profile (account_update2 -> posting_json_metadata).
 // A profile-only edit needs the posting key. App accounts also register their
@@ -121,6 +123,7 @@ function Profile() {
     form !== null && formFor === (account?.name ?? null) ? form : initial;
 
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
+  const leave = useLeaveLatch();
   const postingKey = selectedAccount
     ? getKeys(selectedAccount)?.posting
     : undefined;
@@ -134,6 +137,11 @@ function Profile() {
   }
 
   async function save() {
+    // Read now, not from this render: an unlock in the same click has only
+    // just put the keys in memory.
+    const postingKey = selectedAccount
+      ? getKeys(selectedAccount)?.posting
+      : undefined;
     if (!account || !postingKey) return;
     // Reject a callback that could never be used: isRegisteredRedirect now
     // refuses non-loopback http, so saving one would register something the
@@ -248,19 +256,24 @@ function Profile() {
       )}
 
       {/* Full width under the thumb on a phone, its own size once there is room. */}
-      {!isUnlocked || !postingKey ? (
-        // Keyed: its children differ from a plain label's, so React builds it
-        // fresh rather than reworking another link's text (translation-guard).
-        <Link
-          key="unlock"
-          to="/accounts"
-          className={`${btnPrimary} sm:self-start`}
-        >
+      {!isUnlocked ? (
+        // The passcode here, and the same click saves (#146).
+        <div className="sm:max-w-md">
+          <UnlockAndContinue
+            key={`unlock:${selectedAccount}`}
+            username={selectedAccount}
+            action={t('common.save')}
+            leave={leave}
+            onUnlocked={save}
+          />
+        </div>
+      ) : !postingKey ? (
+        <p className="m-0 text-[13px] text-warn">
           <Sentence
-            k="accounts.unlock_account"
+            k="sign.missing_posting_key"
             values={{ account: `@${selectedAccount}` }}
           />
-        </Link>
+        </p>
       ) : (
         <button
           type="button"

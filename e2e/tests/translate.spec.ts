@@ -120,7 +120,7 @@ async function expectNamesKept(page: Page) {
 const row = (page: Page, name: string) =>
   page.locator('main [data-testid="account-row"]', { hasText: name });
 
-test('accounts: switching, unlocking and removing keep the list current', async ({
+test('accounts: picking and removing keep the list current (#146)', async ({
   page,
 }) => {
   const problems = await setUp(page);
@@ -129,31 +129,24 @@ test('accounts: switching, unlocking and removing keep the list current', async 
   await addAccount(page, 'trthree');
   await openTranslated(page, '/accounts');
 
-  // Switch to another account: "Current" moves with it, and is translated.
-  await row(page, 'trone')
-    .getByRole('button', { name: /switch an account/i })
-    .click();
-  await translationSettled(page);
-  await expect(row(page, 'trone')).toContainText(translated('Current'));
-  await expect(row(page, 'trthree')).not.toContainText(/current/i);
+  // One column, A to Z; "No passcode" only where it is true, translated.
+  const names = page.locator('main [data-testid="account-row"] bdi');
+  await expect(names).toHaveText(['@trone', '@trthree', '@trtwo']);
+  await expect(row(page, 'trone')).toContainText(translated('No passcode'));
+  await expect(row(page, 'trtwo')).not.toContainText(/passcode/i);
 
-  // A wrong passcode, then the right one: the status line follows.
-  await row(page, 'trtwo')
-    .getByRole('button', { name: /unlock/i })
-    .click();
+  // The row is the choice: the mark moves with it, locked or not, and no
+  // passcode is asked for here.
+  const choose = (name: string) =>
+    row(page, name).getByRole('button', { name: new RegExp(`^@${name}`) });
+  await choose('trtwo').click();
   await translationSettled(page);
-  const field = page.locator('input[name="passcode-trtwo"]');
-  await field.fill('wrong');
-  await field.press('Enter');
-  await expect(row(page, 'trtwo').getByRole('alert')).toBeVisible();
+  await expect(choose('trtwo')).toHaveAttribute('aria-current', 'true');
+  await expect(choose('trone')).not.toHaveAttribute('aria-current', /.+/);
+  await expect(page.locator('input[type="password"]')).toHaveCount(0);
+  await choose('trone').click();
   await translationSettled(page);
-  await expect(row(page, 'trtwo').getByRole('alert')).toContainText('«');
-  await field.fill('e2e-passcode');
-  await field.press('Enter');
-  await expect(field).toHaveCount(0);
-  await translationSettled(page);
-  await expect(row(page, 'trtwo')).toContainText(translated('Unlocked'));
-  await expect(row(page, 'trtwo')).toContainText(translated('Current'));
+  await expect(choose('trone')).toHaveAttribute('aria-current', 'true');
   await expectNamesKept(page);
 
   // Remove one: the rest stay.
@@ -236,7 +229,7 @@ test('sign: a locked account is unlocked on the request and approves in one step
   expect(problems).toEqual([]);
 });
 
-test('sign: switching to a locked account unlocks it on the list and comes back', async ({
+test('sign: switching to a locked account happens on the request (#146)', async ({
   page,
 }) => {
   const problems = await setUp(page);
@@ -246,24 +239,20 @@ test('sign: switching to a locked account unlocks it on the list and comes back'
     page,
     '/sign/vote?voter=trtwo&author=ecency&permlink=x&weight=10000',
   );
-  await page
-    .getByTestId('current-account')
-    .locator('a[href^="/accounts"]')
-    .click();
-  await page.waitForURL('**/accounts?**');
+  await page.getByRole('button', { name: /switch an account/i }).click();
   await translationSettled(page);
   await row(page, 'trtwo')
-    .getByRole('button', { name: /unlock/i })
+    .getByRole('button', { name: /^@trtwo/ })
     .click();
+  // Still the request: the passcode is asked for right here.
+  expect(page.url()).toContain('/sign/vote?');
+  await expect(page.getByTestId('current-account')).toContainText('@trtwo');
   const field = page.locator('input[name="passcode-trtwo"]');
   await field.fill('e2e-passcode');
   await field.press('Enter');
-  await page.waitForURL('**/sign/vote?**');
+  await expect(page.locator('main')).toContainText(/successfully/i);
+  expect(page.url()).toContain('/sign/vote?');
   await translationSettled(page);
-  await expect(page.getByTestId('current-account')).toContainText('@trtwo');
-  await expect(page.getByRole('button', { name: /approve/i })).toHaveText(
-    translated('Approve'),
-  );
   await expectNamesKept(page);
   expect(problems).toEqual([]);
 });

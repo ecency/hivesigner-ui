@@ -1,41 +1,15 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import clsx from 'clsx';
-import { useState } from 'react';
-import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { Avatar } from '@/components/Avatar';
-import { SecretInput } from '@/components/SecretInput';
-import { Handle } from '@/components/Untranslated';
-import {
-  btnPrimary,
-  cardGrid,
-  cardTight,
-  field,
-  h1,
-  label,
-  labelText,
-  link,
-  muted,
-  mutedXs,
-  page,
-} from '@/components/ui';
-import {
-  accountIsEncrypted,
-  isUnlocked,
-  removeAccount,
-  selectAccount,
-  unlockAccount,
-} from '@/lib/accounts';
+import { AccountList } from '@/components/AccountList';
+import { formColumn, h1, link, muted, page } from '@/components/ui';
+import { selectAccount } from '@/lib/accounts';
 import { resolveInternalPath } from '@/lib/internal-path';
-import { isWrongPasscode } from '@/lib/keystore';
 import { parseSearch } from '@/lib/search';
 import { useAccounts } from '@/lib/use-accounts';
-import { useLeaveLatch } from '@/lib/use-leave-latch';
 
-// The account switcher (#106 pain #5): every stored account with its state,
-// switching that never logs the others out, and inline unlock for encrypted
-// accounts. A plain account switches on click; an encrypted one asks for its
-// passcode first.
+// The accounts on this device (#106 pain #5, simplified in #146): pick one,
+// or remove one. Picking never logs the others out and never asks for a
+// passcode: the screen that needs the keys asks for it in place.
 export const Route = createFileRoute('/accounts')({
   component: Accounts,
   // `next` is OPTIONAL: returning it as a always-present key would make
@@ -44,261 +18,33 @@ export const Route = createFileRoute('/accounts')({
     typeof search.next === 'string' ? { next: search.next } : {},
 });
 
-/** Counts the choices made on this page (a row clicked to switch or
-    unlock), so an unlock that finishes after a later one does not take it
-    back. This page's clicks only: another tab choosing someone else is not a
-    choice made here. */
-let choices = 0;
-
-function AccountRow({
-  username,
-  current,
-  next,
-}: {
-  username: string;
-  current: boolean;
-  next?: string;
-}) {
+function Accounts() {
   const { t } = useTranslation();
-  const encrypted = accountIsEncrypted(username);
-  const unlocked = isUnlocked(username);
-  const [unlocking, setUnlocking] = useState(false);
-  const [passcode, setPasscode] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { usernames, selectedAccount } = useAccounts();
+  const { next } = Route.useSearch();
   const navigate = useNavigate();
-  const leave = useLeaveLatch();
 
-  /**
-   * An unlock can take seconds, and clicks made meanwhile run before it
-   * finishes. The last click wins: when another row was chosen meanwhile, or
-   * the user set off elsewhere, this one is left unlocked but not chosen, and
-   * nothing navigates.
-   */
-  function stillWanted(left: () => boolean, choice: number) {
-    return !left() && choice === choices;
-  }
-
-  function done() {
-    // Return to the flow that sent the user here (an OAuth consent request
-    // would otherwise be lost, forcing the app to start over).
+  function pick(username: string) {
+    selectAccount(username);
+    // Back to the flow that sent the user here, if any (an OAuth consent
+    // request would otherwise be lost, forcing the app to start over).
     const back = resolveInternalPath(next);
     if (!back) return;
-    // CLIENT-SIDE navigation only. Decrypted keys live in memory and are never
-    // persisted, so a document navigation (window.location.assign) would reload
-    // the app, drop the key cache, re-lock the account that was just unlocked,
-    // and the consent screen would send the user straight back here forever.
-    // The target is a runtime string, so the typed router cannot model it; the
-    // cast is at this boundary only. resolveInternalPath has already constrained it
-    // same-origin path.
+    // CLIENT-SIDE navigation only. Decrypted keys live in memory and are
+    // never persisted, so a document navigation (window.location.assign)
+    // would reload the app and drop every unlocked account. The target is a
+    // runtime string the typed router cannot model; resolveInternalPath has
+    // already constrained it to a same-origin path.
     navigate({
       to: back.pathname,
       search: back.search ? parseSearch(back.search) : {},
     } as never);
   }
 
-  async function activate() {
-    if (unlocked) {
-      choices++;
-      selectAccount(username);
-      done();
-      return;
-    }
-    if (encrypted) {
-      // Needs a passcode: open the inline form. Choosing this row, so an
-      // unlock still running for another one does not take the user away
-      // while they type here.
-      choices++;
-      setUnlocking(true);
-      return;
-    }
-    // Plaintext but not yet in memory (e.g. just after a reload): load and select.
-    const left = leave.mark();
-    const choice = ++choices;
-    setBusy(true);
-    try {
-      await unlockAccount(username);
-      if (!stillWanted(left, choice)) return;
-      selectAccount(username);
-      done();
-    } catch (e) {
-      // A corrupt persisted plaintext keystore rejects here; without this the
-      // row just stopped working with nothing on screen.
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function submitUnlock() {
-    setError(null);
-    const left = leave.mark();
-    const choice = ++choices;
-    const typed = passcode;
-    // Emptied BEFORE the unlock, so a password manager that captures a field
-    // as it leaves the page finds nothing, even when the user leaves while
-    // the passcode is checked (#136). Put back if it was wrong.
-    flushSync(() => {
-      setPasscode('');
-      setBusy(true);
-    });
-    try {
-      await unlockAccount(username, typed);
-      setUnlocking(false);
-      if (!stillWanted(left, choice)) return;
-      selectAccount(username);
-      done();
-    } catch (e) {
-      // Only into an empty field: nothing typed since is overwritten.
-      setPasscode((current) => current || typed);
-      // As on the request screens: only a passcode that does not open the
-      // record is a wrong passcode; anything else is shown as it is.
-      setError(
-        isWrongPasscode(e)
-          ? t('login.invalid_hs_password')
-          : e instanceof Error
-            ? e.message
-            : String(e),
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
-    // `bg-brand-tint!` wins over the recipe's own `bg-surface`: two background
-    // utilities on one element are otherwise resolved by stylesheet order, not
-    // by the order they appear here.
-    <div
-      className={clsx(
-        cardTight,
-        'flex flex-col gap-2.5',
-        current && 'bg-brand-tint!',
-      )}
-      data-testid="account-row"
-    >
-      <div className="flex flex-wrap items-center gap-3">
-        <Avatar username={username} size="md" />
-        <div className="min-w-0 flex-1">
-          {/* Data, not copy: a page translator must leave the name alone. */}
-          <div className="text-[15px] font-semibold break-all" translate="no">
-            <bdi>{`@${username}`}</bdi>
-          </div>
-          {/* Each part in its own element. This line changes while the page
-              is open, and a page translator swaps loose text for its own
-              elements: React then updates or inserts next to text that is no
-              longer there (see lib/translation-guard.ts). */}
-          <div className={`${mutedXs} mt-0.5 flex gap-1.5`}>
-            {current && (
-              <span className="font-semibold text-brand-ink">
-                {t('accounts.current')}
-              </span>
-            )}
-            <span>
-              {encrypted
-                ? unlocked
-                  ? t('accounts.unlocked')
-                  : t('accounts.protected')
-                : t('accounts.no_passcode')}
-            </span>
-          </div>
-        </div>
-        {(!current || !unlocked) && (
-          <button
-            type="button"
-            onClick={activate}
-            disabled={busy}
-            className="cursor-pointer border-none bg-transparent text-[13px] font-semibold text-brand-ink disabled:cursor-not-allowed"
-          >
-            {!unlocked ? t('accounts.unlock') : t('login.switch_an_account')}
-          </button>
-        )}
-        <button
-          type="button"
-          aria-label={`${t('accounts.delete')} @${username}`}
-          onClick={() => {
-            // Removing wipes the only copy of the keys on this device; confirm.
-            if (
-              window.confirm(
-                t('accounts.remove_confirm', { username: `@${username}` }),
-              )
-            ) {
-              // The confirm promised the keys would be deleted. If the write did
-              // not reach storage the record comes back on reload, so say so
-              // instead of silently leaving a false impression.
-              if (!removeAccount(username)) {
-                setError(t('accounts.remove_failed'));
-              }
-            }
-          }}
-          className="cursor-pointer border-none bg-transparent text-muted"
-        >
-          ✕
-        </button>
-      </div>
-
-      {/* A plaintext unlock failure never opens the passcode form, so its error
-          has to render outside it or the row just goes quiet. */}
-      {error && !unlocking && (
-        <div role="alert" className="text-[12.5px] text-danger">
-          {error}
-        </div>
-      )}
-
-      {unlocking && (
-        <div className="flex flex-col gap-2">
-          {/* A real <label>, not a placeholder. A placeholder is not an
-              accessible name, and it disappears the moment the user types, so
-              this field had nothing naming it at all - for a screen reader, or
-              for anyone who looked away mid-entry. It is per-row, so the name
-              carries the account it unlocks. */}
-          <label className={label}>
-            <span className={labelText}>
-              {`${t('accounts.passcode')} · `}
-              <Handle name={username} />
-            </span>
-            {/* Not the site's password: kept out of managers' save and
-                update prompts (see SecretInput for what each one honours). */}
-            <SecretInput
-              className={field}
-              name={`passcode-${username}`}
-              value={passcode}
-              onChange={setPasscode}
-              onEnter={() => {
-                if (!busy && passcode.length > 0) submitUnlock();
-              }}
-              readOnly={busy}
-              autoFocus
-            />
-          </label>
-          {error && (
-            <div role="alert" className="text-[12.5px] text-danger">
-              {error}
-            </div>
-          )}
-          {/* The button is disabled on exactly the condition that used to paint
-              it `bg-brand-muted`, so the recipe's `disabled:` styling covers it. */}
-          <button
-            type="button"
-            onClick={submitUnlock}
-            disabled={busy || passcode.length === 0}
-            className={`${btnPrimary} cursor-pointer`}
-          >
-            {t('accounts.unlock')}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Accounts() {
-  const { t } = useTranslation();
-  const { usernames, selectedAccount } = useAccounts();
-  const { next } = Route.useSearch();
-
-  return (
-    <section className={page}>
+    // One column, as a list reads best (#146), at a comfortable measure
+    // instead of stretching across the widened shell.
+    <section className={`${page} ${formColumn}`}>
       <h1 className={h1}>{t('accounts.accounts')}</h1>
 
       {usernames.length === 0 ? (
@@ -308,25 +54,14 @@ function Accounts() {
           </Link>
         </p>
       ) : (
-        // One column on a phone, two from `sm` and three from `lg`: the shell is
-        // no longer a 480px strip, so the account list uses the width.
-        <div className={cardGrid}>
-          {usernames.map((u) => (
-            <AccountRow
-              key={u}
-              username={u}
-              current={u === selectedAccount}
-              next={next}
-            />
-          ))}
-        </div>
+        <AccountList current={selectedAccount} onPick={pick} removable />
       )}
 
       {/* Not `btnSecondary`: the dashed, transparent "add" affordance is a
           different control, so it keeps its own class string. */}
       {/* `next` rides along: a user who came here from a consent or sign
-          request to switch accounts, and finds the one they want is not on
-          the device yet, must get back to that request after importing it. */}
+          request, and finds the account they want is not on the device yet,
+          must get back to that request after importing it. */}
       <Link
         to="/import"
         search={next ? { next } : {}}

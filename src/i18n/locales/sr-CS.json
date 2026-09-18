@@ -54,14 +54,11 @@
     "delete": "Ukloni iz servisa Hivesigner",
     "unlock": "Otključaj",
     "add_another": "Dodaj još jedan nalog",
-    "current": "Trenutni",
-    "unlocked": "Otključan",
-    "protected": "Zaštićen",
+    "search": "Pretraga naloga",
     "no_passcode": "Bez pristupnog koda",
     "passcode": "Pristupni kod",
     "remove_confirm": "Ukloniti {username} sa ovog uređaja? Ključevi ovog naloga na ovom uređaju biće obrisani.",
-    "remove_failed": "Uklonjeno samo za ovu sesiju: skladište nije dostupno, pa će se nalog ponovo pojaviti kada ponovo učitate stranicu.",
-    "unlock_account": "Otključaj {account}"
+    "remove_failed": "Uklonjeno samo za ovu sesiju: skladište nije dostupno, pa će se nalog ponovo pojaviti kada ponovo učitate stranicu."
   },
   "apps": {
     "self_declared": "Sve navedeno iznad objavio je sam nalog aplikacije. Hivesigner ništa od toga ne proverava.",

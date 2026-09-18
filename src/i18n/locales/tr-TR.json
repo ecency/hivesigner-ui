@@ -54,14 +54,11 @@
     "delete": "Hivesigner'dan kaldır",
     "unlock": "Kilidi aç",
     "add_another": "Başka bir hesap ekle",
-    "current": "Geçerli",
-    "unlocked": "Kilidi açık",
-    "protected": "Korumalı",
+    "search": "Hesap ara",
     "no_passcode": "Erişim kodu yok",
     "passcode": "Erişim kodu",
     "remove_confirm": "{username} hesabı bu cihazdan kaldırılsın mı? Bu hesabın buradaki anahtarları silinecek.",
-    "remove_failed": "Yalnızca bu oturum için kaldırıldı: depolama kullanılamıyor, bu yüzden sayfayı yeniden yüklediğinizde bu hesap geri gelecek.",
-    "unlock_account": "Kilidi aç: {account}"
+    "remove_failed": "Yalnızca bu oturum için kaldırıldı: depolama kullanılamıyor, bu yüzden sayfayı yeniden yüklediğinizde bu hesap geri gelecek."
   },
   "apps": {
     "self_declared": "Yukarıdaki bilgilerin tamamı uygulama hesabının kendisi tarafından yayımlanmıştır. Hivesigner bunların hiçbirini doğrulamaz.",

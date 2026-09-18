@@ -54,14 +54,11 @@
     "delete": "從 Hivesigner 移除",
     "unlock": "解鎖",
     "add_another": "新增其他帳號",
-    "current": "目前使用中",
-    "unlocked": "已解鎖",
-    "protected": "受保護",
+    "search": "搜尋帳號",
     "no_passcode": "未設定本機密碼",
     "passcode": "本機密碼",
     "remove_confirm": "要從這個裝置移除 {username} 嗎？這個帳號儲存在此裝置上的金鑰將被刪除。",
-    "remove_failed": "僅在本次工作階段中移除：儲存空間無法使用，因此重新載入後這個帳號會再次出現。",
-    "unlock_account": "解鎖 {account}"
+    "remove_failed": "僅在本次工作階段中移除：儲存空間無法使用，因此重新載入後這個帳號會再次出現。"
   },
   "apps": {
     "self_declared": "以上所有內容皆由應用程式帳號自行發布，Hivesigner 並未驗證其中任何資訊。",

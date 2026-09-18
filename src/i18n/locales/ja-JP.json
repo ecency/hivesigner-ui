@@ -54,14 +54,11 @@
     "delete": "Hivesigner から削除",
     "unlock": "ロック解除",
     "add_another": "別のアカウントを追加",
-    "current": "使用中",
-    "unlocked": "ロック解除済み",
-    "protected": "保護済み",
+    "search": "アカウントを検索",
     "no_passcode": "パスコードなし",
     "passcode": "パスコード",
     "remove_confirm": "{username} をこのデバイスから削除しますか？このデバイスに保存されているこのアカウントのキーは削除されます。",
-    "remove_failed": "このセッションでのみ削除されました。ストレージを利用できないため、再読み込みするとこのアカウントは元に戻ります。",
-    "unlock_account": "{account} のロックを解除"
+    "remove_failed": "このセッションでのみ削除されました。ストレージを利用できないため、再読み込みするとこのアカウントは元に戻ります。"
   },
   "apps": {
     "self_declared": "上記の内容はすべてアプリのアカウント自身が公開したものです。Hivesigner はその内容を一切検証していません。",
