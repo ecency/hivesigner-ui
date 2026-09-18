@@ -24,7 +24,7 @@ vi.mock('@tanstack/react-router', () => ({
   ),
   useNavigate: () => navigate,
   useRouter: () => ({
-    state: { location: { href: '/' } },
+    state: { location: { pathname: '/', searchStr: '' } },
     subscribe: () => () => {},
   }),
 }));

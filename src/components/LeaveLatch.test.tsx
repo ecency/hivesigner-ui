@@ -287,4 +287,18 @@ describe('Cancel pressed while the unlock runs, the next page still loading', ()
     await user.click(button);
     await waitFor(() => expect(chain.broadcastOperations).toHaveBeenCalled());
   });
+
+  it('an in-page fragment is not leaving: the screen still acts', async () => {
+    const router = renderAt('/authorize/ecency.app', deferred().promise);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^authorize$/i });
+    // A hand-edited URL or an external link with a #fragment: same request.
+    router.history.push('/authorize/ecency.app#details');
+    await waitFor(() => expect(router.state.location.hash).toBe('details'));
+    await settle();
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    await waitFor(() => expect(chain.broadcastOperations).toHaveBeenCalled());
+  });
 });

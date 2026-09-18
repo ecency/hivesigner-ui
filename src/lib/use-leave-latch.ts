@@ -1,5 +1,10 @@
-import { useRouter } from '@tanstack/react-router';
+import { type ParsedLocation, useRouter } from '@tanstack/react-router';
 import { useEffect, useRef } from 'react';
+
+/** The request a URL names. The hash is not part of it: an in-page
+    fragment (a hand-edited URL, an external `#` link) is not leaving, and
+    it neither remounts the screen nor ever resolves back to the old href. */
+const requestOf = (l: ParsedLocation) => `${l.pathname}${l.searchStr}`;
 
 /**
  * Set once the user has set off for another page, or the screen is gone. A
@@ -23,13 +28,13 @@ export function useLeaveLatch() {
   useEffect(() => {
     // Setup clears it: Strict Mode runs setup, cleanup, setup.
     left.current = false;
-    const here = router.state.location.href;
+    const here = requestOf(router.state.location);
     const offs = [
       router.subscribe('onBeforeNavigate', (e) => {
-        if (e.toLocation.href !== here) left.current = true;
+        if (requestOf(e.toLocation) !== here) left.current = true;
       }),
       router.subscribe('onResolved', (e) => {
-        if (e.toLocation.href === here) left.current = false;
+        if (requestOf(e.toLocation) === here) left.current = false;
       }),
     ];
     return () => {

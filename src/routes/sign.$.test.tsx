@@ -51,7 +51,7 @@ vi.mock('@tanstack/react-router', () => ({
     </a>
   ),
   useRouter: () => ({
-    state: { location: { href: '/' } },
+    state: { location: { pathname: '/', searchStr: '' } },
     subscribe: () => () => {},
   }),
 }));
