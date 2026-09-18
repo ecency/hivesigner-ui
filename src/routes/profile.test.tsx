@@ -29,7 +29,12 @@ vi.mock('@/lib/sign-tx', () => ({
   broadcastOperations: h.broadcastOperations,
 }));
 
-import { _resetKeyCache, addAccount, lockAccount } from '@/lib/accounts';
+import {
+  _resetKeyCache,
+  addAccount,
+  isUnlocked,
+  lockAccount,
+} from '@/lib/accounts';
 import { buildProfileMetadata, Route } from './profile';
 
 const Profile = (Route as unknown as { component: ComponentType }).component;
@@ -224,5 +229,35 @@ describe('/profile', () => {
     expect(JSON.parse(ops[0][1].posting_json_metadata).profile.name).toBe(
       'Alice B',
     );
+  }, 30_000);
+
+  it('saves nothing when another tab chose someone else during the unlock', async () => {
+    await addAccount('alice', { posting: '5Kposting' }, 'pass');
+    await addAccount('bob', { posting: '5Kbob' }, 'bob-pass');
+    // A fresh session: this tab has made no choice of its own, so the one
+    // in storage (another tab's) is adopted when the unlock lands.
+    _resetKeyCache();
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    let release = () => {};
+    h.unlockGate = new Promise<void>((r) => {
+      release = r;
+    });
+    const user = userEvent.setup();
+    renderPage();
+    const name = () => screen.getByLabelText(/^name/i);
+    await waitFor(() => expect(name()).toHaveValue('Alice'));
+    await user.type(name(), ' B');
+    await user.type(screen.getByLabelText(i18n.t('accounts.passcode')), 'pass');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    const raw = JSON.parse(localStorage.getItem('vuex__accounts') as string);
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({ ...raw, selectedAccount: 'bob' }),
+    );
+    release();
+    await waitFor(() => expect(isUnlocked('alice')).toBe(true));
+    await new Promise((r) => setTimeout(r, 50));
+    // Neither bob's form onto alice, nor alice's edit behind the user's back.
+    expect(h.broadcastOperations).not.toHaveBeenCalled();
   }, 30_000);
 });

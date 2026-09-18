@@ -8,7 +8,7 @@ import {
   Outlet,
   RouterProvider,
 } from '@tanstack/react-router';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../i18n';
@@ -645,6 +645,30 @@ describe('Cancel pressed while the grant is confirmed on chain', () => {
   });
 });
 
+describe('the grant page when another tab switches accounts', () => {
+  it('an active key typed for one account never shows under the next one', async () => {
+    await addAccount('carol', { posting: posting.toString() });
+    await addAccount('dave', { posting: posting.toString() });
+    chain.getAccount.mockImplementation(async (name: string) =>
+      name === 'ecency.app' ? appAccount : { ...alice(), name },
+    );
+    const activeKey = () =>
+      document.querySelector('input[name="active-key"]') as HTMLInputElement;
+    // Both accounts read once, so the switches below need no loading state
+    // and the page keeps its parts.
+    selectAccount('dave');
+    renderAt('/authorize/ecency.app', deferred().promise);
+    await waitFor(() => expect(activeKey()).toBeTruthy());
+    act(() => selectAccount('carol'));
+    await waitFor(() => expect(activeKey()).toBeTruthy());
+    const user = userEvent.setup();
+    await user.type(activeKey(), 'typed-for-carol');
+    act(() => selectAccount('dave'));
+    await waitFor(() => expect(document.body.textContent).toContain('@dave'));
+    expect(activeKey()).toHaveValue('');
+  });
+});
+
 describe('switching in place while the passcode is checked (#146)', () => {
   /** Picks `name` from the list the switch opens on this screen. */
   async function switchTo(
@@ -685,6 +709,34 @@ describe('switching in place while the passcode is checked (#146)', () => {
     expect(document.activeElement).toBe(
       screen.getByRole('button', { name: /switch an account/i }),
     );
+  });
+
+  it('a passcode field that takes the focus for the account picked keeps it', async () => {
+    await addAccount('bob', { posting: posting.toString() }, 'bob-passcode');
+    lockAccount('bob');
+    selectAccount('alice');
+    const bobRead = deferred();
+    chain.getAccount.mockImplementation(async (name: string) => {
+      if (name === 'ecency.app') return appAccount;
+      if (name === 'bob') {
+        await bobRead.promise;
+        // bob authorized the app before: a sign-in, passcode focused.
+        const a = alice();
+        return {
+          ...a,
+          name: 'bob',
+          posting: { ...a.posting, account_auths: [['ecency.app', 1]] },
+        };
+      }
+      return name === 'alice' ? alice() : null;
+    });
+    renderAt('/oauth2/authorize', deferred().promise);
+    const user = userEvent.setup();
+    await screen.findByRole('button', { name: /^authorize$/i });
+    await switchTo(user, 'bob');
+    bobRead.resolve();
+    await screen.findByRole('button', { name: /^sign in$/i });
+    expect(document.activeElement).toBe(passcodeField());
   });
 
   it('an active key typed for one account never shows under the next one', async () => {

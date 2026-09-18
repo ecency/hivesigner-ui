@@ -16,7 +16,7 @@ import {
   page,
 } from '@/components/ui';
 
-import { getKeys } from '@/lib/accounts';
+import { getKeys, stillSelected } from '@/lib/accounts';
 import { type Account, getAccount } from '@/lib/hive';
 import { isValidRedirectUri } from '@/lib/oauth';
 import { accountKey } from '@/lib/query-keys';
@@ -124,8 +124,8 @@ function Profile() {
   // What a save sends is the form as it is when the save runs. Unlocking in
   // the same click takes seconds, the fields stay editable meanwhile, and the
   // click's own render would send what they held before (#146).
-  const formNow = useRef(current);
-  formNow.current = current;
+  const formNow = useRef({ account: account?.name, values: current });
+  formNow.current = { account: account?.name, values: current };
 
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
   const leave = useLeaveLatch();
@@ -148,10 +148,15 @@ function Profile() {
       ? getKeys(selectedAccount)?.posting
       : undefined;
     if (!account || !postingKey) return;
+    // Another tab chose someone else while the passcode was checked: the
+    // screen now shows their profile (blank until it loads), and saving it
+    // onto the account clicked would overwrite that one. Nothing is saved.
+    const shown = formNow.current;
+    if (!stillSelected(account.name) || shown.account !== account.name) return;
     // Reject a callback that could never be used: isRegisteredRedirect now
     // refuses non-loopback http, so saving one would register something the
     // consent screen silently declines. Fail here, where it can be corrected.
-    const values = formNow.current;
+    const { values } = shown;
     const bad = values.redirect_uris
       .split('\n')
       .map((u) => u.trim())
