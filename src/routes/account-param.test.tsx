@@ -97,9 +97,13 @@ describe('/oauth2/authorize?account=', () => {
   });
 
   it('reads select_account when account is empty', async () => {
-    renderApp(request({ account: '', select_account: 'bob' }));
-    expect(await screen.findByText('@bob')).toBeInTheDocument();
-    expect(getState().selectedAccount).toBe('bob');
+    for (const account of ['', '  ', '@ ']) {
+      selectAccount('alice');
+      renderApp(request({ account, select_account: 'bob' }));
+      expect(await screen.findByText('@bob')).toBeInTheDocument();
+      expect(getState().selectedAccount).toBe('bob');
+      cleanup();
+    }
   });
 
   it('keeps the choice for an account that is not on this device', async () => {
@@ -126,6 +130,27 @@ describe('/oauth2/authorize?account=', () => {
       cleanup();
     }
   });
+
+  it('/sign-buffer reads it the same way', async () => {
+    const router = renderApp(
+      `/sign-buffer?${new URLSearchParams({
+        message: 'hello',
+        redirect_uri: 'https://site.example/cb',
+        account: 'bob',
+      })}`,
+    );
+    // Named in the account row and in the warning.
+    expect(
+      await screen.findAllByText('@bob', {}, { timeout: 20_000 }),
+    ).not.toHaveLength(0);
+    expect(getState().selectedAccount).toBe('bob');
+    await waitFor(() =>
+      expect(router.state.location.search).toEqual({
+        message: 'hello',
+        redirect_uri: 'https://site.example/cb',
+      }),
+    );
+  }, 30_000);
 
   it("a return to the request keeps the user's own pick", async () => {
     const router = renderApp(request({ account: 'bob' }));

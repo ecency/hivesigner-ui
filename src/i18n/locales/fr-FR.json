@@ -206,6 +206,12 @@
     "verification_link": "Lien de vérification",
     "unable_to_sign": "Impossible de signer. Vérifiez votre message et la clé sélectionnée."
   },
+  "sign_buffer": {
+    "request": "{app} vous demande de signer un message.",
+    "warning": "Votre signature prouve à quiconque la voit que {account} a signé exactement ce texte. Ne signez qu’un message que vous comprenez.",
+    "token_refused": "Ce message est un jeton Hivesigner. Le signer donnerait au site l’accès à votre compte, il ne peut donc pas être signé.",
+    "refused": "Cette demande de signature est inutilisable : il lui faut un message, une clé de publication ou active et une URL de redirection sécurisée enregistrée pour l’application. Retournez sur le site et réessayez."
+  },
   "message_verification": {
     "title": "Vérifier un message",
     "description": "Collez le jeton de vérification ou ouvrez un lien partagé pour confirmer la signature.",

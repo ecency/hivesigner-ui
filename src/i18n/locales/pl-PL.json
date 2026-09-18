@@ -210,6 +210,12 @@
     "verification_link": "Link weryfikacyjny",
     "unable_to_sign": "Nie można podpisać. Sprawdź wiadomość i wybrany klucz."
   },
+  "sign_buffer": {
+    "request": "{app} prosi Cię o podpisanie wiadomości.",
+    "warning": "Twój podpis dowodzi każdemu, kto go zobaczy, że {account} podpisał dokładnie ten tekst. Podpisuj tylko wiadomość, którą rozumiesz.",
+    "token_refused": "Ta wiadomość jest tokenem Hivesigner. Jej podpisanie dałoby witrynie dostęp do Twojego konta, dlatego nie można jej podpisać.",
+    "refused": "Tego żądania podpisu nie można użyć: potrzebuje wiadomości, klucza publikowania lub aktywnego oraz bezpiecznego adresu przekierowania zarejestrowanego dla aplikacji. Wróć do witryny i spróbuj ponownie."
+  },
   "message_verification": {
     "title": "Zweryfikuj wiadomość",
     "description": "Wklej token weryfikacyjny lub otwórz udostępniony link, aby potwierdzić podpis.",

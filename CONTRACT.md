@@ -10,7 +10,7 @@ so do it deliberately and say so in the release notes.
 - Pages: `/`, `/about`, `/accounts`, `/apps`, `/auths`, `/authorized-apps`, `/developers`,
   `/import`, `/login`, `/oauth2/authorize`, `/profile`, `/settings`, `/signmessage`,
   `/verifymessage`, `/signs`, `/authorize/:username`, `/revoke/:username`,
-  `/login-request/:clientId`, `/login-request/*`, `/sign/*`.
+  `/login-request/:clientId`, `/login-request/*`, `/sign/*`, `/sign-buffer`.
 - Query read on auth flows: `redirect_uri` (decoded), `client_id`/`clientId`, `scope`,
   `response_type`, `state`, `authority`.
 - Scope normalisation on `/oauth2/authorize`: `login` stays login; any value containing `offline`
@@ -54,6 +54,26 @@ so do it deliberately and say so in the release notes.
   (`custom_json` needs active only when `required_auths` is non-empty), else none when they
   disagree.
 - A request that acts as an account other than the selected one says so before approval.
+
+## Message signing requests (`/sign-buffer`)
+
+- An app asks for a message signed with one of the account's keys, as with Hive Keychain's
+  `requestSignBuffer`. Query: `message` (the exact text), `authority` (`posting` when absent or
+  empty, or `active`, in any case; anything else is refused), `redirect_uri`, optional
+  `client_id`/`clientId`, `state` and `account` (read as on `/oauth2/authorize`).
+- Every callback must be https, or http on loopback. With a `client_id` it must also be registered
+  to that app, as read on this visit (a copy cached earlier decides nothing), and nothing is
+  signed while the app's profile cannot be read (a retry is offered).
+  Without one the callback host is shown as the requester. A request without a message or a
+  callback is refused with a Report button.
+- The whole message is shown in the page, with controls, zero-width and bidi characters as
+  visible escapes.
+- The signature is Keychain's: secp256k1 over sha256 of the message's UTF-8 bytes, as a hex string.
+  A message that is a JSON object with a `signed_message` key (a Hivesigner token body) is never
+  signed.
+- Redirect: the callback gets `signature`, `public_key`, `username`, `authority` and, when the
+  request sent one (empty included, which the token flow below leaves out), `state`, appended as
+  in the token flow. Cancel returns nothing to the app.
 
 ## Token and redirect shape
 

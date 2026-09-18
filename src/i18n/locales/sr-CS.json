@@ -208,6 +208,12 @@
     "verification_link": "Link za proveru",
     "unable_to_sign": "Potpisivanje nije uspelo. Proverite poruku i izabrani ključ."
   },
+  "sign_buffer": {
+    "request": "{app} traži da potpišete poruku.",
+    "warning": "Vaš potpis dokazuje svakome ko ga vidi da je {account} potpisao upravo ovaj tekst. Potpisujte samo poruku koju razumete.",
+    "token_refused": "Ova poruka je Hivesigner token. Njeno potpisivanje bi sajtu dalo pristup vašem nalogu, zato ne može da se potpiše.",
+    "refused": "Ovaj zahtev za potpis ne može da se koristi: potrebni su poruka, ključ za objavljivanje ili aktivni ključ i bezbedan URL za preusmeravanje registrovan za aplikaciju. Vratite se na sajt i pokušajte ponovo."
+  },
   "message_verification": {
     "title": "Proveri poruku",
     "description": "Nalepite token za proveru ili otvorite podeljeni link da biste potvrdili potpis.",

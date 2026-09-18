@@ -26,6 +26,7 @@ export type IntegrationIssue =
   | 'consent_incomplete' // no redirect_uri
   | 'app_not_found' // client_id names no Hive account
   | 'sign_request_invalid' // a /sign link this app could not parse
+  | 'sign_buffer_invalid' // a /sign-buffer request without a message, a usable key or a callback
   | 'route_not_found'; // a path nothing serves
 
 export interface IntegrationTags {

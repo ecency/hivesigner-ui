@@ -303,15 +303,26 @@ export function buildRedirectUrl(
     params.set('expires_in', '604800');
   }
   params.set('username', username);
-  // Append to the callback's own STRING rather than round-tripping it through
-  // URL: searchParams re-serialises the app's existing query (`q=%20x` becomes
-  // `q=+x`, a valueless `flag` becomes `flag=`), and an app that byte-compares
-  // its own callback would see a different URL than it registered.
-  //
-  // The params go BEFORE any fragment. A registered callback may end in one
-  // (`https://app.example/cb#done`), and appending after it put the whole token
-  // inside the fragment, which a browser never sends to the server, so the app
-  // received no parameters at all.
+  return appendToCallback(callback, params);
+}
+
+/**
+ * `params` added to a callback URL.
+ *
+ * Appended to the callback's own STRING rather than round-tripped through
+ * URL: searchParams re-serialises the app's existing query (`q=%20x` becomes
+ * `q=+x`, a valueless `flag` becomes `flag=`), and an app that byte-compares
+ * its own callback would see a different URL than it registered.
+ *
+ * The params go BEFORE any fragment. A registered callback may end in one
+ * (`https://app.example/cb#done`), and appending after it put the whole token
+ * inside the fragment, which a browser never sends to the server, so the app
+ * received no parameters at all.
+ */
+export function appendToCallback(
+  callback: string,
+  params: URLSearchParams,
+): string {
   const hash = callback.indexOf('#');
   const base = hash === -1 ? callback : callback.slice(0, hash);
   const fragment = hash === -1 ? '' : callback.slice(hash);

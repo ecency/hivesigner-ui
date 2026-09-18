@@ -206,6 +206,12 @@
     "verification_link": "Link de verificação",
     "unable_to_sign": "Não foi possível assinar. Verifique sua mensagem e a chave selecionada."
   },
+  "sign_buffer": {
+    "request": "{app} pede que você assine uma mensagem.",
+    "warning": "Sua assinatura prova a qualquer pessoa que a veja que {account} assinou exatamente este texto. Assine apenas uma mensagem que você entenda.",
+    "token_refused": "Esta mensagem é um token do Hivesigner. Assiná-la daria ao site acesso à sua conta, por isso ela não pode ser assinada.",
+    "refused": "Esta solicitação de assinatura não pode ser usada: ela precisa de uma mensagem, uma chave de postagem ou ativa e uma URL de redirecionamento segura registrada para o aplicativo. Volte ao site e tente novamente."
+  },
   "message_verification": {
     "title": "Verificar mensagem",
     "description": "Cole o token de verificação ou abra um link compartilhado para confirmar a assinatura.",

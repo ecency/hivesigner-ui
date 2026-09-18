@@ -204,6 +204,12 @@
     "verification_link": "验证链接",
     "unable_to_sign": "无法签名。请检查您的消息和所选密钥。"
   },
+  "sign_buffer": {
+    "request": "{app} 请求您签名一条消息。",
+    "warning": "您的签名会向任何看到它的人证明 {account} 签署了这段确切的文字。只签名您理解的消息。",
+    "token_refused": "这条消息是 Hivesigner 令牌。签名它会让该网站获得您账户的访问权限，因此无法签名。",
+    "refused": "此签名请求无法使用：它需要一条消息、一个发布或活动密钥，以及为该应用注册的安全重定向 URL。请返回该网站后重试。"
+  },
   "message_verification": {
     "title": "验证消息",
     "description": "粘贴验证令牌或打开分享的链接，以确认签名。",
