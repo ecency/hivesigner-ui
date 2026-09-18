@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccountList } from '@/components/AccountList';
 import { Avatar } from '@/components/Avatar';
@@ -47,6 +47,11 @@ export function CurrentAccount({
   const [opened, setOpened] = useState(false);
   const toggle = useRef<HTMLButtonElement>(null);
   const listId = useId();
+  // A list left open when the screen starts its action is closed, not
+  // shown again when the action ends in a failure the user should read.
+  useEffect(() => {
+    if (busy) setOpen(false);
+  }, [busy]);
   const close = () => {
     setOpen(false);
     toggle.current?.focus();

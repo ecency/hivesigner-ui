@@ -104,7 +104,17 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     enabled: !!selectedAccount,
   });
 
-  const [error, setError] = useState<string | null>(null);
+  // A failure is shown only under the account it was for: another one
+  // picked in place (#146) does not inherit it. Each setError below runs in
+  // an action for this render's account.
+  const [failure, setFailure] = useState<{
+    account: string | null;
+    text: string;
+  } | null>(null);
+  const error =
+    failure && failure.account === selectedAccount ? failure.text : null;
+  const setError = (text: string | null) =>
+    setFailure(text === null ? null : { account: selectedAccount, text });
   const [busy, setBusy] = useState(false);
   // The passcode that unlocked the account on this screen, held only when
   // its keys lack the active key, so adding it does not ask for the passcode

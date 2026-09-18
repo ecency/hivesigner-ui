@@ -170,6 +170,9 @@ function Sign() {
   );
   const [outcome, setOutcome] = useState<BroadcastOutcome | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  // The account a failure was for. Another one picked in place (#146) does
+  // not inherit it: the screen stays mounted through a switch.
+  const [failedFor, setFailedFor] = useState<string | null>(null);
   // An approve that waited on an unlock or a broadcast can finish after the
   // user switched account or went elsewhere; it must not act, or pull them
   // to the callback, then.
@@ -262,6 +265,7 @@ function Sign() {
       if (req.callback && !left()) redirectToCallback(req.callback, result);
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : String(e));
+      setFailedFor(selectedAccount);
       setStatus('error');
     }
   }
@@ -452,7 +456,7 @@ function Sign() {
         </pre>
       </details>
 
-      {status === 'error' && (
+      {status === 'error' && failedFor === selectedAccount && (
         <div role="alert" className={alertError}>
           <div className="font-semibold">{t('sign.failure_title')}</div>
           <div className="mt-1">{`${t('sign.error_message')}: ${errorMsg}`}</div>

@@ -109,6 +109,24 @@ describe('CurrentAccount', () => {
     expect(screen.queryAllByTestId('account-row')).toHaveLength(0);
   });
 
+  it('a list left open when the screen goes busy stays closed after it', async () => {
+    const user = userEvent.setup();
+    const view = render(
+      <CurrentAccount username="stid" label="Authorizing as" next="/x" />,
+    );
+    await user.click(toggle());
+    view.rerender(
+      <CurrentAccount username="stid" label="Authorizing as" next="/x" busy />,
+    );
+    // The action failed: the screen is not busy any more, and the failure is
+    // what the user should read, not the list again.
+    view.rerender(
+      <CurrentAccount username="stid" label="Authorizing as" next="/x" />,
+    );
+    expect(screen.queryAllByTestId('account-row')).toHaveLength(0);
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('wraps a long name rather than cutting off the part that tells accounts apart', () => {
     render(
       <CurrentAccount

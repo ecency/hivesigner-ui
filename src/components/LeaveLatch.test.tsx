@@ -28,6 +28,8 @@ const chain = vi.hoisted(() => ({
   readGate: null as null | Promise<void>,
   grantGate: null as null | Promise<void>,
   readFails: false,
+  // Keystore reads finished, passcode right or wrong.
+  keysRead: 0,
 }));
 vi.mock('@/lib/hive', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/hive')>()),
@@ -39,7 +41,11 @@ vi.mock('@/lib/keystore', async (importOriginal) => {
     ...real,
     readKeys: async (field: string, passcode?: string) => {
       if (chain.unlockGate) await chain.unlockGate;
-      return real.readKeys(field, passcode);
+      try {
+        return await real.readKeys(field, passcode);
+      } finally {
+        chain.keysRead++;
+      }
     },
   };
 });
@@ -130,16 +136,19 @@ function renderAt(url: string | string[], accountsChunk: Promise<void>) {
   const consent = createRoute({
     getParentRoute: () => root,
     path: '/oauth2/authorize',
-    component: () => (
-      <AuthorizeConsent
-        req={{
-          clientId: 'ecency.app',
-          redirectUri: 'https://ecency.com/auth',
-          scope: 'posting',
-          responseType: 'code',
-        }}
-      />
-    ),
+    component: function Consent() {
+      const { scope } = consent.useSearch() as { scope?: string };
+      return (
+        <AuthorizeConsent
+          req={{
+            clientId: 'ecency.app',
+            redirectUri: 'https://ecency.com/auth',
+            scope: scope ?? 'posting',
+            responseType: 'code',
+          }}
+        />
+      );
+    },
   });
   // The app's own /login screen (the same route id, so its hooks resolve).
   const login = createRoute({
@@ -637,6 +646,92 @@ describe('Cancel pressed while the grant is confirmed on chain', () => {
 });
 
 describe('switching in place while the passcode is checked (#146)', () => {
+  /** Picks `name` from the list the switch opens on this screen. */
+  async function switchTo(
+    user: ReturnType<typeof userEvent.setup>,
+    name: string,
+  ) {
+    await user.click(
+      screen.getByRole('button', { name: /switch an account/i }),
+    );
+    const row = screen
+      .getAllByTestId('account-row')
+      .find((r) => r.textContent?.includes(`@${name}`)) as HTMLElement;
+    await user.click(within(row).getByRole('button'));
+  }
+
+  it('sign-in to an app: no token for the account the screen no longer shows', async () => {
+    await addAccount('bob', { posting: posting.toString() });
+    selectAccount('alice');
+    const unlock = deferred();
+    chain.unlockGate = unlock.promise;
+    renderAt('/oauth2/authorize?scope=login', deferred().promise);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^sign in$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    await switchTo(user, 'bob');
+    unlock.resolve();
+    await waitFor(() => expect(getKeys('alice')).toBeTruthy());
+    await settle();
+    expect(chain.assign).not.toHaveBeenCalled();
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@bob');
+  });
+
+  it('the sign-in hands out the token when nobody switches (the harness can)', async () => {
+    renderAt('/oauth2/authorize?scope=login', deferred().promise);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^sign in$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    await waitFor(() => expect(chain.assign).toHaveBeenCalled());
+  });
+
+  it('a failure for one account is not shown under the next one', async () => {
+    await addAccount('bob', { posting: posting.toString() });
+    selectAccount('alice');
+    renderAt('/oauth2/authorize', deferred().promise);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^authorize$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    chain.readFails = true;
+    await user.click(button);
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('authorize.read_failed'),
+    );
+    await switchTo(user, 'bob');
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@bob');
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it("a wrong passcode typed for one account never lands in the next one's field", async () => {
+    await addAccount('bob', { posting: posting.toString() }, 'bob-passcode');
+    lockAccount('bob');
+    selectAccount('alice');
+    const unlock = deferred();
+    chain.unlockGate = unlock.promise;
+    // A sign-in: no account read to wait on, so the passcode field stays
+    // mounted through the switch unless it is keyed by account.
+    renderAt('/oauth2/authorize?scope=login', deferred().promise);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^sign in$/i });
+    await user.type(passcodeField(), 'not-alices-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    const read = chain.keysRead;
+    await user.click(button);
+    await switchTo(user, 'bob');
+    unlock.resolve();
+    // alice's attempt has failed on its passcode by now.
+    await waitFor(() => expect(chain.keysRead).toBe(read + 1));
+    await settle();
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@bob');
+    expect(passcodeField()).toHaveValue('');
+    expect(screen.queryByRole('alert')).toBeNull();
+  }, 30_000);
+
   it('consent: acts for nobody, and shows the account picked', async () => {
     await addAccount('bob', { posting: posting.toString() });
     selectAccount('alice');

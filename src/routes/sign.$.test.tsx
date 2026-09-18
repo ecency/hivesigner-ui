@@ -331,6 +331,35 @@ describe('the signing account is visible', () => {
     finish({ id: 'tx' });
   });
 
+  it('a failure for one account is not shown under another picked in place (#146)', async () => {
+    h.splat = 'transfer';
+    h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };
+    h.broadcastOperations.mockRejectedValueOnce(
+      new Error('RC exhausted for alice'),
+    );
+    const user = userEvent.setup();
+    const view = render(<Sign />);
+    await user.click(await screen.findByRole('button', { name: /approve/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'RC exhausted for alice',
+    );
+    // The switch stays on the screen: it re-renders for bob, not remounts.
+    h.accounts = { ...h.accounts, selectedAccount: 'bob', unlocked: ['bob'] };
+    view.rerender(<Sign />);
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@bob');
+    // (The request names alice, so a warning about that is up; the failure
+    // is not.)
+    expect(screen.queryByText(/RC exhausted/)).toBeNull();
+    // Still alice's, should she be picked again.
+    h.accounts = {
+      ...h.accounts,
+      selectedAccount: 'alice',
+      unlocked: ['alice'],
+    };
+    view.rerender(<Sign />);
+    expect(screen.getByText(/RC exhausted for alice/)).toBeInTheDocument();
+  });
+
   it('names nobody when no account is selected', async () => {
     h.splat = 'transfer';
     h.search = { from: 'alice', to: 'bob', amount: '1.000 HIVE' };

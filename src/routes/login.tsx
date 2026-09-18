@@ -143,12 +143,14 @@ function LocalLogin({ next }: { next?: string }) {
           )}
         </>
       ) : (
+        // No account chosen: choose one there, and come back here to sign
+        // in with it.
         <Link
           to="/accounts"
           search={{ next: target }}
           className={`${link} text-sm`}
         >
-          {t('accounts.unlock')}
+          {t('footer.login')}
         </Link>
       )}
     </section>
