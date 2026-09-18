@@ -52,6 +52,12 @@ export function CurrentAccount({
   useEffect(() => {
     if (busy) setOpen(false);
   }, [busy]);
+  // Still an account that cannot do what the screen asks, after a pick or a
+  // switch in another tab: the list opens again for the next pick.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: again for each account picked
+  useEffect(() => {
+    if (defaultOpen) setOpen(true);
+  }, [defaultOpen, username]);
   const close = () => {
     setOpen(false);
     toggle.current?.focus();

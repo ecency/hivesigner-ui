@@ -15,7 +15,7 @@ import {
   page,
 } from '@/components/ui';
 import { readAccountNow } from '@/lib/account-now';
-import { getKeys } from '@/lib/accounts';
+import { getKeys, stillSelected } from '@/lib/accounts';
 import { authorizedApps, buildRevokeOperation } from '@/lib/grant';
 import { type Account, getAccount } from '@/lib/hive';
 import { accountKey } from '@/lib/query-keys';
@@ -63,6 +63,7 @@ function AuthorizedApps() {
   const apps = account ? authorizedApps(account) : [];
 
   async function revoke(app: string) {
+    const left = leave.mark();
     const name = selectedAccount;
     if (!name || !activeKey) return;
     setError(null);
@@ -78,6 +79,9 @@ function AuthorizedApps() {
         setError(t('authorize.read_failed'));
         return;
       }
+      // The read is awaited: a user who left meanwhile, or whose other tab
+      // selected someone else, gets no on-chain change for this click.
+      if (left() || !stillSelected(name)) return;
       const op = fresh ? buildRevokeOperation(fresh, app) : null;
       if (fresh && op) await broadcastOperations([op], activeKey, fresh.name);
       await qc.invalidateQueries({ queryKey: accountKey(selectedAccount) });

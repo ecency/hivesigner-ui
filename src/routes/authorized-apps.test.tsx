@@ -17,7 +17,12 @@ vi.mock('@/lib/sign-tx', () => ({
   broadcastOperations: h.broadcastOperations,
 }));
 
-import { _resetKeyCache, addAccount, lockAccount } from '@/lib/accounts';
+import {
+  _resetKeyCache,
+  addAccount,
+  lockAccount,
+  selectAccount,
+} from '@/lib/accounts';
 import { Route } from './authorized-apps';
 
 const AuthorizedApps = (Route as unknown as { component: ComponentType })
@@ -143,6 +148,52 @@ describe('/authorized-apps', () => {
       ['peakd.app', 1],
       ['new.app', 1],
     ]);
+  });
+
+  describe('the read before a revoke is awaited', () => {
+    async function revokeWithReadHeld() {
+      await addAccount('alice', { active: '5Kactive' });
+      h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+      const view = renderPage();
+      await screen.findByText('@ecency.app');
+      let release = () => {};
+      h.getAccount.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            release = () => resolve(account);
+          }),
+      );
+      await userEvent
+        .setup()
+        .click(screen.getAllByRole('button', { name: /revoke/i })[0]);
+      await waitFor(() => expect(h.getAccount).toHaveBeenCalledTimes(2));
+      return { view, release: () => release() };
+    }
+
+    it('revokes once it returns when nothing changed (the harness can)', async () => {
+      const { release } = await revokeWithReadHeld();
+      release();
+      await waitFor(() =>
+        expect(h.broadcastOperations).toHaveBeenCalledTimes(1),
+      );
+    });
+
+    it('a user who left meanwhile gets no on-chain change', async () => {
+      const { view, release } = await revokeWithReadHeld();
+      view.unmount();
+      release();
+      await new Promise((r) => setTimeout(r, 30));
+      expect(h.broadcastOperations).not.toHaveBeenCalled();
+    });
+
+    it('nor does one whose other tab selected someone else', async () => {
+      const { release } = await revokeWithReadHeld();
+      await addAccount('bob', { active: '5Kbob' });
+      selectAccount('bob');
+      release();
+      await new Promise((r) => setTimeout(r, 30));
+      expect(h.broadcastOperations).not.toHaveBeenCalled();
+    });
   });
 
   it('a failed read before a revoke stops it and says so', async () => {

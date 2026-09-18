@@ -109,6 +109,27 @@ describe('CurrentAccount', () => {
     expect(screen.queryAllByTestId('account-row')).toHaveLength(0);
   });
 
+  it('opens again after a pick that still cannot do what the screen asks', async () => {
+    const user = userEvent.setup();
+    const view = render(
+      <CurrentAccount username="stid" label="Selected" next="/x" defaultOpen />,
+    );
+    const pick = (name: string) =>
+      user.click(screen.getByRole('button', { name: new RegExp(`^@${name}`) }));
+    await pick('bob');
+    // The screen re-renders for bob, who cannot sign it either.
+    view.rerender(
+      <CurrentAccount username="bob" label="Selected" next="/x" defaultOpen />,
+    );
+    expect(screen.getAllByTestId('account-row')).toHaveLength(3);
+    // alice can: the screen stops asking, and the list stays closed.
+    await pick('alice');
+    view.rerender(
+      <CurrentAccount username="alice" label="Signing as" next="/x" />,
+    );
+    expect(screen.queryAllByTestId('account-row')).toHaveLength(0);
+  });
+
   it('a list left open when the screen goes busy stays closed after it', async () => {
     const user = userEvent.setup();
     const view = render(
