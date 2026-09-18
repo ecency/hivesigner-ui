@@ -107,6 +107,8 @@ describe('accounts switcher', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       i18n.t('login.invalid_hs_password'),
     );
+    // Back in the field to correct.
+    expect(field).toHaveValue('wrong');
     expect(getState().selectedAccount).toBe('alice');
 
     // Right passcode unlocks and switches.
@@ -300,6 +302,33 @@ describe('unlock and password managers (#136)', () => {
     // Gone, or at least empty, by the time the page changes.
     expect(fieldAtNavigation === null || fieldAtNavigation === '').toBe(true);
   }, 30_000);
+});
+
+describe('the passcode while its unlock runs (#136)', () => {
+  it('is already out of the field, so leaving meanwhile exposes nothing', async () => {
+    await addAccount('alice', { posting: '5Ka' });
+    await addAccount('bob', { active: '5Kbob' }, 'pass');
+    lockAccount('bob');
+    selectAccount('alice');
+    let release = () => {};
+    rs.unlockGate = new Promise<void>((r) => {
+      release = r;
+    });
+    const user = userEvent.setup();
+    render(<Accounts />);
+    await user.click(screen.getByRole('button', { name: /^unlock$/i }));
+    const field = document.querySelector(
+      'input[type="password"]',
+    ) as HTMLInputElement;
+    await user.type(field, 'pass');
+    await user.click(
+      screen.getAllByRole('button', { name: /^unlock$/i }).at(-1)!,
+    );
+    expect(field.value).toBe('');
+    expect(field).toHaveAttribute('readonly');
+    release();
+    await waitFor(() => expect(getState().selectedAccount).toBe('bob'));
+  });
 });
 
 describe('a second choice made while an unlock runs', () => {

@@ -134,25 +134,23 @@ function AccountRow({
     setError(null);
     const left = leave.mark();
     const choice = ++choices;
-    setBusy(true);
+    const typed = passcode;
+    // Emptied BEFORE the unlock, so a password manager that captures a field
+    // as it leaves the page finds nothing, even when the user leaves while
+    // the passcode is checked (#136). Put back if it was wrong.
+    flushSync(() => {
+      setPasscode('');
+      setBusy(true);
+    });
     try {
-      await unlockAccount(username, passcode);
-      if (!stillWanted(left, choice)) {
-        flushSync(() => {
-          setPasscode('');
-          setUnlocking(false);
-        });
-        return;
-      }
+      await unlockAccount(username, typed);
+      setUnlocking(false);
+      if (!stillWanted(left, choice)) return;
       selectAccount(username);
-      // Emptied and removed before the page changes, so a password manager
-      // that captures on navigation finds nothing to offer to save.
-      flushSync(() => {
-        setPasscode('');
-        setUnlocking(false);
-      });
       done();
     } catch (e) {
+      // Only into an empty field: nothing typed since is overwritten.
+      setPasscode((current) => current || typed);
       // As on the request screens: only a passcode that does not open the
       // record is a wrong passcode; anything else is shown as it is.
       setError(
@@ -269,6 +267,7 @@ function AccountRow({
               onEnter={() => {
                 if (!busy && passcode.length > 0) submitUnlock();
               }}
+              readOnly={busy}
               autoFocus
             />
           </label>
