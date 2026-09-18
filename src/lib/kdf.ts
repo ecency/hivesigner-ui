@@ -41,31 +41,30 @@ export async function scryptOffThread(job: KdfJob): Promise<Uint8Array> {
   }
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    const answer = await new Promise<{ key?: Uint8Array; error?: string }>(
-      (resolve) => {
-        // {} means the worker did not do it: the page does it after all.
-        const giveUp = () => resolve({});
-        const wait = (ms: number) => {
-          clearTimeout(timer);
-          timer = setTimeout(giveUp, ms);
-        };
-        wait(START_MS);
-        worker.onmessage = (e) => {
-          if (e.data?.ready) wait(RUN_MS);
-          else resolve(e.data ?? {});
-        };
-        worker.onerror = (e) => {
-          e.preventDefault();
-          giveUp();
-        };
-        worker.onmessageerror = giveUp;
-        worker.postMessage(job);
-      },
-    );
+    const answer = await new Promise<{ key?: Uint8Array }>((resolve) => {
+      // {} means the worker did not do it: the page does it after all.
+      const giveUp = () => resolve({});
+      const wait = (ms: number) => {
+        clearTimeout(timer);
+        timer = setTimeout(giveUp, ms);
+      };
+      wait(START_MS);
+      worker.onmessage = (e) => {
+        if (e.data?.ready) wait(RUN_MS);
+        else resolve(e.data ?? {});
+      };
+      worker.onerror = (e) => {
+        e.preventDefault();
+        giveUp();
+      };
+      worker.onmessageerror = giveUp;
+      worker.postMessage(job);
+    });
     if (answer.key) return answer.key;
-    if (answer.error !== undefined) throw new Error(answer.error);
     // Ended first: a worker that was only slow would go on deriving next to
-    // the page, with its memory and a core, for nothing.
+    // the page, with its memory and a core, for nothing. A failure it
+    // reported goes the same way: it may be the worker's own (its memory),
+    // and one the job itself causes fails on the page with the same error.
     worker.terminate();
     return inline(job);
   } finally {

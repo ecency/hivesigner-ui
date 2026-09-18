@@ -161,10 +161,27 @@ test('the same click without Cancel grants (the harness can broadcast)', async (
   const { broadcasts, errors } = await setUp(page);
   await addAccount(page, USER, PASSCODE);
   const at = await openLocked(page);
+  // A 10 ms heartbeat through the unlock. The held chunks give Cancel time
+  // to land whatever the derivation does, so this is what shows it ran off
+  // the page: on the page it stalls the heartbeat for the whole derivation.
+  await page.evaluate(() => {
+    const w = window as unknown as { stalls: number[] };
+    w.stalls = [];
+    let last = performance.now();
+    setInterval(() => {
+      const now = performance.now();
+      w.stalls.push(now - last);
+      last = now;
+    }, 10);
+  });
   await page.mouse.click(at.authorize.x, at.authorize.y);
   await expect(page.locator('main output')).toContainText(/authorized/i, {
     timeout: 20_000,
   });
+  const longest = await page.evaluate(() =>
+    Math.max(...(window as unknown as { stalls: number[] }).stalls),
+  );
+  expect(longest).toBeLessThan(300);
   await settle(1000);
   expect(broadcasts()).toBe(1);
   expect(page.url()).toContain('/authorize/new.app');

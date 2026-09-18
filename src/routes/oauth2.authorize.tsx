@@ -17,9 +17,10 @@ export const Route = createFileRoute('/oauth2/authorize')({
   // user's own pick away again.
   beforeLoad: ({ search }) => {
     const { account, select_account, ...rest } = search;
-    const named = account ?? select_account;
-    if (named === undefined) return;
-    // Names are lower case on Hive; "@Name" still finds it.
+    if (account === undefined && select_account === undefined) return;
+    // Names are lower case on Hive; "@Name" still finds it. An empty one
+    // names nobody, and the other spelling is read instead.
+    const named = account || select_account || '';
     selectAccount(named.trim().toLowerCase().replace(/^@/, ''));
     throw redirect({ to: '/oauth2/authorize', search: rest, replace: true });
   },

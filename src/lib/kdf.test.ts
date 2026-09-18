@@ -174,8 +174,15 @@ describe('scryptOffThread', () => {
     expect(made[0].terminated).toBe(true);
   });
 
-  it('fails as the worker says when the derivation itself fails', async () => {
-    stubWorker((w) => w.onmessage?.({ data: { error: 'boom' } }));
-    await expect(scryptOffThread(job)).rejects.toThrow('boom');
+  it('derives on the page when the worker reports a failure', async () => {
+    // Its own (out of memory, say): the page may well manage.
+    const made = stubWorker((w) => w.onmessage?.({ data: { error: 'boom' } }));
+    expect(await scryptOffThread(job)).toEqual(expected);
+    expect(made[0].terminated).toBe(true);
+  });
+
+  it('fails as the page does when the job itself cannot be derived', async () => {
+    stubWorker((w) => w.onmessage?.({ data: { error: 'bad N' } }));
+    await expect(scryptOffThread({ ...job, N: 3 })).rejects.toThrow();
   });
 });
