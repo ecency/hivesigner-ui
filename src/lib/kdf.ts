@@ -64,6 +64,9 @@ export async function scryptOffThread(job: KdfJob): Promise<Uint8Array> {
     );
     if (answer.key) return answer.key;
     if (answer.error !== undefined) throw new Error(answer.error);
+    // Ended first: a worker that was only slow would go on deriving next to
+    // the page, with its memory and a core, for nothing.
+    worker.terminate();
     return inline(job);
   } finally {
     clearTimeout(timer);

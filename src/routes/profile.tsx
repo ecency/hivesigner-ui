@@ -188,11 +188,14 @@ function Profile() {
     }
     // No account, or one without the metadata the page had: some nodes leave
     // posting_json_metadata out, and building on that would blank every field
-    // not edited here and drop an app's registered callbacks.
+    // not edited here and drop an app's registered callbacks. The read has
+    // landed in the page's copy, so that goes back: the form keeps showing
+    // the profile, and the next click is judged against it again.
     if (
       !fresh ||
       (!fresh.posting_json_metadata && account.posting_json_metadata)
     ) {
+      qc.setQueryData(accountKey(name), account);
       setError(t('common.try_again'));
       setStatus('error');
       return;

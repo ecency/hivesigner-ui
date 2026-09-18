@@ -375,7 +375,19 @@ describe('/profile', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       i18n.t('common.try_again'),
     );
+    // The form still shows the profile, and trying again is refused again.
+    expect(screen.getByLabelText(/redirect/i)).toHaveValue(
+      'https://a.example/cb',
+    );
+    await userEvent
+      .setup()
+      .click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(h.getAccount).toHaveBeenCalledTimes(3));
+    await new Promise((r) => setTimeout(r, 50));
     expect(h.broadcastOperations).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/redirect/i)).toHaveValue(
+      'https://a.example/cb',
+    );
   });
 
   it('saves what was typed while the account was read', async () => {

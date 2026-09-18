@@ -1,5 +1,23 @@
 import { scrypt } from '@noble/hashes/scrypt.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+// Every derivation on the page, with whether the stand-in worker had been
+// ended by then.
+const h = vi.hoisted(() => ({
+  pageRuns: [] as boolean[],
+  current: null as null | { terminated: boolean },
+}));
+vi.mock('@noble/hashes/scrypt.js', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@noble/hashes/scrypt.js')>();
+  return {
+    ...real,
+    scrypt: (...args: Parameters<typeof real.scrypt>) => {
+      h.pageRuns.push(h.current?.terminated ?? true);
+      return real.scrypt(...args);
+    },
+  };
+});
+
 import { type KdfJob, RUN_MS, START_MS, scryptOffThread } from './kdf';
 
 const job: KdfJob = {
@@ -28,6 +46,7 @@ function stubWorker(run: (w: FakeWorker, data: KdfJob) => void) {
     jobs = 0;
     constructor() {
       made.push(this);
+      h.current = this;
     }
     postMessage(data: KdfJob) {
       this.jobs++;
@@ -49,6 +68,7 @@ type FakeWorker = {
 };
 
 afterEach(() => {
+  h.current = null;
   vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.resetModules();
@@ -132,8 +152,11 @@ describe('scryptOffThread', () => {
     });
     await vi.advanceTimersByTimeAsync(START_MS);
     expect(settled).toBe(false);
+    h.pageRuns = [];
     await vi.advanceTimersByTimeAsync(RUN_MS);
     expect(await key).toEqual(expected);
+    // Ended before the page derived: not two derivations at once.
+    expect(h.pageRuns).toEqual([true]);
     expect(made[0].terminated).toBe(true);
   });
 
