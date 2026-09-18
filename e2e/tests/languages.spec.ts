@@ -271,6 +271,31 @@ test('Arabic keeps names, amounts and hosts reading as they are', async ({
   await page.goto('/authorize/peakd.app', { waitUntil: 'networkidle' });
   await expect(page.locator('main')).toContainText('@peakd.app');
   expect(await readsLeftToRight(page, '@peakd.app')).toBe(true);
+
+  // A row on the account list: the name reads as it is and starts at the
+  // row's right edge, like the Arabic "No passcode" under it (#146).
+  const plain = `${Buffer.from(JSON.stringify({ posting: '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL' })).toString('hex')}decrypted`;
+  await page.evaluate(
+    (field) =>
+      localStorage.setItem(
+        'vuex__accounts',
+        JSON.stringify({
+          accountsKeychains: { rtlone: { password: field } },
+          selectedAccount: 'rtlone',
+        }),
+      ),
+    plain,
+  );
+  await page.goto('/accounts', { waitUntil: 'networkidle' });
+  expect(await readsLeftToRight(page, '@rtlone')).toBe(true);
+  const rowGap = await page
+    .locator('main [data-testid="account-row"] bdi', { hasText: '@rtlone' })
+    .evaluate(
+      (el) =>
+        (el.parentElement?.getBoundingClientRect().right ?? 0) -
+        el.getBoundingClientRect().right,
+    );
+  expect(rowGap).toBeLessThan(2);
 });
 
 test('Arabic lays the page out right to left', async ({ page }) => {

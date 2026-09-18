@@ -104,8 +104,22 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     enabled: !!selectedAccount,
   });
 
-  const [error, setError] = useState<string | null>(null);
+  // A failure is shown only under the account it was for: another one
+  // picked in place (#146) does not inherit it. Each setError below runs in
+  // an action for this render's account.
+  const [failure, setFailure] = useState<{
+    account: string | null;
+    text: string;
+  } | null>(null);
+  const error =
+    failure && failure.account === selectedAccount ? failure.text : null;
+  const setError = (text: string | null) =>
+    setFailure(text === null ? null : { account: selectedAccount, text });
   const [busy, setBusy] = useState(false);
+  // Switched in place since this screen opened (#146). A posting-scope
+  // request reads the new account first, and that loading state unmounts
+  // the switch button the user just used; it gets the focus back.
+  const [openedFor] = useState(selectedAccount);
   // The passcode that unlocked the account on this screen, held only when
   // its keys lack the active key, so adding it does not ask for the passcode
   // a second time. Let go once the key is added, and gone with the screen.
@@ -495,6 +509,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             }
             next={window.location.pathname + window.location.search}
             busy={busy}
+            focusSwitch={selectedAccount !== openedFor}
           />
         )}
         {refused ? (
@@ -566,6 +581,9 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
           <>
             {grantNotice}
             <AddActiveKey
+              // One form per account: what was typed for another (and its
+              // failure) never shows under the one picked since (#146).
+              key={`add-key:${selectedAccount}`}
               username={selectedAccount}
               {...(unlockedWith?.account === selectedAccount && {
                 passcode: unlockedWith.passcode,

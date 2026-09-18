@@ -54,14 +54,11 @@
     "delete": "Usuń z Hivesigner",
     "unlock": "Odblokuj",
     "add_another": "Dodaj kolejne konto",
-    "current": "Bieżące",
-    "unlocked": "Odblokowane",
-    "protected": "Chronione",
+    "search": "Szukaj kont",
     "no_passcode": "Bez kodu dostępu",
     "passcode": "Kod dostępu",
     "remove_confirm": "Usunąć {username} z tego urządzenia? Zapisane tutaj klucze tego konta zostaną usunięte.",
-    "remove_failed": "Usunięto tylko na tę sesję: pamięć przeglądarki jest niedostępna, więc to konto pojawi się ponownie po przeładowaniu strony.",
-    "unlock_account": "Odblokuj konto {account}"
+    "remove_failed": "Usunięto tylko na tę sesję: pamięć przeglądarki jest niedostępna, więc to konto pojawi się ponownie po przeładowaniu strony."
   },
   "apps": {
     "self_declared": "Wszystkie powyższe informacje publikuje samo konto aplikacji. Hivesigner niczego z tego nie weryfikuje.",

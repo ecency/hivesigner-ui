@@ -170,6 +170,9 @@ function Sign() {
   );
   const [outcome, setOutcome] = useState<BroadcastOutcome | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+  // The account a failure was for. Another one picked in place (#146) does
+  // not inherit it: the screen stays mounted through a switch.
+  const [failedFor, setFailedFor] = useState<string | null>(null);
   // An approve that waited on an unlock or a broadcast can finish after the
   // user switched account or went elsewhere; it must not act, or pull them
   // to the callback, then.
@@ -262,6 +265,7 @@ function Sign() {
       if (req.callback && !left()) redirectToCallback(req.callback, result);
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : String(e));
+      setFailedFor(selectedAccount);
       setStatus('error');
     }
   }
@@ -452,7 +456,7 @@ function Sign() {
         </pre>
       </details>
 
-      {status === 'error' && (
+      {status === 'error' && failedFor === selectedAccount && (
         <div role="alert" className={alertError}>
           <div className="font-semibold">{t('sign.failure_title')}</div>
           <div className="mt-1">{`${t('sign.error_message')}: ${errorMsg}`}</div>
@@ -460,10 +464,20 @@ function Sign() {
       )}
 
       <div className="flex flex-col gap-2.5">
+        {/* Who has to sign, read before the account list open below it. */}
+        {authority && signerMismatch && (
+          <div className="text-[13px] text-warn">
+            <Sentence
+              k="sign.must_be_signed_by"
+              values={{ account: `@${req.signer}` }}
+              bold
+            />
+          </div>
+        )}
         {authority && selectedAccount && (
           // Under a signer mismatch the selected account is NOT signing, so
           // the row must not say it is; it names the selection and the warning
-          // below names who has to sign.
+          // above names who has to sign.
           <CurrentAccount
             username={selectedAccount}
             label={
@@ -471,26 +485,12 @@ function Sign() {
             }
             next={here()}
             busy={status === 'signing'}
+            // The account that has to sign may be on this device: the list
+            // is open to pick it.
+            defaultOpen={signerMismatch}
           />
         )}
-        {!authority ? null : signerMismatch ? (
-          <>
-            <div className="text-[13px] text-warn">
-              <Sentence
-                k="sign.must_be_signed_by"
-                values={{ account: `@${req.signer}` }}
-                bold
-              />
-            </div>
-            <Link
-              to="/accounts"
-              search={{ next: here() }}
-              className={btnPrimary}
-            >
-              {t('login.switch_an_account')}
-            </Link>
-          </>
-        ) : !selectedAccount ? (
+        {!authority || signerMismatch ? null : !selectedAccount ? (
           // `next` carries the request through import and unlock, as the
           // consent screen does. Without it a passcode user arriving from an
           // app deep link unlocked and landed on the account list, request gone.

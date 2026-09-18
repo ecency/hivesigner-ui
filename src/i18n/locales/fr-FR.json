@@ -54,14 +54,11 @@
     "delete": "Retirer de Hivesigner",
     "unlock": "Déverrouiller",
     "add_another": "Ajouter un autre compte",
-    "current": "Actuel",
-    "unlocked": "Déverrouillé",
-    "protected": "Protégé",
+    "search": "Rechercher des comptes",
     "no_passcode": "Sans code d’accès",
     "passcode": "Code d’accès",
     "remove_confirm": "Retirer {username} de cet appareil ? Les clés de ce compte enregistrées ici seront supprimées.",
-    "remove_failed": "Retiré pour cette session uniquement : le stockage n’est pas disponible, ce compte réapparaîtra donc quand vous rechargerez la page.",
-    "unlock_account": "Déverrouiller {account}"
+    "remove_failed": "Retiré pour cette session uniquement : le stockage n’est pas disponible, ce compte réapparaîtra donc quand vous rechargerez la page."
   },
   "apps": {
     "self_declared": "Toutes les informations ci-dessus sont publiées par le compte de l’application lui-même. Hivesigner n’en vérifie aucune.",

@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import { Handle, Sentence } from '@/components/Untranslated';
 import {
   alertError,
@@ -15,12 +16,13 @@ import {
   page,
 } from '@/components/ui';
 
-import { getKeys } from '@/lib/accounts';
+import { getKeys, stillSelected } from '@/lib/accounts';
 import { type Account, getAccount } from '@/lib/hive';
 import { isValidRedirectUri } from '@/lib/oauth';
 import { accountKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // Edit the selected account's profile (account_update2 -> posting_json_metadata).
 // A profile-only edit needs the posting key. App accounts also register their
@@ -119,8 +121,14 @@ function Profile() {
   const [badUris, setBadUris] = useState('');
   const current =
     form !== null && formFor === (account?.name ?? null) ? form : initial;
+  // What a save sends is the form as it is when the save runs. Unlocking in
+  // the same click takes seconds, the fields stay editable meanwhile, and the
+  // click's own render would send what they held before (#146).
+  const formNow = useRef({ account: account?.name, values: current });
+  formNow.current = { account: account?.name, values: current };
 
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
+  const leave = useLeaveLatch();
   const postingKey = selectedAccount
     ? getKeys(selectedAccount)?.posting
     : undefined;
@@ -134,11 +142,22 @@ function Profile() {
   }
 
   async function save() {
+    // Read now, not from this render: an unlock in the same click has only
+    // just put the keys in memory.
+    const postingKey = selectedAccount
+      ? getKeys(selectedAccount)?.posting
+      : undefined;
     if (!account || !postingKey) return;
+    // Another tab chose someone else while the passcode was checked: the
+    // screen now shows their profile (blank until it loads), and saving it
+    // onto the account clicked would overwrite that one. Nothing is saved.
+    const shown = formNow.current;
+    if (!stillSelected(account.name) || shown.account !== account.name) return;
     // Reject a callback that could never be used: isRegisteredRedirect now
     // refuses non-loopback http, so saving one would register something the
     // consent screen silently declines. Fail here, where it can be corrected.
-    const bad = current.redirect_uris
+    const { values } = shown;
+    const bad = values.redirect_uris
       .split('\n')
       .map((u) => u.trim())
       .filter(Boolean)
@@ -158,7 +177,7 @@ function Profile() {
         {
           account: account.name,
           json_metadata: '',
-          posting_json_metadata: buildProfileMetadata(account, current),
+          posting_json_metadata: buildProfileMetadata(account, values),
           extensions: [],
         },
       ] as [string, Record<string, unknown>];
@@ -248,19 +267,24 @@ function Profile() {
       )}
 
       {/* Full width under the thumb on a phone, its own size once there is room. */}
-      {!isUnlocked || !postingKey ? (
-        // Keyed: its children differ from a plain label's, so React builds it
-        // fresh rather than reworking another link's text (translation-guard).
-        <Link
-          key="unlock"
-          to="/accounts"
-          className={`${btnPrimary} sm:self-start`}
-        >
+      {!isUnlocked ? (
+        // The passcode here, and the same click saves (#146).
+        <div className="sm:max-w-md">
+          <UnlockAndContinue
+            key={`unlock:${selectedAccount}`}
+            username={selectedAccount}
+            action={t('common.save')}
+            leave={leave}
+            onUnlocked={save}
+          />
+        </div>
+      ) : !postingKey ? (
+        <p className="m-0 text-[13px] text-warn">
           <Sentence
-            k="accounts.unlock_account"
+            k="sign.missing_posting_key"
             values={{ account: `@${selectedAccount}` }}
           />
-        </Link>
+        </p>
       ) : (
         <button
           type="button"

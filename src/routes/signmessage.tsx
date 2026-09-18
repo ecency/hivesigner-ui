@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import {
   alertError,
   btnPrimary,
@@ -23,6 +24,7 @@ import {
   type SignedMessagePayload,
 } from '@/lib/message-token';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // Sign a message with one of the selected account's keys and share a
 // verification token/link. Uses the shared message-token primitive so the
@@ -59,15 +61,32 @@ function SignMessage() {
   const [error, setError] = useState<string | null>(null);
 
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
+  const leave = useLeaveLatch();
 
   if (!isUnlocked || heldRoles.length === 0) {
     return (
       <section className={page}>
         <h1 className={h1}>{t('message_signing.title')}</h1>
-        <p className={muted}>{t('message_signing.login_prompt')}</p>
-        <Link to="/accounts" className={linkClass}>
-          {t('footer.login')}
-        </Link>
+        {selectedAccount && !isUnlocked ? (
+          // Unlocked here (#146); the form follows. No "log in" prompt: the
+          // passcode is all that is asked.
+          <div className="sm:max-w-md">
+            <UnlockAndContinue
+              key={`unlock:${selectedAccount}`}
+              username={selectedAccount}
+              action={t('accounts.unlock')}
+              leave={leave}
+              onUnlocked={() => {}}
+            />
+          </div>
+        ) : (
+          <>
+            <p className={muted}>{t('message_signing.login_prompt')}</p>
+            <Link to="/accounts" className={linkClass}>
+              {t('footer.login')}
+            </Link>
+          </>
+        )}
       </section>
     );
   }

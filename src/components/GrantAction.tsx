@@ -282,6 +282,9 @@ export function GrantAction({
           and would otherwise be squeezed beside Cancel from sm up. */}
       {askForKey && selectedAccount && (
         <AddActiveKey
+          // One form per account: what was typed for another (and its
+          // failure) never shows under the one picked since (#146).
+          key={`add-key:${selectedAccount}`}
           username={selectedAccount}
           {...(unlockedWith?.account === selectedAccount && {
             passcode: unlockedWith.passcode,

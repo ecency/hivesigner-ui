@@ -3,6 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
+import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import { Handle } from '@/components/Untranslated';
 import {
   btnGhost,
@@ -19,6 +20,7 @@ import { getKeys } from '@/lib/accounts';
 import { type Account, getAccount, type KeyRole } from '@/lib/hive';
 import { accountKey } from '@/lib/query-keys';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // View the selected account's authorities: the key/account auths on each role,
 // and (for roles this device holds) reveal the private key.
@@ -30,7 +32,7 @@ const ROLES: Exclude<KeyRole, 'memo'>[] = ['owner', 'active', 'posting'];
 
 function Auths() {
   const { t } = useTranslation();
-  const { selectedAccount } = useAccounts();
+  const { selectedAccount, unlocked } = useAccounts();
   const { data: account } = useQuery({
     queryKey: accountKey(selectedAccount),
     queryFn: (): Promise<Account | null> =>
@@ -39,6 +41,7 @@ function Auths() {
   });
   const keys = selectedAccount ? getKeys(selectedAccount) : null;
   const [revealed, setRevealed] = useState<KeyRole | null>(null);
+  const leave = useLeaveLatch();
 
   if (!selectedAccount) {
     return (
@@ -59,6 +62,19 @@ function Auths() {
           <Handle name={selectedAccount} />
         </span>
       </h1>
+
+      {!unlocked.includes(selectedAccount) && (
+        // The keys on this device show once it is unlocked, here (#146).
+        <div className="sm:max-w-md">
+          <UnlockAndContinue
+            key={`unlock:${selectedAccount}`}
+            username={selectedAccount}
+            action={t('accounts.unlock')}
+            leave={leave}
+            onUnlocked={() => {}}
+          />
+        </div>
+      )}
 
       <div className={cardGrid}>
         {ROLES.map((role) => {

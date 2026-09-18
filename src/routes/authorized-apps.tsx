@@ -3,6 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Avatar } from '@/components/Avatar';
+import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import {
   alertError,
   cardGrid,
@@ -13,12 +14,14 @@ import {
   mutedXs,
   page,
 } from '@/components/ui';
-import { getKeys } from '@/lib/accounts';
+import { readAccountNow } from '@/lib/account-now';
+import { getKeys, stillSelected } from '@/lib/accounts';
 import { authorizedApps, buildRevokeOperation } from '@/lib/grant';
 import { type Account, getAccount } from '@/lib/hive';
 import { accountKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // The authorized-apps manager (#106 pain #3): every app that can post as the
 // selected account, with revoke on each row. Revoking is an account_update with
@@ -36,6 +39,7 @@ function AuthorizedApps() {
   const qc = useQueryClient();
   const [busyApp, setBusyApp] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const leave = useLeaveLatch();
 
   const { data: account } = useQuery({
     queryKey: accountKey(selectedAccount),
@@ -59,12 +63,33 @@ function AuthorizedApps() {
   const apps = account ? authorizedApps(account) : [];
 
   async function revoke(app: string) {
-    if (!account || !activeKey) return;
+    const left = leave.mark();
+    const name = selectedAccount;
+    if (!name || !activeKey) return;
     setError(null);
     setBusyApp(app);
     try {
-      const op = buildRevokeOperation(account, app);
-      if (op) await broadcastOperations([op], activeKey, account.name);
+      // Built from a fresh read by name, never the cached copy: the
+      // account_update carries the WHOLE authority, and a grant made
+      // elsewhere since the page loaded would be undone by a stale one.
+      let fresh: Account | null;
+      try {
+        fresh = await readAccountNow(qc, name);
+      } catch {
+        setError(t('authorize.read_failed'));
+        return;
+      }
+      // The read is awaited: a user who left meanwhile, or whose other tab
+      // selected someone else, gets no on-chain change for this click.
+      if (left() || !stillSelected(name)) return;
+      // No account came back (a lagging node): nothing to build on.
+      if (!fresh) {
+        setError(t('common.try_again'));
+        return;
+      }
+      // null: the app holds no authority any more, nothing to revoke.
+      const op = buildRevokeOperation(fresh, app);
+      if (op) await broadcastOperations([op], activeKey, fresh.name);
       await qc.invalidateQueries({ queryKey: accountKey(selectedAccount) });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -93,6 +118,19 @@ function AuthorizedApps() {
         </div>
       )}
 
+      {!isUnlocked && (
+        // Unlocked in place (#146); the revoke buttons follow.
+        <div className="sm:max-w-md">
+          <UnlockAndContinue
+            key={`unlock:${selectedAccount}`}
+            username={selectedAccount}
+            action={t('accounts.unlock')}
+            leave={leave}
+            onUnlocked={() => {}}
+          />
+        </div>
+      )}
+
       {apps.length === 0 ? (
         <p className={muted}>{t('apps.none_authorized')}</p>
       ) : (
@@ -106,12 +144,15 @@ function AuthorizedApps() {
               >
                 <bdi>{`@${app}`}</bdi>
               </div>
-              {!isUnlocked || !activeKey ? (
+              {!isUnlocked ? null : !activeKey ? (
+                // Locked, the passcode above is the one next step. Without
+                // the active key, the revoke page asks for it in place.
                 <Link
-                  to="/accounts"
-                  className="shrink-0 text-[13px] font-semibold text-brand-ink"
+                  to="/revoke/$username"
+                  params={{ username: app }}
+                  className={revokeButton}
                 >
-                  {t('accounts.unlock')}
+                  {t('revoke.revoke')}
                 </Link>
               ) : (
                 <button

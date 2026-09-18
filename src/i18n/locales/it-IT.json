@@ -54,14 +54,11 @@
     "delete": "Rimuovi da Hivesigner",
     "unlock": "Sblocca",
     "add_another": "Aggiungi un altro account",
-    "current": "Attuale",
-    "unlocked": "Sbloccato",
-    "protected": "Protetto",
+    "search": "Cerca account",
     "no_passcode": "Nessun codice di accesso",
     "passcode": "Codice di accesso",
     "remove_confirm": "Rimuovere {username} da questo dispositivo? Le chiavi di questo account salvate qui verranno eliminate.",
-    "remove_failed": "Rimosso solo per questa sessione: l’archiviazione non è disponibile, quindi questo account ricomparirà quando ricarichi la pagina.",
-    "unlock_account": "Sblocca {account}"
+    "remove_failed": "Rimosso solo per questa sessione: l’archiviazione non è disponibile, quindi questo account ricomparirà quando ricarichi la pagina."
   },
   "apps": {
     "self_declared": "Tutte le informazioni qui sopra sono pubblicate dall’account stesso dell’app. Hivesigner non ne verifica nessuna.",

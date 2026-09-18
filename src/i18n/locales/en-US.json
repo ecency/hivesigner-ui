@@ -54,14 +54,11 @@
     "delete": "Remove from Hivesigner",
     "unlock": "Unlock",
     "add_another": "Add another account",
-    "current": "Current",
-    "unlocked": "Unlocked",
-    "protected": "Protected",
+    "search": "Search accounts",
     "no_passcode": "No passcode",
     "passcode": "Passcode",
     "remove_confirm": "Remove {username} from this device? Its keys here will be deleted.",
-    "remove_failed": "Removed for this session only: storage is unavailable, so this account will return when you reload.",
-    "unlock_account": "Unlock {account}"
+    "remove_failed": "Removed for this session only: storage is unavailable, so this account will return when you reload."
   },
   "apps": {
     "self_declared": "Everything above is published by the app account itself. Hivesigner does not verify any of it.",

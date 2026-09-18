@@ -9,7 +9,7 @@ vi.mock('@tanstack/react-router', async () =>
 );
 
 import { PrivateKey } from '@ecency/sdk/hive';
-import { _resetKeyCache, addAccount } from '@/lib/accounts';
+import { _resetKeyCache, addAccount, lockAccount } from '@/lib/accounts';
 import { decodeToken } from '@/lib/message-token';
 import { Route } from './signmessage';
 
@@ -37,6 +37,24 @@ describe('/signmessage', () => {
       '/accounts',
     );
   });
+
+  it('a locked account is unlocked here, then the form shows (#146)', async () => {
+    await addAccount('alice', { posting: posting.toString() }, 'pass');
+    lockAccount('alice');
+    const user = userEvent.setup();
+    render(<SignMessage />);
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('link', { name: /login/i })).toBeNull();
+    // The passcode is all that is asked: no "log in and choose a key".
+    expect(
+      screen.queryByText(i18n.t('message_signing.login_prompt')),
+    ).toBeNull();
+    await user.type(screen.getByLabelText(i18n.t('accounts.passcode')), 'pass');
+    await user.click(screen.getByRole('button', { name: /^unlock$/i }));
+    expect(
+      await screen.findByRole('textbox', {}, { timeout: 10_000 }),
+    ).toBeInTheDocument();
+  }, 30_000);
 
   it('signs with the chosen authority and produces a token that recovers the signer', async () => {
     await addAccount('alice', {

@@ -54,14 +54,11 @@
     "delete": "Aus Hivesigner entfernen",
     "unlock": "Entsperren",
     "add_another": "Weiteres Konto hinzufügen",
-    "current": "Aktuell",
-    "unlocked": "Entsperrt",
-    "protected": "Geschützt",
+    "search": "Konten suchen",
     "no_passcode": "Kein Passcode",
     "passcode": "Passcode",
     "remove_confirm": "{username} von diesem Gerät entfernen? Die hier gespeicherten Schlüssel dieses Kontos werden gelöscht.",
-    "remove_failed": "Nur für diese Sitzung entfernt: Der Speicher ist nicht verfügbar, daher erscheint dieses Konto nach dem Neuladen wieder.",
-    "unlock_account": "{account} entsperren"
+    "remove_failed": "Nur für diese Sitzung entfernt: Der Speicher ist nicht verfügbar, daher erscheint dieses Konto nach dem Neuladen wieder."
   },
   "apps": {
     "self_declared": "Alle Angaben oben stammen vom App-Konto selbst. Hivesigner überprüft keine davon.",

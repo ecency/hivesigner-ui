@@ -54,14 +54,11 @@
     "delete": "Hivesigner roʻyxatidan olib tashlash",
     "unlock": "Qulfdan chiqarish",
     "add_another": "Boshqa hisob qoʻshish",
-    "current": "Joriy",
-    "unlocked": "Qulfdan chiqarilgan",
-    "protected": "Himoyalangan",
+    "search": "Hisoblarni qidirish",
     "no_passcode": "Himoya kodi yoʻq",
     "passcode": "Himoya kodi",
     "remove_confirm": "{username} hisobi ushbu qurilmadan olib tashlansinmi? Uning bu yerdagi kalitlari oʻchiriladi.",
-    "remove_failed": "Faqat shu seans uchun olib tashlandi: xotiradan foydalanib boʻlmayapti, shuning uchun sahifani qayta yuklaganingizda bu hisob yana paydo boʻladi.",
-    "unlock_account": "{account} hisobini qulfdan chiqarish"
+    "remove_failed": "Faqat shu seans uchun olib tashlandi: xotiradan foydalanib boʻlmayapti, shuning uchun sahifani qayta yuklaganingizda bu hisob yana paydo boʻladi."
   },
   "apps": {
     "self_declared": "Yuqoridagi barcha maʼlumotlar ilova hisobining oʻzi tomonidan eʼlon qilingan. Hivesigner ularning birortasini ham tekshirmaydi.",

@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import '../i18n';
+import i18n from '../i18n';
 
 vi.mock('@tanstack/react-router', async () =>
   (await import('../test-router-mock')).routerMock(),
@@ -11,13 +11,30 @@ vi.mock('@tanstack/react-router', async () =>
 const h = vi.hoisted(() => ({
   getAccount: vi.fn(),
   broadcastOperations: vi.fn(),
+  // Holds every unlock until released, when a test sets it.
+  unlockGate: null as null | Promise<void>,
 }));
+vi.mock('@/lib/keystore', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/lib/keystore')>();
+  return {
+    ...real,
+    readKeys: async (field: string, passcode?: string) => {
+      if (h.unlockGate) await h.unlockGate;
+      return real.readKeys(field, passcode);
+    },
+  };
+});
 vi.mock('@/lib/hive', () => ({ getAccount: h.getAccount }));
 vi.mock('@/lib/sign-tx', () => ({
   broadcastOperations: h.broadcastOperations,
 }));
 
-import { _resetKeyCache, addAccount } from '@/lib/accounts';
+import {
+  _resetKeyCache,
+  addAccount,
+  isUnlocked,
+  lockAccount,
+} from '@/lib/accounts';
 import { buildProfileMetadata, Route } from './profile';
 
 const Profile = (Route as unknown as { component: ComponentType }).component;
@@ -54,6 +71,7 @@ beforeEach(() => {
   h.getAccount.mockReset();
   h.broadcastOperations.mockReset();
   h.getAccount.mockResolvedValue(account);
+  h.unlockGate = null;
 });
 
 describe('buildProfileMetadata', () => {
@@ -156,16 +174,90 @@ describe('/profile', () => {
     expect(await screen.findByText(/saved/i)).toBeInTheDocument();
   });
 
-  it('offers unlock instead of save without a posting key', async () => {
+  it('says which key is missing instead of offering save without a posting key', async () => {
     await addAccount('alice', { active: '5Kactive' });
     renderPage();
     await waitFor(() =>
       expect(screen.getByLabelText(/^name/i)).toHaveValue('Alice'),
     );
     expect(screen.queryByRole('button', { name: /save/i })).toBeNull();
-    expect(screen.getByRole('link', { name: /unlock/i })).toHaveAttribute(
-      'href',
-      '/accounts',
-    );
+    expect(document.body.textContent).toMatch(/needs your posting key/i);
+    // Nothing on the account list would add it: no link there.
+    expect(screen.queryByRole('link', { name: /unlock/i })).toBeNull();
   });
+
+  it('a locked account: the passcode here, and the same click saves (#146)', async () => {
+    await addAccount('alice', { posting: '5Kposting' }, 'pass');
+    lockAccount('alice');
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/^name/i)).toHaveValue('Alice'),
+    );
+    await user.clear(screen.getByLabelText(/^name/i));
+    await user.type(screen.getByLabelText(/^name/i), 'Alice B');
+    await user.type(screen.getByLabelText(i18n.t('accounts.passcode')), 'pass');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops, key] = h.broadcastOperations.mock.calls[0];
+    expect(key).toBe('5Kposting');
+    expect(JSON.parse(ops[0][1].posting_json_metadata).profile.name).toBe(
+      'Alice B',
+    );
+  }, 30_000);
+
+  it('saves what the form holds when the unlock ends, not when it was clicked', async () => {
+    await addAccount('alice', { posting: '5Kposting' }, 'pass');
+    lockAccount('alice');
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    let release = () => {};
+    h.unlockGate = new Promise<void>((r) => {
+      release = r;
+    });
+    const user = userEvent.setup();
+    renderPage();
+    const name = () => screen.getByLabelText(/^name/i);
+    await waitFor(() => expect(name()).toHaveValue('Alice'));
+    await user.type(screen.getByLabelText(i18n.t('accounts.passcode')), 'pass');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    // Typed while the passcode is checked: the fields stay editable.
+    await user.type(name(), ' B');
+    release();
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops] = h.broadcastOperations.mock.calls[0];
+    expect(JSON.parse(ops[0][1].posting_json_metadata).profile.name).toBe(
+      'Alice B',
+    );
+  }, 30_000);
+
+  it('saves nothing when another tab chose someone else during the unlock', async () => {
+    await addAccount('alice', { posting: '5Kposting' }, 'pass');
+    await addAccount('bob', { posting: '5Kbob' }, 'bob-pass');
+    // A fresh session: this tab has made no choice of its own, so the one
+    // in storage (another tab's) is adopted when the unlock lands.
+    _resetKeyCache();
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    let release = () => {};
+    h.unlockGate = new Promise<void>((r) => {
+      release = r;
+    });
+    const user = userEvent.setup();
+    renderPage();
+    const name = () => screen.getByLabelText(/^name/i);
+    await waitFor(() => expect(name()).toHaveValue('Alice'));
+    await user.type(name(), ' B');
+    await user.type(screen.getByLabelText(i18n.t('accounts.passcode')), 'pass');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    const raw = JSON.parse(localStorage.getItem('vuex__accounts') as string);
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({ ...raw, selectedAccount: 'bob' }),
+    );
+    release();
+    await waitFor(() => expect(isUnlocked('alice')).toBe(true));
+    await new Promise((r) => setTimeout(r, 50));
+    // Neither bob's form onto alice, nor alice's edit behind the user's back.
+    expect(h.broadcastOperations).not.toHaveBeenCalled();
+  }, 30_000);
 });

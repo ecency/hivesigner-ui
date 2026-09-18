@@ -54,14 +54,11 @@
     "delete": "Verwijderen uit Hivesigner",
     "unlock": "Ontgrendelen",
     "add_another": "Nog een account toevoegen",
-    "current": "Huidig",
-    "unlocked": "Ontgrendeld",
-    "protected": "Beveiligd",
+    "search": "Accounts zoeken",
     "no_passcode": "Geen toegangscode",
     "passcode": "Toegangscode",
     "remove_confirm": "{username} van dit apparaat verwijderen? De sleutels van dit account op dit apparaat worden gewist.",
-    "remove_failed": "Alleen voor deze sessie verwijderd: de opslag is niet beschikbaar, dus dit account komt terug als je de pagina herlaadt.",
-    "unlock_account": "{account} ontgrendelen"
+    "remove_failed": "Alleen voor deze sessie verwijderd: de opslag is niet beschikbaar, dus dit account komt terug als je de pagina herlaadt."
   },
   "apps": {
     "self_declared": "Alles hierboven is gepubliceerd door het app-account zelf. Hivesigner controleert hier niets van.",
