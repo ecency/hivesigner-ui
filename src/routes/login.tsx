@@ -61,12 +61,16 @@ function LocalLogin({ next }: { next?: string }) {
   // here) is named below with a Continue: the page does not move on for an
   // account the user did not sign in with here.
   const [moving, setMoving] = useState(isUnlocked);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: the target is fixed for this page (remountDeps)
   useEffect(() => {
     // In place of this page: Back from the target must not land on a sign-in
     // that sends the user straight on again.
-    if (moving) navigate({ to: dest.pathname, search, replace: true } as never);
-  }, [moving]);
+    if (moving)
+      navigate({
+        to: dest.pathname,
+        search: dest.search ? parseSearch(dest.search) : {},
+        replace: true,
+      } as never);
+  }, [moving, dest.pathname, dest.search, navigate]);
   const leave = useLeaveLatch();
 
   if (moving) return <section className={page}>…</section>;

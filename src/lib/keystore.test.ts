@@ -4,6 +4,7 @@ import {
   encodePlain,
   encryptKeys,
   isEncrypted,
+  isWrongPasscode,
   type Keys,
   needsUpgrade,
   readKeys,
@@ -102,5 +103,45 @@ describe('migration', () => {
     const field = await writeKeys(PLAIN_KEYS);
     expect(detectFormat(field)).toBe('plain');
     expect(await readKeys(field)).toEqual(PLAIN_KEYS);
+  });
+});
+
+describe('telling a wrong passcode from a record that cannot be read', () => {
+  // The screens say "Wrong passcode" only for this, and show any other error
+  // as it is. Both formats' messages must count: a legacy account's user
+  // types the wrong passcode as often as anyone.
+  const rejection = (p: Promise<unknown>) =>
+    p.then(
+      () => {
+        throw new Error('expected a rejection');
+      },
+      (e: unknown) => e,
+    );
+
+  it('a legacy triplesec account with the wrong passcode', async () => {
+    expect(
+      isWrongPasscode(await rejection(readKeys(TRIPLESEC_FIELD, 'nope'))),
+    ).toBe(true);
+  });
+
+  it('a v1 envelope with the wrong passcode', async () => {
+    const field = await encryptKeys(PLAIN_KEYS, 'right');
+    expect(isWrongPasscode(await rejection(readKeys(field, 'other')))).toBe(
+      true,
+    );
+  });
+
+  it('not a record that fails for another reason', async () => {
+    const envelope = JSON.parse(await encryptKeys(PLAIN_KEYS, 'right'));
+    envelope.kdf.N = 2 ** 30;
+    expect(
+      isWrongPasscode(
+        await rejection(readKeys(JSON.stringify(envelope), 'right')),
+      ),
+    ).toBe(false);
+    expect(isWrongPasscode(await rejection(readKeys(TRIPLESEC_FIELD)))).toBe(
+      false,
+    );
+    expect(isWrongPasscode('wrong passcode')).toBe(false);
   });
 });
