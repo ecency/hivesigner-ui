@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentType } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -34,6 +34,7 @@ import {
   addAccount,
   isUnlocked,
   lockAccount,
+  selectAccount,
 } from '@/lib/accounts';
 import { buildProfileMetadata, Route } from './profile';
 
@@ -260,4 +261,146 @@ describe('/profile', () => {
     // Neither bob's form onto alice, nor alice's edit behind the user's back.
     expect(h.broadcastOperations).not.toHaveBeenCalled();
   }, 30_000);
+
+  // Saved elsewhere after the page loaded: another app's profile edit and
+  // metadata this form does not show.
+  const changedElsewhere = {
+    ...account,
+    posting_json_metadata: JSON.stringify({
+      profile: {
+        name: 'Alice',
+        about: 'written elsewhere',
+        website: 'https://a.example',
+        type: 'app',
+        redirect_uris: ['https://a.example/cb'],
+        pinned: 'post-1',
+      },
+      other: { keep: 'newer' },
+    }),
+  };
+
+  async function editNameAndSave() {
+    const user = userEvent.setup();
+    const name = () => screen.getByLabelText(/^name/i);
+    await waitFor(() => expect(name()).toHaveValue('Alice'));
+    await user.clear(name());
+    await user.type(name(), 'Alice Two');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+  }
+
+  it('lays the edited fields over the profile as the chain has it at the save', async () => {
+    await addAccount('alice', { posting: '5Kposting' });
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    h.getAccount
+      .mockResolvedValueOnce(account)
+      .mockResolvedValue(changedElsewhere);
+    renderPage();
+    await editNameAndSave();
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops] = h.broadcastOperations.mock.calls[0];
+    const meta = JSON.parse(ops[0][1].posting_json_metadata);
+    expect(meta.profile.name).toBe('Alice Two');
+    // Left alone here, so what was saved elsewhere stays.
+    expect(meta.profile.about).toBe('written elsewhere');
+    expect(meta.profile.pinned).toBe('post-1');
+    expect(meta.other).toEqual({ keep: 'newer' });
+  });
+
+  it('saves nothing when the account cannot be read at the save', async () => {
+    await addAccount('alice', { posting: '5Kposting' });
+    h.getAccount
+      .mockResolvedValueOnce(account)
+      .mockRejectedValue(new Error('node down'));
+    renderPage();
+    await editNameAndSave();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('authorize.read_failed'),
+    );
+    expect(h.broadcastOperations).not.toHaveBeenCalled();
+  });
+
+  it('saves nothing when no account comes back at the save', async () => {
+    await addAccount('alice', { posting: '5Kposting' });
+    h.getAccount.mockResolvedValueOnce(account).mockResolvedValue(null);
+    renderPage();
+    await editNameAndSave();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('common.try_again'),
+    );
+    expect(h.broadcastOperations).not.toHaveBeenCalled();
+  });
+
+  it('keeps edits with their account: a switch shows and saves the new one as it is', async () => {
+    await addAccount('alice', { posting: '5Kposting' });
+    await addAccount('bob', { posting: '5Kbob' });
+    selectAccount('alice');
+    const bobAccount = {
+      ...account,
+      name: 'bob',
+      posting_json_metadata: JSON.stringify({
+        profile: { name: 'Bob', about: 'bob here' },
+      }),
+    };
+    h.getAccount.mockImplementation(async (n: string) =>
+      n === 'bob' ? bobAccount : account,
+    );
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    const user = userEvent.setup();
+    renderPage();
+    const name = () => screen.getByLabelText(/^name/i);
+    await waitFor(() => expect(name()).toHaveValue('Alice'));
+    await user.clear(name());
+    await user.type(name(), 'Alice Two');
+    act(() => selectAccount('bob'));
+    await waitFor(() => expect(name()).toHaveValue('Bob'));
+    const about = screen.getByLabelText(/^about/i);
+    await user.clear(about);
+    await user.type(about, 'new about');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops, key, signer] = h.broadcastOperations.mock.calls[0];
+    expect([key, signer]).toEqual(['5Kbob', 'bob']);
+    const meta = JSON.parse(ops[0][1].posting_json_metadata);
+    // Nothing typed for alice reaches bob's profile.
+    expect(meta.profile).toMatchObject({ name: 'Bob', about: 'new about' });
+  });
+
+  it('saves what was typed while the account was read', async () => {
+    await addAccount('alice', { posting: '5Kposting' });
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    let release = (_: unknown) => {};
+    h.getAccount.mockResolvedValueOnce(account).mockReturnValue(
+      new Promise((r) => {
+        release = r;
+      }),
+    );
+    renderPage();
+    await editNameAndSave();
+    await waitFor(() => expect(h.getAccount).toHaveBeenCalledTimes(2));
+    await userEvent.setup().type(screen.getByLabelText(/^name/i), '!');
+    release(account);
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops] = h.broadcastOperations.mock.calls[0];
+    expect(JSON.parse(ops[0][1].posting_json_metadata).profile.name).toBe(
+      'Alice Two!',
+    );
+  });
+
+  it('saves nothing for a user who left while the account was read', async () => {
+    await addAccount('alice', { posting: '5Kposting' });
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    let release = (_: unknown) => {};
+    h.getAccount.mockResolvedValueOnce(account).mockReturnValue(
+      new Promise((r) => {
+        release = r;
+      }),
+    );
+    const view = renderPage();
+    await editNameAndSave();
+    await waitFor(() => expect(h.getAccount).toHaveBeenCalledTimes(2));
+    view.unmount();
+    release(account);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(h.broadcastOperations).not.toHaveBeenCalled();
+  });
 });
