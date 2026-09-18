@@ -188,6 +188,9 @@ test('Switch account queued behind a local sign-in wins', async ({ page }) => {
   });
   await settle(6000);
   expect(new URL(page.url()).pathname).toBe('/accounts');
-  await expect(page.locator('main [data-testid="account-row"]')).toHaveCount(1);
+  const row = page.locator('main [data-testid="account-row"]');
+  await expect(row).toHaveCount(1);
+  // The sign-in click landed too: the account was unlocked, not just left.
+  await expect(row).toContainText(/unlocked/i);
   expect(errors).toEqual([]);
 });

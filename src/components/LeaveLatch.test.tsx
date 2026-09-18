@@ -64,6 +64,8 @@ import {
   addAccount,
   getKeys,
   lockAccount,
+  selectAccount,
+  unlockAccount,
 } from '@/lib/accounts';
 import { Route as LoginRoute } from '@/routes/login';
 import { AuthorizeConsent } from './AuthorizeConsent';
@@ -108,7 +110,7 @@ function deferred() {
 
 /** The app's shape in miniature: the request screen, and a lazy /accounts
     whose chunk loads only when `accountsChunk` resolves. */
-function renderAt(url: string, accountsChunk: Promise<void>) {
+function renderAt(url: string | string[], accountsChunk: Promise<void>) {
   const root = createRootRoute({ component: () => <Outlet /> });
   const grant = createRoute({
     getParentRoute: () => root,
@@ -160,7 +162,10 @@ function renderAt(url: string, accountsChunk: Promise<void>) {
   });
   const router = createRouter({
     routeTree: root.addChildren([grant, consent, login, profile, accounts]),
-    history: createMemoryHistory({ initialEntries: [url] }),
+    history: createMemoryHistory({
+      initialEntries: [url].flat(),
+      initialIndex: [url].flat().length - 1,
+    }),
   });
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -393,6 +398,39 @@ describe('local sign-in: Switch account pressed while the passcode is checked', 
     ).toBeInTheDocument();
     await settle();
     expect(router.state.location.pathname).toBe('/accounts');
+  });
+
+  it('another tab choosing a locked account meanwhile: asks for that one, goes nowhere', async () => {
+    await addAccount('bob', { posting: posting.toString() }, 'bob-passcode');
+    lockAccount('bob');
+    selectAccount('alice');
+    const unlock = deferred();
+    chain.unlockGate = unlock.promise;
+    const router = renderAt('/login?redirect=%2Fprofile', deferred().promise);
+    await signIn();
+    // What this tab adopts from another tab's choice.
+    selectAccount('bob');
+    unlock.resolve();
+    await waitFor(() => expect(getKeys('alice')).toBeTruthy());
+    await settle();
+    expect(router.latestLocation.pathname).toBe('/login');
+    expect(screen.getByTestId('current-account')).toHaveTextContent('@bob');
+    expect(passcodeField()).toBeInTheDocument();
+  });
+
+  it('an account unlocked already moves on in place of the sign-in, so Back does not bounce', async () => {
+    await unlockAccount('alice', 'correct-passcode');
+    const router = renderAt(
+      ['/authorize/ecency.app', '/login?redirect=%2Fprofile'],
+      deferred().promise,
+    );
+    expect(
+      await screen.findByRole('heading', { name: 'profile page' }),
+    ).toBeInTheDocument();
+    router.history.back();
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe('/authorize/ecency.app'),
+    );
   });
 
   it('back before the list loaded: not sent on, but the way on is there', async () => {

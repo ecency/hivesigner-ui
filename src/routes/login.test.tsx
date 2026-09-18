@@ -91,7 +91,11 @@ describe('/login flow selection', () => {
     };
     render(<Login />);
     await waitFor(() =>
-      expect(h.navigate).toHaveBeenCalledWith({ to: '/profile', search: {} }),
+      expect(h.navigate).toHaveBeenCalledWith({
+        to: '/profile',
+        search: {},
+        replace: true,
+      }),
     );
   });
 
@@ -103,7 +107,11 @@ describe('/login flow selection', () => {
     };
     render(<Login />);
     await waitFor(() =>
-      expect(h.navigate).toHaveBeenCalledWith({ to: '/', search: {} }),
+      expect(h.navigate).toHaveBeenCalledWith({
+        to: '/',
+        search: {},
+        replace: true,
+      }),
     );
   });
 
@@ -116,7 +124,11 @@ describe('/login flow selection', () => {
     };
     render(<Login />);
     await waitFor(() => expect(h.navigate).toHaveBeenCalled());
-    expect(h.navigate).toHaveBeenCalledWith({ to: '/', search: {} });
+    expect(h.navigate).toHaveBeenCalledWith({
+      to: '/',
+      search: {},
+      replace: true,
+    });
   });
 
   it('client_id + redirect_uri is APP CONSENT', () => {

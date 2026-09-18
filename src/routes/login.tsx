@@ -5,6 +5,7 @@ import { AuthorizeConsent } from '@/components/AuthorizeConsent';
 import { CurrentAccount } from '@/components/CurrentAccount';
 import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import { formColumn, h1, link, muted, page } from '@/components/ui';
+import { stillSelected } from '@/lib/accounts';
 import { resolveInternalPath } from '@/lib/internal-path';
 import {
   isLocalLoginRequest,
@@ -57,7 +58,9 @@ function LocalLogin({ next }: { next?: string }) {
   const go = () => {
     if (sent.current) return;
     sent.current = true;
-    navigate({ to: dest.pathname, search } as never);
+    // In place of this page: Back from the target must not land on a sign-in
+    // that sends the user straight on again.
+    navigate({ to: dest.pathname, search, replace: true } as never);
   };
   const leave = useLeaveLatch();
   // Set when this page's own passcode opened the account: that click moves
@@ -136,7 +139,11 @@ function LocalLogin({ next }: { next?: string }) {
             onOpened={() => {
               clicked.current = true;
             }}
-            onUnlocked={go}
+            onUnlocked={() => {
+              // Not when another tab chose someone else meanwhile: this page
+              // now asks for that account.
+              if (stillSelected(selectedAccount)) go();
+            }}
           />
         </>
       ) : (
