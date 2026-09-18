@@ -208,7 +208,9 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
         try {
           loaded = await readAccountNow(queryClient, selectedAccount);
         } catch {
-          setError(t('authorize.read_failed'));
+          // Nothing was done yet: a user who left meanwhile is not shown a
+          // failure on the screen they abandoned.
+          if (!left()) setError(t('authorize.read_failed'));
           return;
         }
         // Re-check here, BEFORE the broadcast. The read is awaited, so the

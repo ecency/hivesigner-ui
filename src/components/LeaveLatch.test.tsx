@@ -27,6 +27,7 @@ const chain = vi.hoisted(() => ({
   unlockGate: null as null | Promise<void>,
   readGate: null as null | Promise<void>,
   grantGate: null as null | Promise<void>,
+  readFails: false,
 }));
 vi.mock('@/lib/hive', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/hive')>()),
@@ -190,11 +191,13 @@ beforeEach(async () => {
   chain.unlockGate = null;
   chain.readGate = null;
   chain.grantGate = null;
+  chain.readFails = false;
   chain.getAccount.mockReset();
   chain.getAccount.mockImplementation(async (name: string) => {
     if (name === 'ecency.app') return appAccount;
     if (name === 'alice') {
       if (chain.readGate) await chain.readGate;
+      if (chain.readFails) throw new Error('node down');
       return alice();
     }
     return null;
@@ -305,6 +308,39 @@ describe('Cancel pressed while the unlock runs, the next page still loading', ()
     await waitFor(() => expect(again).toBeEnabled());
     await user.click(again);
     await waitFor(() => expect(chain.broadcastOperations).toHaveBeenCalled());
+  });
+
+  it('consent: a read that fails after Cancel shows no error', async () => {
+    renderAt('/oauth2/authorize', deferred().promise);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^authorize$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    const read = deferred();
+    chain.readGate = read.promise;
+    const reads = aliceReads();
+    await user.click(button);
+    await waitFor(() => expect(aliceReads()).toBeGreaterThan(reads));
+    await user.click(screen.getByRole('link', { name: /cancel/i }));
+    chain.readFails = true;
+    read.resolve();
+    await settle();
+    // Still on screen while the account list loads, and quiet.
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('consent: a read that fails when the user stays says so (the harness can)', async () => {
+    renderAt('/oauth2/authorize', deferred().promise);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^authorize$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    chain.readFails = true;
+    await user.click(button);
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('authorize.read_failed'),
+    );
   });
 
   it('consent: hands the app no token and grants nothing', async () => {
