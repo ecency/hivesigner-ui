@@ -97,6 +97,35 @@ describe('buildProfileMetadata', () => {
     ]);
   });
 
+  it('writes a profile over metadata that is valid JSON but no object', () => {
+    const form = {
+      name: 'New',
+      about: '',
+      website: '',
+      location: '',
+      profile_image: '',
+      cover_image: '',
+      redirect_uris: '',
+    };
+    for (const posting_json_metadata of [
+      'null',
+      '[1,2]',
+      '"text"',
+      '{"profile":null}',
+      '{"profile":"abc"}',
+      '{"profile":[1]}',
+    ]) {
+      const out = JSON.parse(
+        buildProfileMetadata(
+          { ...account, posting_json_metadata } as never,
+          form,
+        ),
+      );
+      expect(out).not.toHaveProperty('0');
+      expect(out.profile).toEqual({ ...form, redirect_uris: undefined });
+    }
+  });
+
   it('removes redirect_uris entirely when the list is emptied', () => {
     const out = JSON.parse(
       buildProfileMetadata(account as never, {
@@ -387,6 +416,21 @@ describe('/profile', () => {
     expect(h.broadcastOperations).not.toHaveBeenCalled();
     expect(screen.getByLabelText(/redirect/i)).toHaveValue(
       'https://a.example/cb',
+    );
+  });
+
+  it('saves over metadata another app set to JSON null', async () => {
+    await addAccount('alice', { posting: '5Kposting' });
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    h.getAccount
+      .mockResolvedValueOnce(account)
+      .mockResolvedValue({ ...account, posting_json_metadata: 'null' });
+    renderPage();
+    await editNameAndSave();
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops] = h.broadcastOperations.mock.calls[0];
+    expect(JSON.parse(ops[0][1].posting_json_metadata).profile.name).toBe(
+      'Alice Two',
     );
   });
 

@@ -41,13 +41,27 @@ interface ProfileForm {
   redirect_uris: string;
 }
 
-function readProfile(account: Account | null | undefined): ProfileForm {
-  let profile: Record<string, unknown> = {};
+/** A JSON object as it is; anything else (null, an array, a string) as {}. */
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+/** The account's posting_json_metadata as an object. Another app may have
+    written anything there, valid JSON that is not an object included. */
+function metadataOf(
+  account: Account | null | undefined,
+): Record<string, unknown> {
   try {
-    profile = JSON.parse(account?.posting_json_metadata || '{}').profile ?? {};
+    return asRecord(JSON.parse(account?.posting_json_metadata || '{}'));
   } catch {
-    profile = {};
+    return {};
   }
+}
+
+function readProfile(account: Account | null | undefined): ProfileForm {
+  const profile = asRecord(metadataOf(account).profile);
   const s = (k: string) =>
     typeof profile[k] === 'string' ? (profile[k] as string) : '';
   return {
@@ -67,14 +81,9 @@ export function buildProfileMetadata(
   account: Account,
   form: ProfileForm,
 ): string {
-  let existing: Record<string, unknown> = {};
-  try {
-    existing = JSON.parse(account.posting_json_metadata || '{}');
-  } catch {
-    existing = {};
-  }
+  const existing = metadataOf(account);
   const profile: Record<string, unknown> = {
-    ...((existing.profile as Record<string, unknown>) ?? {}),
+    ...asRecord(existing.profile),
     name: form.name,
     about: form.about,
     website: form.website,
