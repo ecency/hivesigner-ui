@@ -13,6 +13,7 @@ import {
 } from '@/lib/oauth';
 import { parseSearch } from '@/lib/search';
 import { useAccounts } from '@/lib/use-accounts';
+import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // The LEGACY /login entry point, part of the published contract: third-party
 // apps and the hivesigner SDK link here, and /login-request/* redirects into it.
@@ -51,19 +52,40 @@ function LocalLogin({ next }: { next?: string }) {
   // malformed target is discarded rather than followed (resolveInternalPath).
   const dest = resolveInternalPath(next) ?? { pathname: '/', search: '' };
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
+  const search = dest.search ? parseSearch(dest.search) : {};
   const sent = useRef(false);
-
-  useEffect(() => {
-    if (!isUnlocked || sent.current) return;
+  const go = () => {
+    if (sent.current) return;
     sent.current = true;
-    navigate({
-      to: dest.pathname,
-      search: dest.search ? parseSearch(dest.search) : {},
-    } as never);
-  }, [isUnlocked, dest.pathname, dest.search, navigate]);
+    navigate({ to: dest.pathname, search } as never);
+  };
+  const leave = useLeaveLatch();
+  // Set when this page's own passcode opened the account: that click moves
+  // on (onUnlocked below) unless the user set off elsewhere meanwhile, and a
+  // Switch account clicked while the passcode was checked must not be
+  // overridden here.
+  const clicked = useRef(false);
+
+  // An account unlocked already (on arrival) moves on at once.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: go is new every render; sent keeps it to one navigation
+  useEffect(() => {
+    if (isUnlocked && !clicked.current) go();
+  }, [isUnlocked]);
 
   if (isUnlocked) {
-    return <section className={page}>…</section>;
+    // On its way. Only a user who left during the unlock and came back
+    // before the other page loaded stays here, and gets the way on.
+    return (
+      <section className={page}>
+        <Link
+          to={dest.pathname as never}
+          search={search as never}
+          className={link}
+        >
+          {t('common.continue')}
+        </Link>
+      </section>
+    );
   }
 
   const target = `${dest.pathname}${dest.search}`;
@@ -96,9 +118,9 @@ function LocalLogin({ next }: { next?: string }) {
           {t('accounts.add_another')}
         </Link>
       ) : selectedAccount ? (
-        // The passcode here (#145): once unlocked, the effect above moves on.
-        // Switching comes back to this page, not to the target, so a locked
-        // account picked on the list is unlocked here too.
+        // The passcode here (#145), then on to the target. Switching comes
+        // back to this page, not to the target, so a locked account picked
+        // on the list is unlocked here too.
         <>
           <CurrentAccount
             username={selectedAccount}
@@ -110,6 +132,11 @@ function LocalLogin({ next }: { next?: string }) {
             username={selectedAccount}
             action={t('authorize.sign_in')}
             autoFocus
+            leave={leave}
+            onOpened={() => {
+              clicked.current = true;
+            }}
+            onUnlocked={go}
           />
         </>
       ) : (

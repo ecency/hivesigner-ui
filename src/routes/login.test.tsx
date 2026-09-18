@@ -30,6 +30,10 @@ vi.mock('@tanstack/react-router', () => ({
     </a>
   ),
   useNavigate: () => h.navigate,
+  useRouter: () => ({
+    state: { location: { pathname: '/login', searchStr: '' } },
+    subscribe: () => () => {},
+  }),
 }));
 vi.mock('@/lib/use-accounts', () => ({ useAccounts: () => h.accounts }));
 // The consent screen is covered by its own tests; here we only care WHICH flow

@@ -85,15 +85,21 @@ async function addAccount(page: Page, name: string, passcode: string) {
   await page.waitForURL('**/accounts', { timeout: 20_000 });
 }
 
-/** The grant screen for an account locked by the reload, passcode typed,
-    with the account list's chunk held back and the two targets located. */
-async function openLockedGrant(page: Page) {
-  await page.goto('/authorize/new.app', { waitUntil: 'networkidle' });
+/** A screen for an account locked by the reload, passcode typed, with the
+    account list's chunk held back and the two targets located: the screen's
+    action and the link that leaves it. */
+async function openLocked(
+  page: Page,
+  url = '/authorize/new.app',
+  action = /^authorize$/i,
+  away = /^cancel$/i,
+) {
+  await page.goto(url, { waitUntil: 'networkidle' });
   const passcode = page.locator(`input[name="passcode-${USER}"]`);
   await passcode.fill(PASSCODE);
-  const authorize = page.getByRole('button', { name: /^authorize$/i });
+  const authorize = page.getByRole('button', { name: action });
   await expect(authorize).toBeEnabled();
-  const cancel = page.getByRole('link', { name: /^cancel$/i });
+  const cancel = page.getByRole('link', { name: away });
   await expect(cancel).toBeVisible();
   // From here on every lazy chunk takes seconds to arrive, so the screen
   // Cancel leaves stays mounted well past the unlock.
@@ -125,7 +131,7 @@ const settle = (ms: number) =>
 test('Cancel queued behind the unlock stops the grant', async ({ page }) => {
   const { broadcasts, errors } = await setUp(page);
   await addAccount(page, USER, PASSCODE);
-  const at = await openLockedGrant(page);
+  const at = await openLocked(page);
   // Sent together: the second click is queued while the first one's handler
   // is still deriving the key. Neither waits for anything in the page.
   await Promise.all([
@@ -151,7 +157,7 @@ test('the same click without Cancel grants (the harness can broadcast)', async (
 }) => {
   const { broadcasts, errors } = await setUp(page);
   await addAccount(page, USER, PASSCODE);
-  const at = await openLockedGrant(page);
+  const at = await openLocked(page);
   await page.mouse.click(at.authorize.x, at.authorize.y);
   await expect(page.locator('main output')).toContainText(/authorized/i, {
     timeout: 20_000,
@@ -159,5 +165,29 @@ test('the same click without Cancel grants (the harness can broadcast)', async (
   await settle(1000);
   expect(broadcasts()).toBe(1);
   expect(page.url()).toContain('/authorize/new.app');
+  expect(errors).toEqual([]);
+});
+
+test('Switch account queued behind a local sign-in wins', async ({ page }) => {
+  // The local sign-in moves on to its target once unlocked. A Switch account
+  // pressed during the unlock started first, so that is where the user goes.
+  const { errors } = await setUp(page);
+  await addAccount(page, USER, PASSCODE);
+  const at = await openLocked(
+    page,
+    '/login?redirect=%2Fauthorized-apps',
+    /^sign in$/i,
+    /switch/i,
+  );
+  await Promise.all([
+    page.mouse.click(at.authorize.x, at.authorize.y),
+    page.mouse.click(at.cancel.x, at.cancel.y),
+  ]);
+  await expect(page.locator(`input[name="passcode-${USER}"]`)).toHaveCount(0, {
+    timeout: 20_000,
+  });
+  await settle(6000);
+  expect(new URL(page.url()).pathname).toBe('/accounts');
+  await expect(page.locator('main [data-testid="account-row"]')).toHaveCount(1);
   expect(errors).toEqual([]);
 });

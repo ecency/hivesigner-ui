@@ -8,6 +8,8 @@ const rs = vi.hoisted(() => ({
   navigate: vi.fn(),
   // Holds every unlock until released, when a test sets it.
   unlockGate: null as null | Promise<void>,
+  // The leave latch's router subscription, to start a navigation away.
+  onBeforeNavigate: new Set<(e: unknown) => void>(),
 }));
 vi.mock('@/lib/keystore', async (importOriginal) => {
   const real = await importOriginal<typeof import('@/lib/keystore')>();
@@ -41,7 +43,10 @@ vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => rs.navigate,
   useRouter: () => ({
     state: { location: { pathname: '/accounts', searchStr: '' } },
-    subscribe: () => () => {},
+    subscribe: (_event: string, fn: (e: unknown) => void) => {
+      rs.onBeforeNavigate.add(fn);
+      return () => rs.onBeforeNavigate.delete(fn);
+    },
   }),
 }));
 
@@ -325,5 +330,68 @@ describe('a second choice made while an unlock runs', () => {
     await waitFor(() => expect(isUnlocked('bob')).toBe(true));
     await new Promise((r) => setTimeout(r, 20));
     expect(getState().selectedAccount).toBe('carol');
+    // And its passcode form is closed, not left filled in.
+    expect(document.querySelector('input[type="password"]')).toBeNull();
+  });
+});
+
+describe('an unlock that finishes after the user set off', () => {
+  beforeEach(() => {
+    rs.search = { next: '/oauth2/authorize?client_id=theapp' };
+  });
+
+  /** Renders the list and submits bob's passcode, the unlock held. */
+  async function unlockBobHeld() {
+    let release = () => {};
+    rs.unlockGate = new Promise<void>((r) => {
+      release = r;
+    });
+    const user = userEvent.setup();
+    render(<Accounts />);
+    const bob = screen
+      .getAllByTestId('account-row')
+      .find((row) => row.textContent?.includes('@bob')) as HTMLElement;
+    await user.click(within(bob).getByRole('button', { name: /^unlock$/i }));
+    await user.type(
+      within(bob).getByLabelText(/passcode/i) as HTMLElement,
+      'pass',
+    );
+    await user.click(within(bob).getAllByRole('button').at(-1)!);
+    return release;
+  }
+
+  it('chooses nothing and goes nowhere, and closes the form', async () => {
+    await addAccount('alice', { posting: '5Ka' });
+    await addAccount('bob', { active: '5Kbob' }, 'pass');
+    lockAccount('bob');
+    selectAccount('alice');
+    const release = await unlockBobHeld();
+    for (const fn of rs.onBeforeNavigate)
+      fn({ toLocation: { pathname: '/', searchStr: '' } });
+    release();
+    await waitFor(() => expect(isUnlocked('bob')).toBe(true));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(getState().selectedAccount).toBe('alice');
+    expect(rs.navigate).not.toHaveBeenCalled();
+    expect(document.querySelector('input[type="password"]')).toBeNull();
+  });
+
+  it('another tab choosing someone meanwhile does not undo this click', async () => {
+    await addAccount('alice', { posting: '5Ka' });
+    await addAccount('bob', { active: '5Kbob' }, 'pass');
+    await addAccount('carol', { posting: '5Kc' });
+    selectAccount('alice');
+    // As after a reload: nothing in memory, no choice made in this tab yet,
+    // so the stored choice is the one another tab can change.
+    _resetKeyCache();
+    const release = await unlockBobHeld();
+    const raw = JSON.parse(localStorage.getItem('vuex__accounts') as string);
+    localStorage.setItem(
+      'vuex__accounts',
+      JSON.stringify({ ...raw, selectedAccount: 'carol' }),
+    );
+    release();
+    await waitFor(() => expect(getState().selectedAccount).toBe('bob'));
+    expect(rs.navigate).toHaveBeenCalled();
   });
 });

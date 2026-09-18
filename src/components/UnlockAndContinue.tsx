@@ -52,8 +52,7 @@ export function UnlockAndContinue({
       which should not ask for what was typed a moment ago. Whatever it sets
       is in place in the same render as the unlocked screen. */
   onOpened?: (passcode: string | undefined, keys: Keys) => void;
-  /** The screen's action. A screen that moves on by itself once the
-      account is unlocked (the local login) has none. */
+  /** The screen's action (for the local login, moving on to its target). */
   onUnlocked?: () => void;
   /** The screen is not ready to act yet (an account read still running). */
   disabled?: boolean;

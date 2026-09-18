@@ -186,21 +186,24 @@ describe('what the field does not do', () => {
 
 describe('a protected record that fails for another reason', () => {
   it('says why, not "wrong passcode"', async () => {
+    // Still protected (the field stays), but its key-derivation cost is out
+    // of the range ever written, so it fails before any passcode is tried.
+    const raw = JSON.parse(localStorage.getItem('vuex__accounts') as string);
+    const envelope = JSON.parse(raw.accountsKeychains.alice.password);
+    envelope.kdf.N = 2 ** 30;
+    raw.accountsKeychains.alice.password = JSON.stringify(envelope);
+    localStorage.setItem('vuex__accounts', JSON.stringify(raw));
     const view = render(<Screen />);
-    const input = view.container.querySelector(
-      'input[type=password]',
-    ) as HTMLInputElement;
-    // Removed in another tab after this screen showed it.
-    localStorage.setItem(
-      'vuex__accounts',
-      JSON.stringify({ accountsKeychains: {}, selectedAccount: '' }),
-    );
     const user = userEvent.setup();
-    await user.type(input, 'correct-passcode');
+    await user.type(
+      view.container.querySelector('input[type=password]') as HTMLElement,
+      'correct-passcode',
+    );
     await user.click(view.getByRole('button', { name: 'Sign in' }));
     const alert = await view.findByRole('alert');
-    expect(alert.textContent).not.toBe(i18n.t('login.invalid_hs_password'));
-    expect(alert).toHaveTextContent(/no such account/);
+    expect(alert).toHaveTextContent(/unsupported key-derivation cost/);
+    // Nothing in the field to correct, but it is still there to try again.
+    expect(view.container.querySelector('input[type=password]')).toBeTruthy();
   });
 
   it('a wrong passcode still says so', async () => {

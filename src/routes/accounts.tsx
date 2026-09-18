@@ -21,7 +21,6 @@ import {
 } from '@/components/ui';
 import {
   accountIsEncrypted,
-  getState,
   isUnlocked,
   removeAccount,
   selectAccount,
@@ -43,6 +42,12 @@ export const Route = createFileRoute('/accounts')({
   validateSearch: (search: Record<string, unknown>): { next?: string } =>
     typeof search.next === 'string' ? { next: search.next } : {},
 });
+
+/** Counts the choices made on this page (a row clicked to switch or
+    unlock), so an unlock that finishes after a later one does not take it
+    back. This page's clicks only: another tab choosing someone else is not a
+    choice made here. */
+let choices = 0;
 
 function AccountRow({
   username,
@@ -69,8 +74,8 @@ function AccountRow({
    * the user set off elsewhere, this one is left unlocked but not chosen, and
    * nothing navigates.
    */
-  function stillWanted(left: () => boolean, chosen: string | null) {
-    return !left() && getState().selectedAccount === chosen;
+  function stillWanted(left: () => boolean, choice: number) {
+    return !left() && choice === choices;
   }
 
   function done() {
@@ -93,6 +98,7 @@ function AccountRow({
 
   async function activate() {
     if (unlocked) {
+      choices++;
       selectAccount(username);
       done();
       return;
@@ -104,11 +110,11 @@ function AccountRow({
     }
     // Plaintext but not yet in memory (e.g. just after a reload): load and select.
     const left = leave.mark();
-    const chosen = getState().selectedAccount;
+    const choice = ++choices;
     setBusy(true);
     try {
       await unlockAccount(username);
-      if (!stillWanted(left, chosen)) return;
+      if (!stillWanted(left, choice)) return;
       selectAccount(username);
       done();
     } catch (e) {
@@ -123,11 +129,11 @@ function AccountRow({
   async function submitUnlock() {
     setError(null);
     const left = leave.mark();
-    const chosen = getState().selectedAccount;
+    const choice = ++choices;
     setBusy(true);
     try {
       await unlockAccount(username, passcode);
-      if (!stillWanted(left, chosen)) {
+      if (!stillWanted(left, choice)) {
         flushSync(() => {
           setPasscode('');
           setUnlocking(false);

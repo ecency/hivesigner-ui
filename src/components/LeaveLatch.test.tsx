@@ -26,6 +26,7 @@ const chain = vi.hoisted(() => ({
   assign: vi.fn(),
   unlockGate: null as null | Promise<void>,
   readGate: null as null | Promise<void>,
+  grantGate: null as null | Promise<void>,
 }));
 vi.mock('@/lib/hive', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/hive')>()),
@@ -46,7 +47,10 @@ vi.mock('@/lib/sign-tx', () => ({
 }));
 vi.mock('@/lib/grant', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/grant')>()),
-  waitForGrant: async () => chain.granted,
+  waitForGrant: async () => {
+    if (chain.grantGate) await chain.grantGate;
+    return chain.granted;
+  },
 }));
 vi.mock('@/components/AppProfile', () => ({ AppProfile: () => null }));
 vi.mock('@sentry/browser', () => ({
@@ -61,6 +65,7 @@ import {
   getKeys,
   lockAccount,
 } from '@/lib/accounts';
+import { Route as LoginRoute } from '@/routes/login';
 import { AuthorizeConsent } from './AuthorizeConsent';
 import { GrantAction } from './GrantAction';
 
@@ -110,7 +115,13 @@ function renderAt(url: string, accountsChunk: Promise<void>) {
     path: '/authorize/$username',
     component: function Grant() {
       const { username } = grant.useParams();
-      return <GrantAction appName={username} mode="grant" />;
+      return (
+        <GrantAction
+          appName={username}
+          mode="grant"
+          query={grant.useSearch() as Record<string, string>}
+        />
+      );
     },
   });
   const consent = createRoute({
@@ -127,6 +138,17 @@ function renderAt(url: string, accountsChunk: Promise<void>) {
       />
     ),
   });
+  // The app's own /login screen (the same route id, so its hooks resolve).
+  const login = createRoute({
+    getParentRoute: () => root,
+    path: '/login',
+    component: LoginRoute.options.component,
+  });
+  const profile = createRoute({
+    getParentRoute: () => root,
+    path: '/profile',
+    component: () => <h1>profile page</h1>,
+  });
   const accounts = createRoute({
     getParentRoute: () => root,
     path: '/accounts',
@@ -137,7 +159,7 @@ function renderAt(url: string, accountsChunk: Promise<void>) {
     ),
   });
   const router = createRouter({
-    routeTree: root.addChildren([grant, consent, accounts]),
+    routeTree: root.addChildren([grant, consent, login, profile, accounts]),
     history: createMemoryHistory({ initialEntries: [url] }),
   });
   const client = new QueryClient({
@@ -162,6 +184,7 @@ beforeEach(async () => {
   chain.granted = false;
   chain.unlockGate = null;
   chain.readGate = null;
+  chain.grantGate = null;
   chain.getAccount.mockReset();
   chain.getAccount.mockImplementation(async (name: string) => {
     if (name === 'ecency.app') return appAccount;
@@ -330,5 +353,115 @@ describe('Cancel pressed while the unlock runs, the next page still loading', ()
       await screen.findByRole('button', { name: /^authorize$/i }),
     );
     await waitFor(() => expect(chain.broadcastOperations).toHaveBeenCalled());
+  });
+});
+
+describe('local sign-in: Switch account pressed while the passcode is checked', () => {
+  const signIn = async () => {
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^sign in$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    return user;
+  };
+
+  it('moves on to the target when the user stays (the harness can)', async () => {
+    const router = renderAt('/login?redirect=%2Fprofile', deferred().promise);
+    await signIn();
+    expect(
+      await screen.findByRole('heading', { name: 'profile page' }),
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/profile');
+  });
+
+  it('the switch wins over the sign-in finishing', async () => {
+    const chunk = deferred();
+    const unlock = deferred();
+    chain.unlockGate = unlock.promise;
+    const router = renderAt('/login?redirect=%2Fprofile', chunk.promise);
+    const user = await signIn();
+    await user.click(screen.getByRole('link', { name: /switch/i }));
+    await settle();
+    unlock.resolve();
+    await waitFor(() => expect(getKeys('alice')).toBeTruthy());
+    await settle();
+    expect(router.latestLocation.pathname).toBe('/accounts');
+    chunk.resolve();
+    expect(
+      await screen.findByRole('heading', { name: 'account list' }),
+    ).toBeInTheDocument();
+    await settle();
+    expect(router.state.location.pathname).toBe('/accounts');
+  });
+
+  it('back before the list loaded: not sent on, but the way on is there', async () => {
+    const unlock = deferred();
+    chain.unlockGate = unlock.promise;
+    const router = renderAt('/login?redirect=%2Fprofile', deferred().promise);
+    const user = await signIn();
+    await user.click(screen.getByRole('link', { name: /switch/i }));
+    await settle();
+    router.history.back();
+    await waitFor(() => expect(router.state.location.pathname).toBe('/login'));
+    unlock.resolve();
+    await waitFor(() => expect(getKeys('alice')).toBeTruthy());
+    await settle();
+    expect(router.state.location.pathname).toBe('/login');
+    await user.click(screen.getByRole('link', { name: /continue/i }));
+    expect(
+      await screen.findByRole('heading', { name: 'profile page' }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('Cancel pressed while the grant is confirmed on chain', () => {
+  // The grant is out; what is left is waiting for it to show (up to 16s),
+  // then the step that follows it: the token for the app, or the way back
+  // to the login that sent the user here. A user who left meanwhile gets
+  // neither.
+  const consentUrl = '/oauth2/authorize';
+  const grantUrl = `/authorize/ecency.app?${new URLSearchParams({
+    redirect_uri: 'https://ecency.com/auth',
+    scope: 'posting',
+  })}`;
+
+  async function authorizeAndHold(url: string, leaveFirst: boolean) {
+    const confirmed = deferred();
+    chain.grantGate = confirmed.promise;
+    const router = renderAt(url, deferred().promise);
+    const user = userEvent.setup();
+    const button = await screen.findByRole('button', { name: /^authorize$/i });
+    await user.type(passcodeField(), 'correct-passcode');
+    await waitFor(() => expect(button).toBeEnabled());
+    await user.click(button);
+    await waitFor(() => expect(chain.broadcastOperations).toHaveBeenCalled());
+    if (leaveFirst) {
+      await user.click(screen.getByRole('link', { name: /cancel/i }));
+      await settle();
+    }
+    confirmed.resolve();
+    await settle();
+    return router;
+  }
+
+  it('consent: the app gets its token when the user stays (the harness can)', async () => {
+    await authorizeAndHold(consentUrl, false);
+    await waitFor(() => expect(chain.assign).toHaveBeenCalled());
+  });
+
+  it('consent: no token after Cancel', async () => {
+    await authorizeAndHold(consentUrl, true);
+    expect(chain.assign).not.toHaveBeenCalled();
+  });
+
+  it('grant page: back to the login when the user stays (the harness can)', async () => {
+    const router = await authorizeAndHold(grantUrl, false);
+    await waitFor(() => expect(router.latestLocation.pathname).toBe('/login'));
+  });
+
+  it('grant page: not pulled back to the login after Cancel', async () => {
+    const router = await authorizeAndHold(grantUrl, true);
+    expect(router.latestLocation.pathname).toBe('/accounts');
   });
 });
