@@ -19,6 +19,10 @@ so do it deliberately and say so in the release notes.
   deliberately NOT the same rule: a malformed legacy request must never be upgraded from a
   username check into a posting grant.
 - `authority` outside owner/active/posting is treated as absent.
+- `account` (what the SDK's `getLoginURL(state, account)` sends; its README calls it
+  `select_account`, which is read too) on `/oauth2/authorize` chooses that account when it is on
+  the device and is otherwise ignored. Either way it is taken out of the URL before the screen
+  renders, so a return to the request from the account list keeps the user's own pick.
 
 ## Callback registration
 

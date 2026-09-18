@@ -341,11 +341,13 @@ export async function unlockAccount(
       // keep the record as it is; the account is unlocked for this session
     }
   }
-  // Key derivation runs synchronously and freezes the page, so a click made
-  // meanwhile (Cancel, Switch account) waits in the queue. Let it run before
-  // the unlock takes effect: the screen being left then knows it before
-  // anything acts on these keys, and the click cannot land on the unlocked
-  // screen's own button instead.
+  // Key derivation runs in a worker (kdf.ts), so a click made meanwhile
+  // (Cancel, Switch account) is handled as it comes. Where it had to run on
+  // the page instead, the page froze and the click waited in the queue: let
+  // it run before the unlock takes effect, so the screen being left knows it
+  // before anything acts on these keys, and the click cannot land on the
+  // unlocked screen's own button instead. (A queued click in Chromium and
+  // Firefox; WebKit hands it over later, which is what the worker is for.)
   await new Promise((resolve) => setTimeout(resolve, 0));
   try {
     onOpened?.(keys);
@@ -361,7 +363,13 @@ export function selectAccount(username: string): void {
   const state = readPersisted();
   // An account may exist only in memory (its write was rejected). It is listed
   // and unlocked, so it has to be selectable or its keys are unusable.
-  if (!state.accountsKeychains[username] && !keyCache.has(username)) return;
+  // Own records only: a name from a URL (#83) such as "constructor" finds an
+  // Object.prototype member, and would replace the saved choice with nobody.
+  if (
+    !Object.hasOwn(state.accountsKeychains, username) &&
+    !keyCache.has(username)
+  )
+    return;
   sessionSelected = username;
   state.selectedAccount = username;
   writePersisted(state);

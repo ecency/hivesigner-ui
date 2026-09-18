@@ -18,26 +18,26 @@ function fromHex(hex: string): Uint8Array {
 }
 
 describe('decryptTriplesec (v4)', () => {
-  it('decrypts a real triplesec 4.0.3 blob to its plaintext', () => {
-    const pt = decryptTriplesec(fromHex(BLOB_HEX), PASSWORD);
+  it('decrypts a real triplesec 4.0.3 blob to its plaintext', async () => {
+    const pt = await decryptTriplesec(fromHex(BLOB_HEX), PASSWORD);
     expect(new TextDecoder().decode(pt)).toBe(PLAINTEXT);
   });
 
-  it('rejects a wrong password via the HMAC check', () => {
-    expect(() => decryptTriplesec(fromHex(BLOB_HEX), 'wrong')).toThrow(
+  it('rejects a wrong password via the HMAC check', async () => {
+    await expect(decryptTriplesec(fromHex(BLOB_HEX), 'wrong')).rejects.toThrow(
       /signature mismatch/,
     );
   });
 
-  it('rejects a non-triplesec blob', () => {
-    expect(() => decryptTriplesec(new Uint8Array(200), PASSWORD)).toThrow(
-      /bad magic/,
-    );
+  it('rejects a non-triplesec blob', async () => {
+    await expect(
+      decryptTriplesec(new Uint8Array(200), PASSWORD),
+    ).rejects.toThrow(/bad magic/);
   });
 
-  it('rejects a truncated blob', () => {
-    expect(() =>
+  it('rejects a truncated blob', async () => {
+    await expect(
       decryptTriplesec(fromHex(BLOB_HEX).subarray(0, 100), PASSWORD),
-    ).toThrow(/too short/);
+    ).rejects.toThrow(/too short/);
   });
 });

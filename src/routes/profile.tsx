@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +15,7 @@ import {
   mutedXs,
   page,
 } from '@/components/ui';
-
+import { readAccountNow } from '@/lib/account-now';
 import { getKeys, stillSelected } from '@/lib/accounts';
 import { type Account, getAccount } from '@/lib/hive';
 import { isValidRedirectUri } from '@/lib/oauth';
@@ -41,13 +41,27 @@ interface ProfileForm {
   redirect_uris: string;
 }
 
-function readProfile(account: Account | null | undefined): ProfileForm {
-  let profile: Record<string, unknown> = {};
+/** A JSON object as it is; anything else (null, an array, a string) as {}. */
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+/** The account's posting_json_metadata as an object. Another app may have
+    written anything there, valid JSON that is not an object included. */
+function metadataOf(
+  account: Account | null | undefined,
+): Record<string, unknown> {
   try {
-    profile = JSON.parse(account?.posting_json_metadata || '{}').profile ?? {};
+    return asRecord(JSON.parse(account?.posting_json_metadata || '{}'));
   } catch {
-    profile = {};
+    return {};
   }
+}
+
+function readProfile(account: Account | null | undefined): ProfileForm {
+  const profile = asRecord(metadataOf(account).profile);
   const s = (k: string) =>
     typeof profile[k] === 'string' ? (profile[k] as string) : '';
   return {
@@ -67,14 +81,9 @@ export function buildProfileMetadata(
   account: Account,
   form: ProfileForm,
 ): string {
-  let existing: Record<string, unknown> = {};
-  try {
-    existing = JSON.parse(account.posting_json_metadata || '{}');
-  } catch {
-    existing = {};
-  }
+  const existing = metadataOf(account);
   const profile: Record<string, unknown> = {
-    ...((existing.profile as Record<string, unknown>) ?? {}),
+    ...asRecord(existing.profile),
     name: form.name,
     about: form.about,
     website: form.website,
@@ -107,25 +116,30 @@ function Profile() {
     enabled: !!selectedAccount,
   });
 
+  const qc = useQueryClient();
   const initial = useMemo(() => readProfile(account), [account]);
-  const [form, setForm] = useState<ProfileForm | null>(null);
-  // The account the pending edits belong to. Without this the form survived an
-  // account switch and `current` kept preferring it, so saving wrote one
-  // account's profile onto another.
-  const [formFor, setFormFor] = useState<string | null>(null);
+  // Only the fields the user changed, with the account they belong to.
+  // Without the account the edits survived a switch, and saving wrote one
+  // account's profile onto another. Only the changed ones: a save lays them
+  // over the profile as the chain has it then, so a field left alone keeps
+  // what was saved elsewhere since the page loaded.
+  const [edits, setEdits] = useState<{
+    account: string;
+    values: Partial<ProfileForm>;
+  } | null>(null);
+  const mine = edits && edits.account === account?.name ? edits.values : {};
+  const current = { ...initial, ...mine };
   const [status, setStatus] = useState<'idle' | 'busy' | 'done' | 'error'>(
     'idle',
   );
   const [error, setError] = useState('');
   // Callbacks the form refused, shown exactly (not inside translated copy).
   const [badUris, setBadUris] = useState('');
-  const current =
-    form !== null && formFor === (account?.name ?? null) ? form : initial;
   // What a save sends is the form as it is when the save runs. Unlocking in
   // the same click takes seconds, the fields stay editable meanwhile, and the
   // click's own render would send what they held before (#146).
-  const formNow = useRef({ account: account?.name, values: current });
-  formNow.current = { account: account?.name, values: current };
+  const formNow = useRef({ account: account?.name, edits: mine });
+  formNow.current = { account: account?.name, edits: mine };
 
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
   const leave = useLeaveLatch();
@@ -137,8 +151,14 @@ function Profile() {
     // `initial` is empty until the account query resolves; seeding from it would
     // copy blanks over the stored profile on save.
     if (!account) return;
-    setForm({ ...current, [field]: value });
-    setFormFor(account.name);
+    const name = account.name;
+    setEdits((prev) => ({
+      account: name,
+      values: {
+        ...(prev?.account === name ? prev.values : {}),
+        [field]: value,
+      },
+    }));
   }
 
   async function save() {
@@ -148,15 +168,51 @@ function Profile() {
       ? getKeys(selectedAccount)?.posting
       : undefined;
     if (!account || !postingKey) return;
+    const left = leave.mark();
+    const name = account.name;
     // Another tab chose someone else while the passcode was checked: the
     // screen now shows their profile (blank until it loads), and saving it
     // onto the account clicked would overwrite that one. Nothing is saved.
+    if (!stillSelected(name) || formNow.current.account !== name) return;
+    setStatus('busy');
+    setError('');
+    setBadUris('');
+    // The metadata is written whole, so it is built on the profile as the
+    // chain has it now, read by name: the page's copy is as old as the
+    // visit, and whatever was saved elsewhere since (another app, a field
+    // this form does not show) would be reverted by it.
+    let fresh: Account | null;
+    try {
+      fresh = await readAccountNow(qc, name);
+    } catch {
+      setError(t('authorize.read_failed'));
+      setStatus('error');
+      return;
+    }
+    // The form as it is now: the fields stay editable during the read too.
     const shown = formNow.current;
-    if (!stillSelected(account.name) || shown.account !== account.name) return;
+    if (left() || !stillSelected(name) || shown.account !== name) {
+      setStatus('idle');
+      return;
+    }
+    // No account, or one without the metadata the page had: some nodes leave
+    // posting_json_metadata out, and building on that would blank every field
+    // not edited here and drop an app's registered callbacks. The read has
+    // landed in the page's copy, so that goes back: the form keeps showing
+    // the profile, and the next click is judged against it again.
+    if (
+      !fresh ||
+      (!fresh.posting_json_metadata && account.posting_json_metadata)
+    ) {
+      qc.setQueryData(accountKey(name), account);
+      setError(t('common.try_again'));
+      setStatus('error');
+      return;
+    }
+    const values = { ...readProfile(fresh), ...shown.edits };
     // Reject a callback that could never be used: isRegisteredRedirect now
     // refuses non-loopback http, so saving one would register something the
     // consent screen silently declines. Fail here, where it can be corrected.
-    const { values } = shown;
     const bad = values.redirect_uris
       .split('\n')
       .map((u) => u.trim())
@@ -168,20 +224,17 @@ function Profile() {
       setBadUris(bad.join(', '));
       return;
     }
-    setStatus('busy');
-    setError('');
-    setBadUris('');
     try {
       const op = [
         'account_update2',
         {
-          account: account.name,
+          account: name,
           json_metadata: '',
-          posting_json_metadata: buildProfileMetadata(account, values),
+          posting_json_metadata: buildProfileMetadata(fresh, values),
           extensions: [],
         },
       ] as [string, Record<string, unknown>];
-      await broadcastOperations([op], postingKey, account.name);
+      await broadcastOperations([op], postingKey, name);
       setStatus('done');
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

@@ -8,18 +8,18 @@ import {
 
 // Cancel pressed while an unlock runs must stop the action that unlock was
 // for. The passcode field sits on the request screen itself and one click
-// unlocks and acts (#145). The key derivation behind it (scrypt) is
-// synchronous: it freezes the page for a good part of a second. A click made
-// during the freeze (Cancel here) waits in the browser's input queue and is
-// handled only once the page is free again.
+// unlocks and acts (#145). The key derivation behind it (scrypt) takes a good
+// part of a second. It runs in a worker (kdf.ts), so a Cancel pressed
+// meanwhile is handled as it comes and sets the leave latch before the unlock
+// ends.
 //
-// unlockAccount yields one macrotask right before it tells the store the
-// account is unlocked. That is what lets a queued Cancel run first: it sets
-// the leave latch before the unlock's own continuation. It also reaches the
-// Cancel link where it was when it was pressed, before the unlocked screen
-// redraws with the passcode field gone and Cancel somewhere else. Without
-// that yield the screen redraws first, the queued click lands on nothing,
-// nothing sets the latch and the grant goes out for a user who cancelled.
+// On the page itself the derivation freezes it, and a click made meanwhile
+// waits in the input queue. unlockAccount yields one macrotask right before
+// it tells the store the account is unlocked, which lets a queued Cancel run
+// first in Chromium and Firefox, where the page was when it was pressed.
+// WebKit hands a page each mouse event only once the previous one is
+// handled: there the queued Cancel came after the unlock, and the grant went
+// out for a user who cancelled. CI runs this file in WebKit too for that.
 //
 // The clicks go in as raw mouse input at coordinates read beforehand. A
 // locator click runs actionability checks in the page, which would wait the
@@ -27,7 +27,7 @@ import {
 // lazy chunk of the account list is held back so the grant screen stays
 // mounted after Cancel: unmounting also sets the latch, which would hide
 // whether the navigation itself did. The unit tests hold the unlock with a
-// gate on readKeys and cannot show any of this; only a real freeze can.
+// gate on readKeys and cannot show any of this; only a real browser can.
 
 // A throwaway key pair, not an account on chain (the unit tests use it too).
 const WIF = '5KT3LKgkovUYzQVSX3WpEGZ4rdazyotpi6piwvdFMxx9eiv8gRL';
@@ -83,6 +83,9 @@ async function addAccount(page: Page, name: string, passcode: string) {
   await page.fill('input[name="passcode"]', passcode);
   await page.press('input[name="password"]', 'Enter');
   await page.waitForURL('**/accounts', { timeout: 20_000 });
+  // The list is up: WebKit otherwise counts the move there as still going
+  // and the next page.goto is interrupted by it.
+  await page.locator('main [data-testid="account-row"]').first().waitFor();
 }
 
 /** A screen for an account locked by the reload, passcode typed, with the
@@ -158,10 +161,27 @@ test('the same click without Cancel grants (the harness can broadcast)', async (
   const { broadcasts, errors } = await setUp(page);
   await addAccount(page, USER, PASSCODE);
   const at = await openLocked(page);
+  // A 10 ms heartbeat through the unlock. The held chunks give Cancel time
+  // to land whatever the derivation does, so this is what shows it ran off
+  // the page: on the page it stalls the heartbeat for the whole derivation.
+  await page.evaluate(() => {
+    const w = window as unknown as { stalls: number[] };
+    w.stalls = [];
+    let last = performance.now();
+    setInterval(() => {
+      const now = performance.now();
+      w.stalls.push(now - last);
+      last = now;
+    }, 10);
+  });
   await page.mouse.click(at.authorize.x, at.authorize.y);
   await expect(page.locator('main output')).toContainText(/authorized/i, {
     timeout: 20_000,
   });
+  const longest = await page.evaluate(() =>
+    Math.max(...(window as unknown as { stalls: number[] }).stalls),
+  );
+  expect(longest).toBeLessThan(300);
   await settle(1000);
   expect(broadcasts()).toBe(1);
   expect(page.url()).toContain('/authorize/new.app');

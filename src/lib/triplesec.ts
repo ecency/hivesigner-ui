@@ -9,9 +9,9 @@
 import { ctr } from '@noble/ciphers/aes.js';
 import { xsalsa20 } from '@noble/ciphers/salsa.js';
 import { hmac } from '@noble/hashes/hmac.js';
-import { scrypt } from '@noble/hashes/scrypt.js';
 import { sha512 } from '@noble/hashes/sha2.js';
 import { sha3_512 } from '@noble/hashes/sha3.js';
+import { scryptOffThread } from './kdf';
 
 // v4 layout (bytes): magic(4) version(4) salt(16) hmac(128) aesIv(16) aesCt(rest)
 const MAGIC = 0x1c94d7de;
@@ -31,10 +31,10 @@ function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
 
 /** Decrypt a triplesec v4 blob. Throws on a bad version, HMAC mismatch (wrong
  * password or tampering) or malformed input. Returns the plaintext bytes. */
-export function decryptTriplesec(
+export async function decryptTriplesec(
   blob: Uint8Array,
   password: string,
-): Uint8Array {
+): Promise<Uint8Array> {
   if (blob.length < MIN_LEN) throw new Error('triplesec: blob too short');
   const view = new DataView(blob.buffer, blob.byteOffset, blob.byteLength);
   if (view.getUint32(0) !== MAGIC) throw new Error('triplesec: bad magic');
@@ -51,7 +51,9 @@ export function decryptTriplesec(
   const body = blob.subarray(HEADER_LEN + SALT_LEN + HMAC_LEN); // aesIv ++ aesCt
 
   // Standard scrypt (N=2^15, r=8, p=1) -> 160 bytes, split hmac/aes/salsa20.
-  const km = scrypt(new TextEncoder().encode(password), salt, {
+  const km = await scryptOffThread({
+    password: new TextEncoder().encode(password),
+    salt,
     N: 2 ** 15,
     r: 8,
     p: 1,
