@@ -16,9 +16,10 @@ export function takeNamedAccount(
 ): Record<string, string> | null {
   const { account, select_account, ...rest } = search;
   if (account === undefined && select_account === undefined) return null;
-  // Names are lower case on Hive; "@Name" still finds it. An empty one names
-  // nobody, and the other spelling is read instead.
-  const named = account || select_account || '';
-  selectAccount(named.trim().toLowerCase().replace(/^@/, ''));
+  // Names are lower case on Hive; "@Name" still finds it. One that is empty
+  // once tidied names nobody, and the other spelling is read instead.
+  const tidy = (name = '') =>
+    name.trim().toLowerCase().replace(/^@/, '').trim();
+  selectAccount(tidy(account) || tidy(select_account));
   return rest;
 }

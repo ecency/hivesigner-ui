@@ -68,8 +68,9 @@ function SignBuffer() {
   const leave = useLeaveLatch();
   const clientIdValid = !req.clientId || HIVE_NAME.test(req.clientId);
   const {
-    data: profile,
-    isLoading,
+    data: cached,
+    isFetchedAfterMount,
+    isError,
     isFetching,
     refetch,
   } = useQuery({
@@ -78,6 +79,10 @@ function SignBuffer() {
       req.clientId ? loadAppProfile(req.clientId) : Promise.resolve(null),
     enabled: !!req.clientId && clientIdValid,
   });
+  // The app's profile as read on this visit. A copy another screen cached
+  // (the consent screen shares it) may predate a callback the app has since
+  // removed, so it decides nothing until this visit's read has landed.
+  const profile = isFetchedAfterMount && !isError ? cached : undefined;
 
   const callback = req.redirectUri ?? '';
   const callbackHost = hostOf(callback) ?? null;
@@ -107,8 +112,6 @@ function SignBuffer() {
         callback_host: callbackHost ?? undefined,
       });
   }, [refusal, req.clientId, callbackHost]);
-
-  if (isLoading) return <section className={page}>…</section>;
 
   const authority = req.authority;
   const isUnlocked = !!selectedAccount && unlocked.includes(selectedAccount);
@@ -143,14 +146,16 @@ function SignBuffer() {
     );
   }
 
+  if (!refusal && appUnread && isFetching)
+    return <section className={page}>…</section>;
+
   if (!refusal && appUnread) {
     return (
       <section className={page}>
         <div role="alert" className={alertError}>
           {t('authorize.read_failed')}
         </div>
-        {/* Offered offline too: the read waits for the network, and the
-            button says it is on its way. */}
+        {/* Offered offline too: the read then waits for the network. */}
         <button
           type="button"
           disabled={isFetching}

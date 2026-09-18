@@ -38,6 +38,7 @@ import {
   lockAccount,
   selectAccount,
 } from '@/lib/accounts';
+import { oauthAppProfileKey } from '@/lib/query-keys';
 import { routerState } from '../test-router-mock';
 import { Route } from './sign-buffer';
 
@@ -54,11 +55,15 @@ const app = {
   }),
 };
 
-function renderPage(search: Record<string, string>) {
+function renderPage(
+  search: Record<string, string>,
+  seed?: (client: QueryClient) => void,
+) {
   routerState.search = search;
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
+  seed?.(client);
   return render(
     <QueryClientProvider client={client}>
       <SignBuffer />
@@ -191,6 +196,47 @@ describe('/sign-buffer', () => {
       i18n.t('sign_buffer.refused'),
     );
     expect(h.assign).not.toHaveBeenCalled();
+  });
+
+  // What an earlier consent screen left in the shared cache: the app had
+  // this callback registered then.
+  const cachedBefore = (client: QueryClient) =>
+    client.setQueryData(oauthAppProfileKey('app'), {
+      name: 'Example App',
+      redirectUris: ['https://old.example/cb'],
+    });
+
+  it('decides nothing on an app profile cached before this visit', async () => {
+    // Removed since: the app's profile no longer lists the old callback.
+    renderPage(
+      {
+        message: 'hello',
+        client_id: 'app',
+        redirect_uri: 'https://old.example/cb',
+      },
+      cachedBefore,
+    );
+    expect(screen.queryByRole('button', { name: /^sign$/i })).toBeNull();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('sign_buffer.refused'),
+    );
+    expect(h.assign).not.toHaveBeenCalled();
+  });
+
+  it('signs nothing on a cached profile when this visit cannot read it', async () => {
+    h.getAccount.mockRejectedValue(new Error('node down'));
+    renderPage(
+      {
+        message: 'hello',
+        client_id: 'app',
+        redirect_uri: 'https://old.example/cb',
+      },
+      cachedBefore,
+    );
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('authorize.read_failed'),
+    );
+    expect(screen.queryByRole('button', { name: /^sign$/i })).toBeNull();
   });
 
   it('never signs a Hivesigner token body', () => {

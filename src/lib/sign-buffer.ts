@@ -98,7 +98,8 @@ export function visibleMessage(
   return parts;
 }
 
-/** The callback with the signature added (and the request's state). */
+/** The callback with the signature added, and the request's state as it
+    came (an empty one included). */
 export function signBufferRedirect(
   callback: string,
   answer: {
@@ -114,6 +115,6 @@ export function signBufferRedirect(
   params.set('public_key', answer.publicKey);
   params.set('username', answer.username);
   params.set('authority', answer.authority);
-  if (answer.state) params.set('state', answer.state);
+  if (answer.state !== undefined) params.set('state', answer.state);
   return appendToCallback(callback, params);
 }

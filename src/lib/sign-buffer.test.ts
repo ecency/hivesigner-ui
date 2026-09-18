@@ -161,6 +161,14 @@ describe('signBufferRedirect', () => {
     );
   });
 
+  it('hands back an empty state as it came', () => {
+    expect(
+      signBufferRedirect('https://a.example/cb', { ...answer, state: '' }),
+    ).toBe(
+      `https://a.example/cb?signature=sig&public_key=${PUB}&username=alice&authority=posting&state=`,
+    );
+  });
+
   it('adds no state when the request had none', () => {
     expect(signBufferRedirect('https://a.example/cb', answer)).toBe(
       `https://a.example/cb?signature=sig&public_key=${PUB}&username=alice&authority=posting`,

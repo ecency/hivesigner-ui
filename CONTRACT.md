@@ -62,7 +62,8 @@ so do it deliberately and say so in the release notes.
   empty, or `active`, in any case; anything else is refused), `redirect_uri`, optional
   `client_id`/`clientId`, `state` and `account` (read as on `/oauth2/authorize`).
 - Every callback must be https, or http on loopback. With a `client_id` it must also be registered
-  to that app, and nothing is signed while the app's profile cannot be read (a retry is offered).
+  to that app, as read on this visit (a copy cached earlier decides nothing), and nothing is
+  signed while the app's profile cannot be read (a retry is offered).
   Without one the callback host is shown as the requester. A request without a message or a
   callback is refused with a Report button.
 - The whole message is shown in the page, with controls, zero-width and bidi characters as
@@ -71,8 +72,8 @@ so do it deliberately and say so in the release notes.
   A message that is a JSON object with a `signed_message` key (a Hivesigner token body) is never
   signed.
 - Redirect: the callback gets `signature`, `public_key`, `username`, `authority` and, when the
-  request had one, `state`, appended as in the token flow below. Cancel returns nothing to the
-  app.
+  request sent one (empty included, which the token flow below leaves out), `state`, appended as
+  in the token flow. Cancel returns nothing to the app.
 
 ## Token and redirect shape
 

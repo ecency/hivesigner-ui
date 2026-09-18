@@ -97,9 +97,13 @@ describe('/oauth2/authorize?account=', () => {
   });
 
   it('reads select_account when account is empty', async () => {
-    renderApp(request({ account: '', select_account: 'bob' }));
-    expect(await screen.findByText('@bob')).toBeInTheDocument();
-    expect(getState().selectedAccount).toBe('bob');
+    for (const account of ['', '  ', '@ ']) {
+      selectAccount('alice');
+      renderApp(request({ account, select_account: 'bob' }));
+      expect(await screen.findByText('@bob')).toBeInTheDocument();
+      expect(getState().selectedAccount).toBe('bob');
+      cleanup();
+    }
   });
 
   it('keeps the choice for an account that is not on this device', async () => {
