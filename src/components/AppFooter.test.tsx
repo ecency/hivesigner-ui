@@ -6,6 +6,20 @@ import { switchLanguage } from '../i18n';
 vi.mock('@tanstack/react-router', async () =>
   (await import('../test-router-mock')).routerMock(),
 );
+const h = vi.hoisted(() => ({ failNext: false }));
+vi.mock('@/i18n', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/i18n')>();
+  return {
+    ...real,
+    switchLanguage: (...args: Parameters<typeof real.switchLanguage>) => {
+      if (h.failNext) {
+        h.failNext = false;
+        return Promise.resolve(false);
+      }
+      return real.switchLanguage(...args);
+    },
+  };
+});
 // German has docs of its own here; Japanese does not.
 vi.mock('@/docs/content', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/docs/content')>()),
@@ -98,5 +112,30 @@ describe('AppFooter', () => {
     expect(routerState.navigate).not.toHaveBeenCalled();
     routerState.pathname = '/';
     await switchLanguage('en');
+  });
+
+  it("links the docs in the app's language when the docs have it", async () => {
+    render(<AppFooter />);
+    const docs = () =>
+      screen
+        .getAllByRole('link')
+        .find((a) => a.getAttribute('href')?.startsWith('/docs'));
+    expect(docs()).toHaveAttribute('href', '/docs');
+    await switchLanguage('de');
+    await waitFor(() => expect(docs()).toHaveAttribute('href', '/docs/de'));
+    await switchLanguage('ja');
+    await waitFor(() => expect(docs()).toHaveAttribute('href', '/docs'));
+    await switchLanguage('en');
+  });
+
+  it('stays on the docs page when the picked language cannot load', async () => {
+    routerState.pathname = '/docs/oauth2';
+    routerState.navigate.mockReset();
+    render(<AppFooter />);
+    h.failNext = true;
+    await userEvent.setup().selectOptions(screen.getByRole('combobox'), 'de');
+    await waitFor(() => expect(screen.getByRole('status')).toBeInTheDocument());
+    expect(routerState.navigate).not.toHaveBeenCalled();
+    routerState.pathname = '/';
   });
 });

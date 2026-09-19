@@ -27,7 +27,7 @@ Neither needs a grant from the user or from your app account. The user never nee
    - call [`GET /api/me`](/docs/api#me) with it, which answers with the account in `user` and `scope` `["login"]`, then decode the token and check `type` and `app` ([Ask the API](/docs/tokens#check-with-the-api));
    - or [check it yourself](/docs/tokens#check-it-yourself) with `type: 'login'` and your app's name.
 
-A `login` token cannot broadcast. `/api/broadcast` refuses it with `invalid_scope`.
+A `login` token cannot broadcast: `/api/broadcast` refuses every operation sent with it.
 
 ## Without an app account {#no-app-account}
 

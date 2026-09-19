@@ -3,7 +3,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { BrandMark } from '@/components/Brand';
 import { LanguageSelect } from '@/components/LanguageSelect';
 import { gutter } from '@/components/ui';
-import { DOC_LANGUAGES } from '@/docs/content';
+import { DOC_LANGUAGES, hasDocs } from '@/docs/content';
 import { DocLink, useDocHref } from '@/docs/DocLink';
 import { docHref } from '@/docs/pages';
 import { parseDocPath } from '@/docs/path';
@@ -82,7 +82,7 @@ export function AppFooter() {
               navigate({
                 href: docHref(
                   doc.slug,
-                  DOC_LANGUAGES.includes(lang) ? lang : 'en',
+                  hasDocs(lang, DOC_LANGUAGES) ? lang : 'en',
                 ),
                 replace: true,
               });

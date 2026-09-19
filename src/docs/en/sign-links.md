@@ -68,7 +68,7 @@ Add these to the query string of any sign link:
 | --- | --- |
 | `cb` | The callback URL, encoded in base64url. This is what `hive-uri` writes for its `callback` option. |
 | `redirect_uri` | The callback URL as plain URL-encoded text. Legacy links use this one. An encoded link uses it when it has no `cb`. |
-| `nb` | Sign only. Hivesigner signs the transaction without broadcasting it. Your callback gets the signature. Any value works, even an empty one (`nb=`). |
+| `nb` | Sign only. Hivesigner signs the transaction without broadcasting it. Put `{{sig}}` in the callback to receive the signature (see [Callback placeholders](#callback-placeholders)). Any value works, even an empty one (`nb=`). |
 | `s` | The account that must sign. When another account is selected, Hivesigner asks the user to switch to this one. It does not sign with any other account. |
 
 Use an `https://` callback. Hivesigner ignores a callback that is not an `http` or `https` URL and then stays on its own result screen.
@@ -146,7 +146,7 @@ const link = sendOperation(
 );
 ```
 
-In a browser, a function passed as the third argument makes them open the link in a new tab instead of returning it. See [SDKs](/docs/sdk#sign-links).
+In TypeScript the types require the third argument: pass `undefined` to get the link back. In a browser, a function passed as the third argument makes them open the link in a new tab instead of returning it. See [SDKs](/docs/sdk#sign-links).
 
 ### Without code {#signs-page}
 
@@ -176,7 +176,7 @@ When the selected account does not have the key on the device, Hivesigner says w
 
 ## Supported operations {#supported-operations}
 
-Hivesigner signs these 41 operations, by their chain names. Anything else is refused.
+Hivesigner signs these 41 operations, by their chain names. Anything else is refused. The name is the one Hivesigner shows on the confirm screen.
 
 | Operation | Key | Name |
 | --- | --- | --- |

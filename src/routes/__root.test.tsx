@@ -9,6 +9,7 @@ import '../i18n';
 // does not apply media queries, so a plain "is it in the DOM" assertion passed
 // while desktop was broken. These tests inspect the responsive visibility
 // utilities on the nav and its ancestors instead.
+const where = vi.hoisted(() => ({ pathname: '/about' }));
 vi.mock('@tanstack/react-router', () => ({
   createRootRoute: (opts: unknown) => opts,
   Outlet: () => <div data-testid="outlet" />,
@@ -16,7 +17,7 @@ vi.mock('@tanstack/react-router', () => ({
     <a href={to}>{children as never}</a>
   ),
   useRouterState: ({ select }: { select: (s: unknown) => unknown }) =>
-    select({ location: { pathname: '/about' } }),
+    select({ location: { pathname: where.pathname } }),
   useNavigate: () => () => {},
 }));
 
@@ -68,6 +69,22 @@ describe('persistent navigation', () => {
   it('titles the document for the current route', () => {
     render(<RootLayout />);
     expect(document.title).toBe('About · Hivesigner');
+  });
+
+  it('leaves a docs page its own title, canonical and indexing', () => {
+    // What the docs page wrote; it runs first, as a child's effect does.
+    document.head.innerHTML =
+      '<link rel="canonical" href="https://hivesigner.com/docs/tokens">';
+    document.title = 'Tokens · Hivesigner';
+    where.pathname = '/docs/tokens';
+    try {
+      render(<RootLayout />);
+    } finally {
+      where.pathname = '/about';
+    }
+    expect(document.title).toBe('Tokens · Hivesigner');
+    expect(document.querySelector('link[rel="canonical"]')).not.toBeNull();
+    expect(document.querySelector('meta[name="robots"]')).toBeNull();
   });
 
   it('renders exactly one nav landmark, not a mobile and desktop duplicate', () => {

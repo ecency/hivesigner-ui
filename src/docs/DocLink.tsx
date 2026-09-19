@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DOC_LANGUAGES } from './content';
+import { DOC_LANGUAGES, hasDocs } from './content';
 import { docHref } from './pages';
 
 /** A link to a docs page by its path (see docHref). */
@@ -12,6 +12,7 @@ export function DocLink({
   href: string;
   className?: string;
   activeProps?: { className?: string };
+  activeOptions?: { exact?: boolean };
   'aria-current'?: 'page';
   children: ReactNode;
 }) {
@@ -29,6 +30,6 @@ export function useDocHref(slug = 'index'): string {
   const { i18n } = useTranslation();
   return docHref(
     slug,
-    DOC_LANGUAGES.includes(i18n.language) ? i18n.language : 'en',
+    hasDocs(i18n.language, DOC_LANGUAGES) ? i18n.language : 'en',
   );
 }

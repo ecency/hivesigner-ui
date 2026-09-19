@@ -20,7 +20,7 @@ Each card starts with a sentence that says what the operation does, with the val
 
 Other operations show their name, such as "Power up" or "Delegate Hive Power".
 
-Next to the sentence, a label shows the key the operation needs: **Posting**, **Active** or **Owner**.
+Next to the sentence, a label in capitals shows the key the operation needs: POSTING, ACTIVE or OWNER.
 
 ### The details {#details}
 
@@ -115,7 +115,7 @@ If the account does not have the key on this device, the screen says so. For exa
 
 **A message that works as a Hivesigner sign-in.** Some text has the exact shape of a Hivesigner sign-in. Signing it would give the site access to your account. Hivesigner never signs such text and says "This message is a Hivesigner token. Signing it would give the site access to your account, so it cannot be signed."
 
-**A request Hivesigner cannot use.** Hivesigner refuses a request with no message or no return address. It also refuses a request for a key other than posting or active, or one whose return address is not secure or is not registered to the app. It says "This signing request cannot be used: it needs a message, a posting or active key and a secure redirect URL registered to the app. Go back to the site and try again."
+**A request Hivesigner cannot use.** Hivesigner refuses a request with no message or no return address. It also refuses a request for a key other than posting or active, one that names an app that is not a Hive account, or one whose return address is not secure or is not registered to the app. It says "This signing request cannot be used: it needs a message, a posting or active key and a secure redirect URL registered to the app. Go back to the site and try again."
 
 If Hivesigner cannot read the app's details from the Hive network, it says "Could not load the account details from the Hive network." It signs nothing until it can. Select **Retry**.
 
@@ -126,7 +126,7 @@ You can sign a message on your own to prove that you control an account.
 1. Open [hivesigner.com/signmessage](https://hivesigner.com/signmessage). The footer links to it as **Sign message**.
 2. If the selected account is locked, enter its passcode and select **Unlock**. If no account is selected, the page links to your accounts.
 3. Type the text in **Message**. Hivesigner removes spaces and line breaks at the start and end.
-4. Choose the key in **Key to sign with**. It lists the keys of the selected account on this device and starts with the strongest one. Choose **Posting** unless you need another key.
+4. Choose the key in **Key to sign with**. It lists the keys of the selected account on this device, strongest first. The strongest one is chosen to begin with. Change it to **Posting** unless you need another key.
 5. Select **Sign message**.
 
 The **Signature summary** shows the **Author**, the **Authority used**, a **Verification token** and a **Verification link**. The verification token holds the message, your username and the signature in one piece of text. Share the link or the token with whoever should check the message.

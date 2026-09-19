@@ -2,7 +2,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import operations from '@/data/operations.json';
-import { DOC_LANGUAGES, type RenderedDoc } from './content';
+import { isLanguage } from '@/i18n/languages';
+import { DOC_LANGUAGES, loadDocIndex, type RenderedDoc } from './content';
 import { DOC_SECTIONS, DOC_SLUGS, type DocIndex, isDocSlug } from './pages';
 
 // Every docs page in every language, rendered as the build renders them.
@@ -39,8 +40,18 @@ const shown = (lang: string, slug: string) =>
 const prose = (source: string) => source.replace(/```[\s\S]*?```/g, '');
 
 describe('docs content', () => {
-  it('knows every language that has docs', () => {
+  it('knows every language that has docs, by the codes the app uses', () => {
     expect([...DOC_LANGUAGES].sort()).toEqual([...folders].sort());
+    // Not a Crowdin locale such as de-DE: the app reads /docs/<code>/.
+    for (const folder of folders) expect(isLanguage(folder), folder).toBe(true);
+  });
+
+  it('has nothing of its own for a language without docs', async () => {
+    const missing = ['ja', 'de', 'fr'].find((l) => !folders.includes(l));
+    expect(await loadDocIndex(missing ?? 'ja')).toEqual({
+      sections: {},
+      pages: {},
+    });
   });
 
   it('has every page and section in English', () => {

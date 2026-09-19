@@ -20,11 +20,11 @@ Yes. Open https://hivesigner.com in your phone's browser and add your account th
 
 ### Which apps use Hivesigner? {#which-apps}
 
-https://hivesigner.com/apps lists the apps that broadcast to Hive through Hivesigner, most used first. Each app publishes its own name and description. Hivesigner does not verify them.
+https://hivesigner.com/apps lists the apps that broadcast to Hive through Hivesigner, most used first. Each app publishes its own name and description. Hivesigner does not verify them. Opening an app there shows a page that can give it posting access. See [Authorize an app from the directory](/docs/signing-in#directory).
 
 ### How is Hivesigner related to Hive Keychain? {#hive-keychain}
 
-They are separate tools. Hive Keychain is a browser extension and a mobile app. Hivesigner is a website, so there is nothing to install. Their message signatures are compatible: an app checks a signed message from either one with the same code. See [Message signing](/docs/message-signing).
+They are separate tools. Hive Keychain is a browser extension and a mobile app. Hivesigner is a website, so there is nothing to install. When an app asks you to sign a message, the signature is the same kind Hive Keychain makes, so the app checks either one with the same code. The verification token from Hivesigner's own **Sign message** page is checked on Hivesigner's **Verify message** page. See [Message signing](/docs/message-signing).
 
 ## Building with Hivesigner {#building}
 

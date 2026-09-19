@@ -30,6 +30,7 @@ test('the old addresses lead to the pages that replaced them', async ({
 }) => {
   for (const [from, to] of [
     ['/developers', '/docs'],
+    ['/developers/', '/docs'],
     ['/docs/h', '/docs'],
     ['/docs/h/', '/docs'],
     ['/docs/h/guides/get-started', '/docs'],
@@ -87,6 +88,13 @@ test('the docs move between pages without reloading', async ({ page }) => {
   await expect(page).toHaveURL(/\/docs\/oauth2$/);
   await expect(page.locator('main h1')).toHaveText('Sign in with OAuth2');
   await expect(page).toHaveTitle('Sign in with OAuth2 · Hivesigner');
+  // One current page in the contents, not the docs home above it too.
+  await expect(contents.locator('[aria-current="page"]')).toHaveCount(1);
+  await expect(contents.locator('[aria-current="page"]')).toHaveText(
+    'Sign in with OAuth2',
+  );
+  // The focus moves to the new page's title, not back to the top of the site.
+  await expect(page.locator('main h1')).toBeFocused();
   // A link inside the page, to a heading on another page.
   await page.locator('.docs-prose a[href^="/docs/tokens#"]').first().click();
   await expect(page).toHaveURL(/\/docs\/tokens#[a-z0-9-]+$/);

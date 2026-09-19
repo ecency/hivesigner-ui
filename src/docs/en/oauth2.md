@@ -50,7 +50,7 @@ Hive has one posting authority. So Hivesigner has two levels of access, sign-in 
 
 | `scope` | What the user approves | Flow | Access token `type` |
 | --- | --- | --- | --- |
-| `login` | "View your account username". Nothing is granted. | Token flow | `login` |
+| `login` | "View your account username". Nothing is granted. | Token flow (do not add `response_type=code`) | `login` |
 | `posting` | Posting access. The first time, this adds your app account to the user's posting authority. | Token flow, or code flow with `response_type=code` | `posting` |
 | `offline` | Posting access, as above | Code flow | `posting`, with a `refresh` token |
 
@@ -198,7 +198,7 @@ Hivesigner returns the same `state` value it received. It leaves out an empty on
 
 The consent screen shows your app's picture and name, "Hive account @myapp" and "Sends you to HOST", with HOST taken from your callback. Then:
 
-- **First posting request.** The heading reads "APP is requesting access to your account." The **Scope** card lists what your app will be able to do. A notice reads "First-time authorization: this adds @myapp to your posting authority on-chain and needs your active key once." The button reads **Authorize**. When the user's device holds no active key for the account, the screen asks for it in place.
+- **First posting request.** The heading reads "APP is requesting access to your account." The **Scope** card lists what your app will be able to do. A notice reads "First-time authorization: this adds @myapp to your posting authority on-chain and needs your active key once. That account will be able to post as you until you revoke it." The button reads **Authorize**. When the user's device holds no active key for the account, the screen asks for it in place.
 - **Sign-in.** For `scope=login`, or for posting access the user granted before, the heading reads "Sign in to APP" and the button reads **Sign in**.
 - **The account.** "Authorizing as" or "Signing in as", followed by the selected account. The user can switch accounts here.
 - **A locked account.** A passcode field sits above the button. One click unlocks the account and continues.

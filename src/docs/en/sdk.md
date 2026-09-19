@@ -33,11 +33,11 @@ const client = new Client({
 | Option | Meaning |
 | --- | --- |
 | `app` | Your app account, sent as `client_id`. |
-| `callbackURL` | Where Hivesigner sends the user back. It must be one of your app's callbacks, character for character. |
+| `callbackURL` | Where Hivesigner sends the user back. It must be one of your app's callbacks, character for character (a plain-http loopback callback may differ in host and port, see [Callbacks](/docs/register-app#callback-rules)). |
 | `scope` | A list, joined with commas into the `scope` parameter. See [Scopes](/docs/oauth2#scopes). |
 | `responseType` | `'code'` for the code flow. Leave it out for the token flow. |
 | `accessToken` | The user's access token, when you already have one. |
-| `apiURL` | The base URL of the API. The default is `https://hivesigner.com`. |
+| `apiURL` | The origin of the API. The SDK adds `/api/` to it. The default is `https://hivesigner.com`. |
 
 `setApp`, `setCallbackURL`, `setScope`, `setAccessToken`, `removeAccessToken` and `setApiURL` change the client later. Each one returns the client.
 
@@ -102,7 +102,7 @@ These helpers build one operation each and call `broadcast`:
 
 ### Log out {#log-out}
 
-`revokeToken()` is the SDK's log-out call. It removes the access token from the client. Also delete the token wherever your app stored it.
+`revokeToken()` is the SDK's log-out call. It sends the token to the API's revoke endpoint and then removes it from the client. When the call rejects, call `removeAccessToken()` yourself. Also delete the token wherever your app stored it.
 
 To end your app's access for good, the user removes it at https://hivesigner.com/authorized-apps. See [See and remove an app's access](/docs/signing-in#remove-access).
 
@@ -119,7 +119,9 @@ const link = sendOperation(
 );
 ```
 
-In a browser, pass a function as the third argument to open the link in a new tab instead. The function is not called and nothing is returned.
+In TypeScript the types require the third argument: pass `undefined` to get the link back.
+
+In a browser, pass a function as the third argument to open the link in a new tab instead. The function is not called and nothing is returned. Call it from a click handler, or the browser may block the new tab and the call throws.
 
 ### Promises and callbacks {#promises-and-callbacks}
 
@@ -139,7 +141,7 @@ client.vote('USERNAME', 'AUTHOR', 'PERMLINK', 10000, (error, result) => {
 });
 ```
 
-When the API answers with an error, the promise rejects with the API's error body, `{ error, error_description }`. With a callback, that body is the `error` argument.
+When the API answers with an error, the promise rejects with the API's error body, `{ error, error_description }`. With a callback, that body is the `error` argument. When the answer is not JSON, it rejects with the parse error.
 
 ## Python {#python}
 

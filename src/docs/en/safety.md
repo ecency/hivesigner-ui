@@ -53,7 +53,7 @@ See [Review and sign](/docs/signing) for everything the signing screens show.
 A page that looks like Hivesigner is fake when:
 
 - **The address is not hivesigner.com.** This is the one sign that always counts.
-- **It requires your master password or owner key to sign in.** The real Hivesigner signs you in with your posting key.
+- **It refuses your posting key.** The real Hivesigner accepts the posting key and signs you in with it. A page that insists on your master password or owner key is not Hivesigner.
 - **It does not know the accounts you added.** Your browser keeps the storage of each site apart. A fake site on another address cannot see the accounts you added on hivesigner.com, so it asks for a key again. The real Hivesigner remembers them in this browser and asks only for your passcode, if you set one. It asks for a key only when a request needs one that this device does not have. It then names the key. For example: "This needs your active key, which @USERNAME does not have here."
 
 A new browser or a new device does not have your accounts either. There, check the address before you add one.

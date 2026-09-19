@@ -23,7 +23,7 @@ In the configuration, set your app account:
 app_account = 'YOUR_APP_ACCOUNT'
 ```
 
-The same section sets the minimum reputation an account needs to upload (`reputation`) and the upload quota for each account (`max` uploads per `duration` milliseconds). The quota applies when the instance has a Redis database configured. `max_image_size` sets the largest file, in bytes.
+The same section sets the minimum reputation an account needs to upload (`reputation`) and the upload quota for each account (`max` uploads per `duration` milliseconds). Configure `redis_url` so that the quota is enforced. `max_image_size` sets the largest file, in bytes.
 
 ## Upload an image {#upload}
 

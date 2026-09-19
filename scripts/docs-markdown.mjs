@@ -23,7 +23,8 @@ class DocError extends Error {
 /** Where a link to another docs page goes in `lang`, and to the app's own
     pages on whatever host serves this build. */
 function localHref(href, lang) {
-  const internal = /^https:\/\/hivesigner\.com(\/.*)$/.exec(href);
+  // A single leading slash only: `//host` or `/\host` would leave the site.
+  const internal = /^https:\/\/hivesigner\.com(\/(?![/\\]).*)$/.exec(href);
   if (internal && !internal[1].startsWith('/api/')) href = internal[1];
   const docs = /^\/docs(?:\/([a-z0-9-]+))?\/?(#[a-z0-9-]+)?$/.exec(href);
   if (!docs) return href;
@@ -49,6 +50,12 @@ function createRenderer(file, lang) {
           token,
           'use a fenced code block with a language',
         );
+      }
+      // An image would load from wherever its source points, in every
+      // reader of the HTML and the Markdown copies, and no translation check
+      // covers it. The docs have none.
+      if (token.children?.some((c) => c.type === 'image')) {
+        throw new DocError(file, token, 'images are not allowed in the docs');
       }
       if (token.type === 'fence' && !token.info.trim()) {
         throw new DocError(

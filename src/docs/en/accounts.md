@@ -9,13 +9,13 @@ Hivesigner signs with the keys of the Hive accounts you add to it. You add an ac
 5. Leave **Protect with a passcode (recommended)** checked and choose a **Passcode**. It needs at least 4 characters. See [Protect it with a passcode](/docs/accounts#passcode).
 6. Select **Add account**.
 
-Hivesigner checks the key against your account on the Hive network before it stores anything. It compares the public part of the key with the keys your account lists. The private key itself is not sent anywhere. If the key does not belong to the account, the form says "Invalid username or key. Use your master password or your owner, active, posting or memo key."
+Hivesigner checks the key against your account on the Hive network before it stores anything. It compares the public part of the key with the keys your account lists. The private key itself is not sent anywhere. If the username is not a Hive account, or the key does not belong to it, the form says "Invalid username or key. Use your master password or your owner, active, posting or memo key."
 
 The account you add becomes the selected account: the one Hivesigner uses on its screens. If a request sent you to the form, Hivesigner takes you back to that request. Otherwise it opens the **Accounts** page.
 
 ### Add another key to an account {#add-a-key}
 
-To add a second key to an account that is already here (the active key next to the posting key, for example), add the account again with the new key. Hivesigner keeps the keys it already has and adds the new one.
+To add a second key to an account that is already here (the active key next to the posting key, for example), add the account again with the new key. Hivesigner keeps the keys it already has and adds the new one. A new key for a role that is already here replaces the old one.
 
 If the account has a passcode, keep **Protect with a passcode (recommended)** checked and enter the same passcode. Hivesigner refuses anything else:
 
@@ -24,14 +24,14 @@ If the account has a passcode, keep **Protect with a passcode (recommended)** ch
 
 ## Which key to add {#which-key}
 
-A Hive account has several private keys. Each one allows different actions.
+A Hive account has several private keys. Each one allows different actions. You got them from the wallet or app that created your Hive account, usually on its keys or password page. Hivesigner cannot show them to you.
 
 | Key | What Hivesigner uses it for |
 | --- | --- |
 | Posting | Signing in to apps, voting, posting and commenting, following, editing your profile and claiming your rewards. |
 | Active | Wallet actions such as transfers, powering up or down, delegations, savings and conversions. Witness and proposal votes. Authorizing an app for the first time and revoking an app. |
 | Owner | Changing your owner key or your recovery account. You never need it day to day. |
-| Memo | Nothing when you sign in or sign a transaction. |
+| Memo | Nothing. The form accepts it, but an account with only the memo key cannot sign in: the request screen then shows "Add a posting or active key for @USERNAME to continue". |
 
 Add the posting key for everyday use. Add the active key only when you need it for a wallet action or to authorize an app for the first time. When a screen needs a key that this device does not have, it says so and lets you add it.
 
@@ -53,7 +53,7 @@ Without a passcode, Hivesigner stores the account's keys in this browser without
 
 To add a passcode to an account that has none, add the account again with one of its keys and a passcode. Hivesigner then encrypts all of the account's keys with that passcode.
 
-To change a passcode, [remove the account](/docs/accounts#remove-account) and add it again with the new passcode.
+To change a passcode, [remove the account](/docs/accounts#remove-account) and add it again with the new passcode. Removing deletes every key of the account from this browser, so add each key again (the posting key, then the active key if you use it).
 
 ## Unlock an account {#unlock}
 
@@ -74,7 +74,7 @@ On a request screen, the row that names the account ("Signing in as", "Authorizi
 ## Remove an account {#remove-account}
 
 1. Open the **Accounts** page.
-2. Select the **✕** next to the account. Its label for screen readers is **Remove from Hivesigner**.
+2. Select the **✕** next to the account. Its label for screen readers is **Remove from Hivesigner @USERNAME**.
 3. Confirm when the browser asks "Remove @USERNAME from this device? Its keys here will be deleted."
 
 Removing an account deletes its keys from this browser only. Your Hive account does not change. Apps you authorized keep their access, because that access is stored on the Hive blockchain. To remove it, see [See and remove an app's access](/docs/signing-in#remove-access).

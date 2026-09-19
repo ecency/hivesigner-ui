@@ -106,8 +106,14 @@ export async function hivesignerUser(token, { app, type }) {
   if (!res.ok) return null;
   const me = await res.json();
 
-  const { signed_message, timestamp } = decodeToken(token);
-  if (signed_message?.app !== app || signed_message.type !== type) return null;
+  let body;
+  try {
+    body = decodeToken(token);
+  } catch {
+    return null;
+  }
+  const { signed_message, timestamp } = body ?? {};
+  if (signed_message?.type !== type || signed_message.app !== app) return null;
   const age = Math.floor(Date.now() / 1000) - timestamp;
   if (!(age >= -60 && age <= WEEK)) return null;
   return me.user;

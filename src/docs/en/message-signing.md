@@ -34,7 +34,7 @@ window.location.assign(`https://hivesigner.com/sign-buffer?${params}`);
 
 Send `client_id` when you have an app account. The user then sees your app's name and account. Only your registered callbacks can receive the signature.
 
-Hivesigner refuses a request with no message, an unknown `authority`, a missing or unusable callback or a `client_id` that is not a Hive account. The user sees "This signing request cannot be used: it needs a message, a posting or active key and a secure redirect URL registered to the app. Go back to the site and try again." and a **Report this problem** button.
+Hivesigner refuses a request with no message, an unknown `authority`, a missing or unusable callback, a `client_id` that is not a Hive account or a callback that is not registered on that app. The user sees "This signing request cannot be used: it needs a message, a posting or active key and a secure redirect URL registered to the app. Go back to the site and try again." and a **Report this problem** button.
 
 ### What the user sees {#what-the-user-sees}
 

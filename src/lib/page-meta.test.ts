@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import en from '@/i18n/locales/en-US.json';
-import { applyPageMeta, metaFor, PUBLIC_PAGES } from './page-meta';
+import { applyMeta, applyPageMeta, metaFor, PUBLIC_PAGES } from './page-meta';
 
 beforeEach(() => {
   document.head.innerHTML = '';
@@ -169,5 +169,18 @@ describe('titles in the reader language', () => {
       expect(meta.title, path).toBe('Hivesigner');
       expect(meta.titleKey, path).toBeUndefined();
     }
+  });
+});
+
+describe('language alternates', () => {
+  it("keeps the prerendered page's other languages on that page only", () => {
+    // The document was loaded on / (jsdom's address), with alternates.
+    document.head.innerHTML =
+      '<link rel="alternate" hreflang="en" href="https://hivesigner.com/docs"><link rel="alternate" hreflang="x-default" href="https://hivesigner.com/docs">';
+    const meta = { title: 'T', description: 'D', canonical: null };
+    applyMeta('/', meta);
+    expect(document.querySelectorAll('link[hreflang]')).toHaveLength(2);
+    applyMeta('/docs/tokens', meta);
+    expect(document.querySelectorAll('link[hreflang]')).toHaveLength(0);
   });
 });

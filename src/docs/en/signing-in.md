@@ -67,6 +67,14 @@ Hivesigner then sends the change to the Hive network from your browser. It waits
 
 The active key stays on this device afterwards. To keep only the posting key here, see [Add only the keys you need](/docs/safety#only-the-keys-you-need).
 
+## Authorize an app from the directory {#directory}
+
+Each app on [hivesigner.com/apps](https://hivesigner.com/apps) opens a page titled "Authorize @APP_ACCOUNT". It shows what the app publishes about itself and the sentence "@APP_ACCOUNT will be able to post, comment, vote and follow as @USERNAME."
+
+Selecting **Authorize** gives the app posting access right away, as the first-time screen does. It needs your active key. No app asked you for this, so use it only when you mean to. **Cancel** takes you to your **Accounts** page.
+
+When your account already gave the app posting access, the page says "@APP_ACCOUNT is authorized." and offers **Continue**.
+
 ## Coming back to an app {#coming-back}
 
 When your account already gave an app posting access, nothing new is granted. The screen is shorter:
@@ -110,10 +118,10 @@ If Hivesigner cannot reach the Hive network, it shows "Could not load the accoun
 3. If the account is locked, enter its passcode and select **Unlock**.
 4. Select **Revoke** next to the app. When the active key is on this device, this removes the app's access at once.
 
-The list shows every account that holds posting authority over yours, including any you added with other tools.
+The list shows every account that can post as yours on its own, including any you added with other tools.
 
 Revoking is a change to your account on the Hive blockchain, so it needs your active key once. If this device does not have it, **Revoke** opens a page for that app ("Revoke @APP_ACCOUNT") that asks for the active key in place. It says "@APP_ACCOUNT will no longer be able to act as @USERNAME." Add the key, then select **Revoke**.
 
 When you revoke an app, Hivesigner removes the app's account from your account's posting authority (and from its active authority, if it is there). From then on the app can no longer post, vote or act as you. If the app asks for posting access again later, you see the first-time screen.
 
-To end your session in the app as well, log out in the app.
+Revoking does not log you out of the app's own website. Log out there too if you want.

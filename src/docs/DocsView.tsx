@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter, useRouterState } from '@tanstack/react-router';
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import {
   alertError,
@@ -21,11 +21,18 @@ import { DOC_SECTIONS, DOC_SLUGS, type DocSlug, docHref } from './pages';
 
 const SOURCE = 'https://github.com/ecency/hivesigner-ui/blob/development';
 
+// English's page list is in the bundle: no wait for it.
 const indexQuery = (lang: string) => ({
   queryKey: docsIndexKey(lang),
   queryFn: () => loadDocIndex(lang),
+  initialData: lang === 'en' ? englishIndex : undefined,
   staleTime: Number.POSITIVE_INFINITY,
 });
+
+// Whether a docs page has been shown in this document yet. Moving to another
+// page puts the focus on its title, which the first page of a visit leaves
+// where the browser put it.
+let shownBefore = false;
 
 /**
  * One docs page. The URL decides the language of the page (see path.ts); a
@@ -70,6 +77,17 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
   const title = info?.title ?? slug;
 
   useEffect(() => {
+    if (own.isError) {
+      // The language's page list did not load: nothing here to index, and
+      // no previous page's title or canonical left behind.
+      const english = englishIndex.pages[slug];
+      applyMeta(pathname, {
+        title: fullTitle({ ...english, indexable: false }),
+        description: english.description,
+        canonical: null,
+      });
+      return;
+    }
     if (translated === undefined || !info) return;
     applyMeta(pathname, {
       title: fullTitle({
@@ -80,12 +98,15 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
       description: info.description,
       canonical: translated ? `${siteOrigin()}${docHref(slug, lang)}` : null,
     });
-  }, [pathname, translated, info, slug, lang]);
+  }, [pathname, translated, info, slug, lang, own.isError]);
 
   // A new page starts at its top, or at the heading its link names once the
   // page is there to scroll to.
+  const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (!page.data) return;
+    if (shownBefore) heading.current?.focus({ preventScroll: true });
+    shownBefore = true;
     const target = hash ? document.getElementById(hash) : null;
     if (target) target.scrollIntoView?.();
     else if (!hash) window.scrollTo?.(0, 0);
@@ -137,12 +158,18 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
         headings={page.data?.headings ?? []}
       />
 
-      <article
-        lang={htmlLang ?? pageLang}
-        dir={rtl ? 'rtl' : 'ltr'}
-        className="flex min-w-0 flex-col gap-4"
-      >
-        <h1 className={h1}>{title}</h1>
+      {/* The title and the page are in the page's language; the notes and
+          the links around them are in the app's. */}
+      <article className="flex min-w-0 flex-col gap-4">
+        <h1
+          ref={heading}
+          tabIndex={-1}
+          lang={htmlLang ?? pageLang}
+          dir={rtl ? 'rtl' : 'ltr'}
+          className={`${h1} outline-none`}
+        >
+          {title}
+        </h1>
 
         {translated === false && (
           <p role="note" className={muted}>
@@ -183,12 +210,16 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
           // any HTML in the source escaped (scripts/docs-markdown.mjs).
           <div
             ref={followLinks}
+            lang={htmlLang ?? pageLang}
+            dir={rtl ? 'rtl' : 'ltr'}
             className="docs-prose"
             // biome-ignore lint/security/noDangerouslySetInnerHtml: build-time HTML from the docs Markdown, raw HTML escaped
             dangerouslySetInnerHTML={{ __html: page.data.html }}
           />
         ) : (
-          <p className={muted}>…</p>
+          <p className={muted} aria-busy="true">
+            …
+          </p>
         )}
 
         {slug === 'index' && (
@@ -294,6 +325,8 @@ function DocsNav({
       >
         <DocLink
           href={docHref('index', lang)}
+          // Exact: it is not the current page on every page under it.
+          activeOptions={{ exact: true }}
           className={`${item} ${slug === 'index' ? current : ''}`}
           aria-current={slug === 'index' ? 'page' : undefined}
         >

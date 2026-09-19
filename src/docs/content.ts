@@ -1,3 +1,4 @@
+import type { Language } from '@/i18n/languages';
 import english from './en/pages.json';
 import type { DocIndex, DocSlug } from './pages';
 
@@ -9,15 +10,19 @@ export interface RenderedDoc {
   links: string[];
 }
 
-/** The languages with a docs folder of their own, `src/docs/<code>/`. The
-    docs tests check this list against the folders. */
-export const DOC_LANGUAGES: readonly string[] = ['en'];
+/** The languages with a docs folder of their own, `src/docs/<code>/`, by
+    the app's own codes. The docs tests check this list against the folders. */
+export const DOC_LANGUAGES: readonly Language[] = ['en'];
+
+/** Whether `lang` has docs of its own. */
+export const hasDocs = (lang: string, languages = DOC_LANGUAGES) =>
+  (languages as readonly string[]).includes(lang);
 
 /** A language's own page titles and descriptions, for the pages it has
     translated: none for a language with no docs yet. */
 export async function loadDocIndex(lang: string): Promise<DocIndex> {
   if (lang === 'en') return english;
-  if (!DOC_LANGUAGES.includes(lang)) return { sections: {}, pages: {} };
+  if (!hasDocs(lang)) return { sections: {}, pages: {} };
   const { default: own } = (await import(`./${lang}/pages.json`)) as {
     default: DocIndex;
   };

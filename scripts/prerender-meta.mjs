@@ -25,30 +25,40 @@ import { renderDoc } from './docs-markdown.mjs';
 const escapeAttr = (s) =>
   s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
+// Every value goes in through a replacer FUNCTION: in a replacement string
+// `$'`, `$&` and `$$` are patterns, so a title or a page that contains one
+// (translations included) would splice pieces of the document into itself.
+const setAttr = (html, pattern, value) =>
+  html.replace(pattern, (_all, before, after) => `${before}${value}${after}`);
+
 /** The shell with one page's metadata in place of the landing page's. */
 export function rewriteShell(html, meta, url) {
   const title = escapeAttr(fullTitle(meta));
   const description = escapeAttr(meta.description);
-  let out = html
-    .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
-    .replace(
-      /(<meta name="description" content=")[^"]*(")/,
-      `$1${description}$2`,
-    )
-    .replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${title}$2`)
-    .replace(/(<meta name="twitter:title" content=")[^"]*(")/, `$1${title}$2`)
-    .replace(
-      /(<meta property="og:description" content=")[^"]*(")/,
-      `$1${description}$2`,
-    )
-    .replace(
-      /(<meta name="twitter:description" content=")[^"]*(")/,
-      `$1${description}$2`,
-    );
+  let out = html.replace(
+    /<title>[^<]*<\/title>/,
+    () => `<title>${title}</title>`,
+  );
+  out = setAttr(
+    out,
+    /(<meta name="description" content=")[^"]*(")/,
+    description,
+  );
+  out = setAttr(out, /(<meta property="og:title" content=")[^"]*(")/, title);
+  out = setAttr(out, /(<meta name="twitter:title" content=")[^"]*(")/, title);
+  out = setAttr(
+    out,
+    /(<meta property="og:description" content=")[^"]*(")/,
+    description,
+  );
+  out = setAttr(
+    out,
+    /(<meta name="twitter:description" content=")[^"]*(")/,
+    description,
+  );
   if (url) {
-    out = out
-      .replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${url}$2`)
-      .replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${url}$2`);
+    out = setAttr(out, /(<link rel="canonical" href=")[^"]*(")/, url);
+    out = setAttr(out, /(<meta property="og:url" content=")[^"]*(")/, url);
   } else {
     out = out
       .replace(/\s*<link rel="canonical" href="[^"]*"\s*\/?>/, '')
@@ -66,7 +76,8 @@ const escapeText = (s) =>
 
 /** The `lang` a language's pages declare, and whether it runs right to left. */
 function langInfo(code) {
-  const info = LANGUAGES.find((l) => l.code === code) ?? LANGUAGES[0];
+  const info = LANGUAGES.find((l) => l.code === code);
+  if (!info) throw new Error(`src/docs/${code}: not a language the app ships`);
   return { tag: info.htmlLang ?? info.code, rtl: !!info.rtl };
 }
 
@@ -81,6 +92,9 @@ export function readDocs(docsDir) {
     )
     .map((e) => e.name)
     .sort((a, b) => (a === 'en' ? -1 : b === 'en' ? 1 : a.localeCompare(b)));
+  // A folder named any other way (a Crowdin locale such as de-DE) would be
+  // published under an address the app does not read.
+  for (const lang of languages) langInfo(lang);
   return languages.map((lang) => {
     const index = JSON.parse(
       readFileSync(join(docsDir, lang, 'pages.json'), 'utf8'),
@@ -138,10 +152,10 @@ export function docPageHtml(shell, { lang, index, page, languages, siteUrl }) {
   )
     .replace(
       /<html lang="[^"]*">/,
-      `<html lang="${tag}" dir="${rtl ? 'rtl' : 'ltr'}">`,
+      () => `<html lang="${tag}" dir="${rtl ? 'rtl' : 'ltr'}">`,
     )
-    .replace('</head>', `    ${alternates.join('\n    ')}\n  </head>`)
-    .replace('<div id="root"></div>', `<div id="root">${body}</div>`);
+    .replace('</head>', () => `    ${alternates.join('\n    ')}\n  </head>`)
+    .replace('<div id="root"></div>', () => `<div id="root">${body}</div>`);
 }
 
 /** The sitemap: the public app pages, then every docs page in every language
@@ -158,10 +172,13 @@ export function buildSitemap(siteUrl, docs) {
         entry(
           docHref(slug, lang),
           langs.length > 1
-            ? langs.map(
-                (l) =>
-                  `<xhtml:link rel="alternate" hreflang="${langInfo(l).tag}" href="${siteUrl}${docHref(slug, l)}"/>`,
-              )
+            ? [
+                ...langs.map(
+                  (l) =>
+                    `<xhtml:link rel="alternate" hreflang="${langInfo(l).tag}" href="${siteUrl}${docHref(slug, l)}"/>`,
+                ),
+                `<xhtml:link rel="alternate" hreflang="x-default" href="${siteUrl}${docHref(slug)}"/>`,
+              ]
             : [],
         ),
       );
@@ -175,11 +192,16 @@ ${urls.join('\n')}
 
 /** A page as Markdown for tools that read docs (llms.txt links to these):
     its title on top, the heading ids left out and every link absolute, as
-    the file is read on its own. */
-export function docMarkdown(title, source, siteUrl) {
+    the file is read on its own. Links to other docs pages stay in `lang`. */
+export function docMarkdown(title, source, siteUrl, lang = 'en') {
   const body = source
-    .replace(/[ \t]*\{#[a-z0-9-]+\}[ \t]*$/gm, '')
-    .replace(/\]\(\//g, `](${siteUrl}/`);
+    .replace(/^(#{2,3} .*?)[ \t]*\{#[a-z0-9-]+\}[ \t]*$/gm, '$1')
+    .replace(
+      /\]\(\/docs(?:\/([a-z0-9-]+))?\/?(#[a-z0-9-]+)?\)/g,
+      (_all, slug, hash) =>
+        `](${siteUrl}${docHref(slug ?? 'index', lang)}${hash ?? ''})`,
+    )
+    .replace(/\]\(\//g, () => `](${siteUrl}/`);
   return `# ${title}\n\n${body}`;
 }
 
@@ -251,7 +273,7 @@ if (isMain) {
       );
       writeFileSync(
         copy,
-        docMarkdown(index.pages[page.slug].title, page.source, siteUrl),
+        docMarkdown(index.pages[page.slug].title, page.source, siteUrl, lang),
       );
       written += 1;
     }

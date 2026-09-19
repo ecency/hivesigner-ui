@@ -9,7 +9,7 @@ vi.mock('@tanstack/react-router', async () =>
 );
 
 // German stands in for any translated language: it has one page of its own.
-const h = vi.hoisted(() => ({ failPages: 0 }));
+const h = vi.hoisted(() => ({ failPages: 0, failGerman: false }));
 vi.mock('./content', async (importOriginal) => {
   const real = await importOriginal<typeof import('./content')>();
   const german = {
@@ -19,8 +19,10 @@ vi.mock('./content', async (importOriginal) => {
   return {
     ...real,
     DOC_LANGUAGES: ['en', 'de'],
-    loadDocIndex: async (lang: string) =>
-      lang === 'de' ? german : real.loadDocIndex(lang),
+    loadDocIndex: async (lang: string) => {
+      if (lang === 'de' && h.failGerman) throw new Error('offline');
+      return lang === 'de' ? german : real.loadDocIndex(lang);
+    },
     loadDocPage: async (lang: string, slug: 'accounts') => {
       if (h.failPages > 0) {
         h.failPages -= 1;
@@ -54,6 +56,15 @@ function show(lang: 'en' | 'de', slug: string, pathname: string) {
 
 const contents = () => screen.getByRole('navigation', { name: 'Contents' });
 
+/** The title and the page itself carry the page's language. */
+const expectLanguage = (lang: string) => {
+  expect(screen.getByRole('heading', { level: 1 })).toHaveAttribute(
+    'lang',
+    lang,
+  );
+  expect(document.querySelector('.docs-prose')).toHaveAttribute('lang', lang);
+};
+
 beforeEach(() => {
   // jsdom scrolls nothing and follows no links; the page asks for both.
   window.scrollTo = vi.fn() as never;
@@ -61,6 +72,7 @@ beforeEach(() => {
   routerState.navigate.mockReset();
   routerState.hash = '';
   h.failPages = 0;
+  h.failGerman = false;
 });
 afterEach(async () => {
   await switchLanguage('en');
@@ -88,7 +100,7 @@ describe('a docs page', () => {
     expect(
       document.querySelector('link[rel="canonical"]')?.getAttribute('href'),
     ).toMatch(/\/docs\/oauth2$/);
-    expect(screen.getByRole('article')).toHaveAttribute('lang', 'en');
+    expectLanguage('en');
   });
 
   it('lists every page by section on the docs home', async () => {
@@ -113,7 +125,7 @@ describe('a docs page', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Konten' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('article')).toHaveAttribute('lang', 'de');
+    expectLanguage('de');
     expect(
       within(contents()).getByRole('link', { name: 'Konten' }),
     ).toHaveAttribute('href', '/docs/de/accounts');
@@ -132,9 +144,13 @@ describe('a docs page', () => {
     expect(
       await screen.findByRole('heading', { level: 2, name: 'Scopes' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('article')).toHaveAttribute('lang', 'en');
+    expectLanguage('en');
     expect(screen.getByRole('note')).toHaveTextContent(
       'This page is not available in Deutsch yet, so it is shown in English.',
+    );
+    // Said in the app's language, so not inside the English page.
+    expect(screen.getByRole('note').closest('[lang]')).toBe(
+      document.documentElement,
     );
     await waitFor(() =>
       expect(
@@ -196,5 +212,76 @@ describe('a docs page', () => {
     await user.keyboard('{/Control}');
     window.removeEventListener('click', stay);
     expect(routerState.navigate).not.toHaveBeenCalled();
+  });
+
+  it('leaves links to other sites, new tabs and other buttons to the browser', async () => {
+    show('en', 'tokens', '/docs/tokens');
+    await screen.findByRole('heading', { level: 2, name: 'Kinds of token' });
+    const prose = document.querySelector('.docs-prose') as HTMLElement;
+    const external = prose.querySelector<HTMLAnchorElement>(
+      'a[href^="https://www.npmjs.com/"]',
+    );
+    const internal =
+      prose.querySelector<HTMLAnchorElement>('a[href^="/docs/"]');
+    if (!external || !internal) throw new Error('the page has both kinds');
+    // Left to the browser, which jsdom cannot do.
+    const stay = (e: Event) => e.preventDefault();
+    window.addEventListener('click', stay);
+    const click = (a: HTMLElement, init: MouseEventInit = {}) =>
+      a.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true, ...init }),
+      );
+    click(external);
+    click(internal, { button: 1 });
+    click(internal, { shiftKey: true });
+    internal.target = '_blank';
+    click(internal);
+    internal.removeAttribute('target');
+    window.removeEventListener('click', stay);
+    expect(routerState.navigate).not.toHaveBeenCalled();
+    click(internal);
+    expect(routerState.navigate).toHaveBeenCalledTimes(1);
+  });
+
+  it('starts a page at its top, or at the heading its address names', async () => {
+    const view = show('en', 'tokens', '/docs/tokens');
+    await screen.findByRole('heading', { level: 2, name: 'Kinds of token' });
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+    view.unmount();
+    vi.mocked(window.scrollTo).mockClear();
+    const seen: string[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      seen.push(this.id);
+    };
+    routerState.hash = 'kinds';
+    show('en', 'tokens', '/docs/tokens');
+    await screen.findByRole('heading', { level: 2, name: 'Kinds of token' });
+    expect(seen).toEqual(['kinds']);
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  it('puts the focus on the title of each page moved to', async () => {
+    const first = show('en', 'faq', '/docs/faq');
+    await screen.findByRole('heading', { level: 1, name: 'FAQ' });
+    await waitFor(() =>
+      expect(document.querySelector('.docs-prose')).not.toBeNull(),
+    );
+    first.unmount();
+    show('en', 'tokens', '/docs/tokens');
+    const title = screen.getByRole('heading', { level: 1, name: 'Tokens' });
+    await waitFor(() => expect(document.activeElement).toBe(title));
+  });
+
+  it('keeps nothing of the last page in the head when a language cannot load', async () => {
+    document.title = 'Sign in with OAuth2 · Hivesigner';
+    h.failGerman = true;
+    show('de', 'tokens', '/docs/de/tokens');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      i18n.t('docs.load_failed'),
+    );
+    await waitFor(() => expect(document.title).toBe('Tokens · Hivesigner'));
+    expect(
+      document.querySelector('meta[name="robots"]')?.getAttribute('content'),
+    ).toBe('noindex, nofollow');
   });
 });
