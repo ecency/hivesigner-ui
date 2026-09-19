@@ -17,7 +17,14 @@ import { applyMeta, fullTitle, siteOrigin } from '@/lib/page-meta';
 import { docsIndexKey, docsPageKey } from '@/lib/query-keys';
 import { englishIndex, hasPage, loadDocIndex, loadDocPage } from './content';
 import { DocLink } from './DocLink';
-import { DOC_SECTIONS, DOC_SLUGS, type DocSlug, docHref } from './pages';
+import {
+  DOC_SECTIONS,
+  DOC_SLUGS,
+  type DocSlug,
+  docHref,
+  localizeDocLinks,
+} from './pages';
+import { showDocPage } from './shown';
 
 const SOURCE = 'https://github.com/ecency/hivesigner-ui/blob/development';
 
@@ -28,17 +35,6 @@ const indexQuery = (lang: string) => ({
   initialData: lang === 'en' ? englishIndex : undefined,
   staleTime: Number.POSITIVE_INFINITY,
 });
-
-// The docs page shown last in this document. Moving to another page puts the
-// focus on its title, or on the heading its address names; the first page of
-// a visit leaves it where the browser put it. Kept by page rather than as a
-// flag: StrictMode runs an effect twice in development.
-let lastShown: string | null = null;
-
-/** For tests: as if no docs page had been shown yet. */
-export function _resetShownPage(): void {
-  lastShown = null;
-}
 
 /**
  * One docs page. The URL decides the language of the page (see path.ts); a
@@ -113,9 +109,7 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (!page.data) return;
-    const moved = lastShown !== null && lastShown !== here;
-    lastShown = here;
-    if (!moved) return;
+    if (!showDocPage(here)) return;
     const target = hash ? document.getElementById(hash) : null;
     if (target) {
       target.tabIndex = -1;
@@ -227,14 +221,21 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
           </div>
         ) : page.data ? (
           // Rendered from this repository's own Markdown at build time, with
-          // any HTML in the source escaped (scripts/docs-markdown.mjs).
+          // any HTML in the source refused (scripts/docs-markdown.mjs).
           <div
             ref={followLinks}
             lang={htmlLang ?? pageLang}
             dir={rtl ? 'rtl' : 'ltr'}
             className="docs-prose"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: build-time HTML from the docs Markdown, raw HTML escaped
-            dangerouslySetInnerHTML={{ __html: page.data.html }}
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: build-time HTML from the docs Markdown, raw HTML refused at build time
+            dangerouslySetInnerHTML={{
+              // An English page under another language's address keeps its
+              // links in that language.
+              __html:
+                pageLang === 'en'
+                  ? localizeDocLinks(page.data.html, lang)
+                  : page.data.html,
+            }}
           />
         ) : (
           <p className={muted} aria-busy="true">

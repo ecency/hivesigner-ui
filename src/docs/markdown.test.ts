@@ -7,12 +7,20 @@ const render = (source: string, lang = 'en') =>
   renderDoc(source, { lang, file: 'page.md' });
 
 describe('docs Markdown', () => {
-  it('shows HTML in the source as text, never as markup', () => {
-    const { html } = render(
-      'Hi <img src=x onerror=alert(1)> <script>alert(1)</script>\n\n<div>block</div>',
+  it('refuses HTML in the source, and shows it when it is written as code', () => {
+    for (const source of [
+      'Hi <img src=x onerror=alert(1)>',
+      '<script>alert(1)</script>',
+      '<div>block</div>',
+      'text <!-- a comment -->',
+      '## Title <b>x</b> {#title}',
+    ])
+      expect(() => render(source), source).toThrow(/HTML is not allowed/);
+    // With its line, a table cell's too.
+    expect(() => render('| a |\n|---|\n| <b>x</b> |')).toThrow(/page\.md:3:/);
+    expect(render('Use `<script>` and a < b.').html).toBe(
+      '<p>Use <code>&lt;script&gt;</code> and a &lt; b.</p>\n',
     );
-    expect(html).not.toMatch(/<(img|script|div)/);
-    expect(html).toContain('&lt;script&gt;');
   });
 
   it('gives each heading its stable id and lists the headings', () => {

@@ -52,3 +52,22 @@ export function docHref(slug: string, lang = 'en'): string {
   const base = lang === 'en' ? '/docs' : `/docs/${lang.toLowerCase()}`;
   return slug === 'index' ? base : `${base}/${slug}`;
 }
+
+// A link to a docs page as the English build writes it: only the page names
+// there are, so a language code (/docs/de) is never read as one.
+const PAGE_LINK = new RegExp(
+  `href="\\/docs(?:\\/(${DOC_SLUGS.filter((s) => s !== 'index').join('|')}))?(#[a-z0-9-]+)?"`,
+  'g',
+);
+
+/** A page rendered for English, with its links to other docs pages moved to
+    `lang`: an untranslated page shown under /docs/<lang>/ keeps the reader
+    there. The build writes those links exactly as docHref does. */
+export function localizeDocLinks(html: string, lang: string): string {
+  if (lang === 'en') return html;
+  return html.replace(
+    PAGE_LINK,
+    (_all, slug: string | undefined, hash: string | undefined) =>
+      `href="${docHref(slug ?? 'index', lang)}${hash ?? ''}"`,
+  );
+}

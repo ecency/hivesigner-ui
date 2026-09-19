@@ -139,3 +139,30 @@ test('a link to a heading on the same page moves the view, not the focus', async
   await expect(page.locator('#callback-placeholders')).toBeInViewport();
   await expect(page.locator('main h1')).not.toBeFocused();
 });
+
+test('each page arrives in a chunk of its own, not with the app', async ({
+  page,
+  request,
+}) => {
+  // Text from the body of one page only.
+  const tokens = 'What a token looks like';
+  const signLinks = 'A sign link opens a Hive transaction';
+  const shell = await (await request.get('/')).text();
+  const initial = [...shell.matchAll(/src="([^"]+\.js)"/g)].map((m) => m[1]);
+  expect(initial.length).toBeGreaterThan(0);
+  for (const src of initial) {
+    const code = await (await request.get(src)).text();
+    expect(code, src).not.toContain(tokens);
+  }
+  const chunks: Promise<string>[] = [];
+  page.on('response', (res) => {
+    if (res.url().endsWith('.js')) chunks.push(res.text());
+  });
+  await page.goto('/docs/tokens', { waitUntil: 'networkidle' });
+  await expect(page.locator('main h1')).toHaveText('Tokens');
+  const carrying = (await Promise.all(chunks)).filter((c) =>
+    c.includes(tokens),
+  );
+  expect(carrying).toHaveLength(1);
+  expect(carrying[0]).not.toContain(signLinks);
+});

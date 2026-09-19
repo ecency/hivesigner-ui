@@ -32,9 +32,9 @@ function localHref(href, lang) {
 }
 
 function createRenderer(file, lang) {
-  // html: false escapes any HTML in the source, so it shows as text.
+  // HTML is parsed only so that it can be refused below: none reaches a page.
   const md = new MarkdownIt({
-    html: false,
+    html: true,
     linkify: false,
     typographer: false,
   });
@@ -43,7 +43,20 @@ function createRenderer(file, lang) {
 
   md.core.ruler.push('doc_rules', (state) => {
     const seen = new Set();
+    // The last token that knows its line: a table cell's does not.
+    let placed = null;
     state.tokens.forEach((token, i) => {
+      if (token.map) placed = token;
+      if (
+        token.type === 'html_block' ||
+        token.children?.some((c) => c.type === 'html_inline')
+      ) {
+        throw new DocError(
+          file,
+          placed,
+          'HTML is not allowed in the docs: write it as Markdown, or in backticks to show it',
+        );
+      }
       if (token.type === 'code_block') {
         throw new DocError(
           file,
@@ -55,7 +68,7 @@ function createRenderer(file, lang) {
       // reader of the HTML and the Markdown copies, and no translation check
       // covers it. The docs have none.
       if (token.children?.some((c) => c.type === 'image')) {
-        throw new DocError(file, token, 'images are not allowed in the docs');
+        throw new DocError(file, placed, 'images are not allowed in the docs');
       }
       if (token.type === 'fence' && !token.info.trim()) {
         throw new DocError(

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { docHref } from './pages';
+import { docHref, localizeDocLinks } from './pages';
 import { parseDocPath } from './path';
 
 describe('docs paths', () => {
@@ -44,5 +44,18 @@ describe('docs paths', () => {
       ['faq', 'pt'],
     ] as const)
       expect(parseDocPath(docHref(slug, lang))).toEqual({ lang, slug });
+  });
+
+  it('moves the links of an English page shown in another language to that language', () => {
+    const html =
+      '<a href="/docs">h</a><a href="/docs/oauth2#scopes">o</a><a href="/docs/tokens">t</a><a href="/authorized-apps">a</a><a href="https://x.example/docs/y">x</a><code>href=&quot;/docs&quot;</code>';
+    expect(localizeDocLinks(html, 'zh-CN')).toBe(
+      '<a href="/docs/zh-cn">h</a><a href="/docs/zh-cn/oauth2#scopes">o</a><a href="/docs/zh-cn/tokens">t</a><a href="/authorized-apps">a</a><a href="https://x.example/docs/y">x</a><code>href=&quot;/docs&quot;</code>',
+    );
+    expect(localizeDocLinks(html, 'en')).toBe(html);
+    // Only page names are moved: a language's own home is not one.
+    expect(localizeDocLinks('<a href="/docs/de">x</a>', 'de')).toBe(
+      '<a href="/docs/de">x</a>',
+    );
   });
 });

@@ -5,7 +5,7 @@ Some apps only need to know who a person is on Hive. They never post, vote or br
 - **With an app account:** your app has its own Hive account and asks for `scope=login`. The token names your app.
 - **Without an app account:** a site with no Hive account of its own sends only a `redirect_uri`. The token names no app. Your site checks it itself.
 
-Neither needs a grant from the user or from your app account. The user never needs their active key.
+Neither needs a grant from the user or from your app account, so nothing changes on the user's account. Hivesigner signs the sign-in with the posting key, or with the active key when the device has no posting key for the account.
 
 ## With an app account {#app-account}
 

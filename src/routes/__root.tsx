@@ -9,6 +9,7 @@ import { AppFooter } from '@/components/AppFooter';
 import { AppHeader } from '@/components/AppHeader';
 import { gutter } from '@/components/ui';
 import { parseDocPath } from '@/docs/path';
+import { leftDocs } from '@/docs/shown';
 import { applyDeferredLanguage } from '@/i18n';
 import { applyPageMeta, siteOrigin } from '@/lib/page-meta';
 
@@ -28,6 +29,16 @@ function RootLayout() {
     if (parseDocPath(pathname)) return;
     applyPageMeta(pathname, siteOrigin(), (key) => t(key));
   }, [pathname, t]);
+
+  // A page outside the docs is showing: the next docs page is a move, for
+  // its focus (docs/shown.ts). From the settled location: the router's
+  // location moves on first, and a leave can still be called off.
+  const settled = useRouterState({
+    select: (s) => s.resolvedLocation?.pathname,
+  });
+  useEffect(() => {
+    if (settled && !parseDocPath(settled)) leftDocs();
+  }, [settled]);
 
   return (
     // The bars run the FULL width of the viewport and only their contents are

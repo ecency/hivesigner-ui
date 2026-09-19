@@ -9,7 +9,10 @@ import '../i18n';
 // does not apply media queries, so a plain "is it in the DOM" assertion passed
 // while desktop was broken. These tests inspect the responsive visibility
 // utilities on the nav and its ancestors instead.
-const where = vi.hoisted(() => ({ pathname: '/about' }));
+const where = vi.hoisted(() => ({
+  pathname: '/about',
+  settled: undefined as string | undefined,
+}));
 vi.mock('@tanstack/react-router', () => ({
   createRootRoute: (opts: unknown) => opts,
   Outlet: () => <div data-testid="outlet" />,
@@ -17,10 +20,14 @@ vi.mock('@tanstack/react-router', () => ({
     <a href={to}>{children as never}</a>
   ),
   useRouterState: ({ select }: { select: (s: unknown) => unknown }) =>
-    select({ location: { pathname: where.pathname } }),
+    select({
+      location: { pathname: where.pathname },
+      resolvedLocation: { pathname: where.settled ?? where.pathname },
+    }),
   useNavigate: () => () => {},
 }));
 
+import { _resetShownPage, showDocPage } from '@/docs/shown';
 import { Route } from './__root';
 
 const RootLayout = (Route as unknown as { component: ComponentType }).component;
@@ -85,6 +92,25 @@ describe('persistent navigation', () => {
     expect(document.title).toBe('Tokens · Hivesigner');
     expect(document.querySelector('link[rel="canonical"]')).not.toBeNull();
     expect(document.querySelector('meta[name="robots"]')).toBeNull();
+  });
+
+  it('tells the docs when the reader is on a page outside them', () => {
+    // A docs page first: the next docs page is the first one shown.
+    _resetShownPage();
+    where.pathname = '/docs/tokens';
+    render(<RootLayout />).unmount();
+    expect(showDocPage('/docs/faq')).toBe(false);
+    // On the way to another page, before it shows: nothing yet, as the
+    // reader may still stay.
+    where.pathname = '/about';
+    where.settled = '/docs/faq';
+    render(<RootLayout />).unmount();
+    expect(showDocPage('/docs/faq')).toBe(false);
+    // Once it shows, coming back to the docs is a move, to the same page too.
+    where.settled = undefined;
+    render(<RootLayout />);
+    expect(showDocPage('/docs/faq')).toBe(true);
+    _resetShownPage();
   });
 
   it('renders exactly one nav landmark, not a mobile and desktop duplicate', () => {

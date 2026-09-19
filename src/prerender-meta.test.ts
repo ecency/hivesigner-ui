@@ -1,6 +1,7 @@
 import {
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -19,6 +20,7 @@ const {
   buildSitemap,
   docMarkdown,
   docsLlms,
+  writeDocPages,
 } = await import('../scripts/prerender-meta.mjs');
 const shell = readFileSync(
   join(process.cwd(), 'template.html'),
@@ -135,7 +137,7 @@ describe('prerendered docs', () => {
   page(
     'de',
     'oauth2',
-    '## Scopes {#scopes}\n\nSiehe [Tokens](/docs/tokens#check).',
+    '## Scopes {#scopes}\n\nSiehe [Tokens](/docs/tokens#check). Zur [Startseite](/docs).',
   );
   const docs = readDocs(dir);
   const site = 'https://hivesigner.com';
@@ -184,12 +186,34 @@ describe('prerendered docs', () => {
     // for the pages German lacks.
     expect(out).toContain('href="/docs/de/tokens#check"');
     expect(out).toContain('<li><a href="/docs/de/tokens">Tokens</a></li>');
+    // Its link to the German docs home is left as the build wrote it.
+    expect(out).toContain('<a href="/docs/de">Startseite</a>');
+    expect(out).not.toContain('/docs/de/de');
     // A title from a translation is text, never markup, and never a pattern.
     expect(out).not.toContain('<img src=x');
     expect(out).toContain(
       "&lt;img src=x onerror=alert(1)&gt; $' mit OAuth2</h1>",
     );
     expect(out.match(/<\/html>/g)).toHaveLength(1);
+  });
+
+  it('writes a page a language lacks as the English one, kept out of search, with links in that language', () => {
+    const tokens = en.pages.find((p: { slug: string }) => p.slug === 'oauth2');
+    const out = docPageHtml(shell, {
+      lang: 'de',
+      index: { ...de.index, pages: { ...en.index.pages, ...de.index.pages } },
+      page: { ...tokens, info: en.index.pages.oauth2 },
+      languages: [],
+      siteUrl: site,
+      fallback: true,
+    });
+    expect(out).toContain('<html lang="en" dir="ltr">');
+    expect(out).toContain('<meta name="robots" content="noindex, nofollow" />');
+    expect(out).not.toContain('rel="canonical"');
+    expect(out).not.toContain('hreflang');
+    expect(out).toContain('<h1>Sign in with OAuth2</h1>');
+    expect(out).toContain('href="/docs/de/tokens#check"');
+    expect(out).not.toContain('href="/docs/tokens');
   });
 
   it('lists only the English address of a page no other language has', () => {
@@ -231,6 +255,42 @@ describe('prerendered docs', () => {
       '- [Sign in with OAuth2](https://hivesigner.com/docs/oauth2.md): ',
     );
     expect(llms).toContain('(https://hivesigner.com/docs/index.md)');
+  });
+
+  it('writes every page of every language, English where a language has none', () => {
+    const out = mkdtempSync(join(tmpdir(), 'dist-'));
+    try {
+      expect(writeDocPages(out, docs, shell, site)).toBe(4);
+      const files = (readdirSync(out, { recursive: true }) as string[])
+        .filter((f) => /\.(html|md)$/.test(f))
+        .sort();
+      expect(files).toEqual(
+        [
+          'docs/index.html',
+          'docs/index.md',
+          'docs/oauth2/index.html',
+          'docs/oauth2.md',
+          'docs/tokens/index.html',
+          'docs/tokens.md',
+          // German's own page, with its Markdown copy
+          'docs/de/oauth2/index.html',
+          'docs/de/oauth2.md',
+          // and the two it lacks, as English, with no copy
+          'docs/de/index.html',
+          'docs/de/tokens/index.html',
+        ].sort(),
+      );
+      const fallback = readFileSync(
+        join(out, 'docs/de/tokens/index.html'),
+        'utf8',
+      );
+      expect(fallback).toContain(
+        '<meta name="robots" content="noindex, nofollow" />',
+      );
+      expect(fallback).toContain('<h1>Tokens</h1>');
+    } finally {
+      rmSync(out, { recursive: true });
+    }
   });
 
   it('refuses a folder that is not one of the languages the app ships', () => {

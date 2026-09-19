@@ -31,7 +31,7 @@ vi.mock('./content', async (importOriginal) => {
       }
       return lang === 'de'
         ? {
-            html: '<p>Ein Konto hinzufügen.</p><h2 id="add">Hinzufügen</h2>',
+            html: '<p>Ein Konto hinzufügen. <a href="/docs/de">Start</a></p><h2 id="add">Hinzufügen</h2>',
             headings: [{ level: 2, id: 'add', text: 'Hinzufügen' }],
             links: [],
           }
@@ -41,7 +41,8 @@ vi.mock('./content', async (importOriginal) => {
 });
 
 import { routerState } from '../test-router-mock';
-import { _resetShownPage, DocsView } from './DocsView';
+import { DocsView } from './DocsView';
+import { _resetShownPage, leftDocs } from './shown';
 
 const clients: QueryClient[] = [];
 
@@ -129,8 +130,13 @@ describe('a docs page', () => {
   it('reads a translated page in its language, with links that stay in it', async () => {
     show('de', 'accounts', '/docs/de/accounts');
     expect(
-      await screen.findByText('Ein Konto hinzufügen.'),
+      await screen.findByText(/Ein Konto hinzufügen\./),
     ).toBeInTheDocument();
+    // A translated page's own links are left as its build wrote them.
+    expect(screen.getByRole('link', { name: 'Start' })).toHaveAttribute(
+      'href',
+      '/docs/de',
+    );
     expect(
       screen.getByRole('heading', { level: 1, name: 'Konten' }),
     ).toBeInTheDocument();
@@ -157,6 +163,13 @@ describe('a docs page', () => {
     expect(screen.getByRole('note')).toHaveTextContent(
       'This page is not available in Deutsch yet, so it is shown in English.',
     );
+    // Its links stay in German space, where the reader came from.
+    expect(
+      document.querySelector('.docs-prose a[href^="/docs/de/tokens"]'),
+    ).not.toBeNull();
+    expect(
+      document.querySelector('.docs-prose a[href^="/docs/tokens"]'),
+    ).toBeNull();
     // Said in the app's language, so not inside the English page.
     expect(screen.getByRole('note').closest('[lang]')).toBe(
       document.documentElement,
@@ -310,6 +323,19 @@ describe('a docs page', () => {
       level: 1,
       name: 'Sign in with OAuth2',
     });
+    await waitFor(() => expect(document.activeElement).toBe(title));
+  });
+
+  it('focuses a docs page again after the reader went elsewhere in the app', async () => {
+    _resetShownPage();
+    const first = show('en', 'faq', '/docs/faq');
+    await waitFor(() =>
+      expect(document.querySelector('.docs-prose')).not.toBeNull(),
+    );
+    first.unmount();
+    leftDocs();
+    show('en', 'faq', '/docs/faq', clients.at(-1));
+    const title = screen.getByRole('heading', { level: 1, name: 'FAQ' });
     await waitFor(() => expect(document.activeElement).toBe(title));
   });
 
