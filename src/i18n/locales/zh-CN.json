@@ -175,7 +175,6 @@
     "apps": "应用",
     "accounts": "账户",
     "settings": "设置",
-    "developers": "开发者",
     "about": "关于",
     "documentation": "文档",
     "signs": "签名工具",
@@ -254,14 +253,6 @@
     "missing_active_key": "此操作需要活动密钥，但此设备上没有 {account} 的活动密钥。",
     "missing_owner_key": "此操作需要所有者密钥，但此设备上没有 {account} 的所有者密钥。",
     "loading_rate": "正在加载当前的 Hive Power 换算比率……"
-  },
-  "developers": {
-    "developers": "开发者",
-    "add_app_title": "添加您的应用",
-    "add_app_body": "为您的应用创建一个 Hive 账户，用该账户在此登录，并在其个人资料页面中列出您的重定向 URI。",
-    "sdk_title": "Hivesigner JS SDK",
-    "sdk_body": "使用官方 SDK 进行集成：<sdk>hivesigner.js</sdk>。",
-    "docs_at": "完整文档请访问 <docs>docs.hivesigner.com</docs>。"
   },
   "settings": {
     "language": "语言",
@@ -447,7 +438,6 @@
   "meta": {
     "home": "Hivesigner - 登录 Hive 应用，无需共享密钥",
     "apps": "使用 Hivesigner 的应用",
-    "developers": "开发者",
     "about": "关于",
     "signs": "签名工具",
     "sign": "确认交易",
@@ -461,5 +451,14 @@
     "authorized_apps": "已授权应用",
     "signmessage": "签名消息",
     "verifymessage": "验证消息"
+  },
+  "docs": {
+    "contents": "目录",
+    "not_translated": "此页面尚无{language}版本，因此以英文显示。",
+    "also_in": "此页面也有<lang>{language}</lang>版本。",
+    "previous": "上一页",
+    "next": "下一页",
+    "edit": "在 GitHub 上建议修改",
+    "load_failed": "无法加载此页面。请检查网络连接后重试。"
   }
 }

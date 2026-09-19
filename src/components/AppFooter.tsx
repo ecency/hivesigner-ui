@@ -1,11 +1,14 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router';
 import { Trans, useTranslation } from 'react-i18next';
 import { BrandMark } from '@/components/Brand';
 import { LanguageSelect } from '@/components/LanguageSelect';
 import { gutter } from '@/components/ui';
+import { DOC_LANGUAGES } from '@/docs/content';
+import { DocLink, useDocHref } from '@/docs/DocLink';
+import { docHref } from '@/docs/pages';
+import { parseDocPath } from '@/docs/path';
 
 const GITHUB = 'https://github.com/ecency/hivesigner-ui';
-const DOCS = 'https://docs.hivesigner.com/';
 
 /**
  * Site footer: the brand line and every destination that is not a section of
@@ -14,6 +17,9 @@ const DOCS = 'https://docs.hivesigner.com/';
  */
 export function AppFooter() {
   const { t } = useTranslation();
+  const docs = useDocHref();
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const item = 'text-[13px] text-muted no-underline hover:text-ink';
 
   const internal = [
@@ -23,7 +29,6 @@ export function AppFooter() {
     { to: '/authorized-apps', label: t('footer.authorized_apps') },
     { to: '/signmessage', label: t('footer.sign_message') },
     { to: '/verifymessage', label: t('footer.verify_message') },
-    { to: '/developers', label: t('footer.developers') },
     { to: '/settings', label: t('footer.settings') },
     { to: '/about', label: t('footer.about') },
   ] as const;
@@ -67,7 +72,22 @@ export function AppFooter() {
           {/* Where people look for it on any site, and on every page: someone
               who landed in a language they cannot read must not have to find
               Settings first. */}
-          <LanguageSelect className="mt-2 w-full max-w-[220px]" />
+          <LanguageSelect
+            className="mt-2 w-full max-w-[220px]"
+            // On a docs page the page follows: the same page in the new
+            // language, or in English while the docs do not have it.
+            onPicked={(applied, lang) => {
+              const doc = parseDocPath(pathname);
+              if (!applied || !doc) return;
+              navigate({
+                href: docHref(
+                  doc.slug,
+                  DOC_LANGUAGES.includes(lang) ? lang : 'en',
+                ),
+                replace: true,
+              });
+            }}
+          />
         </div>
 
         {/* Two columns on a phone, three from sm: eleven short links, so a
@@ -78,14 +98,9 @@ export function AppFooter() {
               {l.label}
             </Link>
           ))}
-          <a
-            href={DOCS}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={item}
-          >
+          <DocLink href={docs} className={item}>
             {t('footer.documentation')}
-          </a>
+          </DocLink>
           <a
             href={GITHUB}
             target="_blank"

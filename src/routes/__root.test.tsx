@@ -17,6 +17,7 @@ vi.mock('@tanstack/react-router', () => ({
   ),
   useRouterState: ({ select }: { select: (s: unknown) => unknown }) =>
     select({ location: { pathname: '/about' } }),
+  useNavigate: () => () => {},
 }));
 
 import { Route } from './__root';
@@ -37,13 +38,7 @@ describe('persistent navigation', () => {
   it('renders the nav with the destinations the Nuxt app offered', () => {
     render(<RootLayout />);
     const nav = screen.getByRole('navigation');
-    for (const label of [
-      /apps/i,
-      /accounts/i,
-      /signer/i,
-      /developers/i,
-      /docs/i,
-    ]) {
+    for (const label of [/apps/i, /accounts/i, /signer/i, /docs/i]) {
       expect(
         screen
           .getAllByRole('link')

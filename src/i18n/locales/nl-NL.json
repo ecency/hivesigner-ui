@@ -177,7 +177,6 @@
     "apps": "Apps",
     "accounts": "Accounts",
     "settings": "Instellingen",
-    "developers": "Ontwikkelaars",
     "about": "Over",
     "documentation": "Documentatie",
     "signs": "Ondertekenen",
@@ -259,14 +258,6 @@
     "missing_active_key": "Hiervoor is je active-sleutel nodig, maar die is hier niet aanwezig voor {account}.",
     "missing_owner_key": "Hiervoor is je owner-sleutel nodig, maar die is hier niet aanwezig voor {account}.",
     "loading_rate": "Huidige koers van HIVE Power laden…"
-  },
-  "developers": {
-    "developers": "Ontwikkelaars",
-    "add_app_title": "Je app toevoegen",
-    "add_app_body": "Maak een Hive-account aan voor je app, log daarmee hier in en vermeld je doorstuur-URI's op de profielpagina van dat account.",
-    "sdk_title": "Hivesigner JS SDK",
-    "sdk_body": "Integreer met de officiële SDK: <sdk>hivesigner.js</sdk>.",
-    "docs_at": "De volledige documentatie staat op <docs>docs.hivesigner.com</docs>."
   },
   "settings": {
     "language": "Taal",
@@ -452,7 +443,6 @@
   "meta": {
     "home": "Hivesigner - Inloggen bij Hive-apps zonder je sleutels te delen",
     "apps": "Apps die Hivesigner gebruiken",
-    "developers": "Ontwikkelaars",
     "about": "Over Hivesigner",
     "signs": "Ondertekenen",
     "sign": "Transactie bevestigen",
@@ -466,5 +456,14 @@
     "authorized_apps": "Geautoriseerde apps",
     "signmessage": "Een bericht ondertekenen",
     "verifymessage": "Een bericht verifiëren"
+  },
+  "docs": {
+    "contents": "Inhoud",
+    "not_translated": "Deze pagina is nog niet beschikbaar in {language} en wordt daarom in het Engels getoond.",
+    "also_in": "Deze pagina is ook beschikbaar in <lang>{language}</lang>.",
+    "previous": "Vorige",
+    "next": "Volgende",
+    "edit": "Stel een wijziging voor op GitHub",
+    "load_failed": "Deze pagina kon niet worden geladen. Controleer je verbinding en probeer het opnieuw."
   }
 }

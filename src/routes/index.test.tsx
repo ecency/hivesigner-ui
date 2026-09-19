@@ -100,7 +100,7 @@ describe('/', () => {
     ).not.toBeNull();
     expect(
       screen.getByRole('link', { name: /developer docs/i }),
-    ).toHaveAttribute('href', '/developers');
+    ).toHaveAttribute('href', '/docs/how-it-works');
     expect(screen.getByRole('link', { name: /browse apps/i })).toHaveAttribute(
       'href',
       '/apps',

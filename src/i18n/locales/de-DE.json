@@ -177,7 +177,6 @@
     "apps": "Apps",
     "accounts": "Konten",
     "settings": "Einstellungen",
-    "developers": "Entwickler",
     "about": "Über",
     "documentation": "Doku",
     "signs": "Signieren",
@@ -259,14 +258,6 @@
     "missing_active_key": "Dafür wird Ihr Active-Schlüssel benötigt, der für {account} hier nicht vorhanden ist.",
     "missing_owner_key": "Dafür wird Ihr Owner-Schlüssel benötigt, der für {account} hier nicht vorhanden ist.",
     "loading_rate": "Aktueller Umrechnungskurs für HIVE Power wird geladen…"
-  },
-  "developers": {
-    "developers": "Entwickler",
-    "add_app_title": "Ihre App hinzufügen",
-    "add_app_body": "Erstellen Sie ein Hive-Konto für Ihre App, melden Sie sich hier damit an und tragen Sie Ihre Weiterleitungs-URIs auf seiner Profilseite ein.",
-    "sdk_title": "Hivesigner JS SDK",
-    "sdk_body": "Integrieren Sie das offizielle SDK: <sdk>hivesigner.js</sdk>.",
-    "docs_at": "Die vollständige Dokumentation finden Sie unter <docs>docs.hivesigner.com</docs>."
   },
   "settings": {
     "language": "Sprache",
@@ -452,7 +443,6 @@
   "meta": {
     "home": "Hivesigner - Bei Hive-Apps anmelden, ohne Ihre Schlüssel preiszugeben",
     "apps": "Apps, die Hivesigner verwenden",
-    "developers": "Entwickler",
     "about": "Über Hivesigner",
     "signs": "Signieren",
     "sign": "Transaktion bestätigen",
@@ -466,5 +456,14 @@
     "authorized_apps": "Autorisierte Apps",
     "signmessage": "Nachricht signieren",
     "verifymessage": "Nachricht verifizieren"
+  },
+  "docs": {
+    "contents": "Inhalt",
+    "not_translated": "Diese Seite gibt es noch nicht auf {language}, daher wird sie auf Englisch angezeigt.",
+    "also_in": "Diese Seite gibt es auch auf <lang>{language}</lang>.",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "edit": "Änderung auf GitHub vorschlagen",
+    "load_failed": "Diese Seite konnte nicht geladen werden. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut."
   }
 }

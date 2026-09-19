@@ -1,15 +1,26 @@
 // After `rsbuild build`: write one HTML file per PUBLIC page with that page's
 // own title, description, canonical and share URL, and a fallback shell for
-// every other path with no canonical and a noindex hint.
+// every other path with no canonical and a noindex hint. Docs pages also carry
+// their content, their other languages and a Markdown copy, and the sitemap
+// is written from the same tables.
 //
 // Crawlers and link unfurlers read the HTML nginx returns and run nothing.
 // With a single shell every route carried the HOMEPAGE canonical, so a crawler
 // fetching /apps was told it was a copy of /, and the sitemap's five URLs
 // consolidated into one. nginx's `try_files $uri $uri/index.html /app.html`
 // resolves /apps to dist/apps/index.html, and anything else to app.html.
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
+import { DOC_SECTIONS, DOC_SLUGS, docHref } from '../src/docs/pages.ts';
+import { LANGUAGES } from '../src/i18n/languages.ts';
 import { fullTitle, PUBLIC_PAGES } from '../src/lib/page-meta.ts';
+import { renderDoc } from './docs-markdown.mjs';
 
 const escapeAttr = (s) =>
   s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -50,6 +61,148 @@ export function rewriteShell(html, meta, url) {
   return out;
 }
 
+const escapeText = (s) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** The `lang` a language's pages declare, and whether it runs right to left. */
+function langInfo(code) {
+  const info = LANGUAGES.find((l) => l.code === code) ?? LANGUAGES[0];
+  return { tag: info.htmlLang ?? info.code, rtl: !!info.rtl };
+}
+
+/**
+ * Every docs page there is, by language: English has them all, another
+ * language the pages its pages.json lists. `docsDir` is src/docs.
+ */
+export function readDocs(docsDir) {
+  const languages = readdirSync(docsDir, { withFileTypes: true })
+    .filter(
+      (e) => e.isDirectory() && existsSync(join(docsDir, e.name, 'pages.json')),
+    )
+    .map((e) => e.name)
+    .sort((a, b) => (a === 'en' ? -1 : b === 'en' ? 1 : a.localeCompare(b)));
+  return languages.map((lang) => {
+    const index = JSON.parse(
+      readFileSync(join(docsDir, lang, 'pages.json'), 'utf8'),
+    );
+    const pages = DOC_SLUGS.filter((slug) =>
+      Object.hasOwn(index.pages, slug),
+    ).map((slug) => {
+      const file = join(docsDir, lang, `${slug}.md`);
+      const source = readFileSync(file, 'utf8');
+      return { slug, source, ...renderDoc(source, { lang, file }) };
+    });
+    return { lang, index, pages };
+  });
+}
+
+/** Which languages have each page, for the hreflang links. */
+function translationsOf(docs) {
+  const map = new Map();
+  for (const { lang, pages } of docs)
+    for (const { slug } of pages)
+      map.set(slug, [...(map.get(slug) ?? []), lang]);
+  return map;
+}
+
+/**
+ * A docs page's HTML: the shell with the page's metadata, its language, the
+ * same page in the other languages, and its content for readers that run no
+ * scripts (the app replaces it; see [data-prerendered] in globals.css).
+ */
+export function docPageHtml(shell, { lang, index, page, languages, siteUrl }) {
+  // The language's own titles, English for the pages it has not translated.
+  const titles = index.pages;
+  const info = titles[page.slug];
+  const url = `${siteUrl}${docHref(page.slug, lang)}`;
+  const { tag, rtl } = langInfo(lang);
+  const alternates = [
+    ...languages.map(
+      (l) =>
+        `<link rel="alternate" hreflang="${langInfo(l).tag}" href="${siteUrl}${docHref(page.slug, l)}" />`,
+    ),
+    `<link rel="alternate" hreflang="x-default" href="${siteUrl}${docHref(page.slug)}" />`,
+  ];
+  const nav = DOC_SECTIONS.flatMap((section) => section.pages)
+    .filter((slug) => Object.hasOwn(titles, slug))
+    .map(
+      (slug) =>
+        `<li><a href="${docHref(slug, lang)}">${escapeText(titles[slug].title)}</a></li>`,
+    )
+    .join('');
+  const body = `<div data-prerendered class="mx-auto w-full max-w-5xl px-4 sm:px-6"><article lang="${tag}" dir="${rtl ? 'rtl' : 'ltr'}"><h1>${escapeText(info.title)}</h1><div class="docs-prose">${page.html}</div></article><nav><ul><li><a href="${docHref('index', lang)}">${escapeText(titles.index.title)}</a></li>${nav}</ul></nav></div>`;
+  return rewriteShell(
+    shell,
+    { title: info.title, description: info.description, indexable: true },
+    url,
+  )
+    .replace(
+      /<html lang="[^"]*">/,
+      `<html lang="${tag}" dir="${rtl ? 'rtl' : 'ltr'}">`,
+    )
+    .replace('</head>', `    ${alternates.join('\n    ')}\n  </head>`)
+    .replace('<div id="root"></div>', `<div id="root">${body}</div>`);
+}
+
+/** The sitemap: the public app pages, then every docs page in every language
+    it has, each listing the others. */
+export function buildSitemap(siteUrl, docs) {
+  const translations = translationsOf(docs);
+  const entry = (path, alternates = []) =>
+    `  <url><loc>${siteUrl}${path}</loc>${alternates.join('')}</url>`;
+  const urls = Object.keys(PUBLIC_PAGES).map((path) => entry(path));
+  for (const { lang, pages } of docs)
+    for (const { slug } of pages) {
+      const langs = translations.get(slug);
+      urls.push(
+        entry(
+          docHref(slug, lang),
+          langs.length > 1
+            ? langs.map(
+                (l) =>
+                  `<xhtml:link rel="alternate" hreflang="${langInfo(l).tag}" href="${siteUrl}${docHref(slug, l)}"/>`,
+              )
+            : [],
+        ),
+      );
+    }
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${urls.join('\n')}
+</urlset>
+`;
+}
+
+/** A page as Markdown for tools that read docs (llms.txt links to these):
+    its title on top, the heading ids left out and every link absolute, as
+    the file is read on its own. */
+export function docMarkdown(title, source, siteUrl) {
+  const body = source
+    .replace(/[ \t]*\{#[a-z0-9-]+\}[ \t]*$/gm, '')
+    .replace(/\]\(\//g, `](${siteUrl}/`);
+  return `# ${title}\n\n${body}`;
+}
+
+/** /docs/llms.txt: the English pages, by section, as Markdown links. */
+export function docsLlms(siteUrl, index) {
+  const line = (slug) =>
+    `- [${index.pages[slug].title}](${siteUrl}${slug === 'index' ? '/docs/index' : docHref(slug)}.md): ${index.pages[slug].description}`;
+  return [
+    `# ${index.pages.index.title}`,
+    '',
+    `> ${index.pages.index.description}`,
+    '',
+    line('index'),
+    ...DOC_SECTIONS.flatMap((section) => [
+      '',
+      `## ${index.sections[section.key]}`,
+      '',
+      ...section.pages.map(line),
+    ]),
+    '',
+  ].join('\n');
+}
+
 const isMain =
   process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop());
 if (isMain) {
@@ -70,6 +223,45 @@ if (isMain) {
     writeFileSync(file, rewriteShell(shell, meta, url));
     written += 1;
   }
+
+  const docs = readDocs(join(dirname(import.meta.dirname), 'src', 'docs'));
+  const translations = translationsOf(docs);
+  const english = docs.find((d) => d.lang === 'en');
+  for (const { lang, index, pages } of docs) {
+    for (const page of pages) {
+      const path = docHref(page.slug, lang);
+      const file = join(dist, path.slice(1), 'index.html');
+      mkdirSync(dirname(file), { recursive: true });
+      writeFileSync(
+        file,
+        docPageHtml(shell, {
+          lang,
+          index: {
+            ...index,
+            pages: { ...english.index.pages, ...index.pages },
+          },
+          page,
+          languages: translations.get(page.slug),
+          siteUrl,
+        }),
+      );
+      const copy = join(
+        dist,
+        `${page.slug === 'index' ? `${path}/index` : path}.md`.slice(1),
+      );
+      writeFileSync(
+        copy,
+        docMarkdown(index.pages[page.slug].title, page.source, siteUrl),
+      );
+      written += 1;
+    }
+  }
+  writeFileSync(
+    join(dist, 'docs', 'llms.txt'),
+    docsLlms(siteUrl, english.index),
+  );
+  writeFileSync(join(dist, 'sitemap.xml'), buildSitemap(siteUrl, docs));
+
   writeFileSync(
     join(dist, 'app.html'),
     rewriteShell(
@@ -83,6 +275,6 @@ if (isMain) {
     ),
   );
   console.log(
-    `[prerender-meta] ${written} public page(s) + app.html written for ${siteUrl}`,
+    `[prerender-meta] ${written} page(s), their Markdown copies, the sitemap and app.html written for ${siteUrl}`,
   );
 }

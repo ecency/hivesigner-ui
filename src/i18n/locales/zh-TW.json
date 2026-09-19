@@ -175,7 +175,6 @@
     "apps": "應用程式",
     "accounts": "帳號",
     "settings": "設定",
-    "developers": "開發者",
     "about": "關於",
     "documentation": "文件",
     "signs": "簽署工具",
@@ -254,14 +253,6 @@
     "missing_active_key": "此操作需要活躍金鑰，但這個裝置上沒有 {account} 的活躍金鑰。",
     "missing_owner_key": "此操作需要擁有者金鑰，但這個裝置上沒有 {account} 的擁有者金鑰。",
     "loading_rate": "正在載入目前的 Hive Power 換算比率……"
-  },
-  "developers": {
-    "developers": "開發者",
-    "add_app_title": "新增你的應用程式",
-    "add_app_body": "為你的應用程式建立一個 Hive 帳號，用該帳號在這裡登入，並在它的個人檔案頁面列出你的重新導向 URI。",
-    "sdk_title": "Hivesigner JS SDK",
-    "sdk_body": "使用官方 SDK 串接：<sdk>hivesigner.js</sdk>。",
-    "docs_at": "完整說明文件請見 <docs>docs.hivesigner.com</docs>。"
   },
   "settings": {
     "language": "語言",
@@ -447,7 +438,6 @@
   "meta": {
     "home": "Hivesigner - 登入 Hive 應用程式，不必分享金鑰",
     "apps": "使用 Hivesigner 的應用程式",
-    "developers": "開發者",
     "about": "關於",
     "signs": "簽署工具",
     "sign": "確認交易",
@@ -461,5 +451,14 @@
     "authorized_apps": "已授權的應用程式",
     "signmessage": "簽署訊息",
     "verifymessage": "驗證訊息"
+  },
+  "docs": {
+    "contents": "目錄",
+    "not_translated": "此頁面尚無{language}版本，因此以英文顯示。",
+    "also_in": "此頁面也有<lang>{language}</lang>版本。",
+    "previous": "上一頁",
+    "next": "下一頁",
+    "edit": "在 GitHub 上建議修改",
+    "load_failed": "無法載入此頁面。請檢查網路連線後再試一次。"
   }
 }

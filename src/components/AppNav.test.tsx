@@ -36,8 +36,12 @@ describe('AppNav', () => {
   it('offers every destination', () => {
     render(<AppNav />);
     const labels = screen.getAllByRole('link').map((a) => a.textContent);
-    // Apps, Accounts, Signer, Developers and the external Docs link.
-    expect(labels).toHaveLength(5);
+    expect(labels).toEqual(['Apps', 'Accounts', 'Signer', 'Docs']);
+    // The docs are part of the app now, not a site of their own.
+    expect(screen.getByRole('link', { name: 'Docs' })).toHaveAttribute(
+      'href',
+      '/docs',
+    );
   });
 
   // The active item had NO underline at all in production. Two things caused

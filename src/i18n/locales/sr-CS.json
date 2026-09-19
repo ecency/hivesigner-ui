@@ -179,7 +179,6 @@
     "apps": "Aplikacije",
     "accounts": "Nalozi",
     "settings": "Podešavanja",
-    "developers": "Programeri",
     "about": "O servisu",
     "documentation": "Dokumentacija",
     "signs": "Potpisivanje",
@@ -264,14 +263,6 @@
     "missing_active_key": "Za ovo je potreban vaš aktivni ključ, koji nalog {account} ovde nema.",
     "missing_owner_key": "Za ovo je potreban vaš vlasnički ključ, koji nalog {account} ovde nema.",
     "loading_rate": "Učitavanje trenutnog kursa za Hive Power…"
-  },
-  "developers": {
-    "developers": "Programeri",
-    "add_app_title": "Dodajte svoju aplikaciju",
-    "add_app_body": "Napravite Hive nalog za svoju aplikaciju, prijavite se njime ovde i navedite URI adrese za preusmeravanje na stranici njegovog profila.",
-    "sdk_title": "JS SDK za Hivesigner",
-    "sdk_body": "Integrišite pomoću zvaničnog SDK paketa: <sdk>hivesigner.js</sdk>.",
-    "docs_at": "Kompletna dokumentacija je na <docs>docs.hivesigner.com</docs>."
   },
   "settings": {
     "language": "Jezik",
@@ -457,7 +448,6 @@
   "meta": {
     "home": "Hivesigner - Prijava u Hive aplikacije bez deljenja ključeva",
     "apps": "Aplikacije koje koriste Hivesigner",
-    "developers": "Programeri",
     "about": "O servisu",
     "signs": "Potpisivanje",
     "sign": "Potvrda transakcije",
@@ -471,5 +461,14 @@
     "authorized_apps": "Ovlašćene aplikacije",
     "signmessage": "Potpisivanje poruke",
     "verifymessage": "Provera poruke"
+  },
+  "docs": {
+    "contents": "Sadržaj",
+    "not_translated": "Ova stranica još nije dostupna na jeziku {language}, pa je prikazana na engleskom.",
+    "also_in": "Ova stranica je dostupna i na jeziku <lang>{language}</lang>.",
+    "previous": "Prethodna",
+    "next": "Sledeća",
+    "edit": "Predložite izmenu na GitHubu",
+    "load_failed": "Stranica nije mogla da se učita. Proverite vezu i pokušajte ponovo."
   }
 }

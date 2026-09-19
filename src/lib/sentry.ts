@@ -212,7 +212,7 @@ const ROUTE_FAMILIES = new Set([
   'authorize',
   'authorized-apps',
   'auths',
-  'developers',
+  'docs',
   'import',
   'login',
   'login-request',

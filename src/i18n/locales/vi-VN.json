@@ -175,7 +175,6 @@
     "apps": "Ứng dụng",
     "accounts": "Tài khoản",
     "settings": "Cài đặt",
-    "developers": "Nhà phát triển",
     "about": "Giới thiệu",
     "documentation": "Tài liệu",
     "signs": "Ký giao dịch",
@@ -254,14 +253,6 @@
     "missing_active_key": "Thao tác này cần khóa active của bạn, nhưng khóa active của {account} không có ở đây.",
     "missing_owner_key": "Thao tác này cần khóa owner của bạn, nhưng khóa owner của {account} không có ở đây.",
     "loading_rate": "Đang tải tỷ lệ Hive Power hiện tại…"
-  },
-  "developers": {
-    "developers": "Nhà phát triển",
-    "add_app_title": "Thêm ứng dụng của bạn",
-    "add_app_body": "Tạo một tài khoản Hive cho ứng dụng của bạn, đăng nhập bằng tài khoản đó tại đây và liệt kê các URI chuyển hướng trên trang hồ sơ của tài khoản.",
-    "sdk_title": "SDK JS của Hivesigner",
-    "sdk_body": "Tích hợp bằng SDK chính thức: <sdk>hivesigner.js</sdk>.",
-    "docs_at": "Tài liệu đầy đủ có tại <docs>docs.hivesigner.com</docs>."
   },
   "settings": {
     "language": "Ngôn ngữ",
@@ -447,7 +438,6 @@
   "meta": {
     "home": "Hivesigner - Đăng nhập vào các ứng dụng Hive mà không cần chia sẻ khóa của bạn",
     "apps": "Các ứng dụng dùng Hivesigner",
-    "developers": "Nhà phát triển",
     "about": "Giới thiệu",
     "signs": "Ký giao dịch",
     "sign": "Xác nhận giao dịch",
@@ -461,5 +451,14 @@
     "authorized_apps": "Ứng dụng đã cấp quyền",
     "signmessage": "Ký thông điệp",
     "verifymessage": "Xác minh thông điệp"
+  },
+  "docs": {
+    "contents": "Mục lục",
+    "not_translated": "Trang này chưa có bản {language} nên được hiển thị bằng tiếng Anh.",
+    "also_in": "Trang này cũng có bản <lang>{language}</lang>.",
+    "previous": "Trước",
+    "next": "Tiếp",
+    "edit": "Đề xuất thay đổi trên GitHub",
+    "load_failed": "Không tải được trang này. Vui lòng kiểm tra kết nối rồi thử lại."
   }
 }

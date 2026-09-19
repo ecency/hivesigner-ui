@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "Using Hivesigner",
+    "developers": "Building with Hivesigner",
+    "more": "More"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner docs",
+      "description": "Everything about Hivesigner: for people who sign in to Hive apps with it and for developers who add it to theirs."
+    },
+    "accounts": {
+      "title": "Add and manage accounts",
+      "description": "Add a Hive account to Hivesigner, protect it with a passcode and switch between accounts."
+    },
+    "signing-in": {
+      "title": "Sign in to apps",
+      "description": "What happens when an app asks you to sign in, what it can do afterwards and how to remove its access."
+    },
+    "signing": {
+      "title": "Review and sign",
+      "description": "What Hivesigner shows you before you sign a transaction or a message, with the key each one needs."
+    },
+    "safety": {
+      "title": "Keep your keys safe",
+      "description": "Which key to add, where it is stored and how to spot a fake Hivesigner page."
+    },
+    "how-it-works": {
+      "title": "How Hivesigner works",
+      "description": "Hivesigner has two parts, the browser signer and the API. This is how an app uses each."
+    },
+    "register-app": {
+      "title": "Register your app",
+      "description": "Turn a Hive account into a Hivesigner app: callbacks, client secret and the posting authority it needs."
+    },
+    "oauth2": {
+      "title": "Sign in with OAuth2",
+      "description": "Send people to Hivesigner to sign in and come back with a token: the token and code flows, scopes and parameters."
+    },
+    "tokens": {
+      "title": "Tokens",
+      "description": "What a Hivesigner token contains, how long it lasts and how your server checks one."
+    },
+    "api": {
+      "title": "REST API",
+      "description": "The Hivesigner API endpoints: your user's account, broadcasting, tokens and the app directory."
+    },
+    "sign-links": {
+      "title": "Sign links",
+      "description": "Links that open a transaction in Hivesigner for review and signing, with a callback when it is done."
+    },
+    "message-signing": {
+      "title": "Message signing",
+      "description": "Ask a user to sign a message with their key, compatible with Hive Keychain's requestSignBuffer."
+    },
+    "sdk": {
+      "title": "SDKs",
+      "description": "The JavaScript SDK and community libraries for Python."
+    },
+    "login-only": {
+      "title": "Sign-in without posting access",
+      "description": "Use a Hive account to sign people in when your app never broadcasts for them."
+    },
+    "image-uploads": {
+      "title": "Image uploads",
+      "description": "Let people upload images with their Hivesigner sign-in, through an imagehoster you run."
+    },
+    "faq": {
+      "title": "FAQ",
+      "description": "Answers to common questions from people and developers."
+    }
+  }
+}

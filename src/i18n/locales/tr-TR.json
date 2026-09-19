@@ -177,7 +177,6 @@
     "apps": "Uygulamalar",
     "accounts": "Hesaplar",
     "settings": "Ayarlar",
-    "developers": "Geliştiriciler",
     "about": "Hakkında",
     "documentation": "Belgeler",
     "signs": "İmzalayıcı",
@@ -259,14 +258,6 @@
     "missing_active_key": "Bunun için aktif anahtarınız gerekiyor, ancak burada {account} için bu anahtar kayıtlı değil.",
     "missing_owner_key": "Bunun için sahip anahtarınız gerekiyor, ancak burada {account} için bu anahtar kayıtlı değil.",
     "loading_rate": "Güncel Hive Power oranı yükleniyor…"
-  },
-  "developers": {
-    "developers": "Geliştiriciler",
-    "add_app_title": "Uygulamanızı ekleyin",
-    "add_app_body": "Uygulamanız için bir Hive hesabı oluşturun, bu hesapla burada giriş yapın ve yönlendirme URI'lerinizi hesabın profil sayfasına ekleyin.",
-    "sdk_title": "Hivesigner için JS SDK",
-    "sdk_body": "Resmî SDK ile entegre edin: <sdk>hivesigner.js</sdk>.",
-    "docs_at": "Belgelerin tamamı <docs>docs.hivesigner.com</docs> adresinde."
   },
   "settings": {
     "language": "Dil",
@@ -452,7 +443,6 @@
   "meta": {
     "home": "Hivesigner - Anahtarlarınızı paylaşmadan Hive uygulamalarına giriş yapın",
     "apps": "Hivesigner kullanan uygulamalar",
-    "developers": "Geliştiriciler",
     "about": "Hakkında",
     "signs": "İmzalayıcı",
     "sign": "İşlemi onayla",
@@ -466,5 +456,14 @@
     "authorized_apps": "Yetkili uygulamalar",
     "signmessage": "Mesaj imzalama",
     "verifymessage": "Mesaj doğrulama"
+  },
+  "docs": {
+    "contents": "İçindekiler",
+    "not_translated": "Bu sayfa henüz {language} dilinde yok, bu yüzden İngilizce gösteriliyor.",
+    "also_in": "Bu sayfa <lang>{language}</lang> dilinde de var.",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "edit": "GitHub'da değişiklik önerin",
+    "load_failed": "Bu sayfa yüklenemedi. Lütfen bağlantınızı kontrol edip tekrar deneyin."
   }
 }

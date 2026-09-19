@@ -58,7 +58,7 @@ export function LanguageSelect({
   /** Form-field height, for the settings page. */
   tall?: boolean;
   /** Called once a pick has been applied, with whether it could be. */
-  onPicked?: (applied: boolean) => void;
+  onPicked?: (applied: boolean, lang: Language) => void;
 }) {
   const { t, i18n } = useTranslation();
   // The pick shows at once, even while its dictionary is still on the way.
@@ -84,7 +84,7 @@ export function LanguageSelect({
     setPending(null);
     // The menu shows the language the page is in again; say why.
     setFailed(!applied);
-    onPicked?.(applied);
+    onPicked?.(applied, value);
   }
 
   function commit() {

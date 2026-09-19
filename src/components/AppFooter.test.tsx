@@ -1,11 +1,18 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import '../i18n';
+import { switchLanguage } from '../i18n';
 
 vi.mock('@tanstack/react-router', async () =>
   (await import('../test-router-mock')).routerMock(),
 );
+// German has docs of its own here; Japanese does not.
+vi.mock('@/docs/content', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/docs/content')>()),
+  DOC_LANGUAGES: ['en', 'de'],
+}));
 
+import { routerState } from '../test-router-mock';
 import { AppFooter } from './AppFooter';
 
 describe('AppFooter', () => {
@@ -21,10 +28,9 @@ describe('AppFooter', () => {
       '/authorized-apps',
       '/signmessage',
       '/verifymessage',
-      '/developers',
       '/settings',
       '/about',
-      'https://docs.hivesigner.com/',
+      '/docs',
       'https://github.com/ecency/hivesigner-ui',
     ]) {
       expect(hrefs, `missing ${to}`).toContain(to);
@@ -58,5 +64,39 @@ describe('AppFooter', () => {
     expect(
       screen.getByRole('combobox', { name: 'Language' }),
     ).toBeInTheDocument();
+  });
+
+  it('takes a docs page along to the language picked for the app', async () => {
+    const user = userEvent.setup();
+    // By role alone: its label changes with the language.
+    const menu = () => screen.getByRole('combobox');
+    routerState.pathname = '/docs/oauth2';
+    routerState.navigate.mockReset();
+    const view = render(<AppFooter />);
+    await user.selectOptions(menu(), 'de');
+    await waitFor(() =>
+      expect(routerState.navigate).toHaveBeenCalledWith({
+        href: '/docs/de/oauth2',
+        replace: true,
+      }),
+    );
+    // A language the docs do not have yet: the page in English.
+    await user.selectOptions(menu(), 'ja');
+    await waitFor(() =>
+      expect(routerState.navigate).toHaveBeenLastCalledWith({
+        href: '/docs/oauth2',
+        replace: true,
+      }),
+    );
+    // Anywhere else the page stays where it is.
+    view.unmount();
+    routerState.pathname = '/apps';
+    routerState.navigate.mockReset();
+    render(<AppFooter />);
+    await user.selectOptions(menu(), 'de');
+    await waitFor(() => expect(menu()).toHaveValue('de'));
+    expect(routerState.navigate).not.toHaveBeenCalled();
+    routerState.pathname = '/';
+    await switchLanguage('en');
   });
 });

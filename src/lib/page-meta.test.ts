@@ -8,8 +8,8 @@ beforeEach(() => {
 });
 
 describe('metaFor', () => {
-  it('marks the five public pages indexable and everything else not', () => {
-    for (const p of ['/', '/apps', '/developers', '/about', '/signs']) {
+  it('marks the public app pages indexable and everything else not', () => {
+    for (const p of ['/', '/apps', '/about', '/signs']) {
       expect(metaFor(p).indexable, p).toBe(true);
     }
     for (const p of [
@@ -93,7 +93,7 @@ describe('applyPageMeta', () => {
     applyPageMeta('/apps', 'https://hivesigner.com');
     applyPageMeta('/about', 'https://hivesigner.com');
     applyPageMeta('/settings', 'https://hivesigner.com');
-    applyPageMeta('/developers', 'https://hivesigner.com');
+    applyPageMeta('/signs', 'https://hivesigner.com');
     expect(document.querySelectorAll('meta[name="description"]')).toHaveLength(
       1,
     );
@@ -103,7 +103,7 @@ describe('applyPageMeta', () => {
     expect(document.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
     expect(
       document.querySelector('link[rel="canonical"]')?.getAttribute('href'),
-    ).toBe('https://hivesigner.com/developers');
+    ).toBe('https://hivesigner.com/signs');
     expect(document.querySelector('meta[name="robots"]')).toBeNull();
   });
 });
@@ -120,7 +120,6 @@ describe('titles in the reader language', () => {
     const paths = [
       '/',
       '/apps',
-      '/developers',
       '/about',
       '/signs',
       '/sign/vote',
