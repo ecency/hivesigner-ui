@@ -62,4 +62,19 @@ describe('docs Markdown', () => {
       /^<div class="docs-table"><table>/,
     );
   });
+
+  it('never turns a link into one that leaves the site', () => {
+    expect(
+      render('[a](https://hivesigner.com//evil.example/x)').html,
+    ).toContain('href="https://hivesigner.com//evil.example/x"');
+  });
+
+  it('refuses images, which would load from anywhere in every copy of the page', () => {
+    for (const source of [
+      '![a](https://x.example/i.png)',
+      '[![a](https://x.example/i.png)](/docs)',
+      '| a |\n|---|\n| ![a](https://x.example/i.png) |',
+    ])
+      expect(() => render(source), source).toThrow(/images/);
+  });
 });

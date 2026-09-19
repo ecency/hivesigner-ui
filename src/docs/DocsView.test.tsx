@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n, { switchLanguage } from '../i18n';
 
@@ -40,17 +41,25 @@ vi.mock('./content', async (importOriginal) => {
 });
 
 import { routerState } from '../test-router-mock';
-import { DocsView } from './DocsView';
+import { _resetShownPage, DocsView } from './DocsView';
 
-function show(lang: 'en' | 'de', slug: string, pathname: string) {
+const clients: QueryClient[] = [];
+
+function show(
+  lang: 'en' | 'de',
+  slug: string,
+  pathname: string,
+  client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
   routerState.pathname = pathname;
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
+  clients.push(client);
+  // In StrictMode, as the app runs: effects run twice on mount there.
   return render(
-    <QueryClientProvider client={client}>
-      <DocsView lang={lang} slug={slug as 'accounts'} />
-    </QueryClientProvider>,
+    <StrictMode>
+      <QueryClientProvider client={client}>
+        <DocsView lang={lang} slug={slug as 'accounts'} />
+      </QueryClientProvider>
+    </StrictMode>,
   );
 }
 
@@ -260,16 +269,77 @@ describe('a docs page', () => {
     expect(window.scrollTo).not.toHaveBeenCalled();
   });
 
-  it('puts the focus on the title of each page moved to', async () => {
+  it('puts the focus on the title of each page moved to, never on the first', async () => {
+    _resetShownPage();
     const first = show('en', 'faq', '/docs/faq');
-    await screen.findByRole('heading', { level: 1, name: 'FAQ' });
+    await waitFor(() =>
+      expect(document.querySelector('.docs-prose')).not.toBeNull(),
+    );
+    expect(document.activeElement).toBe(document.body);
+    first.unmount();
+    // The same page again, already loaded (StrictMode runs its effects twice
+    // on mount): still not a move.
+    const again = show('en', 'faq', '/docs/faq', clients.at(-1));
+    expect(document.querySelector('.docs-prose')).not.toBeNull();
+    expect(document.activeElement).toBe(document.body);
+    again.unmount();
+    show('en', 'tokens', '/docs/tokens');
+    const title = screen.getByRole('heading', { level: 1, name: 'Tokens' });
+    await waitFor(() => expect(document.activeElement).toBe(title));
+  });
+
+  it('focuses the next page even when the address moved on before the last one left', async () => {
+    _resetShownPage();
+    const home = show('en', 'index', '/docs');
+    await waitFor(() =>
+      expect(document.querySelector('.docs-prose')).not.toBeNull(),
+    );
+    // The router's address changes first; the home page stays up while the
+    // next page's code loads, and renders again meanwhile.
+    routerState.pathname = '/docs/oauth2';
+    home.rerender(
+      <StrictMode>
+        <QueryClientProvider client={clients.at(-1) as QueryClient}>
+          <DocsView lang="en" slug="index" />
+        </QueryClientProvider>
+      </StrictMode>,
+    );
+    home.unmount();
+    show('en', 'oauth2', '/docs/oauth2');
+    const title = screen.getByRole('heading', {
+      level: 1,
+      name: 'Sign in with OAuth2',
+    });
+    await waitFor(() => expect(document.activeElement).toBe(title));
+  });
+
+  it('puts it on the heading the address names, and leaves it alone for a link within the page', async () => {
+    _resetShownPage();
+    const first = show('en', 'faq', '/docs/faq');
     await waitFor(() =>
       expect(document.querySelector('.docs-prose')).not.toBeNull(),
     );
     first.unmount();
-    show('en', 'tokens', '/docs/tokens');
-    const title = screen.getByRole('heading', { level: 1, name: 'Tokens' });
-    await waitFor(() => expect(document.activeElement).toBe(title));
+    routerState.hash = 'kinds';
+    const view = show('en', 'tokens', '/docs/tokens');
+    const kinds = await screen.findByRole('heading', {
+      level: 2,
+      name: 'Kinds of token',
+    });
+    await waitFor(() => expect(document.activeElement).toBe(kinds));
+    // Somewhere else on the page, then a link to another heading on it.
+    const button = screen.getByRole('button', { name: 'Contents' });
+    button.focus();
+    routerState.hash = 'decode';
+    view.rerender(
+      <StrictMode>
+        <QueryClientProvider client={clients.at(-1) as QueryClient}>
+          <DocsView lang="en" slug="tokens" />
+        </QueryClientProvider>
+      </StrictMode>,
+    );
+    await new Promise((r) => setTimeout(r, 20));
+    expect(document.activeElement).toBe(button);
   });
 
   it('keeps nothing of the last page in the head when a language cannot load', async () => {

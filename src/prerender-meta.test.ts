@@ -7,7 +7,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { PUBLIC_PAGES } from './lib/page-meta';
 
 // The build writes one HTML per public page and a canonical-free fallback.
@@ -97,6 +97,7 @@ describe('prerender-meta', () => {
 // each, the sitemap and the Markdown copies.
 describe('prerendered docs', () => {
   const dir = mkdtempSync(join(tmpdir(), 'docs-'));
+  afterAll(() => rmSync(dir, { recursive: true }));
   const page = (lang: string, name: string, text: string) =>
     writeFileSync(join(dir, lang, `${name}.md`), text);
   mkdirSync(join(dir, 'en'));

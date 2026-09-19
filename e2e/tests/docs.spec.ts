@@ -101,6 +101,8 @@ test('the docs move between pages without reloading', async ({ page }) => {
   await expect(page.locator('main h1')).toHaveText('Tokens');
   const id = new URL(page.url()).hash.slice(1);
   await expect(page.locator(`[id="${id}"]`)).toBeInViewport();
+  // The focus goes to the heading the link names, not the title above it.
+  await expect(page.locator(`[id="${id}"]`)).toBeFocused();
   expect(
     await page.evaluate(
       () => (window as unknown as { sameDocument?: boolean }).sameDocument,
@@ -123,4 +125,17 @@ test('a phone opens the contents with a button', async ({ page }) => {
     () => document.documentElement.scrollWidth - window.innerWidth,
   );
   expect(overflow).toBeLessThanOrEqual(0);
+});
+
+test('a link to a heading on the same page moves the view, not the focus', async ({
+  page,
+}) => {
+  await page.goto('/docs/sign-links', { waitUntil: 'networkidle' });
+  const link = page
+    .locator('.docs-prose a[href$="#callback-placeholders"]')
+    .first();
+  await link.click();
+  await expect(page).toHaveURL(/#callback-placeholders$/);
+  await expect(page.locator('#callback-placeholders')).toBeInViewport();
+  await expect(page.locator('main h1')).not.toBeFocused();
 });

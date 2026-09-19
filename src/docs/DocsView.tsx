@@ -29,10 +29,16 @@ const indexQuery = (lang: string) => ({
   staleTime: Number.POSITIVE_INFINITY,
 });
 
-// Whether a docs page has been shown in this document yet. Moving to another
-// page puts the focus on its title, which the first page of a visit leaves
-// where the browser put it.
-let shownBefore = false;
+// The docs page shown last in this document. Moving to another page puts the
+// focus on its title, or on the heading its address names; the first page of
+// a visit leaves it where the browser put it. Kept by page rather than as a
+// flag: StrictMode runs an effect twice in development.
+let lastShown: string | null = null;
+
+/** For tests: as if no docs page had been shown yet. */
+export function _resetShownPage(): void {
+  lastShown = null;
+}
 
 /**
  * One docs page. The URL decides the language of the page (see path.ts); a
@@ -42,9 +48,11 @@ let shownBefore = false;
 export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const { pathname, hash } = useRouterState({
-    select: (s) => ({ pathname: s.location.pathname, hash: s.location.hash }),
-  });
+  const hash = useRouterState({ select: (s) => s.location.hash });
+  // This page's own address, from its props: the router's location moves on
+  // to the next page while this one is still showing (its code may still be
+  // loading), and nothing here may act for that page.
+  const here = docHref(slug, lang);
 
   const own = useQuery(indexQuery(lang));
   const translated = own.data ? hasPage(own.data, slug) : undefined;
@@ -81,7 +89,7 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
       // The language's page list did not load: nothing here to index, and
       // no previous page's title or canonical left behind.
       const english = englishIndex.pages[slug];
-      applyMeta(pathname, {
+      applyMeta(here, {
         title: fullTitle({ ...english, indexable: false }),
         description: english.description,
         canonical: null,
@@ -89,7 +97,7 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
       return;
     }
     if (translated === undefined || !info) return;
-    applyMeta(pathname, {
+    applyMeta(here, {
       title: fullTitle({
         title: info.title,
         description: info.description,
@@ -98,15 +106,27 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
       description: info.description,
       canonical: translated ? `${siteOrigin()}${docHref(slug, lang)}` : null,
     });
-  }, [pathname, translated, info, slug, lang, own.isError]);
+  }, [here, translated, info, slug, lang, own.isError]);
 
-  // A new page starts at its top, or at the heading its link names once the
-  // page is there to scroll to.
+  // Once per page, not per hash: a link to a heading on the same page
+  // scrolls there and leaves the focus alone.
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (!page.data) return;
-    if (shownBefore) heading.current?.focus({ preventScroll: true });
-    shownBefore = true;
+    const moved = lastShown !== null && lastShown !== here;
+    lastShown = here;
+    if (!moved) return;
+    const target = hash ? document.getElementById(hash) : null;
+    if (target) {
+      target.tabIndex = -1;
+      target.focus({ preventScroll: true });
+    } else heading.current?.focus({ preventScroll: true });
+  }, [page.data, here, hash]);
+
+  // A new page starts at its top, or at the heading its link names once the
+  // page is there to scroll to.
+  useEffect(() => {
+    if (!page.data) return;
     const target = hash ? document.getElementById(hash) : null;
     if (target) target.scrollIntoView?.();
     else if (!hash) window.scrollTo?.(0, 0);
