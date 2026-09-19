@@ -8,8 +8,10 @@ import { useTranslation } from 'react-i18next';
 import { AppFooter } from '@/components/AppFooter';
 import { AppHeader } from '@/components/AppHeader';
 import { gutter } from '@/components/ui';
+import { parseDocPath } from '@/docs/path';
+import { leftDocs } from '@/docs/shown';
 import { applyDeferredLanguage } from '@/i18n';
-import { applyPageMeta } from '@/lib/page-meta';
+import { applyPageMeta, siteOrigin } from '@/lib/page-meta';
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -23,16 +25,20 @@ function RootLayout() {
   const { t } = useTranslation();
   useEffect(() => {
     applyDeferredLanguage(pathname);
-    // The define is absent under vitest, which has no build step; the page's
-    // own origin is the right answer there and a fine fallback anywhere.
-    applyPageMeta(
-      pathname,
-      typeof __SITE_URL__ === 'string' && __SITE_URL__
-        ? __SITE_URL__
-        : window.location.origin,
-      (key) => t(key),
-    );
+    // A docs page sets its own, from its page list (docs/DocsView.tsx).
+    if (parseDocPath(pathname)) return;
+    applyPageMeta(pathname, siteOrigin(), (key) => t(key));
   }, [pathname, t]);
+
+  // A page outside the docs is showing: the next docs page is a move, for
+  // its focus (docs/shown.ts). From the settled location: the router's
+  // location moves on first, and a leave can still be called off.
+  const settled = useRouterState({
+    select: (s) => s.resolvedLocation?.pathname,
+  });
+  useEffect(() => {
+    if (settled && !parseDocPath(settled)) leftDocs();
+  }, [settled]);
 
   return (
     // The bars run the FULL width of the viewport and only their contents are

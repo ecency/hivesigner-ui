@@ -177,7 +177,6 @@
     "apps": "Ilovalar",
     "accounts": "Hisoblar",
     "settings": "Sozlamalar",
-    "developers": "Dasturchilar",
     "about": "Loyiha haqida",
     "documentation": "Hujjatlar",
     "signs": "Imzolash",
@@ -259,14 +258,6 @@
     "missing_active_key": "Buning uchun active kalitingiz kerak, lekin bu yerda {account} hisobining active kaliti yoʻq.",
     "missing_owner_key": "Buning uchun owner kalitingiz kerak, lekin bu yerda {account} hisobining owner kaliti yoʻq.",
     "loading_rate": "Joriy Hive Power kursi yuklanmoqda…"
-  },
-  "developers": {
-    "developers": "Dasturchilar",
-    "add_app_title": "Ilovangizni qoʻshing",
-    "add_app_body": "Ilovangiz uchun Hive hisobi yarating, u bilan shu yerda tizimga kiring va uning profil sahifasida yoʻnaltirish URI manzillaringizni roʻyxatga kiriting.",
-    "sdk_title": "Hivesigner uchun JS SDK",
-    "sdk_body": "Rasmiy SDK orqali integratsiya qiling: <sdk>hivesigner.js</sdk>.",
-    "docs_at": "Toʻliq hujjatlar <docs>docs.hivesigner.com</docs> saytida joylashgan."
   },
   "settings": {
     "language": "Til",
@@ -452,7 +443,6 @@
   "meta": {
     "home": "Hivesigner - Hive ilovalariga kalitlaringizni hech kimga bermasdan kiring",
     "apps": "Hivesigner bilan ishlaydigan ilovalar",
-    "developers": "Dasturchilar",
     "about": "Loyiha haqida",
     "signs": "Imzolash",
     "sign": "Tranzaksiyani tasdiqlash",
@@ -466,5 +456,14 @@
     "authorized_apps": "Ruxsat berilgan ilovalar",
     "signmessage": "Xabarni imzolash",
     "verifymessage": "Xabarni tekshirish"
+  },
+  "docs": {
+    "contents": "Mundarija",
+    "not_translated": "Bu sahifa hali {language} tilida mavjud emas, shuning uchun ingliz tilida koʻrsatilmoqda.",
+    "also_in": "Bu sahifa <lang>{language}</lang> tilida ham mavjud.",
+    "previous": "Oldingi",
+    "next": "Keyingi",
+    "edit": "GitHubʼda oʻzgartirish taklif qiling",
+    "load_failed": "Sahifani yuklab boʻlmadi. Internet aloqangizni tekshirib, qayta urinib koʻring."
   }
 }

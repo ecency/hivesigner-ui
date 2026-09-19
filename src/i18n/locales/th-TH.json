@@ -175,7 +175,6 @@
     "apps": "แอป",
     "accounts": "บัญชี",
     "settings": "การตั้งค่า",
-    "developers": "นักพัฒนา",
     "about": "เกี่ยวกับ",
     "documentation": "เอกสาร",
     "signs": "ลงนามธุรกรรม",
@@ -254,14 +253,6 @@
     "missing_active_key": "ต้องใช้คีย์ active ของคุณ แต่ไม่มีคีย์ active ของ {account} อยู่ที่นี่",
     "missing_owner_key": "ต้องใช้คีย์ owner ของคุณ แต่ไม่มีคีย์ owner ของ {account} อยู่ที่นี่",
     "loading_rate": "กำลังโหลดอัตรา Hive Power ปัจจุบัน…"
-  },
-  "developers": {
-    "developers": "นักพัฒนา",
-    "add_app_title": "เพิ่มแอปของคุณ",
-    "add_app_body": "สร้างบัญชี Hive สำหรับแอปของคุณ เข้าสู่ระบบด้วยบัญชีนั้นที่นี่ แล้วระบุ URI สำหรับเปลี่ยนเส้นทางไว้ในหน้าโปรไฟล์ของบัญชีนั้น",
-    "sdk_title": "SDK JS ของ Hivesigner",
-    "sdk_body": "เชื่อมต่อด้วย SDK อย่างเป็นทางการ: <sdk>hivesigner.js</sdk>",
-    "docs_at": "เอกสารฉบับเต็มอยู่ที่ <docs>docs.hivesigner.com</docs>"
   },
   "settings": {
     "language": "ภาษา",
@@ -447,7 +438,6 @@
   "meta": {
     "home": "Hivesigner - เข้าสู่ระบบแอป Hive โดยไม่ต้องแชร์คีย์ของคุณ",
     "apps": "แอปที่ใช้ Hivesigner",
-    "developers": "นักพัฒนา",
     "about": "เกี่ยวกับ",
     "signs": "ลงนามธุรกรรม",
     "sign": "ยืนยันธุรกรรม",
@@ -461,5 +451,14 @@
     "authorized_apps": "แอปที่ได้รับอนุญาต",
     "signmessage": "ลงนามข้อความ",
     "verifymessage": "ตรวจสอบข้อความ"
+  },
+  "docs": {
+    "contents": "สารบัญ",
+    "not_translated": "หน้านี้ยังไม่มีภาษา{language} จึงแสดงเป็นภาษาอังกฤษ",
+    "also_in": "หน้านี้มีภาษา<lang>{language}</lang>ด้วย",
+    "previous": "ก่อนหน้า",
+    "next": "ถัดไป",
+    "edit": "เสนอการแก้ไขบน GitHub",
+    "load_failed": "โหลดหน้านี้ไม่สำเร็จ โปรดตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง"
   }
 }

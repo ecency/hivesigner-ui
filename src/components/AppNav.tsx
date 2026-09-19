@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { DocLink, useDocHref } from '@/docs/DocLink';
 
 // The persistent navigation. It lives INSIDE the header bar and is shown on
 // every screen at EVERY width: inline beside the brand once the bar is wide
@@ -11,12 +12,12 @@ import { useTranslation } from 'react-i18next';
 // destinations a visitor reaches once, not sections they move between.
 export function AppNav() {
   const { t } = useTranslation();
+  const docs = useDocHref();
 
   const links = [
     { to: '/apps', label: t('footer.apps') },
     { to: '/accounts', label: t('footer.accounts') },
     { to: '/signs', label: t('footer.signs') },
-    { to: '/developers', label: t('footer.developers') },
   ] as const;
 
   // The active item is marked with an underline, so the current section reads
@@ -62,14 +63,13 @@ export function AppNav() {
           {l.label}
         </Link>
       ))}
-      <a
-        href="https://docs.hivesigner.com/"
-        target="_blank"
-        rel="noopener noreferrer"
+      <DocLink
+        href={docs}
         className={base}
+        activeProps={{ className: 'border-brand! font-semibold text-ink' }}
       >
         {t('footer.documentation')}
-      </a>
+      </DocLink>
     </nav>
   );
 }

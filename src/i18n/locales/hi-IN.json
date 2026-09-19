@@ -177,7 +177,6 @@
     "apps": "ऐप्स",
     "accounts": "खाते",
     "settings": "सेटिंग्स",
-    "developers": "डेवलपर्स",
     "about": "परिचय",
     "documentation": "दस्तावेज़",
     "signs": "हस्ताक्षरकर्ता",
@@ -259,14 +258,6 @@
     "missing_active_key": "इसके लिए आपकी सक्रिय कुंजी चाहिए, जो यहाँ {account} के लिए उपलब्ध नहीं है।",
     "missing_owner_key": "इसके लिए आपकी स्वामी कुंजी चाहिए, जो यहाँ {account} के लिए उपलब्ध नहीं है।",
     "loading_rate": "मौजूदा हाइव पावर दर लोड हो रही है…"
-  },
-  "developers": {
-    "developers": "डेवलपर्स",
-    "add_app_title": "अपना ऐप जोड़ें",
-    "add_app_body": "अपने ऐप के लिए एक Hive खाता बनाएँ, उससे यहाँ लॉग इन करें और उसके प्रोफ़ाइल पेज पर अपने रीडायरेक्ट URI दर्ज करें।",
-    "sdk_title": "Hivesigner JS SDK",
-    "sdk_body": "आधिकारिक SDK के साथ एकीकृत करें: <sdk>hivesigner.js</sdk>।",
-    "docs_at": "पूरे दस्तावेज़ <docs>docs.hivesigner.com</docs> पर उपलब्ध हैं।"
   },
   "settings": {
     "language": "भाषा",
@@ -452,7 +443,6 @@
   "meta": {
     "home": "Hivesigner - अपनी कुंजियाँ साझा किए बिना Hive ऐप्स में साइन इन करें",
     "apps": "Hivesigner का उपयोग करने वाले ऐप्स",
-    "developers": "डेवलपर्स",
     "about": "परिचय",
     "signs": "हस्ताक्षरकर्ता",
     "sign": "लेन-देन की पुष्टि करें",
@@ -466,5 +456,14 @@
     "authorized_apps": "अधिकृत ऐप्स",
     "signmessage": "किसी संदेश पर हस्ताक्षर करें",
     "verifymessage": "किसी संदेश को सत्यापित करें"
+  },
+  "docs": {
+    "contents": "विषय-सूची",
+    "not_translated": "यह पेज अभी {language} में उपलब्ध नहीं है, इसलिए इसे अंग्रेज़ी में दिखाया जा रहा है।",
+    "also_in": "यह पेज <lang>{language}</lang> में भी उपलब्ध है।",
+    "previous": "पिछला",
+    "next": "अगला",
+    "edit": "GitHub पर बदलाव सुझाएँ",
+    "load_failed": "यह पेज लोड नहीं हो सका। अपना कनेक्शन जाँचें और फिर से प्रयास करें।"
   }
 }
