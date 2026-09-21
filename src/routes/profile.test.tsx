@@ -36,7 +36,7 @@ import {
   lockAccount,
   selectAccount,
 } from '@/lib/accounts';
-import { buildProfileMetadata, Route } from './profile';
+import { buildProfileMetadata, Route, readProfile } from './profile';
 
 const Profile = (Route as unknown as { component: ComponentType }).component;
 
@@ -75,18 +75,34 @@ beforeEach(() => {
   h.unlockGate = null;
 });
 
+/** The form as the page holds it: an app account, nothing typed. */
+function form(changed: Record<string, string> = {}) {
+  return {
+    name: '',
+    about: '',
+    website: '',
+    location: '',
+    profile_image: '',
+    cover_image: '',
+    is_app: '1',
+    redirect_uris: '',
+    creator: '',
+    is_public: '0',
+    secret: '',
+    ...changed,
+  };
+}
+
 describe('buildProfileMetadata', () => {
   it('keeps unrelated metadata and profile keys, and writes the redirect list', () => {
     const out = JSON.parse(
-      buildProfileMetadata(account as never, {
-        name: 'New',
-        about: '',
-        website: '',
-        location: '',
-        profile_image: '',
-        cover_image: '',
-        redirect_uris: ' https://x.example/a \n\nhttps://x.example/b',
-      }),
+      buildProfileMetadata(
+        account as never,
+        form({
+          name: 'New',
+          redirect_uris: ' https://x.example/a \n\nhttps://x.example/b',
+        }),
+      ),
     );
     expect(out.other).toEqual({ keep: true });
     expect(out.profile.type).toBe('app');
@@ -98,15 +114,7 @@ describe('buildProfileMetadata', () => {
   });
 
   it('writes a profile over metadata that is valid JSON but no object', () => {
-    const form = {
-      name: 'New',
-      about: '',
-      website: '',
-      location: '',
-      profile_image: '',
-      cover_image: '',
-      redirect_uris: '',
-    };
+    const typed = form({ name: 'New' });
     for (const posting_json_metadata of [
       'null',
       '[1,2]',
@@ -118,27 +126,213 @@ describe('buildProfileMetadata', () => {
       const out = JSON.parse(
         buildProfileMetadata(
           { ...account, posting_json_metadata } as never,
-          form,
+          typed,
         ),
       );
       expect(out).not.toHaveProperty('0');
-      expect(out.profile).toEqual({ ...form, redirect_uris: undefined });
-    }
-  });
-
-  it('removes redirect_uris entirely when the list is emptied', () => {
-    const out = JSON.parse(
-      buildProfileMetadata(account as never, {
-        name: 'A',
+      expect(out.profile).toEqual({
+        name: 'New',
         about: '',
         website: '',
         location: '',
         profile_image: '',
         cover_image: '',
-        redirect_uris: '',
-      }),
+        version: 2,
+        type: 'app',
+        is_public: false,
+      });
+    }
+  });
+
+  it('removes redirect_uris entirely when the list is emptied', () => {
+    const out = JSON.parse(
+      buildProfileMetadata(account as never, form({ name: 'A' })),
     );
     expect(out.profile).not.toHaveProperty('redirect_uris');
+  });
+
+  // The API reads posting_json_metadata only when the profile has a version,
+  // and the older json_metadata profile without one.
+  it('writes version 2 on every save, app or not', () => {
+    for (const is_app of ['1', '0']) {
+      const out = JSON.parse(
+        buildProfileMetadata(account as never, form({ is_app })),
+      );
+      expect(out.profile.version).toBe(2);
+    }
+  });
+
+  it('writes the app settings, with the secret as its sha256', () => {
+    const out = JSON.parse(
+      buildProfileMetadata(
+        account as never,
+        form({
+          creator: 'alice',
+          is_public: '1',
+          secret: 'hunter2',
+          redirect_uris: 'https://a.example/cb',
+        }),
+      ),
+    );
+    expect(out.profile.type).toBe('app');
+    expect(out.profile.creator).toBe('alice');
+    expect(out.profile.is_public).toBe(true);
+    // sha256('hunter2'), the hash the API compares a client secret against.
+    expect(out.profile.secret).toBe(
+      'f52fbd32b2b3b86ff88ef6c490628285f482af15ddcb29541f94bcf526a3f6c7',
+    );
+    expect(out.profile.secret).not.toBe('hunter2');
+  });
+
+  it('keeps the stored secret when the field is left blank', () => {
+    const app = {
+      ...account,
+      posting_json_metadata: JSON.stringify({
+        profile: { type: 'app', secret: 'a'.repeat(64), creator: 'bob' },
+      }),
+    };
+    const out = JSON.parse(
+      buildProfileMetadata(app as never, form({ creator: 'bob' })),
+    );
+    expect(out.profile.secret).toBe('a'.repeat(64));
+  });
+
+  it('drops the creator when it is cleared', () => {
+    const app = {
+      ...account,
+      posting_json_metadata: JSON.stringify({
+        profile: { type: 'app', creator: 'bob' },
+      }),
+    };
+    const out = JSON.parse(buildProfileMetadata(app as never, form()));
+    expect(out.profile).not.toHaveProperty('creator');
+  });
+
+  // Turning the switch off says "not an app". It does not delete the app's
+  // settings: they are hidden, not edited, so nothing in the form describes
+  // them, and clearing the callbacks of an app switched off by mistake would
+  // be silent damage.
+  it('a user account keeps the settings it had, and says type user', () => {
+    const app = {
+      ...account,
+      posting_json_metadata: JSON.stringify({
+        profile: {
+          type: 'app',
+          secret: 'b'.repeat(64),
+          creator: 'bob',
+          is_public: true,
+          redirect_uris: ['https://a.example/cb'],
+        },
+      }),
+    };
+    const out = JSON.parse(
+      buildProfileMetadata(app as never, form({ is_app: '0' })),
+    );
+    expect(out.profile.type).toBe('user');
+    expect(out.profile.secret).toBe('b'.repeat(64));
+    expect(out.profile.creator).toBe('bob');
+    expect(out.profile.is_public).toBe(true);
+    expect(out.profile.redirect_uris).toEqual(['https://a.example/cb']);
+  });
+
+  // The API reads json_metadata for a profile with no version, so the version
+  // written here moves it to this one. #154
+  it('carries the older secret and allowlist over with the version', () => {
+    const app = {
+      ...account,
+      json_metadata: JSON.stringify({
+        profile: {
+          type: 'app',
+          secret: 'c'.repeat(64),
+          allowed_ips: ['203.0.113.7'],
+        },
+      }),
+      posting_json_metadata: JSON.stringify({
+        profile: { type: 'app', redirect_uris: ['https://a.example/cb'] },
+      }),
+    };
+    const out = JSON.parse(
+      buildProfileMetadata(
+        app as never,
+        form({ redirect_uris: 'https://a.example/cb' }),
+      ),
+    );
+    expect(out.profile.version).toBe(2);
+    expect(out.profile.secret).toBe('c'.repeat(64));
+    expect(out.profile.allowed_ips).toEqual(['203.0.113.7']);
+  });
+
+  // A SteemConnect era app: everything is in json_metadata, the posting copy
+  // is empty. Saving must not write a version onto a profile that then says
+  // nothing about the app, which is what makes the API refuse its tokens.
+  it('keeps a legacy app that lives in json_metadata only', () => {
+    const legacy = {
+      ...account,
+      json_metadata: JSON.stringify({
+        profile: {
+          type: 'app',
+          name: 'Legacy',
+          redirect_uris: ['https://legacy.example/cb'],
+          creator: 'bob',
+          is_public: true,
+          secret: 'd'.repeat(64),
+        },
+      }),
+      posting_json_metadata: '{}',
+    };
+    const read = readProfile(legacy as never);
+    expect(read.is_app).toBe('1');
+    expect(read.redirect_uris).toBe('https://legacy.example/cb');
+    const out = JSON.parse(buildProfileMetadata(legacy as never, read));
+    expect(out.profile.type).toBe('app');
+    expect(out.profile.version).toBe(2);
+    expect(out.profile.redirect_uris).toEqual(['https://legacy.example/cb']);
+    expect(out.profile.creator).toBe('bob');
+    expect(out.profile.is_public).toBe(true);
+    expect(out.profile.secret).toBe('d'.repeat(64));
+  });
+
+  it('prefers the posting profile where the two disagree', () => {
+    const split = {
+      ...account,
+      json_metadata: JSON.stringify({
+        profile: { type: 'app', redirect_uris: ['https://old.example/cb'] },
+      }),
+      posting_json_metadata: JSON.stringify({
+        profile: { type: 'app', redirect_uris: ['https://new.example/cb'] },
+      }),
+    };
+    expect(readProfile(split as never).redirect_uris).toBe(
+      'https://new.example/cb',
+    );
+  });
+
+  it('leaves a profile that has a version alone', () => {
+    const app = {
+      ...account,
+      json_metadata: JSON.stringify({
+        profile: { secret: 'c'.repeat(64) },
+      }),
+      posting_json_metadata: JSON.stringify({
+        profile: { type: 'app', version: 2 },
+      }),
+    };
+    const out = JSON.parse(buildProfileMetadata(app as never, form()));
+    expect(out.profile).not.toHaveProperty('secret');
+  });
+
+  // Nothing reads a `type` of user, and a profile that never had one is not
+  // an app being downgraded: a plain user saving their name should not have
+  // a new key written onto their profile.
+  it('adds no type to a profile that never had one', () => {
+    const user = {
+      ...account,
+      posting_json_metadata: JSON.stringify({ profile: { name: 'Alice' } }),
+    };
+    const out = JSON.parse(
+      buildProfileMetadata(user as never, form({ is_app: '0', name: 'A' })),
+    );
+    expect(out.profile).not.toHaveProperty('type');
   });
 });
 
@@ -471,5 +665,101 @@ describe('/profile', () => {
     release(account);
     await new Promise((r) => setTimeout(r, 50));
     expect(h.broadcastOperations).not.toHaveBeenCalled();
+  });
+
+  it('shows the app settings only once the account says it is an app', async () => {
+    h.getAccount.mockResolvedValue({
+      ...account,
+      posting_json_metadata: JSON.stringify({ profile: { name: 'Alice' } }),
+    });
+    await addAccount('alice', { posting: '5Kposting' });
+    renderPage();
+    const user = userEvent.setup();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/^name/i)).toHaveValue('Alice'),
+    );
+    expect(screen.queryByLabelText(/redirect/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/client secret/i)).not.toBeInTheDocument();
+    await user.click(screen.getByLabelText(/this account is an app/i));
+    expect(screen.getByLabelText(/redirect/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/client secret/i)).toBeInTheDocument();
+  });
+
+  it('switches an app off although a stored callback is unusable', async () => {
+    // Registered before https was required. The field is hidden now, so the
+    // owner cannot correct it, and refusing the save would trap them.
+    h.getAccount.mockResolvedValue({
+      ...account,
+      posting_json_metadata: JSON.stringify({
+        profile: {
+          name: 'Alice',
+          type: 'app',
+          redirect_uris: ['http://old.example/cb'],
+        },
+      }),
+    });
+    await addAccount('alice', { posting: '5Kposting' });
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    renderPage();
+    const user = userEvent.setup();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/^name/i)).toHaveValue('Alice'),
+    );
+    await user.click(screen.getByLabelText(/this account is an app/i));
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops] = h.broadcastOperations.mock.calls[0];
+    const saved = JSON.parse(ops[0][1].posting_json_metadata).profile;
+    expect(saved.type).toBe('user');
+    expect(saved.redirect_uris).toEqual(['http://old.example/cb']);
+  });
+
+  it('keeps a secret typed while the broadcast was still running', async () => {
+    await addAccount('alice', { posting: '5Kposting' });
+    let release = (_: unknown) => {};
+    h.broadcastOperations.mockReturnValue(
+      new Promise((r) => {
+        release = r;
+      }),
+    );
+    renderPage();
+    const user = userEvent.setup();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/^name/i)).toHaveValue('Alice'),
+    );
+    const secret = screen.getByLabelText(/client secret/i);
+    await user.type(secret, 'first');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    await user.clear(secret);
+    await user.type(secret, 'second');
+    await act(async () => {
+      release({ id: 'tx' });
+    });
+    expect(await screen.findByText(/saved/i)).toBeInTheDocument();
+    // 'second' was never sent, so it is still the user's to save.
+    expect(secret).toHaveValue('second');
+  });
+
+  it('saves a typed secret as its hash, and clears the field', async () => {
+    await addAccount('alice', { posting: '5Kposting' });
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    renderPage();
+    const user = userEvent.setup();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/^name/i)).toHaveValue('Alice'),
+    );
+    const secret = screen.getByLabelText(/client secret/i);
+    await user.type(secret, 'hunter2');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops] = h.broadcastOperations.mock.calls[0];
+    const saved = JSON.parse(ops[0][1].posting_json_metadata).profile;
+    expect(saved.secret).toBe(
+      'f52fbd32b2b3b86ff88ef6c490628285f482af15ddcb29541f94bcf526a3f6c7',
+    );
+    // Nothing keeps the plaintext, and a blank field is what "keep the
+    // stored secret" looks like on the next save.
+    await waitFor(() => expect(secret).toHaveValue(''));
   });
 });

@@ -267,6 +267,7 @@
   },
   "profile": {
     "profile": "Profile",
+    "is_app": "This account is an app",
     "name": "Name",
     "profile_pic": "Profile picture URL",
     "cover_pic": "Cover image URL",
@@ -275,6 +276,12 @@
     "location": "Location",
     "redirect_uris": "Redirect URIs",
     "one_uri_line": "One URI per line, each with a protocol, and no fragments or relative paths.",
+    "creator": "Creator",
+    "status": "Status",
+    "production": "Production",
+    "sandbox": "Sandbox",
+    "secret": "Client secret",
+    "blank_field": "Leave this blank to keep the current secret.",
     "bad_callbacks": "Not a usable callback (https, or http on localhost): {uris}"
   },
   "signs": {

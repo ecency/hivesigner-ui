@@ -262,6 +262,7 @@
   },
   "profile": {
     "profile": "Hồ sơ",
+    "is_app": "Tài khoản này là một ứng dụng",
     "name": "Tên",
     "profile_pic": "URL ảnh đại diện",
     "cover_pic": "URL ảnh bìa",
@@ -270,6 +271,12 @@
     "location": "Vị trí",
     "redirect_uris": "URI chuyển hướng",
     "one_uri_line": "Mỗi dòng một URI, mỗi URI phải có giao thức, không có phân mảnh (fragment) hay đường dẫn tương đối.",
+    "creator": "Người tạo",
+    "status": "Trạng thái",
+    "production": "Chính thức",
+    "sandbox": "Thử nghiệm",
+    "secret": "Khóa bí mật của client",
+    "blank_field": "Để trống để giữ nguyên khóa bí mật hiện tại.",
     "bad_callbacks": "Callback không sử dụng được (phải là https, hoặc http trên localhost): {uris}"
   },
   "signs": {

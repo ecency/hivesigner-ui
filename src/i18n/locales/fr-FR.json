@@ -267,6 +267,7 @@
   },
   "profile": {
     "profile": "Profil",
+    "is_app": "Ce compte est une application",
     "name": "Nom",
     "profile_pic": "URL de la photo de profil",
     "cover_pic": "URL de l’image de couverture",
@@ -275,6 +276,12 @@
     "location": "Localisation",
     "redirect_uris": "URI de redirection",
     "one_uri_line": "Une URI par ligne, chacune avec un protocole, sans fragment ni chemin relatif.",
+    "creator": "Créateur",
+    "status": "Statut",
+    "production": "Production",
+    "sandbox": "Bac à sable",
+    "secret": "Secret client",
+    "blank_field": "Laissez vide pour conserver le secret actuel.",
     "bad_callbacks": "URL de rappel inutilisable (https, ou http sur localhost) : {uris}"
   },
   "signs": {

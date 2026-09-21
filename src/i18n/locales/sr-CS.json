@@ -272,6 +272,7 @@
   },
   "profile": {
     "profile": "Profil",
+    "is_app": "Ovaj nalog je aplikacija",
     "name": "Ime",
     "profile_pic": "URL profilne slike",
     "cover_pic": "URL naslovne slike",
@@ -280,6 +281,12 @@
     "location": "Lokacija",
     "redirect_uris": "URI adrese za preusmeravanje",
     "one_uri_line": "Jedan URI po redu, svaki sa protokolom, bez fragmenata i relativnih putanja.",
+    "creator": "Autor",
+    "status": "Status",
+    "production": "Produkcija",
+    "sandbox": "Testno okruženje",
+    "secret": "Tajna klijenta",
+    "blank_field": "Ostavite prazno da biste zadržali trenutnu tajnu.",
     "bad_callbacks": "Neupotrebljive povratne adrese (dozvoljeni su https ili http na localhost): {uris}"
   },
   "signs": {

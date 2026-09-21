@@ -277,6 +277,7 @@
   },
   "profile": {
     "profile": "Profil",
+    "is_app": "To konto jest aplikacją",
     "name": "Nazwa",
     "profile_pic": "URL zdjęcia profilowego",
     "cover_pic": "URL obrazu w tle",
@@ -285,6 +286,12 @@
     "location": "Lokalizacja",
     "redirect_uris": "Adresy URI przekierowania",
     "one_uri_line": "Jeden URI w wierszu, każdy z protokołem, bez fragmentów i ścieżek względnych.",
+    "creator": "Twórca",
+    "status": "Status",
+    "production": "Produkcja",
+    "sandbox": "Piaskownica",
+    "secret": "Sekret klienta",
+    "blank_field": "Pozostaw puste, aby zachować bieżący sekret.",
     "bad_callbacks": "Nieprawidłowy adres zwrotny (wymagany https lub http na localhost): {uris}"
   },
   "signs": {

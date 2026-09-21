@@ -262,6 +262,7 @@
   },
   "profile": {
     "profile": "プロフィール",
+    "is_app": "このアカウントはアプリです",
     "name": "名前",
     "profile_pic": "プロフィール画像の URL",
     "cover_pic": "カバー画像の URL",
@@ -270,6 +271,12 @@
     "location": "所在地",
     "redirect_uris": "リダイレクト URI",
     "one_uri_line": "1 行に 1 つの URI を入力してください。それぞれにプロトコルを含め、フラグメントや相対パスは使用できません。",
+    "creator": "作成者",
+    "status": "ステータス",
+    "production": "本番",
+    "sandbox": "サンドボックス",
+    "secret": "クライアントシークレット",
+    "blank_field": "現在のシークレットを変更しない場合は空欄のままにしてください。",
     "bad_callbacks": "使用できないコールバックです（https、または localhost での http のみ可）：{uris}"
   },
   "signs": {

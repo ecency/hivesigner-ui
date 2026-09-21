@@ -262,6 +262,7 @@
   },
   "profile": {
     "profile": "Profil",
+    "is_app": "Akun ini adalah aplikasi",
     "name": "Nama",
     "profile_pic": "URL gambar profil",
     "cover_pic": "URL gambar sampul",
@@ -270,6 +271,12 @@
     "location": "Lokasi",
     "redirect_uris": "URI pengalihan",
     "one_uri_line": "Satu URI per baris, masing-masing dengan protokol, tanpa fragmen atau path relatif.",
+    "creator": "Pembuat",
+    "status": "Status",
+    "production": "Produksi",
+    "sandbox": "Sandbox",
+    "secret": "Rahasia klien",
+    "blank_field": "Biarkan kosong untuk mempertahankan rahasia saat ini.",
     "bad_callbacks": "Bukan callback yang dapat digunakan (https, atau http di localhost): {uris}"
   },
   "signs": {

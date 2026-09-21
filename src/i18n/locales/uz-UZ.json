@@ -267,6 +267,7 @@
   },
   "profile": {
     "profile": "Profil",
+    "is_app": "Bu hisob ilova",
     "name": "Nomi",
     "profile_pic": "Profil rasmi URL manzili",
     "cover_pic": "Muqova rasmi URL manzili",
@@ -275,6 +276,12 @@
     "location": "Joylashuv",
     "redirect_uris": "Yoʻnaltirish URI manzillari",
     "one_uri_line": "Har bir qatorga bitta URI yozing. Har biri protokolni oʻz ichiga olsin, fragment yoki nisbiy yoʻl boʻlmasin.",
+    "creator": "Yaratuvchi",
+    "status": "Holat",
+    "production": "Produksiya",
+    "sandbox": "Sinov muhiti",
+    "secret": "Mijoz maxfiy kaliti",
+    "blank_field": "Joriy maxfiy kalitni saqlab qolish uchun boʻsh qoldiring.",
     "bad_callbacks": "Yaroqsiz callback manzillari (https yoki localhost uchun http boʻlishi kerak): {uris}"
   },
   "signs": {
