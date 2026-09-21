@@ -1,7 +1,10 @@
+import { sha256 } from '@noble/hashes/sha2.js';
+import { bytesToHex } from '@noble/hashes/utils.js';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SecretInput } from '@/components/SecretInput';
 import { UnlockAndContinue } from '@/components/UnlockAndContinue';
 import { Handle, Sentence } from '@/components/Untranslated';
 import {
@@ -11,6 +14,7 @@ import {
   field as fieldClass,
   formColumn,
   h1,
+  labelText,
   link,
   mutedXs,
   page,
@@ -25,8 +29,9 @@ import { useAccounts } from '@/lib/use-accounts';
 import { useLeaveLatch } from '@/lib/use-leave-latch';
 
 // Edit the selected account's profile (account_update2 -> posting_json_metadata).
-// A profile-only edit needs the posting key. App accounts also register their
-// redirect URIs here.
+// A profile-only edit needs the posting key. An app account also registers here
+// what Hivesigner and the API read about it: that it is an app at all, its
+// callbacks, its client secret, who made it and whether it is live (#154).
 export const Route = createFileRoute('/profile')({
   component: Profile,
 });
@@ -38,7 +43,21 @@ interface ProfileForm {
   location: string;
   profile_image: string;
   cover_image: string;
+  /** '1' when this account is an app. The fields below are its settings, and
+      are saved only while it is on. */
+  is_app: string;
   redirect_uris: string;
+  creator: string;
+  /** '1' production, '0' sandbox. */
+  is_public: string;
+  /** Typed to set a new secret. Never read back: only its hash is on chain. */
+  secret: string;
+}
+
+/** What the chain stores for a client secret: its sha256, as hex. The API
+    hashes the secret an app sends and compares it with this. */
+export function secretHash(secret: string): string {
+  return bytesToHex(sha256(new TextEncoder().encode(secret)));
 }
 
 /** A JSON object as it is; anything else (null, an array, a string) as {}. */
@@ -60,6 +79,15 @@ function metadataOf(
   }
 }
 
+/** The profile in a metadata string, for the older `json_metadata` copy. */
+function profileIn(metadata: string | undefined): Record<string, unknown> {
+  try {
+    return asRecord(asRecord(JSON.parse(metadata || '{}')).profile);
+  } catch {
+    return {};
+  }
+}
+
 function readProfile(account: Account | null | undefined): ProfileForm {
   const profile = asRecord(metadataOf(account).profile);
   const s = (k: string) =>
@@ -71,9 +99,15 @@ function readProfile(account: Account | null | undefined): ProfileForm {
     location: s('location'),
     profile_image: s('profile_image'),
     cover_image: s('cover_image'),
+    is_app: profile.type === 'app' ? '1' : '0',
     redirect_uris: Array.isArray(profile.redirect_uris)
       ? (profile.redirect_uris as string[]).join('\n')
       : '',
+    creator: s('creator'),
+    // Only a real `true` is production. The old page took any truthy value,
+    // which read the string "0" written by some other tool as production.
+    is_public: profile.is_public === true ? '1' : '0',
+    secret: '',
   };
 }
 
@@ -82,15 +116,41 @@ export function buildProfileMetadata(
   form: ProfileForm,
 ): string {
   const existing = metadataOf(account);
+  const current = asRecord(existing.profile);
+  // Writing the version moves the API's source: it reads this profile only
+  // once it has one, and the older `json_metadata` profile until then. What it
+  // read there and this form does not show comes across with the version, or
+  // saving here would silently drop an app's client secret, or its IP
+  // allowlist, which is what keeps other IPs out.
+  const carried: Record<string, unknown> = {};
+  if (!current.version) {
+    const older = profileIn(account.json_metadata);
+    for (const key of ['secret', 'allowed_ips']) {
+      if (!(key in current) && key in older) carried[key] = older[key];
+    }
+  }
   const profile: Record<string, unknown> = {
-    ...asRecord(existing.profile),
+    ...current,
+    ...carried,
     name: form.name,
     about: form.about,
     website: form.website,
     location: form.location,
     profile_image: form.profile_image,
     cover_image: form.cover_image,
+    // The API reads this profile only when it carries a version, and falls
+    // back to the older `json_metadata` profile without one. The Nuxt page
+    // wrote it on every save, so a profile it ever saved has it.
+    version: 2,
   };
+  if (form.is_app !== '1') {
+    // Not an app: its settings are left exactly as they are on chain. Only an
+    // account that called itself an app says otherwise, because nothing needs
+    // a `type` and writing one onto every profile saved here is noise.
+    if ('type' in profile) profile.type = 'user';
+    return JSON.stringify({ ...existing, profile });
+  }
+  profile.type = 'app';
   const uris = form.redirect_uris
     .split('\n')
     .map((u) => u.trim())
@@ -103,6 +163,13 @@ export function buildProfileMetadata(
   } else {
     delete profile.redirect_uris;
   }
+  if (form.creator) profile.creator = form.creator;
+  else delete profile.creator;
+  profile.is_public = form.is_public === '1';
+  // The secret is stored as its hash and never shown again, so the field
+  // starts empty on every visit: blank keeps the hash that is already there,
+  // and only a value typed now replaces it.
+  if (form.secret) profile.secret = secretHash(form.secret);
   return JSON.stringify({ ...existing, profile });
 }
 
@@ -235,6 +302,13 @@ function Profile() {
         },
       ] as [string, Record<string, unknown>];
       await broadcastOperations([op], postingKey, name);
+      // Used: drop the plaintext, and leave the field blank again, which is
+      // what "keep the stored secret" looks like on the next save.
+      setEdits((prev) =>
+        prev?.values.secret
+          ? { ...prev, values: { ...prev.values, secret: '' } }
+          : prev,
+      );
       setStatus('done');
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -289,14 +363,77 @@ function Profile() {
         <Handle name={selectedAccount} />
       </h1>
 
+      {/* An app account is a Hive account with these settings on it, so the
+          switch comes first: what it turns on is what Hivesigner and the API
+          read when the app signs someone in. */}
+      <label className="flex items-center gap-2 text-[13.5px]">
+        <input
+          type="checkbox"
+          className="accent-brand"
+          checked={current.is_app === '1'}
+          onChange={(e) => set('is_app', e.target.checked ? '1' : '0')}
+        />
+        <span>{t('profile.is_app')}</span>
+      </label>
+
       {field('name', t('profile.name'))}
       {field('about', t('profile.about'), true)}
       {field('website', t('profile.website'))}
       {field('location', t('profile.location'))}
       {field('profile_image', t('profile.profile_pic'))}
       {field('cover_image', t('profile.cover_pic'))}
-      {field('redirect_uris', t('profile.redirect_uris'), true)}
-      <p className={`${mutedXs} m-0`}>{t('profile.one_uri_line')}</p>
+
+      {current.is_app === '1' && (
+        <>
+          {field('redirect_uris', t('profile.redirect_uris'), true)}
+          <p className={`${mutedXs} m-0`}>{t('profile.one_uri_line')}</p>
+          {field('creator', t('profile.creator'))}
+
+          {/* Two values of one setting, so arrow keys move between them. */}
+          <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
+            <legend className={`${labelText} mb-1 p-0`}>
+              {t('profile.status')}
+            </legend>
+            <div className="flex flex-wrap gap-2">
+              {(['1', '0'] as const).map((value) => (
+                <label
+                  key={value}
+                  className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-[13px] ${
+                    current.is_public === value
+                      ? 'border-brand bg-brand-tint font-semibold text-ink'
+                      : 'border-line bg-surface text-muted hover:bg-subtle'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="is_public"
+                    value={value}
+                    checked={current.is_public === value}
+                    onChange={() => set('is_public', value)}
+                    className="sr-only"
+                  />
+                  {t(value === '1' ? 'profile.production' : 'profile.sandbox')}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          {/* The app's own credential, not a password for this site: kept out
+              of managers' save and update prompts (see SecretInput). */}
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-semibold">
+              {t('profile.secret')}
+            </span>
+            <SecretInput
+              className={fieldClass}
+              name="client-secret"
+              value={current.secret}
+              onChange={(value) => set('secret', value)}
+            />
+            <span className={`${mutedXs} m-0`}>{t('profile.blank_field')}</span>
+          </label>
+        </>
+      )}
 
       {status === 'error' && (
         // Keyed by kind: a sentence and a plain message are built fresh

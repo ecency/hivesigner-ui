@@ -267,6 +267,7 @@
   },
   "profile": {
     "profile": "Profil",
+    "is_app": "Bu hesap bir uygulamadır",
     "name": "Ad",
     "profile_pic": "Profil resmi URL'si",
     "cover_pic": "Kapak görseli URL'si",
@@ -275,6 +276,12 @@
     "location": "Konum",
     "redirect_uris": "Yönlendirme URI'leri",
     "one_uri_line": "Her satıra bir URI yazın; her biri bir protokol içermeli, parça (#) veya göreli yol içermemeli.",
+    "creator": "Oluşturan",
+    "status": "Durum",
+    "production": "Üretim",
+    "sandbox": "Kum havuzu",
+    "secret": "İstemci gizli anahtarı",
+    "blank_field": "Mevcut gizli anahtarı korumak için boş bırakın.",
     "bad_callbacks": "Kullanılamayan geri çağırma adresleri (https ya da localhost üzerinde http olmalı): {uris}"
   },
   "signs": {

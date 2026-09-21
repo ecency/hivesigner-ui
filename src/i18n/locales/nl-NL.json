@@ -267,6 +267,7 @@
   },
   "profile": {
     "profile": "Profiel",
+    "is_app": "Dit account is een app",
     "name": "Naam",
     "profile_pic": "URL van profielfoto",
     "cover_pic": "URL van omslagafbeelding",
@@ -275,6 +276,12 @@
     "location": "Locatie",
     "redirect_uris": "Doorstuur-URI's",
     "one_uri_line": "Eén URI per regel, elk met een protocol en zonder fragmenten of relatieve paden.",
+    "creator": "Maker",
+    "status": "Status",
+    "production": "Productie",
+    "sandbox": "Sandbox",
+    "secret": "Clientgeheim",
+    "blank_field": "Laat leeg om het huidige geheim te behouden.",
     "bad_callbacks": "Geen bruikbaar callback-adres (https, of http op localhost): {uris}"
   },
   "signs": {

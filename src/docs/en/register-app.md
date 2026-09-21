@@ -21,8 +21,10 @@ For the last two rows, see [Sign-in without posting access](/docs/login-only) an
 
 Open https://hivesigner.com/profile with the app account selected and set:
 
-- **This account is an app.** Turn it on.
+- **This account is an app.** Turn it on. It marks the account as an app, which the API checks before it accepts a code or a refresh token for it.
 - **Redirect URIs.** Your callbacks, one per line. See [Callbacks](#callbacks).
+- **Creator.** Who maintains the app. The app directory on https://hivesigner.com/apps shows it.
+- **Status.** Production or sandbox, for your own records. Hivesigner treats the two the same.
 - **Client secret.** Needed only for the [code flow](/docs/oauth2#code-flow). See [Client secret](#client-secret).
 
 Fill in **Name** and **Profile picture URL** too. The consent screen shows your app's picture and name. The app directory on https://hivesigner.com/apps shows the name, **About** and **Website**.

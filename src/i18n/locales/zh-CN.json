@@ -262,6 +262,7 @@
   },
   "profile": {
     "profile": "个人资料",
+    "is_app": "此账户是一个应用",
     "name": "名称",
     "profile_pic": "头像 URL",
     "cover_pic": "封面图片 URL",
@@ -270,6 +271,12 @@
     "location": "所在地",
     "redirect_uris": "重定向 URI",
     "one_uri_line": "每行一个 URI，每个都必须包含协议，且不得包含片段标识符或相对路径。",
+    "creator": "创建者",
+    "status": "状态",
+    "production": "生产环境",
+    "sandbox": "沙盒环境",
+    "secret": "客户端密钥",
+    "blank_field": "留空以保留当前密钥。",
     "bad_callbacks": "不可用的回调地址（仅限 https，或 localhost 上的 http）：{uris}"
   },
   "signs": {
