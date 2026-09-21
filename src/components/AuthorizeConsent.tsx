@@ -284,9 +284,16 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     }
   }
 
-  const unregistered =
-    !!req.clientId && !!callback && profile != null && !registered;
   const appMissing = !!req.clientId && (!clientIdValid || profile === null);
+  // The account exists but never said it is an app. The API refuses to issue a
+  // code or a refresh token for it, and its own owner turns this off to stop
+  // signing people in, so the consent screen reads it the same way rather than
+  // handing out a token the app cannot use.
+  const notAnApp = !!req.clientId && !!profile && !profile.isApp;
+  // One reason at a time: an account that is not an app is why the request
+  // fails, whatever its callbacks say.
+  const unregistered =
+    !notAnApp && !!req.clientId && !!callback && profile != null && !registered;
   // A no-app site's callback, classified: plain http off loopback is
   // INSECURE (the token is a week-long proof of the username, not something
   // to send in the clear); anything that is not an http(s) URL at all is
@@ -305,7 +312,7 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const invalid = callbackKind === 'invalid';
   // A request that cannot be approved. Nothing that asks for a key (adding an
   // account, unlocking one, adding its active key) is offered on its behalf.
-  const refused = appMissing || unregistered || insecure || invalid;
+  const refused = appMissing || notAnApp || unregistered || insecure || invalid;
   // A read that failed, as opposed to one still running: without this the
   // screen waited on a disabled button for ever.
   const readFailed =
@@ -324,7 +331,9 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   // The two integration failures an app author can fix, reported once per
   // screen: which app, and which callback host. Never the callback itself.
   useEffect(() => {
-    if (unregistered) {
+    if (notAnApp) {
+      reportIntegrationIssue('not_an_app', { app: req.clientId });
+    } else if (unregistered) {
       reportIntegrationIssue('redirect_not_registered', {
         app: req.clientId,
         callback_host: hostOf(callback),
@@ -338,7 +347,15 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
     } else if (invalid) {
       reportIntegrationIssue('callback_invalid', {});
     }
-  }, [unregistered, appMissing, insecure, invalid, req.clientId, callback]);
+  }, [
+    unregistered,
+    appMissing,
+    notAnApp,
+    insecure,
+    invalid,
+    req.clientId,
+    callback,
+  ]);
 
   // The account decides between a first-time request and a sign-in, so a
   // posting request waits for it as well as for the app: otherwise a returning
@@ -450,6 +467,18 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
             />
           </div>
           <ReportIssue kind="app_not_found" tags={{ app: req.clientId }} />
+        </>
+      )}
+
+      {notAnApp && (
+        <>
+          <div className={alertError}>
+            <Sentence
+              k="authorize.not_an_app"
+              values={{ app: `@${clientLabel}` }}
+            />
+          </div>
+          <ReportIssue kind="not_an_app" tags={{ app: req.clientId }} />
         </>
       )}
 

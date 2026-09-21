@@ -120,6 +120,7 @@
     "active_key_label": "{account} 的活动密钥或主密码",
     "active_key_hint": "会先与链上账户进行核对，然后与您的其他密钥一起保存在此设备上。它绝不会离开此浏览器。",
     "app_not_found": "{app} 不是 Hive 账户，因此没有可授权的应用。请返回该网站后重试。",
+    "not_an_app": "{app} 未设置为应用，因此无法让你登录。请返回该网站后重试。",
     "read_failed": "无法从 Hive 网络加载账户详情。",
     "retry": "重试",
     "account_missing": "在 Hive 网络上找不到 {account}。",

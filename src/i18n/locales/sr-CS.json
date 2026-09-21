@@ -122,6 +122,7 @@
     "active_key_label": "Aktivni ključ ili glavna lozinka za {account}",
     "active_key_hint": "Ključ se proverava prema nalogu u blokčejnu, a zatim se čuva na ovom uređaju zajedno sa vašim ostalim ključevima. Nikada ne napušta ovaj pregledač.",
     "app_not_found": "{app} nije Hive nalog, pa nema aplikacije koju treba ovlastiti. Vratite se na sajt i pokušajte ponovo.",
+    "not_an_app": "{app} nije podešen kao aplikacija, pa ne može da vas prijavi. Vratite se na sajt i pokušajte ponovo.",
     "read_failed": "Nije moguće učitati podatke o nalogu sa Hive mreže.",
     "retry": "Pokušaj ponovo",
     "account_missing": "Nalog {account} nije pronađen na Hive mreži.",

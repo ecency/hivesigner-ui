@@ -121,6 +121,7 @@
     "active_key_label": "Chave ativa ou senha mestra de {account}",
     "active_key_hint": "Verificada com a conta na blockchain e depois salva neste dispositivo junto com suas outras chaves. Ela nunca sai deste navegador.",
     "app_not_found": "{app} não é uma conta do Hive, então não há aplicativo para autorizar. Volte ao site e tente novamente.",
+    "not_an_app": "{app} não está configurado como aplicativo, então não pode fazer seu login. Volte ao site e tente novamente.",
     "read_failed": "Não foi possível carregar os dados da conta a partir da rede Hive.",
     "retry": "Tentar novamente",
     "account_missing": "A conta {account} não foi encontrada na rede Hive.",

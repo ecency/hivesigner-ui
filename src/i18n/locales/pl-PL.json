@@ -123,6 +123,7 @@
     "active_key_label": "Klucz aktywny lub hasło główne dla {account}",
     "active_key_hint": "Klucz zostanie sprawdzony z kontem w blockchainie, a następnie zapisany na tym urządzeniu razem z Twoimi pozostałymi kluczami. Nigdy nie opuszcza tej przeglądarki.",
     "app_not_found": "{app} nie jest kontem Hive, więc nie ma aplikacji do autoryzacji. Wróć do witryny i spróbuj ponownie.",
+    "not_an_app": "{app} nie jest skonfigurowana jako aplikacja, więc nie może Cię zalogować. Wróć na stronę i spróbuj ponownie.",
     "read_failed": "Nie udało się wczytać danych konta z sieci Hive.",
     "retry": "Ponów",
     "account_missing": "Nie znaleziono konta {account} w sieci Hive.",

@@ -21,6 +21,7 @@ import {
 } from '@/components/ui';
 import { readAccountNow } from '@/lib/account-now';
 import { getKeys, stillSelected } from '@/lib/accounts';
+import { effectiveProfile, metadataOf } from '@/lib/app-profile';
 import { type Account, getAccount } from '@/lib/hive';
 import { isValidRedirectUri } from '@/lib/oauth';
 import { accountKey } from '@/lib/query-keys';
@@ -58,49 +59,6 @@ interface ProfileForm {
     hashes the secret an app sends and compares it with this. */
 export function secretHash(secret: string): string {
   return bytesToHex(sha256(new TextEncoder().encode(secret)));
-}
-
-/** A JSON object as it is; anything else (null, an array, a string) as {}. */
-function asRecord(value: unknown): Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
-
-/** The account's posting_json_metadata as an object. Another app may have
-    written anything there, valid JSON that is not an object included. */
-function metadataOf(
-  account: Account | null | undefined,
-): Record<string, unknown> {
-  try {
-    return asRecord(JSON.parse(account?.posting_json_metadata || '{}'));
-  } catch {
-    return {};
-  }
-}
-
-/** The profile in a metadata string, for the older `json_metadata` copy. */
-function profileIn(metadata: string | undefined): Record<string, unknown> {
-  try {
-    return asRecord(asRecord(JSON.parse(metadata || '{}')).profile);
-  } catch {
-    return {};
-  }
-}
-
-/** The profile its readers see today: this one once it carries a version, and
-    the older `json_metadata` profile until then, which is the source the API
-    falls back to. Laid under rather than swapped in, so a posting profile that
-    is already ahead (callbacks registered by another tool) keeps what it has.
-    Reading and writing both go through this, or a legacy app whose settings
-    live in the older copy would look like a user account here and lose them on
-    the next save. */
-function effectiveProfile(
-  account: Account | null | undefined,
-): Record<string, unknown> {
-  const posting = asRecord(metadataOf(account).profile);
-  if (posting.version) return posting;
-  return { ...profileIn(account?.json_metadata), ...posting };
 }
 
 export function readProfile(account: Account | null | undefined): ProfileForm {

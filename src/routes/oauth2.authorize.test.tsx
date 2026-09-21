@@ -102,7 +102,11 @@ beforeEach(() => {
   h.accounts = { selectedAccount: 'alice', unlocked: ['alice'] };
   h.keys = { posting: '5Kposting', active: '5Kactive' };
   h.account = { name: 'alice', posting: { account_auths: [], key_auths: [] } };
-  h.profile = { name: 'The App', redirectUris: ['https://app.example/cb'] };
+  h.profile = {
+    name: 'The App',
+    isApp: true,
+    redirectUris: ['https://app.example/cb'],
+  };
   h.hasGrant.mockReset().mockReturnValue(false);
   h.broadcastOperations.mockReset().mockResolvedValue({ id: 'tx1' });
   h.refetchAccount.mockReset().mockResolvedValue({ data: h.account });
@@ -192,7 +196,11 @@ describe('oauth consent screen', () => {
   });
 
   it('blocks approval when the redirect_uri is not registered', async () => {
-    h.profile = { name: 'The App', redirectUris: ['https://other.example/cb'] };
+    h.profile = {
+      name: 'The App',
+      isApp: true,
+      redirectUris: ['https://other.example/cb'],
+    };
     render(<Authorize />);
     expect(
       await screen.findByText(/redirect url is not registered/i),

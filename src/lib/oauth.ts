@@ -3,6 +3,7 @@
 // is the shared signed-message token (message-token.ts); this module only shapes
 // what is signed and how the browser is redirected, matching the Nuxt app
 // (oauth2/authorize.vue + login.vue + store/auth.ts signAndRedirectToCallback).
+import { effectiveProfile } from './app-profile';
 import { type Account, getAccount } from './hive';
 import { isAbsoluteHttpUrl, resolveInternalPath } from './internal-path';
 import { createSignedMessage, encodeToken } from './message-token';
@@ -181,32 +182,34 @@ export function isValidRedirectUri(value: string): boolean {
 export interface AppProfile {
   name: string;
   redirectUris: string[];
+  /** Whether the account says it is an app, which the API requires before it
+      issues a code or a refresh token for it. */
+  isApp: boolean;
 }
 
-/** Read an app account's profile (name + registered redirect_uris). */
+/** Read an app account's profile: its name, whether it is an app at all, and
+    the callbacks it registered. Read through `effectiveProfile`, the source
+    the API reads, so an app registered before the `version` convention is
+    judged on the same metadata its tokens are judged on. */
 export async function loadAppProfile(
   clientId: string,
 ): Promise<AppProfile | null> {
   const account = await getAccount(clientId);
   if (!account) return null;
-  try {
-    const profile =
-      JSON.parse(account.posting_json_metadata || '{}').profile ?? {};
-    return {
-      // The profile is the app account's own on-chain metadata, so `name` can be
-      // any JSON value. Accept it only when it is a string: rendering an object
-      // as a React child throws and takes the consent screen down.
-      name:
-        typeof profile.name === 'string' && profile.name
-          ? profile.name
-          : clientId,
-      redirectUris: Array.isArray(profile.redirect_uris)
-        ? profile.redirect_uris.filter((u: unknown) => typeof u === 'string')
-        : [],
-    };
-  } catch {
-    return { name: clientId, redirectUris: [] };
-  }
+  const profile = effectiveProfile(account);
+  return {
+    // The profile is the app account's own on-chain metadata, so `name` can be
+    // any JSON value. Accept it only when it is a string: rendering an object
+    // as a React child throws and takes the consent screen down.
+    name:
+      typeof profile.name === 'string' && profile.name
+        ? profile.name
+        : clientId,
+    isApp: profile.type === 'app',
+    redirectUris: Array.isArray(profile.redirect_uris)
+      ? profile.redirect_uris.filter((u: unknown) => typeof u === 'string')
+      : [],
+  };
 }
 
 /**
@@ -251,7 +254,9 @@ function loopbackMatch(registered: string, callback: string): boolean {
 }
 
 export function isRegisteredRedirect(
-  profile: AppProfile,
+  // Only the list: whether the account is an app is a separate question, asked
+  // where the request is refused.
+  profile: Pick<AppProfile, 'redirectUris'>,
   callback: string,
 ): boolean {
   if (!isValidRedirectUri(callback)) return false;

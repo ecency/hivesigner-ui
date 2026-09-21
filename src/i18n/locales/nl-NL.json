@@ -121,6 +121,7 @@
     "active_key_label": "Active-sleutel of hoofdwachtwoord voor {account}",
     "active_key_hint": "De sleutel wordt gecontroleerd aan de hand van het account op de blockchain en daarna samen met je andere sleutels op dit apparaat opgeslagen. Hij verlaat deze browser nooit.",
     "app_not_found": "{app} is geen Hive-account, dus er is geen app om te autoriseren. Ga terug naar de site en probeer het opnieuw.",
+    "not_an_app": "{app} is niet als app ingesteld en kan je dus niet aanmelden. Ga terug naar de site en probeer het opnieuw.",
     "read_failed": "Kan de accountgegevens niet laden van het Hive-netwerk.",
     "retry": "Opnieuw proberen",
     "account_missing": "{account} is niet gevonden op het Hive-netwerk.",

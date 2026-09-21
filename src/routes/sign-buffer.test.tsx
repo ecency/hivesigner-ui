@@ -51,7 +51,11 @@ const pub = (k: PrivateKey) => k.createPublic().toString();
 const app = {
   name: 'app',
   posting_json_metadata: JSON.stringify({
-    profile: { name: 'Example App', redirect_uris: ['https://app.example/cb'] },
+    profile: {
+      name: 'Example App',
+      type: 'app',
+      redirect_uris: ['https://app.example/cb'],
+    },
   }),
 };
 

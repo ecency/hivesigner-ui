@@ -75,7 +75,11 @@ const pub = (k: PrivateKey) => k.createPublic().toString();
 const appAccount = {
   name: 'ecency.app',
   posting_json_metadata: JSON.stringify({
-    profile: { name: 'Ecency', redirect_uris: ['https://ecency.com/auth'] },
+    profile: {
+      name: 'Ecency',
+      type: 'app',
+      redirect_uris: ['https://ecency.com/auth'],
+    },
   }),
 };
 const alice = (granted = chain.granted) => ({

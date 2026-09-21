@@ -121,6 +121,7 @@
     "active_key_label": "Active-Schlüssel oder Master-Passwort für {account}",
     "active_key_hint": "Der Schlüssel wird mit dem Konto auf der Blockchain abgeglichen und dann zusammen mit Ihren anderen Schlüsseln auf diesem Gerät gespeichert. Er verlässt diesen Browser nie.",
     "app_not_found": "{app} ist kein Hive-Konto, daher gibt es keine App zu autorisieren. Kehren Sie zur Website zurück und versuchen Sie es erneut.",
+    "not_an_app": "{app} ist nicht als App eingerichtet und kann Sie daher nicht anmelden. Gehen Sie zurück zur Website und versuchen Sie es erneut.",
     "read_failed": "Die Kontodaten konnten nicht aus dem Hive-Netzwerk geladen werden.",
     "retry": "Erneut versuchen",
     "account_missing": "{account} wurde im Hive-Netzwerk nicht gefunden.",

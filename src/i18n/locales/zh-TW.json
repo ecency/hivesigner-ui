@@ -120,6 +120,7 @@
     "active_key_label": "{account} 的活躍金鑰或主密碼",
     "active_key_hint": "會先與鏈上帳號資料核對，再和你的其他金鑰一起儲存在這個裝置上，絕不會離開這個瀏覽器。",
     "app_not_found": "{app} 不是 Hive 帳號，因此沒有可授權的應用程式。請返回該網站再試一次。",
+    "not_an_app": "{app} 未設定為應用程式，因此無法讓你登入。請返回該網站後再試一次。",
     "read_failed": "無法從 Hive 網路載入帳號資料。",
     "retry": "重試",
     "account_missing": "在 Hive 網路上找不到 {account}。",
