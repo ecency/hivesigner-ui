@@ -14,3 +14,27 @@ files:
   - source: /src/i18n/locales/en-US.json
     translation: /src/i18n/locales/%locale%.json
     type: i18next_json
+  # The docs pages (#152). Each language lands in the folder the app reads,
+  # `src/docs/<code>/`, by the app's own short code rather than a locale,
+  # because the URL carries it (/docs/de/oauth2). Chinese is the only pair
+  # whose two letters would collide, so both forms are named.
+  #
+  # A translated page keeps the English structure: the `{#id}` after every
+  # `##` and `###` heading, the fenced blocks with their language, and every
+  # link. The build refuses a page without them and `docs.test.ts` compares
+  # each translation with its English source.
+  - source: /src/docs/en/*.md
+    translation: /src/docs/%two_letters_code%/%original_file_name%
+    languages_mapping:
+      two_letters_code:
+        zh-CN: zh-CN
+        zh-TW: zh-TW
+  # The titles and descriptions beside them, which the docs nav and the page
+  # metadata read. A language shows the pages listed here and falls back to
+  # English for the rest.
+  - source: /src/docs/en/pages.json
+    translation: /src/docs/%two_letters_code%/%original_file_name%
+    languages_mapping:
+      two_letters_code:
+        zh-CN: zh-CN
+        zh-TW: zh-TW

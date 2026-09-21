@@ -1,13 +1,16 @@
 name: Crowdin Upload Sources
 
-# Sends new and changed English strings to Crowdin whenever the source
-# dictionary changes on development. One way (repo to Crowdin); it makes no
-# commits here. Skipped until the repository variable CROWDIN_PROJECT_ID is set.
+# Sends new and changed English text to Crowdin whenever a source changes on
+# development: the app's dictionary, and the docs pages with their titles.
+# One way (repo to Crowdin); it makes no commits here. Skipped until the
+# repository variable CROWDIN_PROJECT_ID is set.
 on:
   push:
     branches: [development]
     paths:
       - 'src/i18n/locales/en-US.json'
+      - 'src/docs/en/**'
+      - 'crowdin.yml'
   workflow_dispatch:
 
 permissions:
