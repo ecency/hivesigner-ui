@@ -88,8 +88,23 @@ function profileIn(metadata: string | undefined): Record<string, unknown> {
   }
 }
 
-function readProfile(account: Account | null | undefined): ProfileForm {
-  const profile = asRecord(metadataOf(account).profile);
+/** The profile its readers see today: this one once it carries a version, and
+    the older `json_metadata` profile until then, which is the source the API
+    falls back to. Laid under rather than swapped in, so a posting profile that
+    is already ahead (callbacks registered by another tool) keeps what it has.
+    Reading and writing both go through this, or a legacy app whose settings
+    live in the older copy would look like a user account here and lose them on
+    the next save. */
+function effectiveProfile(
+  account: Account | null | undefined,
+): Record<string, unknown> {
+  const posting = asRecord(metadataOf(account).profile);
+  if (posting.version) return posting;
+  return { ...profileIn(account?.json_metadata), ...posting };
+}
+
+export function readProfile(account: Account | null | undefined): ProfileForm {
+  const profile = effectiveProfile(account);
   const s = (k: string) =>
     typeof profile[k] === 'string' ? (profile[k] as string) : '';
   return {
@@ -116,22 +131,12 @@ export function buildProfileMetadata(
   form: ProfileForm,
 ): string {
   const existing = metadataOf(account);
-  const current = asRecord(existing.profile);
-  // Writing the version moves the API's source: it reads this profile only
-  // once it has one, and the older `json_metadata` profile until then. What it
-  // read there and this form does not show comes across with the version, or
-  // saving here would silently drop an app's client secret, or its IP
-  // allowlist, which is what keeps other IPs out.
-  const carried: Record<string, unknown> = {};
-  if (!current.version) {
-    const older = profileIn(account.json_metadata);
-    for (const key of ['secret', 'allowed_ips']) {
-      if (!(key in current) && key in older) carried[key] = older[key];
-    }
-  }
+  // The version below moves what the API reads to this profile, so it is built
+  // on everything its readers see now (see effectiveProfile). Anything the
+  // form does not show - the client secret, the IP allowlist that keeps other
+  // addresses out - comes across with it rather than being dropped.
   const profile: Record<string, unknown> = {
-    ...current,
-    ...carried,
+    ...effectiveProfile(account),
     name: form.name,
     about: form.about,
     website: form.website,
@@ -280,11 +285,17 @@ function Profile() {
     // Reject a callback that could never be used: isRegisteredRedirect now
     // refuses non-loopback http, so saving one would register something the
     // consent screen silently declines. Fail here, where it can be corrected.
-    const bad = values.redirect_uris
-      .split('\n')
-      .map((u) => u.trim())
-      .filter(Boolean)
-      .filter((u) => !isValidRedirectUri(u));
+    // Only while the account is an app: otherwise the field is hidden and its
+    // callbacks are left as they are, and refusing the save over one the owner
+    // cannot see would leave them no way to correct it.
+    const bad =
+      values.is_app !== '1'
+        ? []
+        : values.redirect_uris
+            .split('\n')
+            .map((u) => u.trim())
+            .filter(Boolean)
+            .filter((u) => !isValidRedirectUri(u));
     if (bad.length > 0) {
       setStatus('error');
       setError('');
@@ -301,11 +312,15 @@ function Profile() {
           extensions: [],
         },
       ] as [string, Record<string, unknown>];
+      const written = values.secret;
       await broadcastOperations([op], postingKey, name);
       // Used: drop the plaintext, and leave the field blank again, which is
-      // what "keep the stored secret" looks like on the next save.
+      // what "keep the stored secret" looks like on the next save. Only the
+      // value this save wrote, and only on the account it wrote it for: the
+      // fields stay editable while the broadcast runs, so a secret typed
+      // since then has not been saved and must survive.
       setEdits((prev) =>
-        prev?.values.secret
+        written && prev?.account === name && prev.values.secret === written
           ? { ...prev, values: { ...prev.values, secret: '' } }
           : prev,
       );

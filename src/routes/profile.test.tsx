@@ -36,7 +36,7 @@ import {
   lockAccount,
   selectAccount,
 } from '@/lib/accounts';
-import { buildProfileMetadata, Route } from './profile';
+import { buildProfileMetadata, Route, readProfile } from './profile';
 
 const Profile = (Route as unknown as { component: ComponentType }).component;
 
@@ -260,6 +260,51 @@ describe('buildProfileMetadata', () => {
     expect(out.profile.version).toBe(2);
     expect(out.profile.secret).toBe('c'.repeat(64));
     expect(out.profile.allowed_ips).toEqual(['203.0.113.7']);
+  });
+
+  // A SteemConnect era app: everything is in json_metadata, the posting copy
+  // is empty. Saving must not write a version onto a profile that then says
+  // nothing about the app, which is what makes the API refuse its tokens.
+  it('keeps a legacy app that lives in json_metadata only', () => {
+    const legacy = {
+      ...account,
+      json_metadata: JSON.stringify({
+        profile: {
+          type: 'app',
+          name: 'Legacy',
+          redirect_uris: ['https://legacy.example/cb'],
+          creator: 'bob',
+          is_public: true,
+          secret: 'd'.repeat(64),
+        },
+      }),
+      posting_json_metadata: '{}',
+    };
+    const read = readProfile(legacy as never);
+    expect(read.is_app).toBe('1');
+    expect(read.redirect_uris).toBe('https://legacy.example/cb');
+    const out = JSON.parse(buildProfileMetadata(legacy as never, read));
+    expect(out.profile.type).toBe('app');
+    expect(out.profile.version).toBe(2);
+    expect(out.profile.redirect_uris).toEqual(['https://legacy.example/cb']);
+    expect(out.profile.creator).toBe('bob');
+    expect(out.profile.is_public).toBe(true);
+    expect(out.profile.secret).toBe('d'.repeat(64));
+  });
+
+  it('prefers the posting profile where the two disagree', () => {
+    const split = {
+      ...account,
+      json_metadata: JSON.stringify({
+        profile: { type: 'app', redirect_uris: ['https://old.example/cb'] },
+      }),
+      posting_json_metadata: JSON.stringify({
+        profile: { type: 'app', redirect_uris: ['https://new.example/cb'] },
+      }),
+    };
+    expect(readProfile(split as never).redirect_uris).toBe(
+      'https://new.example/cb',
+    );
   });
 
   it('leaves a profile that has a version alone', () => {
@@ -638,6 +683,62 @@ describe('/profile', () => {
     await user.click(screen.getByLabelText(/this account is an app/i));
     expect(screen.getByLabelText(/redirect/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/client secret/i)).toBeInTheDocument();
+  });
+
+  it('switches an app off although a stored callback is unusable', async () => {
+    // Registered before https was required. The field is hidden now, so the
+    // owner cannot correct it, and refusing the save would trap them.
+    h.getAccount.mockResolvedValue({
+      ...account,
+      posting_json_metadata: JSON.stringify({
+        profile: {
+          name: 'Alice',
+          type: 'app',
+          redirect_uris: ['http://old.example/cb'],
+        },
+      }),
+    });
+    await addAccount('alice', { posting: '5Kposting' });
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    renderPage();
+    const user = userEvent.setup();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/^name/i)).toHaveValue('Alice'),
+    );
+    await user.click(screen.getByLabelText(/this account is an app/i));
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops] = h.broadcastOperations.mock.calls[0];
+    const saved = JSON.parse(ops[0][1].posting_json_metadata).profile;
+    expect(saved.type).toBe('user');
+    expect(saved.redirect_uris).toEqual(['http://old.example/cb']);
+  });
+
+  it('keeps a secret typed while the broadcast was still running', async () => {
+    await addAccount('alice', { posting: '5Kposting' });
+    let release = (_: unknown) => {};
+    h.broadcastOperations.mockReturnValue(
+      new Promise((r) => {
+        release = r;
+      }),
+    );
+    renderPage();
+    const user = userEvent.setup();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/^name/i)).toHaveValue('Alice'),
+    );
+    const secret = screen.getByLabelText(/client secret/i);
+    await user.type(secret, 'first');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    await user.clear(secret);
+    await user.type(secret, 'second');
+    await act(async () => {
+      release({ id: 'tx' });
+    });
+    expect(await screen.findByText(/saved/i)).toBeInTheDocument();
+    // 'second' was never sent, so it is still the user's to save.
+    expect(secret).toHaveValue('second');
   });
 
   it('saves a typed secret as its hash, and clears the field', async () => {
