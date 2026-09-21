@@ -35,6 +35,9 @@ so do it deliberately and say so in the release notes.
   page as Markdown, listed in `/docs/llms.txt`.
 - The old GitBook docs forward as `/docs/h/<old path>`: each old page redirects permanently to the
   page that replaced it, anything else to `/docs`.
+- A request whose host is `docs.hivesigner.com` redirects permanently to
+  `https://hivesigner.com/docs` plus the path it asked for, which lands on those same `/docs/h`
+  addresses.
 
 ## Callback registration
 

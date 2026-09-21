@@ -56,6 +56,31 @@ test('the old addresses lead to the pages that replaced them', async ({
   }
 });
 
+// The host GitBook used to serve. Its DNS points at this app now, and every
+// old address begins /h/, which the redirects above map page by page. Routing
+// by a Host header only reaches this image, which is what the pull request job
+// runs; a deployed site is routed by the name in the URL, so this is skipped
+// there rather than sending another site's name through Cloudflare.
+test('the old docs host forwards into /docs', async ({ request, baseURL }) => {
+  test.skip(
+    !/^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(baseURL ?? ''),
+    'routes by Host, so only against the built image',
+  );
+  for (const [from, to] of [
+    ['/', 'https://hivesigner.com/docs/'],
+    ['/h', 'https://hivesigner.com/docs/h'],
+    ['/h/sdk/javascript', 'https://hivesigner.com/docs/h/sdk/javascript'],
+    ['/h/faq/questions?x=1', 'https://hivesigner.com/docs/h/faq/questions?x=1'],
+  ]) {
+    const res = await request.get(from, {
+      maxRedirects: 0,
+      headers: { host: 'docs.hivesigner.com' },
+    });
+    expect(res.status(), from).toBe(301);
+    expect(res.headers().location, from).toBe(to);
+  }
+});
+
 test('each page is also Markdown, listed in llms.txt, and in the sitemap', async ({
   request,
 }) => {
