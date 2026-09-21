@@ -11,6 +11,7 @@ export const routerState = {
   params: {} as Record<string, string>,
   navigate: vi.fn(),
   pathname: '/',
+  hash: '',
 };
 
 export function routerMock() {
@@ -35,7 +36,8 @@ export function routerMock() {
     } & Record<string, unknown>) => {
       const href = params
         ? Object.entries(params).reduce(
-            (p, [k, v]) => p.replace(`$${k}`, v),
+            (p, [k, v]) =>
+              k === '_splat' ? p.replace(/\$$/, v) : p.replace(`$${k}`, v),
             to,
           )
         : to;
@@ -59,8 +61,11 @@ export function routerMock() {
     useRouter: () => ({
       state: { location: { pathname: routerState.pathname, searchStr: '' } },
       subscribe: () => () => {},
+      navigate: routerState.navigate,
     }),
     useRouterState: ({ select }: { select: (s: unknown) => unknown }) =>
-      select({ location: { pathname: routerState.pathname } }),
+      select({
+        location: { pathname: routerState.pathname, hash: routerState.hash },
+      }),
   };
 }

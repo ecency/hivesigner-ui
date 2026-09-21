@@ -1,6 +1,9 @@
+import { createRequire } from 'node:module';
 import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { tanstackRouter } from '@tanstack/router-plugin/rspack';
+
+const require = createRequire(import.meta.url);
 
 const SITE_URL = (process.env.SITE_URL || 'https://hivesigner.com').replace(
   /\/+$/,
@@ -55,6 +58,17 @@ export default defineConfig({
           autoCodeSplitting: true,
         }),
       ],
+      module: {
+        rules: [
+          // The docs pages are rendered to HTML here, at build time; each page
+          // in each language becomes its own lazy chunk.
+          {
+            test: /\.md$/,
+            type: 'javascript/auto',
+            use: [{ loader: require.resolve('./scripts/docs-loader.cjs') }],
+          },
+        ],
+      },
     },
   },
 });

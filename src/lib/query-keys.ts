@@ -35,9 +35,18 @@ export const accountKey = (username: string | null) =>
 /** The HP-per-VEST rate the sign screen needs to show an HP amount. */
 export const vestsToSpKey = () => ['vests-to-sp'] as const;
 
+/** A docs language's page list (src/docs/<lang>/pages.json). */
+export const docsIndexKey = (lang: string) => ['docs-index', lang] as const;
+
+/** One docs page, rendered, in one language. */
+export const docsPageKey = (lang: string, slug: string) =>
+  ['docs-page', lang, slug] as const;
+
 /** Every key builder, for the collision test. Add new ones here too. */
 export const ALL_KEY_BUILDERS = {
   directoryProfileKey,
+  docsIndexKey,
+  docsPageKey,
   oauthAppProfileKey,
   appDirectoryKey,
   accountKey,

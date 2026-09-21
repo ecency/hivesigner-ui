@@ -80,8 +80,10 @@ const queryClient = new QueryClient({
 const LANGUAGE_WAIT_MS = 3000;
 
 function render() {
+  // A docs page arrives with its content already in #root for readers that
+  // run no scripts; React replaces it on this first render.
   const rootElement = document.getElementById('root');
-  if (rootElement && !rootElement.innerHTML) {
+  if (rootElement) {
     document.documentElement.setAttribute('data-build', __BUILD_SHA__);
     ReactDOM.createRoot(rootElement).render(
       <StrictMode>

@@ -12,6 +12,7 @@ import {
   muted,
   mutedXs,
 } from '@/components/ui';
+import { DocLink, useDocHref } from '@/docs/DocLink';
 import { fetchAppDirectory } from '@/lib/app-directory';
 import { appDirectoryKey } from '@/lib/query-keys';
 import { useAccounts } from '@/lib/use-accounts';
@@ -108,6 +109,7 @@ function TrustItem({
 
 function Home() {
   const { t } = useTranslation();
+  const devDocs = useDocHref('how-it-works');
   const { usernames } = useAccounts();
   // The primary action should START something: a first-time visitor goes to
   // key import, a returning one to their accounts.
@@ -241,12 +243,12 @@ function Home() {
             {t('index.dev_body')}
           </p>
         </div>
-        <Link
-          to="/developers"
+        <DocLink
+          href={devDocs}
           className={`${btnSecondary} h-11 shrink-0 text-[14px]`}
         >
           {t('index.dev_cta')}
-        </Link>
+        </DocLink>
       </section>
 
       {/* TRUST STRIP. Two across on a phone, four on a desktop. */}

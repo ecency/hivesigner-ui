@@ -185,7 +185,6 @@
     "apps": "التطبيقات",
     "accounts": "الحسابات",
     "settings": "الإعدادات",
-    "developers": "المطوّرون",
     "about": "حول",
     "documentation": "الوثائق",
     "signs": "الموقِّع",
@@ -279,14 +278,6 @@
     "missing_active_key": "يتطلب هذا مفتاحك النشط، ولا يوجد مفتاح نشط للحساب {account} هنا.",
     "missing_owner_key": "يتطلب هذا مفتاح المالك الخاص بك، ولا يوجد مفتاح مالك للحساب {account} هنا.",
     "loading_rate": "جارٍ تحميل معدّل قوة HIVE الحالي…"
-  },
-  "developers": {
-    "developers": "المطوّرون",
-    "add_app_title": "أضِف تطبيقك",
-    "add_app_body": "أنشئ حسابًا على Hive لتطبيقك، وسجّل الدخول به هنا، ثم أدرج عناوين URI لإعادة التوجيه في صفحة ملفه الشخصي.",
-    "sdk_title": "Hivesigner JS SDK",
-    "sdk_body": "تكامل مع حزمة SDK الرسمية: <sdk>hivesigner.js</sdk>.",
-    "docs_at": "الوثائق الكاملة متاحة على <docs>docs.hivesigner.com</docs>."
   },
   "settings": {
     "language": "اللغة",
@@ -472,7 +463,6 @@
   "meta": {
     "home": "Hivesigner - سجّل الدخول إلى تطبيقات Hive دون مشاركة مفاتيحك",
     "apps": "التطبيقات التي تستخدم Hivesigner",
-    "developers": "المطوّرون",
     "about": "حول",
     "signs": "الموقِّع",
     "sign": "تأكيد المعاملة",
@@ -486,5 +476,14 @@
     "authorized_apps": "التطبيقات المخوَّلة",
     "signmessage": "توقيع رسالة",
     "verifymessage": "التحقق من رسالة"
+  },
+  "docs": {
+    "contents": "المحتويات",
+    "not_translated": "هذه الصفحة غير متوفرة بلغة {language} بعد، لذلك تُعرض بالإنجليزية.",
+    "also_in": "هذه الصفحة متوفرة أيضًا بلغة <lang>{language}</lang>.",
+    "previous": "السابق",
+    "next": "التالي",
+    "edit": "اقترح تعديلًا على GitHub",
+    "load_failed": "تعذّر تحميل هذه الصفحة. تحقّق من اتصالك وحاول مرة أخرى."
   }
 }

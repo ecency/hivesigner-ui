@@ -181,7 +181,6 @@
     "apps": "Aplikacje",
     "accounts": "Konta",
     "settings": "Ustawienia",
-    "developers": "Deweloperzy",
     "about": "Informacje",
     "documentation": "Dokumentacja",
     "signs": "Podpisywanie",
@@ -269,14 +268,6 @@
     "missing_active_key": "To wymaga Twojego klucza aktywnego, którego konto {account} nie ma tutaj zapisanego.",
     "missing_owner_key": "To wymaga Twojego klucza właściciela, którego konto {account} nie ma tutaj zapisanego.",
     "loading_rate": "Wczytywanie aktualnego kursu HIVE Power…"
-  },
-  "developers": {
-    "developers": "Deweloperzy",
-    "add_app_title": "Dodaj swoją aplikację",
-    "add_app_body": "Utwórz konto Hive dla swojej aplikacji, zaloguj się na nie tutaj i wpisz adresy URI przekierowania na stronie jego profilu.",
-    "sdk_title": "Hivesigner JS SDK",
-    "sdk_body": "Zintegruj się z oficjalnym SDK: <sdk>hivesigner.js</sdk>.",
-    "docs_at": "Pełna dokumentacja jest dostępna na <docs>docs.hivesigner.com</docs>."
   },
   "settings": {
     "language": "Język",
@@ -462,7 +453,6 @@
   "meta": {
     "home": "Hivesigner - Loguj się do aplikacji Hive bez udostępniania kluczy",
     "apps": "Aplikacje korzystające z Hivesigner",
-    "developers": "Deweloperzy",
     "about": "O Hivesigner",
     "signs": "Podpisywanie",
     "sign": "Potwierdź transakcję",
@@ -476,5 +466,14 @@
     "authorized_apps": "Autoryzowane aplikacje",
     "signmessage": "Podpisz wiadomość",
     "verifymessage": "Zweryfikuj wiadomość"
+  },
+  "docs": {
+    "contents": "Spis treści",
+    "not_translated": "Ta strona nie jest jeszcze dostępna w języku {language}, dlatego wyświetlamy ją po angielsku.",
+    "also_in": "Ta strona jest dostępna także w języku <lang>{language}</lang>.",
+    "previous": "Poprzednia",
+    "next": "Następna",
+    "edit": "Zaproponuj zmianę na GitHubie",
+    "load_failed": "Nie udało się wczytać tej strony. Sprawdź połączenie i spróbuj ponownie."
   }
 }

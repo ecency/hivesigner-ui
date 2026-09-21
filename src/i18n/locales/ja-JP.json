@@ -175,7 +175,6 @@
     "apps": "アプリ",
     "accounts": "アカウント",
     "settings": "設定",
-    "developers": "開発者",
     "about": "概要",
     "documentation": "ドキュメント",
     "signs": "署名ツール",
@@ -254,14 +253,6 @@
     "missing_active_key": "アクティブキーが必要ですが、このデバイスには {account} のアクティブキーがありません。",
     "missing_owner_key": "オーナーキーが必要ですが、このデバイスには {account} のオーナーキーがありません。",
     "loading_rate": "現在のハイブパワーのレートを読み込み中…"
-  },
-  "developers": {
-    "developers": "開発者",
-    "add_app_title": "アプリを追加",
-    "add_app_body": "アプリ用の Hive アカウントを作成し、そのアカウントでここにログインして、そのプロフィールページにリダイレクト URI を登録してください。",
-    "sdk_title": "Hivesigner JS SDK",
-    "sdk_body": "公式 SDK <sdk>hivesigner.js</sdk> を使って連携できます。",
-    "docs_at": "詳しいドキュメントは <docs>docs.hivesigner.com</docs> にあります。"
   },
   "settings": {
     "language": "言語",
@@ -447,7 +438,6 @@
   "meta": {
     "home": "Hivesigner - キーを共有せずに Hive アプリへサインイン",
     "apps": "Hivesigner を使っているアプリ",
-    "developers": "開発者",
     "about": "概要",
     "signs": "署名ツール",
     "sign": "トランザクションの確認",
@@ -461,5 +451,14 @@
     "authorized_apps": "承認済みアプリ",
     "signmessage": "メッセージへの署名",
     "verifymessage": "メッセージの検証"
+  },
+  "docs": {
+    "contents": "目次",
+    "not_translated": "このページはまだ{language}に翻訳されていないため、英語で表示しています。",
+    "also_in": "このページは<lang>{language}</lang>でも読めます。",
+    "previous": "前へ",
+    "next": "次へ",
+    "edit": "GitHubで変更を提案",
+    "load_failed": "このページを読み込めませんでした。接続を確認して、もう一度お試しください。"
   }
 }

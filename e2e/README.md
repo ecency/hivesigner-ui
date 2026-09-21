@@ -47,6 +47,9 @@ elsewhere.
   login-only request from a site with no app account.
 - `tests/sign-buffer.spec.ts` - a message signed for a site (#84): the signature on the callback, a
   message padded to hide its end, and a Hivesigner token body that is never signed.
+- `tests/docs.spec.ts` - the docs (#151): a page's HTML carries its content and metadata, the old
+  GitBook and `/developers` addresses redirect, the Markdown copies and `llms.txt`, and moving
+  between pages without a reload, on a desktop and a phone. No mocks.
 
 ## What lives elsewhere
 

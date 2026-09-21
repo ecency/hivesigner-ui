@@ -7,22 +7,34 @@ so do it deliberately and say so in the release notes.
 
 ## Routes and query params
 
-- Pages: `/`, `/about`, `/accounts`, `/apps`, `/auths`, `/authorized-apps`, `/developers`,
+- Pages: `/`, `/about`, `/accounts`, `/apps`, `/auths`, `/authorized-apps`, `/docs/*`,
   `/import`, `/login`, `/oauth2/authorize`, `/profile`, `/settings`, `/signmessage`,
   `/verifymessage`, `/signs`, `/authorize/:username`, `/revoke/:username`,
   `/login-request/:clientId`, `/login-request/*`, `/sign/*`, `/sign-buffer`.
+- `/developers` redirects permanently to `/docs`.
 - Query read on auth flows: `redirect_uri` (decoded), `client_id`/`clientId`, `scope`,
-  `response_type`, `state`, `authority`.
+  `response_type`, `state`.
 - Scope normalisation on `/oauth2/authorize`: `login` stays login; any value containing `offline`
   becomes scope posting with response_type code; anything else becomes posting.
 - `/login` and `/login-request/*` fall back to scope login and response_type token, which is
   deliberately NOT the same rule: a malformed legacy request must never be upgraded from a
   username check into a posting grant.
-- `authority` outside owner/active/posting is treated as absent.
 - `account` (what the SDK's `getLoginURL(state, account)` sends; its README calls it
   `select_account`, which is read too) on `/oauth2/authorize` chooses that account when it is on
   the device and is otherwise ignored. Either way it is taken out of the URL before the screen
   renders, so a return to the request from the account list keeps the user's own pick.
+
+## Docs
+
+- `/docs` and `/docs/<page>` in English, `/docs/<lang>` and `/docs/<lang>/<page>` in another
+  language (its code in lower case). The pages and their order are `src/docs/pages.ts`; each page
+  is `src/docs/<lang>/<page>.md` with its title in that folder's `pages.json`. A page a language
+  has not translated shows the English one with a note and is not indexed at that address.
+- Each page's HTML is written at build time with its content, canonical and `hreflang`
+  alternates, and the sitemap lists every page. `/docs/<page>.md` (and `/docs/index.md`) is the
+  page as Markdown, listed in `/docs/llms.txt`.
+- The old GitBook docs forward as `/docs/h/<old path>`: each old page redirects permanently to the
+  page that replaced it, anything else to `/docs`.
 
 ## Callback registration
 
@@ -50,9 +62,10 @@ so do it deliberately and say so in the release notes.
   a Report button, and never signed.
 - Amount rendering: VESTS and HP to 6 decimals, HIVE and HBD to 3; HP converts through dynamic
   global properties.
-- Required authority is `?authority=` when valid, else the lowest across the operations
-  (`custom_json` needs active only when `required_auths` is non-empty), else none when they
-  disagree.
+- Required authority: the one every operation in the transaction needs (`custom_json` needs
+  active only when `required_auths` is non-empty). One key signs one authority, so a transaction
+  whose operations need different ones, or one Hivesigner does not know, cannot be signed. There
+  is no `authority` parameter on `/sign/*`.
 - A request that acts as an account other than the selected one says so before approval.
 
 ## Message signing requests (`/sign-buffer`)
@@ -85,9 +98,11 @@ so do it deliberately and say so in the release notes.
   `[state=<s>&]access_token=<token>&expires_in=604800&username=<u>`.
 - The parameters are appended to the callback string with `?` when it has no query and `&` when
   it has one, before any `#fragment`. The callback's own query is preserved byte for byte.
-- A sign callback (`cb=`) has its `{{sig}}`, `{{id}}`, `{{block}}`, `{{txn}}` and `{{data}}`
-  placeholders filled. A callback with none of them gets the transaction id appended as `id=`,
-  with `?` when it has no query and `&` when it has one.
+- A sign callback (`cb=`) has its placeholders filled: `{{id}}` with the transaction id, `{{sig}}`
+  with the signature on a sign-only (`nb`) link. `{{block}}`, `{{txn}}` and `{{data}}` are left
+  empty: the broadcast returns once a node accepts the transaction, before it is in a block. A
+  callback with none of them gets the transaction id appended as `id=`, with `?` when it has no
+  query and `&` when it has one.
 
 ## Stored data (existing users must stay logged in)
 

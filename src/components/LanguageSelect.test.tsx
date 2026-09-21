@@ -66,7 +66,7 @@ describe('LanguageSelect', () => {
     const onPicked = vi.fn();
     render(<LanguageSelect onPicked={onPicked} />);
     await userEvent.setup().selectOptions(screen.getByRole('combobox'), 'de');
-    await waitFor(() => expect(onPicked).toHaveBeenCalledWith(true));
+    await waitFor(() => expect(onPicked).toHaveBeenCalledWith(true, 'de'));
     expect(i18n.language).toBe('de');
     expect(localStorage.getItem('hs_lang')).toBe('de');
     expect(screen.getByRole('combobox')).toHaveValue('de');
@@ -77,7 +77,7 @@ describe('LanguageSelect', () => {
     render(<LanguageSelect onPicked={onPicked} />);
     h.failNext = true;
     await userEvent.setup().selectOptions(screen.getByRole('combobox'), 'ja');
-    await waitFor(() => expect(onPicked).toHaveBeenCalledWith(false));
+    await waitFor(() => expect(onPicked).toHaveBeenCalledWith(false, 'ja'));
     expect(i18n.language).toBe('en');
     expect(screen.getByRole('combobox')).toHaveValue('en');
     expect(screen.getByRole('status')).toHaveTextContent(
@@ -99,7 +99,7 @@ describe('LanguageSelect', () => {
     await waitFor(() => expect(i18n.language).toBe('it'));
     h.finishSlow();
     await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(onPicked.mock.calls).toEqual([[true]]);
+    expect(onPicked.mock.calls).toEqual([[true, 'it']]);
     expect(screen.queryByRole('status')).toBeNull();
     expect(screen.getByRole('combobox')).toHaveValue('it');
   });

@@ -3,7 +3,7 @@
 User-agent: *
 Allow: /$
 Allow: /apps
-Allow: /developers
+Allow: /docs
 Allow: /about
 Allow: /signs
 Disallow: /sign/

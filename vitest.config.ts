@@ -1,7 +1,21 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+import { docFileInfo, renderDoc } from './scripts/docs-markdown.mjs';
 
 export default defineConfig({
+  plugins: [
+    {
+      // The same rendering the rspack loader does for the build.
+      name: 'docs-markdown',
+      enforce: 'pre',
+      transform(source, id) {
+        if (!id.endsWith('.md')) return null;
+        const { lang } = docFileInfo(id);
+        const page = renderDoc(source, { lang, file: id });
+        return { code: `export default ${JSON.stringify(page)};`, map: null };
+      },
+    },
+  ],
   test: {
     environment: 'jsdom',
     globals: true,

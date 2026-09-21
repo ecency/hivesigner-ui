@@ -336,7 +336,7 @@ for (const language of LANGUAGES) {
         'rtl' in language ? 'rtl' : 'ltr',
       );
       await expect(page.locator('footer')).toContainText(
-        text(code, 'footer.developers'),
+        text(code, 'footer.documentation'),
       );
       // Nothing pushes the page sideways at 320px, in any language.
       const overflow = await page.evaluate(

@@ -60,25 +60,30 @@ describe('template.html', () => {
     }
     // The share image is referenced through the build-time site URL.
     expect(html).toContain('/og-image.png"');
-    for (const path of [
-      '/og-image.png',
-      '/robots.txt',
-      '/sitemap.xml',
-      '/logo.svg',
-    ]) {
+    for (const path of ['/og-image.png', '/robots.txt', '/logo.svg']) {
       expect(() => read(`public${path}`), path).not.toThrow();
     }
   });
 
   it('keeps robots.txt and the sitemap in agreement with the page table', async () => {
     const robots = read('public/robots.txt');
-    const sitemap = read('public/sitemap.xml');
+    // Written at build time from the page table and the docs.
+    const { buildSitemap, readDocs } = await import(
+      '../scripts/prerender-meta.mjs'
+    );
+    const sitemap: string = buildSitemap(
+      'https://hivesigner.com',
+      readDocs(join(process.cwd(), 'src', 'docs')),
+    );
     const { metaFor } = await import('./lib/page-meta');
-    for (const p of ['/apps', '/developers', '/about', '/signs']) {
+    for (const p of ['/apps', '/about', '/signs']) {
       expect(robots, p).toContain(`Allow: ${p}`);
       expect(sitemap, p).toContain(`<loc>https://hivesigner.com${p}</loc>`);
       expect(metaFor(p).indexable).toBe(true);
     }
+    expect(robots).toContain('Allow: /docs');
+    for (const p of ['/docs', '/docs/oauth2', '/docs/faq'])
+      expect(sitemap, p).toContain(`<loc>https://hivesigner.com${p}</loc>`);
     for (const p of [
       '/sign/',
       '/login',

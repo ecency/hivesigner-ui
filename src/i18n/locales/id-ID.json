@@ -175,7 +175,6 @@
     "apps": "Aplikasi",
     "accounts": "Akun",
     "settings": "Pengaturan",
-    "developers": "Pengembang",
     "about": "Tentang",
     "documentation": "Dokumentasi",
     "signs": "Penanda tangan",
@@ -254,14 +253,6 @@
     "missing_active_key": "Tindakan ini memerlukan kunci active Anda, tetapi kunci active {account} tidak tersimpan di sini.",
     "missing_owner_key": "Tindakan ini memerlukan kunci owner Anda, tetapi kunci owner {account} tidak tersimpan di sini.",
     "loading_rate": "Memuat kurs Hive Power saat ini…"
-  },
-  "developers": {
-    "developers": "Pengembang",
-    "add_app_title": "Tambahkan aplikasi Anda",
-    "add_app_body": "Buat akun Hive untuk aplikasi Anda, masuk dengan akun tersebut di sini, lalu cantumkan URI pengalihan Anda di halaman profilnya.",
-    "sdk_title": "SDK JS Hivesigner",
-    "sdk_body": "Integrasikan dengan SDK resmi: <sdk>hivesigner.js</sdk>.",
-    "docs_at": "Dokumentasi lengkap tersedia di <docs>docs.hivesigner.com</docs>."
   },
   "settings": {
     "language": "Bahasa",
@@ -447,7 +438,6 @@
   "meta": {
     "home": "Hivesigner - Masuk ke aplikasi Hive tanpa membagikan kunci Anda",
     "apps": "Aplikasi yang menggunakan Hivesigner",
-    "developers": "Pengembang",
     "about": "Tentang",
     "signs": "Penanda tangan",
     "sign": "Konfirmasi transaksi",
@@ -461,5 +451,14 @@
     "authorized_apps": "Aplikasi yang diotorisasi",
     "signmessage": "Tanda tangani pesan",
     "verifymessage": "Verifikasi pesan"
+  },
+  "docs": {
+    "contents": "Daftar isi",
+    "not_translated": "Halaman ini belum tersedia dalam {language}, jadi ditampilkan dalam bahasa Inggris.",
+    "also_in": "Halaman ini juga tersedia dalam <lang>{language}</lang>.",
+    "previous": "Sebelumnya",
+    "next": "Berikutnya",
+    "edit": "Usulkan perubahan di GitHub",
+    "load_failed": "Halaman ini tidak dapat dimuat. Periksa koneksi Anda lalu coba lagi."
   }
 }

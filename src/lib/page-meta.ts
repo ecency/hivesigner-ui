@@ -21,7 +21,8 @@ const SITE = 'Hivesigner';
 const DEFAULT_DESCRIPTION =
   'Hivesigner keeps your Hive keys on your own device, shows you exactly what a transaction does before you sign it, and lets apps ask for only the permission they need.';
 
-/** The five public pages, by EXACT path. `/apps/anything` is not a page. */
+/** The public app pages, by EXACT path. `/apps/anything` is not a page.
+    The docs pages set their own (docs/DocsView.tsx). */
 export const PUBLIC_PAGES: Record<string, PageMeta> = {
   '/': {
     titleKey: 'meta.home',
@@ -34,13 +35,6 @@ export const PUBLIC_PAGES: Record<string, PageMeta> = {
     title: 'Apps that use Hivesigner',
     description:
       'Apps that broadcast to Hive through Hivesigner, ranked by how many people use them.',
-    indexable: true,
-  },
-  '/developers': {
-    titleKey: 'meta.developers',
-    title: 'Developers',
-    description:
-      'Add Hive sign-in to your app with OAuth2, and let people grant posting access without ever handing over a key.',
     indexable: true,
   },
   '/about': {
@@ -139,22 +133,44 @@ function upsertCanonical(href: string | null) {
   el.setAttribute('href', href);
 }
 
-/** Apply the metadata for a path to the document. Idempotent. */
-export function applyPageMeta(
+/** The origin this build is served from, for canonical URLs. The define is
+    absent under vitest, which has no build step; the page's own origin is
+    the right answer there and a fine fallback anywhere. */
+export function siteOrigin(): string {
+  return typeof __SITE_URL__ === 'string' && __SITE_URL__
+    ? __SITE_URL__
+    : window.location.origin;
+}
+
+// The page the document was loaded on. Its prerendered HTML may list the same
+// page in other languages (docs pages do); those links describe that page
+// only, so they go once the app moves to another one.
+const firstPath =
+  typeof window === 'undefined' ? '' : normalizePath(window.location.pathname);
+
+/** Write a page's title, description and canonical into the document. A
+    null canonical marks a page that is not to be indexed. Idempotent. */
+export function applyMeta(
   pathname: string,
-  siteUrl: string,
-  translate?: Translate,
-): PageMeta {
-  const meta = metaFor(pathname, translate);
-  const title = fullTitle(meta);
+  {
+    title,
+    description,
+    canonical,
+  }: { title: string; description: string; canonical: string | null },
+): void {
   document.title = title;
-  upsertMeta('name', 'description', meta.description);
+  upsertMeta('name', 'description', description);
   upsertMeta('property', 'og:title', title);
-  upsertMeta('property', 'og:description', meta.description);
+  upsertMeta('property', 'og:description', description);
   upsertMeta('name', 'twitter:title', title);
-  upsertMeta('name', 'twitter:description', meta.description);
-  if (meta.indexable) {
-    const canonical = `${siteUrl}${normalizePath(pathname)}`;
+  upsertMeta('name', 'twitter:description', description);
+  if (normalizePath(pathname) !== firstPath) {
+    for (const el of document.head.querySelectorAll(
+      'link[rel="alternate"][hreflang]',
+    ))
+      el.remove();
+  }
+  if (canonical) {
     upsertCanonical(canonical);
     upsertMeta('property', 'og:url', canonical);
     document.head.querySelector('meta[name="robots"]')?.remove();
@@ -167,5 +183,19 @@ export function applyPageMeta(
     document.head.querySelector('meta[property="og:url"]')?.remove();
     upsertMeta('name', 'robots', 'noindex, nofollow');
   }
+}
+
+/** Apply the metadata for a path to the document. Idempotent. */
+export function applyPageMeta(
+  pathname: string,
+  siteUrl: string,
+  translate?: Translate,
+): PageMeta {
+  const meta = metaFor(pathname, translate);
+  applyMeta(pathname, {
+    title: fullTitle(meta),
+    description: meta.description,
+    canonical: meta.indexable ? `${siteUrl}${normalizePath(pathname)}` : null,
+  });
   return meta;
 }

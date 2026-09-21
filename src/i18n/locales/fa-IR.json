@@ -177,7 +177,6 @@
     "apps": "برنامه‌ها",
     "accounts": "حساب‌ها",
     "settings": "تنظیمات",
-    "developers": "توسعه‌دهندگان",
     "about": "درباره",
     "documentation": "مستندات",
     "signs": "امضاکننده",
@@ -259,14 +258,6 @@
     "missing_active_key": "این کار به کلید فعال شما نیاز دارد که {account} در اینجا آن را ندارد.",
     "missing_owner_key": "این کار به کلید مالک شما نیاز دارد که {account} در اینجا آن را ندارد.",
     "loading_rate": "در حال بارگذاری نرخ فعلی Hive Power…"
-  },
-  "developers": {
-    "developers": "توسعه‌دهندگان",
-    "add_app_title": "برنامه خود را اضافه کنید",
-    "add_app_body": "یک حساب Hive برای برنامه خود بسازید، با آن در اینجا وارد شوید و نشانی‌های URI بازگشت را در صفحه پروفایل همان حساب ثبت کنید.",
-    "sdk_title": "Hivesigner JS SDK",
-    "sdk_body": "با SDK رسمی یکپارچه شوید: <sdk>hivesigner.js</sdk>.",
-    "docs_at": "مستندات کامل در <docs>docs.hivesigner.com</docs> در دسترس است."
   },
   "settings": {
     "language": "زبان",
@@ -452,7 +443,6 @@
   "meta": {
     "home": "Hivesigner - ورود به برنامه‌های Hive بدون به‌اشتراک‌گذاشتن کلیدهایتان",
     "apps": "برنامه‌هایی که از Hivesigner استفاده می‌کنند",
-    "developers": "توسعه‌دهندگان",
     "about": "درباره",
     "signs": "امضاکننده",
     "sign": "تأیید تراکنش",
@@ -466,5 +456,14 @@
     "authorized_apps": "برنامه‌های مجاز",
     "signmessage": "امضای پیام",
     "verifymessage": "تأیید پیام"
+  },
+  "docs": {
+    "contents": "فهرست مطالب",
+    "not_translated": "این صفحه هنوز به {language} در دسترس نیست، برای همین به انگلیسی نمایش داده می‌شود.",
+    "also_in": "این صفحه به <lang>{language}</lang> هم در دسترس است.",
+    "previous": "قبلی",
+    "next": "بعدی",
+    "edit": "پیشنهاد تغییر در GitHub",
+    "load_failed": "این صفحه بارگیری نشد. اتصال خود را بررسی کنید و دوباره تلاش کنید."
   }
 }

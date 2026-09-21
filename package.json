@@ -60,6 +60,7 @@
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "jsdom": "^26.1.0",
+    "markdown-it": "^15.0.2",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.3",
     "vitest": "^4.1.8"
