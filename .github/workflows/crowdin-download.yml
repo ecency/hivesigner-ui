@@ -1,8 +1,10 @@
 name: Crowdin Download
 
-# Pulls APPROVED translations from Crowdin, runs the unit tests on them (the
-# dictionary tests check every language for missing strings, placeholders,
-# markup and plural forms, and that no language fell back to English), and
+# Pulls APPROVED translations from Crowdin, prunes the docs pages that came
+# back as English, runs the unit tests on them (the dictionary tests check
+# every language for missing strings, placeholders, markup and plural forms,
+# and that no language fell back to English; the docs tests compare each
+# translated page with its English source), and
 # only then opens or updates ONE pull request against development from the
 # branch l10n/crowdin. Weekly and on demand from the Actions tab.
 #
@@ -60,6 +62,11 @@ jobs:
           node-version: 24.x
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Crowdin fills an unapproved string with the English source, so a
+      # language arrives listing pages nobody translated. This keeps the pages
+      # that really are translated and registers the languages left, which the
+      # tests below then check.
+      - run: node scripts/docs-translations.mjs
       # The same checks Staging CI runs before a deploy.
       - run: pnpm build
       - run: pnpm test
@@ -68,18 +75,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if git diff --quiet -- src/i18n/locales; then
+          if git diff --quiet -- src/i18n/locales src/docs; then
             echo "No translation changes."
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git switch -C l10n/crowdin
-          git add src/i18n/locales
+          git add src/i18n/locales src/docs
           git commit -m 'Sync translations from Crowdin'
           git push --force origin l10n/crowdin
           if [ -z "$(gh pr list --head l10n/crowdin --state open --json number --jq '.[0].number')" ]; then
             gh pr create --base development --head l10n/crowdin \
               --title 'Sync translations from Crowdin' \
-              --body 'Approved translations pulled from Crowdin. The unit tests, including every dictionary check, passed on these files before this pull request was opened.'
+              --body 'Approved translations pulled from Crowdin: the app strings, and the docs pages of every language that has one. The unit tests, including every dictionary check and the comparison of each translated page with its English source, passed on these files before this pull request was opened.'
           fi
