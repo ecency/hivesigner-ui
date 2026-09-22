@@ -3,7 +3,13 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import operations from '@/data/operations.json';
 import { isLanguage, LANGUAGE_CODES } from '@/i18n/languages';
-import { DOC_LANGUAGES, loadDocIndex, type RenderedDoc } from './content';
+import {
+  DOC_LANGUAGES,
+  hasPage,
+  loadDocIndex,
+  loadDocPage,
+  type RenderedDoc,
+} from './content';
 import { DOC_SECTIONS, DOC_SLUGS, type DocIndex, isDocSlug } from './pages';
 
 // Every docs page in every language, rendered as the build renders them.
@@ -55,6 +61,19 @@ describe('docs content', () => {
       sections: {},
       pages: {},
     });
+  });
+
+  // The tests above read the files; the app imports them. A folder whose name
+  // the bundler resolves differently (zh-CN against zh-cn) would pass every
+  // check above and still fail for the reader.
+  it.each([...DOC_LANGUAGES])('loads every page %s lists', async (lang) => {
+    const index = await loadDocIndex(lang);
+    expect(Object.keys(index.pages).length, lang).toBeGreaterThan(0);
+    for (const slug of DOC_SLUGS) {
+      if (!hasPage(index, slug)) continue;
+      const page = await loadDocPage(lang, slug);
+      expect(page.html.length, `${lang}/${slug}`).toBeGreaterThan(0);
+    }
   });
 
   it('has every page and section in English', () => {
