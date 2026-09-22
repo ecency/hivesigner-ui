@@ -74,6 +74,20 @@ describe('registeredCallbacks', () => {
     ).toEqual([]);
   });
 
+  // Another tool writes the emptied list as `[]` rather than removing the key.
+  // Reading the older copy then would hand tokens back to a callback its
+  // owner has just de-registered.
+  it('treats an empty list as none registered, not as nothing said', () => {
+    expect(
+      registeredCallbacks(
+        account(
+          { type: 'app', redirect_uris: [] },
+          { redirect_uris: ['https://old.example/cb'] },
+        ),
+      ),
+    ).toEqual([]);
+  });
+
   it('keeps only strings', () => {
     expect(
       registeredCallbacks(

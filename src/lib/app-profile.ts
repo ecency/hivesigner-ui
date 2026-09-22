@@ -83,14 +83,15 @@ const callbacks = (profile: Record<string, unknown>): string[] =>
  * Not merged. The older copy is what the account looked like before any modern
  * tool wrote the newer one, so it holds addresses its owner has since removed,
  * and an emptied list is how a compromised callback is de-registered. Adding
- * them back would undo that.
+ * them back would undo that, so the newer copy having the field AT ALL settles
+ * it, empty list included: only a profile that never mentions callbacks asks
+ * the older copy.
  */
 export function registeredCallbacks(
   account: Account | null | undefined,
 ): string[] {
   const posting = asRecord(metadataOf(account).profile);
-  const own = callbacks(posting);
-  if (own.length > 0 || posting.version) return own;
+  if ('redirect_uris' in posting || posting.version) return callbacks(posting);
   return callbacks(profileIn(account?.json_metadata));
 }
 
