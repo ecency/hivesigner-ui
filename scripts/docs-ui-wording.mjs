@@ -11,6 +11,15 @@
 //
 // Only strings with no placeholder are checked. A page quotes the others with
 // the value filled in (HOST, @USERNAME), so they cannot match literally.
+//
+// A quote belongs to a page, so that is where it is checked. Reading a whole
+// folder as one string would pass a label worded right on one page and wrong
+// on the next, and a short word that appears in ordinary prose would cover a
+// quote that is wrong everywhere. The English page says WHERE each string is
+// quoted, in bold or in quotation marks, and that page of the translation has
+// to carry that language's wording of it. Where one English string serves two
+// keys ("Sign message" is the button and the footer's page both) either
+// wording passes: the English page cannot say which of them it meant.
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -29,7 +38,8 @@ sign.sign sign.approve sign.confirm_transaction sign.signing_as sign.selected_ac
 sign.success_title sign.failure_title sign.error_message sign.transaction_id
 sign.signed_with_posting sign.signed_with_active sign.signed_with_owner
 sign.mixed_authorities sign.loading_rate
-accounts.accounts accounts.unlock accounts.add_another accounts.search accounts.no_passcode
+accounts.accounts accounts.delete accounts.unlock accounts.add_another accounts.search
+accounts.no_passcode
 accounts.passcode accounts.remove_failed
 import.username import.add_account import.private_key import.passcode
 import.protect_with_passcode import.passcode_needed import.invalid_username_password
@@ -47,38 +57,98 @@ summary.keys_none summary.threshold_missing
   .split(/\s+/);
 
 const root = process.cwd();
+const docsDir = join(root, 'src', 'docs');
 const value = (dict, key) =>
   key.split('.').reduce((at, part) => (at == null ? at : at[part]), dict);
 
-/** Every quoted string a language's docs word differently from its app. */
-export function wordingDrift(lang) {
+const strings = (lang) => {
   const info = LANGUAGES.find((l) => l.code === lang);
   if (!info) throw new Error(`${lang}: not a language the app ships`);
-  const dir = join(root, 'src', 'docs', lang);
-  const strings = JSON.parse(
+  return JSON.parse(
     readFileSync(
       join(root, 'src', 'i18n', 'locales', `${info.file}.json`),
       'utf8',
     ),
   );
-  const docs = readdirSync(dir)
-    .filter((f) => f.endsWith('.md'))
-    .map((f) => readFileSync(join(dir, f), 'utf8'))
-    .join('\n');
-  return QUOTED.filter((key) => {
-    const shown = value(strings, key);
+};
+
+const pagesOf = (lang) =>
+  new Map(
+    readdirSync(join(docsDir, lang))
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => [
+        f.slice(0, -3),
+        readFileSync(join(docsDir, lang, f), 'utf8'),
+      ]),
+  );
+
+// What a page presents as words the app shows: **Add account**, "Signing as".
+// A label the docs complete with an account name is quoted whole.
+const SPAN = /\*\*([^*\n]+)\*\*|"([^"\n]+)"/g;
+const quotedIn = (text) =>
+  new Set(
+    [...text.matchAll(SPAN)].map((m) =>
+      (m[1] ?? m[2]).replace(/\s*@USERNAME$/, ''),
+    ),
+  );
+
+/** Each English string the docs quote: the keys it belongs to, and the pages
+    that quote it. A string no page quotes is looked for in the whole folder. */
+function englishQuotes() {
+  const english = strings('en');
+  const pages = pagesOf('en');
+  const quotes = new Map();
+  for (const key of QUOTED) {
+    const shown = value(english, key);
     // A placeholder or markup is filled in by the time a page quotes it.
-    return shown && !/[{<]/.test(shown) && !docs.includes(shown);
-  }).map((key) => ({ key, shown: value(strings, key) }));
+    if (!shown || /[{<]/.test(shown)) continue;
+    const found = quotes.get(shown) ?? { keys: [], slugs: [] };
+    found.keys.push(key);
+    if (found.slugs.length === 0)
+      found.slugs = [...pages]
+        .filter(([, text]) => quotedIn(text).has(shown))
+        .map(([slug]) => slug);
+    quotes.set(shown, found);
+  }
+  return quotes;
+}
+
+/** Every quoted string a language's docs word differently from its app. */
+export function wordingDrift(lang) {
+  const theirs = strings(lang);
+  const pages = pagesOf(lang);
+  const folder = [...pages.values()].join('\n');
+  const drift = [];
+  for (const [, { keys, slugs }] of englishQuotes()) {
+    // Either wording, when one English string stands for two keys.
+    const shown = keys
+      .map((key) => value(theirs, key))
+      .filter((s) => s && !/[{<]/.test(s));
+    if (shown.length === 0) continue;
+    const where = slugs.filter((slug) => pages.has(slug));
+    if (slugs.length === 0) {
+      // No English page quotes it: all this can ask is that the docs say it.
+      if (!shown.some((s) => folder.includes(s)))
+        drift.push({ key: keys[0], shown: shown[0], slug: null });
+      continue;
+    }
+    for (const slug of where) {
+      const text = pages.get(slug);
+      if (!shown.some((s) => text.includes(s)))
+        drift.push({ key: keys[0], shown: shown[0], slug });
+    }
+  }
+  return drift;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const docs = join(root, 'src', 'docs');
   let found = 0;
-  for (const entry of readdirSync(docs)) {
-    if (entry === 'en' || !statSync(join(docs, entry)).isDirectory()) continue;
-    for (const { key, shown } of wordingDrift(entry)) {
-      console.log(`${entry}: the docs do not quote ${key} as the app words it`);
+  for (const entry of readdirSync(docsDir)) {
+    if (entry === 'en' || !statSync(join(docsDir, entry)).isDirectory())
+      continue;
+    for (const { key, shown, slug } of wordingDrift(entry)) {
+      const where = slug ? `${entry}/${slug}` : entry;
+      console.log(`${where}: does not quote ${key} as the app words it`);
       console.log(`  app: ${shown}`);
       found += 1;
     }
