@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "使用 Hivesigner",
+    "developers": "用 Hivesigner 開發",
+    "more": "更多"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner 文件",
+      "description": "關於 Hivesigner 的一切：既寫給用它登入 Hive 應用程式的人，也寫給把它整合進自家應用程式的開發者。"
+    },
+    "accounts": {
+      "title": "新增與管理帳號",
+      "description": "把 Hive 帳號加入 Hivesigner，用本機密碼保護它，並在帳號之間切換。"
+    },
+    "signing-in": {
+      "title": "登入應用程式",
+      "description": "應用程式要求你登入時會發生什麼、登入後它能做什麼，以及如何撤銷它的權限。"
+    },
+    "signing": {
+      "title": "檢視與簽署",
+      "description": "在你簽署交易或訊息之前 Hivesigner 會顯示的內容，以及各自需要的金鑰。"
+    },
+    "safety": {
+      "title": "保護好你的金鑰",
+      "description": "該新增哪把金鑰、金鑰存在哪裡，以及如何辨識假冒的 Hivesigner 頁面。"
+    },
+    "faq": {
+      "title": "常見問題",
+      "description": "使用者與開發者常見問題的解答。"
+    }
+  }
+}
