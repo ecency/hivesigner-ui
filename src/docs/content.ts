@@ -14,6 +14,7 @@ export interface RenderedDoc {
     the app's own codes. The docs tests check this list against the folders. */
 export const DOC_LANGUAGES: readonly Language[] = [
   'en',
+  'de',
   'es',
   'id',
   'ko',

@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "Hivesigner verwenden",
+    "developers": "Mit Hivesigner entwickeln",
+    "more": "Mehr"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner-Dokumentation",
+      "description": "Alles über Hivesigner: für Menschen, die sich damit bei Hive-Apps anmelden, und für Entwickler, die es in ihre Apps einbauen."
+    },
+    "accounts": {
+      "title": "Konten hinzufügen und verwalten",
+      "description": "Ein Hive-Konto zu Hivesigner hinzufügen, es mit einem Passcode schützen und zwischen Konten wechseln."
+    },
+    "signing-in": {
+      "title": "Bei Apps anmelden",
+      "description": "Was passiert, wenn eine App Sie zum Anmelden auffordert, was sie danach tun kann und wie Sie ihren Zugriff entziehen."
+    },
+    "signing": {
+      "title": "Prüfen und signieren",
+      "description": "Was Hivesigner zeigt, bevor Sie eine Transaktion oder eine Nachricht signieren, samt dem Schlüssel, den jede braucht."
+    },
+    "safety": {
+      "title": "Ihre Schlüssel sicher aufbewahren",
+      "description": "Welchen Schlüssel Sie hinzufügen, wo er liegt und wie Sie eine gefälschte Hivesigner-Seite erkennen."
+    },
+    "faq": {
+      "title": "Häufige Fragen",
+      "description": "Antworten auf häufige Fragen von Nutzern und Entwicklern."
+    }
+  }
+}
