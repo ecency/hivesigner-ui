@@ -25,6 +25,46 @@
       "title": "Mantenha suas chaves seguras",
       "description": "Qual chave adicionar, onde ela fica guardada e como reconhecer uma página falsa do Hivesigner."
     },
+    "how-it-works": {
+      "title": "Como o Hivesigner funciona",
+      "description": "O Hivesigner tem duas partes, o assinador no navegador e a API. Veja como um aplicativo usa cada uma."
+    },
+    "register-app": {
+      "title": "Registre seu aplicativo",
+      "description": "Transforme uma conta do Hive num aplicativo do Hivesigner: URLs de retorno, segredo do cliente e a autoridade de postagem necessária."
+    },
+    "oauth2": {
+      "title": "Entrar com OAuth2",
+      "description": "Mande as pessoas ao Hivesigner para entrarem e voltarem com um token: os fluxos por token e por código, escopos e parâmetros."
+    },
+    "tokens": {
+      "title": "Tokens",
+      "description": "O que um token do Hivesigner contém, quanto tempo dura e como seu servidor o confere."
+    },
+    "api": {
+      "title": "API REST",
+      "description": "Os endpoints da API do Hivesigner: a conta do seu usuário, transmissão, tokens e o diretório de aplicativos."
+    },
+    "sign-links": {
+      "title": "Links de assinatura",
+      "description": "Links que abrem uma transação no Hivesigner para conferir e assinar, com uma URL de retorno ao final."
+    },
+    "message-signing": {
+      "title": "Assinatura de mensagens",
+      "description": "Peça que a pessoa assine uma mensagem com a chave dela, compatível com o requestSignBuffer do Hive Keychain."
+    },
+    "sdk": {
+      "title": "SDKs",
+      "description": "O SDK de JavaScript e as bibliotecas da comunidade para Python."
+    },
+    "login-only": {
+      "title": "Login sem acesso de postagem",
+      "description": "Use uma conta do Hive para fazer as pessoas entrarem quando seu aplicativo nunca transmite por elas."
+    },
+    "image-uploads": {
+      "title": "Envio de imagens",
+      "description": "Deixe as pessoas enviarem imagens com o login do Hivesigner, por um imagehoster que você mesmo mantém."
+    },
     "faq": {
       "title": "Perguntas frequentes",
       "description": "Respostas para as dúvidas mais comuns de usuários e de desenvolvedores."
