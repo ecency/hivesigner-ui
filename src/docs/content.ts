@@ -15,6 +15,7 @@ export interface RenderedDoc {
 export const DOC_LANGUAGES: readonly Language[] = [
   'en',
   'ar',
+  'bg',
   'bn',
   'de',
   'es',
