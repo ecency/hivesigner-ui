@@ -26,7 +26,15 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LANGUAGES } from '../src/i18n/languages.ts';
 
-/** The keys the docs quote as a label or a whole message. */
+/**
+ * The keys the docs quote as a label or a whole message.
+ *
+ * `authority.*` is deliberately absent. Those are ordinary nouns, and a page
+ * that lists them under a "Key" column inflects them to agree with it
+ * ("klucz publikowania", "ключ владельца"). That is the right wording, not
+ * drift, and demanding the app's nominative would make three languages read
+ * worse to satisfy a check.
+ */
 const QUOTED = `
 message_signing.message_label message_signing.authority_label message_signing.sign_button
 message_signing.summary message_signing.author message_signing.authority_used
@@ -52,6 +60,26 @@ common.continue common.cancel login.switch_an_account login.invalid_hs_password
 revoke.revoke apps.self_declared sign_buffer.token_refused sign_buffer.refused
 footer.sign_message footer.verify_message footer.authorized_apps
 summary.keys_none summary.threshold_missing
+authorize.redirect_not_registered authorize.hive_account footer.about
+message_signing.title message_verification.title profile.is_app profile.name
+profile.profile_pic profile.about profile.website signs.title signs.sign
+op_name.transfer op_name.recurrent_transfer op_name.delegate_vesting_shares
+op_name.transfer_to_vesting op_name.set_withdraw_vesting_route
+op_name.withdraw_vesting op_name.transfer_to_savings
+op_name.transfer_from_savings op_name.cancel_transfer_from_savings
+op_name.convert op_name.collateralized_convert op_name.account_witness_vote
+op_name.witness_update op_name.witness_set_properties
+op_name.account_witness_proxy op_name.claim_account op_name.account_create
+op_name.create_claimed_account op_name.vote op_name.limit_order_create
+op_name.limit_order_create2 op_name.limit_order_cancel
+op_name.claim_reward_balance op_name.comment op_name.comment_options
+op_name.custom_json op_name.delete_comment op_name.account_update
+op_name.account_update2 op_name.change_recovery_account
+op_name.create_proposal op_name.remove_proposal op_name.update_proposal_votes
+op_name.update_proposal op_name.escrow_transfer op_name.escrow_approve
+op_name.escrow_dispute op_name.escrow_release
+op_name.account_create_with_delegation op_name.request_account_recovery
+op_name.recover_account meta.about meta.sign
 `
   .trim()
   .split(/\s+/);
@@ -82,15 +110,27 @@ const pagesOf = (lang) =>
       ]),
   );
 
-// What a page presents as words the app shows: **Add account**, "Signing as".
-// A label the docs complete with an account name is quoted whole.
+// What a page presents as words the app shows: **Add account**, "Signing as",
+// and a table cell that holds nothing else, which is how the pages list the
+// operation names and the key each one needs. A label the docs complete with
+// an account name is quoted whole.
 const SPAN = /\*\*([^*\n]+)\*\*|"([^"\n]+)"/g;
-const quotedIn = (text) =>
-  new Set(
-    [...text.matchAll(SPAN)].map((m) =>
-      (m[1] ?? m[2]).replace(/\s*@USERNAME$/, ''),
-    ),
+const CELL = /^\|.*\|[ \t]*$/;
+const RULE = /^\|[\s:|-]+\|[ \t]*$/;
+const quotedIn = (text) => {
+  const found = [...text.matchAll(SPAN)].map((m) => m[1] ?? m[2]);
+  const lines = text.split('\n');
+  for (const [i, line] of lines.entries()) {
+    // The heading row of a table names the columns in the writer's own
+    // words ("| Message | What it means |"), so it quotes nothing.
+    if (!CELL.test(line) || RULE.test(line) || RULE.test(lines[i + 1] ?? ''))
+      continue;
+    found.push(...line.split('|').slice(1, -1));
+  }
+  return new Set(
+    found.map((s) => s.trim().replace(/\s*@USERNAME$/, '')).filter(Boolean),
   );
+};
 
 /** Each English string the docs quote: the keys it belongs to, and the pages
     that quote it. A string no page quotes is looked for in the whole folder. */
