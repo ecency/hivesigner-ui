@@ -25,6 +25,7 @@ export type IntegrationIssue =
   | 'callback_invalid' // a no-app site's callback is not a URL, or not http(s)
   | 'consent_incomplete' // no redirect_uri
   | 'app_not_found' // client_id names no Hive account
+  | 'not_an_app' // the account is not marked as an app, so it cannot sign in
   | 'sign_request_invalid' // a /sign link this app could not parse
   | 'sign_buffer_invalid' // a /sign-buffer request without a message, a usable key or a callback
   | 'route_not_found'; // a path nothing serves

@@ -121,6 +121,7 @@
     "active_key_label": "{account} uchun active kalit yoki asosiy parol",
     "active_key_hint": "Blokcheyndagi hisob bilan solishtiriladi, soʻng boshqa kalitlaringiz bilan birga shu qurilmada saqlanadi. U hech qachon bu brauzerdan tashqariga chiqmaydi.",
     "app_not_found": "{app} Hive hisobi emas, shuning uchun ruxsat beriladigan ilova yoʻq. Saytga qayting va qaytadan urinib koʻring.",
+    "not_an_app": "{app} ilova sifatida sozlanmagan, shuning uchun sizni tizimga kirita olmaydi. Saytga qaytib, qaytadan urinib koʻring.",
     "read_failed": "Hisob maʼlumotlarini Hive tarmogʻidan yuklab boʻlmadi.",
     "retry": "Qayta urinish",
     "account_missing": "{account} Hive tarmogʻida topilmadi.",

@@ -112,6 +112,7 @@ Hivesigner refuses a request it cannot answer safely. It shows a message and a *
 | --- | --- |
 | The `redirect_uri` is not one of your Redirect URIs | "This app's redirect URL is not registered. For your safety, sign-in is blocked." |
 | The `client_id` is not a Hive account | "@myapp is not a Hive account, so there is no app to authorize. Go back to the site and try again." |
+| The account is not marked as an app | "@myapp is not set up as an app, so it cannot sign you in. Go back to the site and try again." Turn **This account is an app** on, as above. |
 | No `redirect_uri` in the request | "This authorization request is incomplete: it names no app or no redirect URL. Go back to the app and try again." |
 
 If your users report one of these, check the `redirect_uri` your app sends against your Redirect URIs, character by character.

@@ -120,6 +120,7 @@
     "active_key_label": "Khóa active hoặc mật khẩu chính của {account}",
     "active_key_hint": "Được đối chiếu với tài khoản trên chuỗi, sau đó lưu trên thiết bị này cùng các khóa khác của bạn. Khóa không bao giờ rời khỏi trình duyệt này.",
     "app_not_found": "{app} không phải là tài khoản Hive, nên không có ứng dụng nào để cấp quyền. Hãy quay lại trang web và thử lại.",
+    "not_an_app": "{app} chưa được thiết lập là ứng dụng nên không thể đăng nhập cho bạn. Hãy quay lại trang web và thử lại.",
     "read_failed": "Không thể tải thông tin tài khoản từ mạng Hive.",
     "retry": "Thử lại",
     "account_missing": "Không tìm thấy {account} trên mạng Hive.",

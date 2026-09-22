@@ -121,6 +121,7 @@
     "active_key_label": "{account} için aktif anahtar veya ana şifre",
     "active_key_hint": "Anahtar, zincir üzerindeki hesap bilgileriyle karşılaştırılır, ardından diğer anahtarlarınızla birlikte bu cihaza kaydedilir. Bu tarayıcıdan asla çıkmaz.",
     "app_not_found": "{app} bir Hive hesabı değil, bu yüzden yetkilendirilecek bir uygulama yok. Siteye geri dönüp tekrar deneyin.",
+    "not_an_app": "{app} uygulama olarak ayarlanmadığı için sizi oturum açtıramaz. Siteye dönüp yeniden deneyin.",
     "read_failed": "Hesap bilgileri Hive ağından yüklenemedi.",
     "retry": "Tekrar dene",
     "account_missing": "{account} hesabı Hive ağında bulunamadı.",

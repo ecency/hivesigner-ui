@@ -200,7 +200,7 @@ describe('more request routes: another request is a fresh screen', () => {
   const app = (name: string) => ({
     name,
     posting_json_metadata: JSON.stringify({
-      profile: { name, redirect_uris: ['https://app.example/cb'] },
+      profile: { name, type: 'app', redirect_uris: ['https://app.example/cb'] },
     }),
   });
   let aliceFails = false;

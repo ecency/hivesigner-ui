@@ -57,7 +57,11 @@ const posting = PrivateKey.fromSeed('consent-test-posting');
 const appAccount = {
   name: 'ecency.app',
   posting_json_metadata: JSON.stringify({
-    profile: { name: 'Ecency', redirect_uris: ['https://ecency.com/auth'] },
+    profile: {
+      name: 'Ecency',
+      type: 'app',
+      redirect_uris: ['https://ecency.com/auth'],
+    },
   }),
 };
 const userAccount = (grants: string[]) => ({
@@ -164,6 +168,72 @@ describe('AuthorizeConsent', () => {
       await screen.findByText(i18n.t('authorize.scope_login')),
     ).toBeInTheDocument();
     expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+  });
+
+  // An account can register callbacks without ever saying it is an app. The
+  // API refuses its codes and refresh tokens, and its owner turns the switch
+  // off to stop signing people in, so consent refuses it too (#157).
+  it('refuses an account that is not marked as an app, and reports only its name', async () => {
+    sig.report.mockReset();
+    h.getAccount.mockImplementation(async (name: string) =>
+      name === 'ecency.app'
+        ? {
+            name: 'ecency.app',
+            posting_json_metadata: JSON.stringify({
+              profile: {
+                name: 'Ecency',
+                redirect_uris: ['https://ecency.com/auth'],
+              },
+            }),
+          }
+        : userAccount(['ecency.app']),
+    );
+    renderConsent({});
+    expect(
+      // The handle is its own element (Sentence keeps it out of the copy), so
+      // the sentence is matched by the part that is one text node.
+      await screen.findByText(/is not set up as an app/),
+    ).toBeInTheDocument();
+    // The callback is registered, so the old message would have been wrong:
+    // one reason at a time.
+    expect(
+      screen.queryByText(i18n.t('authorize.redirect_not_registered')),
+    ).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(sig.report).toHaveBeenCalledWith('not_an_app', {
+        app: 'ecency.app',
+      }),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /sign in/i })).toBeDisabled(),
+    );
+  });
+
+  // Registered before the `version` convention, so its settings are in the
+  // older metadata field, which is where the API still reads them.
+  it('accepts an app whose profile is only in json_metadata', async () => {
+    h.getAccount.mockImplementation(async (name: string) =>
+      name === 'ecency.app'
+        ? {
+            name: 'ecency.app',
+            json_metadata: JSON.stringify({
+              profile: {
+                name: 'Ecency',
+                type: 'app',
+                redirect_uris: ['https://ecency.com/auth'],
+              },
+            }),
+            posting_json_metadata: '{}',
+          }
+        : userAccount(['ecency.app']),
+    );
+    renderConsent({});
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /sign in/i })).toBeEnabled(),
+    );
+    expect(
+      screen.queryByText(/is not set up as an app/),
+    ).not.toBeInTheDocument();
   });
 
   it('refuses a callback the app has not registered, disables approval, and reports app and host only', async () => {

@@ -121,6 +121,7 @@
     "active_key_label": "Active key or master password for {account}",
     "active_key_hint": "Checked against the account on-chain, then saved on this device with your other keys. It never leaves this browser.",
     "app_not_found": "{app} is not a Hive account, so there is no app to authorize. Go back to the site and try again.",
+    "not_an_app": "{app} is not set up as an app, so it cannot sign you in. Go back to the site and try again.",
     "read_failed": "Could not load the account details from the Hive network.",
     "retry": "Retry",
     "account_missing": "{account} was not found on the Hive network.",

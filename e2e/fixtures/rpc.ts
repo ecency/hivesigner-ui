@@ -97,7 +97,7 @@ export function appAccount(name: string, redirectUris: string[]) {
     owner: { weight_threshold: 1, account_auths: [], key_auths: [] },
     json_metadata: '',
     posting_json_metadata: JSON.stringify({
-      profile: { name, redirect_uris: redirectUris },
+      profile: { name, type: 'app', redirect_uris: redirectUris },
     }),
   };
 }

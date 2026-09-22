@@ -53,7 +53,11 @@ describe('normalizeAuthRequest', () => {
 });
 
 describe('isRegisteredRedirect', () => {
-  const profile = { name: 'Ecency', redirectUris: ['https://ecency.com/cb'] };
+  const profile = {
+    name: 'Ecency',
+    isApp: true,
+    redirectUris: ['https://ecency.com/cb'],
+  };
   it('accepts an exact registered uri', () => {
     expect(isRegisteredRedirect(profile, 'https://ecency.com/cb')).toBe(true);
   });
@@ -147,6 +151,7 @@ describe('redirect hardening (review findings)', () => {
       'http://insecure.example/cb',
       'http://localhost:3000/cb',
     ],
+    isApp: true,
   };
 
   it('refuses a plain-http callback: the token rides in the query string', () => {
@@ -393,6 +398,7 @@ describe('grantReturnTarget refusals from review', () => {
 describe('isRegisteredRedirect on loopback (RFC 8252)', () => {
   const profile = {
     name: 'Ecency',
+    isApp: true,
     redirectUris: ['http://localhost:3000/auth', 'https://ecency.com/auth'],
   };
   it('matches localhost, 127.0.0.1 and [::1] on any port with the same path', async () => {

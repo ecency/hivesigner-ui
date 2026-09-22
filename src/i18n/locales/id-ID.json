@@ -120,6 +120,7 @@
     "active_key_label": "Kunci active atau kata sandi master untuk {account}",
     "active_key_hint": "Dicocokkan dengan akun di blockchain, lalu disimpan di perangkat ini bersama kunci Anda yang lain. Kunci ini tidak pernah meninggalkan browser ini.",
     "app_not_found": "{app} bukan akun Hive, jadi tidak ada aplikasi yang dapat diotorisasi. Kembali ke situs tersebut dan coba lagi.",
+    "not_an_app": "{app} tidak disiapkan sebagai aplikasi, sehingga tidak dapat memasukkan Anda. Kembali ke situs dan coba lagi.",
     "read_failed": "Tidak dapat memuat detail akun dari jaringan Hive.",
     "retry": "Coba lagi",
     "account_missing": "{account} tidak ditemukan di jaringan Hive.",
