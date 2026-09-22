@@ -86,6 +86,40 @@ function langInfo(code) {
   return { tag: info.htmlLang ?? info.code, rtl: !!info.rtl };
 }
 
+// The app's own wording, for the one sentence a prerendered page has to say
+// for itself. Read once per language: 400 pages are written from these.
+const dictionaries = new Map();
+function dictionary(file) {
+  if (!dictionaries.has(file))
+    dictionaries.set(
+      file,
+      JSON.parse(
+        readFileSync(
+          join(process.cwd(), 'src', 'i18n', 'locales', `${file}.json`),
+          'utf8',
+        ),
+      ),
+    );
+  return dictionaries.get(file);
+}
+
+/**
+ * The note over an English page shown at another language's address, in that
+ * language. The app renders it once it runs; a reader who runs no scripts
+ * sees this file and nothing else, so without it the page is English with no
+ * word about why.
+ */
+function notTranslatedNote(lang) {
+  const info = LANGUAGES.find((l) => l.code === lang);
+  const english = LANGUAGES[0];
+  const wording =
+    dictionary(info.file).docs?.not_translated ??
+    dictionary(english.file).docs.not_translated;
+  const { tag, rtl } = langInfo(lang);
+  const text = wording.replace('{language}', info.name);
+  return `<p role="note" lang="${tag}" dir="${rtl ? 'rtl' : 'ltr'}">${escapeText(text)}</p>`;
+}
+
 /**
  * Every docs page there is, by language: English has them all, another
  * language the pages its pages.json lists. `docsDir` is src/docs.
@@ -158,7 +192,7 @@ export function docPageHtml(
         `<li><a href="${docHref(slug, lang)}">${escapeText(titles[slug].title)}</a></li>`,
     )
     .join('');
-  const body = `<div data-prerendered class="mx-auto w-full max-w-5xl px-4 sm:px-6"><article lang="${tag}" dir="${rtl ? 'rtl' : 'ltr'}"><h1>${escapeText(info.title)}</h1><div class="docs-prose">${fallback ? localizeDocLinks(page.html, lang) : page.html}</div></article><nav><ul><li><a href="${docHref('index', lang)}">${escapeText(titles.index.title)}</a></li>${nav}</ul></nav></div>`;
+  const body = `<div data-prerendered class="mx-auto w-full max-w-5xl px-4 sm:px-6"><article lang="${tag}" dir="${rtl ? 'rtl' : 'ltr'}"><h1>${escapeText(info.title)}</h1>${fallback ? notTranslatedNote(lang) : ''}<div class="docs-prose">${fallback ? localizeDocLinks(page.html, lang) : page.html}</div></article><nav><ul><li><a href="${docHref('index', lang)}">${escapeText(titles.index.title)}</a></li>${nav}</ul></nav></div>`;
   return rewriteShell(
     shell,
     { title: info.title, description: info.description, indexable: !fallback },
