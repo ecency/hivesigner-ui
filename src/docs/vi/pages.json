@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "Dùng Hivesigner",
+    "developers": "Phát triển với Hivesigner",
+    "more": "Thêm"
+  },
+  "pages": {
+    "index": {
+      "title": "Tài liệu Hivesigner",
+      "description": "Mọi điều về Hivesigner: dành cho người dùng nó để đăng nhập vào ứng dụng Hive và cho nhà phát triển đưa nó vào ứng dụng của mình."
+    },
+    "accounts": {
+      "title": "Thêm và quản lý tài khoản",
+      "description": "Thêm tài khoản Hive vào Hivesigner, bảo vệ bằng mã mở khóa và chuyển đổi giữa các tài khoản."
+    },
+    "signing-in": {
+      "title": "Đăng nhập vào ứng dụng",
+      "description": "Điều gì xảy ra khi một ứng dụng yêu cầu bạn đăng nhập, sau đó nó làm được gì và cách thu hồi quyền của nó."
+    },
+    "signing": {
+      "title": "Xem xét và ký",
+      "description": "Những gì Hivesigner hiển thị trước khi bạn ký một giao dịch hay thông điệp, kèm khóa mà mỗi loại cần."
+    },
+    "safety": {
+      "title": "Giữ an toàn cho khóa của bạn",
+      "description": "Nên thêm khóa nào, khóa được lưu ở đâu và cách nhận ra trang Hivesigner giả mạo."
+    },
+    "faq": {
+      "title": "Câu hỏi thường gặp",
+      "description": "Giải đáp những câu hỏi thường gặp của người dùng và nhà phát triển."
+    }
+  }
+}
