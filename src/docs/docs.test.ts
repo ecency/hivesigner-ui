@@ -14,6 +14,9 @@ import { DOC_SECTIONS, DOC_SLUGS, type DocIndex, isDocSlug } from './pages';
 
 // Every docs page in every language, rendered as the build renders them.
 const { renderDoc } = await import('../../scripts/docs-markdown.mjs');
+// The same reading of a fenced block the splicer preserves, so that what is
+// compared here and what it carries over cannot be two different things.
+const { fences } = await import('../../scripts/docs-fences.mjs');
 
 const DIR = join(process.cwd(), 'src', 'docs');
 const folders = readdirSync(DIR, { withFileTypes: true })
@@ -76,6 +79,17 @@ describe('docs content', () => {
     }
   });
 
+  // An indented fence (a sample inside a list item) is still a code block.
+  // Reading it as prose would hand a translator English to translate, and
+  // the check above would then compare two pages that both miss it.
+  it('reads every fenced block on every page', () => {
+    for (const [lang, { pages }] of docs)
+      for (const [slug, page] of pages) {
+        const lines = (page.source.match(/^[ \t]*```/gm) ?? []).length;
+        expect(fences(page.source).length * 2, `${lang}/${slug}`).toBe(lines);
+      }
+  });
+
   it('has every page and section in English', () => {
     expect(Object.keys(english.index.pages).sort()).toEqual(
       [...DOC_SLUGS].sort(),
@@ -123,8 +137,7 @@ describe('docs content', () => {
 
   it('keeps the headings, code and links of the English page in a translation', () => {
     const drift: string[] = [];
-    const code = (page: Page) =>
-      (page.source.match(/```[\s\S]*?```/g) ?? []).join('\n');
+    const code = (page: Page) => fences(page.source).join('\n');
     for (const [lang, { pages }] of docs) {
       if (lang === 'en') continue;
       for (const [slug, page] of pages) {

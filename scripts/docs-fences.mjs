@@ -1,8 +1,8 @@
 // Put the English code blocks back into a translation.
 //
 // The docs test compares a translation's fenced blocks with the English
-// page byte for byte, and the developer pages carry 56 of them. Retyping
-// those by hand across 24 languages is 1,344 chances to mistype a field
+// page byte for byte, and the developer pages carry 64 of them. Retyping
+// those by hand across 24 languages is 1,536 chances to mistype a field
 // name. So a translation is written with @@1@@, @@2@@ ... alone on a line
 // where each block goes, in the order the English page has them, and this
 // fills them in from the source:
@@ -17,12 +17,35 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const FENCE = /^```[^\n]*\n[\s\S]*?^```$/gm;
-const MARKER = /^@@(\d+)@@$/gm;
+// A fence is not always at the left margin: a code sample inside a list item
+// is indented under it (login-only.md is nothing but those). Matching only
+// column zero found none of those four and, worse, found nine of oauth2's
+// thirteen, which would have put later blocks at the wrong marker number.
+const FENCE = /^[ \t]*```[^\n]*\n[\s\S]*?^[ \t]*```[ \t]*$/gm;
+const DELIMITER = /^[ \t]*```/gm;
+// A marker may be indented too. It is replaced by the whole block, which
+// carries the indentation it needs, so its own is dropped.
+const MARKER = /^[ \t]*@@(\d+)@@[ \t]*$/gm;
 const docs = join(process.cwd(), 'src', 'docs');
 
-/** The fenced blocks of a page, in order, as they are written. */
-export const fences = (text) => text.match(FENCE) ?? [];
+/**
+ * The fenced blocks of a page, in order, with the indentation they are
+ * written at. This is the docs test's definition of a code block too: the
+ * test imports it, so what it compares and what this preserves cannot drift
+ * apart.
+ */
+export function fences(text) {
+  const found = text.match(FENCE) ?? [];
+  const delimiters = (text.match(DELIMITER) ?? []).length;
+  // An opening fence this pattern cannot pair with (a ~~~ block, a fence
+  // indented past a tab) would otherwise be dropped in silence.
+  if (delimiters !== found.length * 2) {
+    throw new Error(
+      `${found.length} fenced block(s) but ${delimiters} fence line(s): a block is not being matched`,
+    );
+  }
+  return found;
+}
 
 /** Fill a translation's markers from the English page. Returns how many. */
 export function spliceFences(lang, slug) {
@@ -58,7 +81,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         .filter(
           (f) =>
             f.endsWith('.md') &&
-            /^@@\d+@@$/m.test(readFileSync(join(docs, lang, f), 'utf8')),
+            /^[ \t]*@@\d+@@[ \t]*$/m.test(
+              readFileSync(join(docs, lang, f), 'utf8'),
+            ),
         )
         .map((f) => f.slice(0, -3));
   for (const each of slugs) {
