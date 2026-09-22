@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "Menggunakan Hivesigner",
+    "developers": "Membangun dengan Hivesigner",
+    "more": "Lainnya"
+  },
+  "pages": {
+    "index": {
+      "title": "Dokumentasi Hivesigner",
+      "description": "Segala hal tentang Hivesigner: untuk orang yang masuk ke aplikasi Hive dengannya dan untuk pengembang yang menambahkannya ke aplikasi mereka."
+    },
+    "accounts": {
+      "title": "Menambahkan dan mengelola akun",
+      "description": "Menambahkan akun Hive ke Hivesigner, melindunginya dengan kode sandi, dan berpindah antar akun."
+    },
+    "signing-in": {
+      "title": "Masuk ke aplikasi",
+      "description": "Apa yang terjadi ketika sebuah aplikasi meminta Anda masuk, apa yang dapat dilakukannya setelah itu, dan cara mencabut aksesnya."
+    },
+    "signing": {
+      "title": "Meninjau dan menandatangani",
+      "description": "Apa yang ditunjukkan Hivesigner sebelum Anda menandatangani transaksi atau pesan, beserta kunci yang diperlukan masing-masing."
+    },
+    "safety": {
+      "title": "Menjaga kunci Anda tetap aman",
+      "description": "Kunci mana yang ditambahkan, di mana kunci itu disimpan, dan cara mengenali halaman Hivesigner palsu."
+    },
+    "faq": {
+      "title": "Tanya jawab",
+      "description": "Jawaban untuk pertanyaan yang sering diajukan pengguna dan pengembang."
+    }
+  }
+}
