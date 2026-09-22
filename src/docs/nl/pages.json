@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "Hivesigner gebruiken",
+    "developers": "Bouwen met Hivesigner",
+    "more": "Meer"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner-documentatie",
+      "description": "Alles over Hivesigner: voor mensen die er mee inloggen bij Hive-apps en voor ontwikkelaars die hem in hun eigen app inbouwen."
+    },
+    "accounts": {
+      "title": "Accounts toevoegen en beheren",
+      "description": "Voeg een Hive-account toe aan Hivesigner, beveilig het met een toegangscode en wissel tussen accounts."
+    },
+    "signing-in": {
+      "title": "Inloggen bij apps",
+      "description": "Wat er gebeurt als een app je vraagt in te loggen, wat ze daarna kan doen en hoe je haar toegang intrekt."
+    },
+    "signing": {
+      "title": "Controleren en ondertekenen",
+      "description": "Wat Hivesigner toont voordat je een transactie of een bericht ondertekent, met de sleutel die elk daarvan nodig heeft."
+    },
+    "safety": {
+      "title": "Houd je sleutels veilig",
+      "description": "Welke sleutel je toevoegt, waar die wordt bewaard en hoe je een nep-Hivesignerpagina herkent."
+    },
+    "faq": {
+      "title": "Veelgestelde vragen",
+      "description": "Antwoorden op veelgestelde vragen van gebruikers en ontwikkelaars."
+    }
+  }
+}
