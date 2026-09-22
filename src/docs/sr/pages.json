@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "Korišćenje servisa Hivesigner",
+    "developers": "Razvoj uz Hivesigner",
+    "more": "Još"
+  },
+  "pages": {
+    "index": {
+      "title": "Dokumentacija servisa Hivesigner",
+      "description": "Sve o servisu Hivesigner: za one koji se njime prijavljuju na Hive aplikacije i za programere koji ga ugrađuju u svoje."
+    },
+    "accounts": {
+      "title": "Dodavanje naloga i upravljanje njima",
+      "description": "Dodajte Hive nalog u Hivesigner, zaštitite ga pristupnim kodom i prelazite sa jednog naloga na drugi."
+    },
+    "signing-in": {
+      "title": "Prijava na aplikacije",
+      "description": "Šta se dešava kada aplikacija zatraži da se prijavite, šta ona posle toga može i kako da joj opozovete pristup."
+    },
+    "signing": {
+      "title": "Pregled i potpisivanje",
+      "description": "Šta Hivesigner prikazuje pre nego što potpišete transakciju ili poruku, uz ključ koji je svakoj potreban."
+    },
+    "safety": {
+      "title": "Čuvajte svoje ključeve bezbedno",
+      "description": "Koji ključ da dodate, gde se čuva i kako da prepoznate lažnu stranicu servisa Hivesigner."
+    },
+    "faq": {
+      "title": "Česta pitanja",
+      "description": "Odgovori na uobičajena pitanja korisnika i programera."
+    }
+  }
+}

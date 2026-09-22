@@ -29,6 +29,7 @@ export const DOC_LANGUAGES: readonly Language[] = [
   'pl',
   'pt',
   'ru',
+  'sr',
   'th',
   'tr',
   'uk',
