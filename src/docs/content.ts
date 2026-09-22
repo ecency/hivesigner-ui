@@ -17,6 +17,7 @@ export const DOC_LANGUAGES: readonly Language[] = [
   'de',
   'es',
   'fr',
+  'hi',
   'id',
   'it',
   'ja',
