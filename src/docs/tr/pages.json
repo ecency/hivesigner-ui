@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "Hivesigner'ı kullanmak",
+    "developers": "Hivesigner ile geliştirme",
+    "more": "Daha fazlası"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner belgeleri",
+      "description": "Hivesigner hakkında her şey: onunla Hive uygulamalarına giriş yapanlar ve onu kendi uygulamasına ekleyen geliştiriciler için."
+    },
+    "accounts": {
+      "title": "Hesap ekleme ve yönetme",
+      "description": "Hivesigner'a bir Hive hesabı ekleyin, erişim koduyla koruyun ve hesaplar arasında geçiş yapın."
+    },
+    "signing-in": {
+      "title": "Uygulamalara giriş yapma",
+      "description": "Bir uygulama giriş yapmanızı istediğinde neler olur, sonrasında neler yapabilir ve erişimini nasıl kaldırırsınız."
+    },
+    "signing": {
+      "title": "İnceleme ve imzalama",
+      "description": "Bir işlemi veya mesajı imzalamadan önce Hivesigner'ın gösterdikleri ve her birinin gerektirdiği anahtar."
+    },
+    "safety": {
+      "title": "Anahtarlarınızı güvende tutun",
+      "description": "Hangi anahtarı eklemeli, nerede saklanır ve sahte bir Hivesigner sayfası nasıl anlaşılır."
+    },
+    "faq": {
+      "title": "Sık sorulan sorular",
+      "description": "Kullanıcıların ve geliştiricilerin sık sorduğu soruların yanıtları."
+    }
+  }
+}
