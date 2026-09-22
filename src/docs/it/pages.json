@@ -25,6 +25,46 @@
       "title": "Tieni al sicuro le tue chiavi",
       "description": "Quale chiave aggiungere, dove viene salvata e come riconoscere una pagina falsa di Hivesigner."
     },
+    "how-it-works": {
+      "title": "Come funziona Hivesigner",
+      "description": "Hivesigner ha due parti, il firmatario nel browser e l’API. Ecco come un’app usa ciascuna."
+    },
+    "register-app": {
+      "title": "Registra la tua app",
+      "description": "Trasformare un account Hive in un’app Hivesigner: callback, client secret e l’autorità di pubblicazione che le serve."
+    },
+    "oauth2": {
+      "title": "Accedere con OAuth2",
+      "description": "Mandare le persone su Hivesigner per accedere e tornare con un token: i flussi con token e con codice, gli ambiti e i parametri."
+    },
+    "tokens": {
+      "title": "Token",
+      "description": "Che cosa contiene un token Hivesigner, quanto dura e come il tuo server lo controlla."
+    },
+    "api": {
+      "title": "API REST",
+      "description": "Gli endpoint dell’API di Hivesigner: l’account del tuo utente, la trasmissione, i token e la directory delle app."
+    },
+    "sign-links": {
+      "title": "Link di firma",
+      "description": "Link che aprono una transazione in Hivesigner da esaminare e firmare, con un callback alla fine."
+    },
+    "message-signing": {
+      "title": "Firma dei messaggi",
+      "description": "Chiedere a una persona di firmare un messaggio con la sua chiave, compatibile con requestSignBuffer di Hive Keychain."
+    },
+    "sdk": {
+      "title": "SDK",
+      "description": "L’SDK JavaScript e le librerie della comunità per Python."
+    },
+    "login-only": {
+      "title": "Accesso senza permessi di pubblicazione",
+      "description": "Usare un account Hive per far accedere le persone quando la tua app non trasmette mai per loro."
+    },
+    "image-uploads": {
+      "title": "Caricamento di immagini",
+      "description": "Lasciare che le persone carichino immagini con il loro accesso Hivesigner, tramite un imagehoster che gestisci tu."
+    },
     "faq": {
       "title": "Domande frequenti",
       "description": "Risposte alle domande più comuni di utenti e sviluppatori."
