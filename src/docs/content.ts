@@ -34,6 +34,7 @@ export const DOC_LANGUAGES: readonly Language[] = [
   'th',
   'tr',
   'uk',
+  'uz',
   'vi',
   'zh-CN',
   'zh-TW',

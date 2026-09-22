@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "Hivesigner’dan foydalanish",
+    "developers": "Hivesigner bilan ishlab chiqish",
+    "more": "Yana"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner hujjatlari",
+      "description": "Hivesigner haqida hamma narsa: u bilan Hive ilovalariga kiradiganlar va uni oʻz ilovasiga qoʻshadigan dasturchilar uchun."
+    },
+    "accounts": {
+      "title": "Hisob qoʻshish va boshqarish",
+      "description": "Hivesigner’ga Hive hisobi qoʻshing, uni himoya kodi bilan himoyalang va hisoblar oʻrtasida almashing."
+    },
+    "signing-in": {
+      "title": "Ilovalarga kirish",
+      "description": "Ilova kirishni soʻraganda nima boʻladi, keyin u nima qila oladi va uning ruxsatini qanday bekor qilasiz."
+    },
+    "signing": {
+      "title": "Koʻrib chiqish va imzolash",
+      "description": "Tranzaksiya yoki xabarni imzolashdan oldin Hivesigner nimani koʻrsatadi va har biriga qaysi kalit kerak."
+    },
+    "safety": {
+      "title": "Kalitlaringizni xavfsiz saqlang",
+      "description": "Qaysi kalitni qoʻshish kerak, u qayerda saqlanadi va soxta Hivesigner sahifasini qanday tanish mumkin."
+    },
+    "faq": {
+      "title": "Koʻp beriladigan savollar",
+      "description": "Foydalanuvchilar va dasturchilarning odatiy savollariga javoblar."
+    }
+  }
+}
