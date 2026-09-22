@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "Hivesigner 사용하기",
+    "developers": "Hivesigner로 개발하기",
+    "more": "더 보기"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner 문서",
+      "description": "Hivesigner에 대한 모든 것. Hivesigner로 Hive 앱에 로그인하는 사람과 자기 앱에 Hivesigner를 넣는 개발자를 위한 문서입니다."
+    },
+    "accounts": {
+      "title": "계정 추가와 관리",
+      "description": "Hive 계정을 Hivesigner에 추가하고, 패스코드로 보호하고, 계정을 전환하는 방법입니다."
+    },
+    "signing-in": {
+      "title": "앱에 로그인하기",
+      "description": "앱이 로그인을 요청하면 어떤 일이 일어나는지, 그 뒤 앱이 무엇을 할 수 있는지, 접근 권한을 어떻게 취소하는지 설명합니다."
+    },
+    "signing": {
+      "title": "검토와 서명",
+      "description": "거래나 메시지에 서명하기 전에 Hivesigner가 보여주는 내용과 각각에 필요한 키를 설명합니다."
+    },
+    "safety": {
+      "title": "키를 안전하게 지키기",
+      "description": "어떤 키를 추가할지, 키가 어디에 저장되는지, 가짜 Hivesigner 페이지를 어떻게 알아볼지 설명합니다."
+    },
+    "faq": {
+      "title": "자주 묻는 질문",
+      "description": "사용자와 개발자가 자주 묻는 질문에 대한 답변입니다."
+    }
+  }
+}
