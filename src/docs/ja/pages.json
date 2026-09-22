@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "Hivesigner を使う",
+    "developers": "Hivesigner で開発する",
+    "more": "その他"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner ドキュメント",
+      "description": "Hivesigner のすべて。Hivesigner で Hive アプリにログインする人と、自分のアプリに組み込む開発者のために。"
+    },
+    "accounts": {
+      "title": "アカウントの追加と管理",
+      "description": "Hive アカウントを Hivesigner に追加し、パスコードで保護し、アカウントを切り替える方法。"
+    },
+    "signing-in": {
+      "title": "アプリへのログイン",
+      "description": "アプリからログインを求められたときに何が起きるか、そのあとアプリに何ができるか、アクセスを取り消す方法。"
+    },
+    "signing": {
+      "title": "確認と署名",
+      "description": "トランザクションやメッセージに署名する前に Hivesigner が示す内容と、それぞれに必要なキー。"
+    },
+    "safety": {
+      "title": "キーを安全に保つ",
+      "description": "どのキーを追加するか、どこに保存されるか、偽の Hivesigner ページを見分ける方法。"
+    },
+    "faq": {
+      "title": "よくある質問",
+      "description": "利用者と開発者からよく寄せられる質問への回答。"
+    }
+  }
+}

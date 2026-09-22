@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import operations from '@/data/operations.json';
-import { isLanguage } from '@/i18n/languages';
+import { isLanguage, LANGUAGE_CODES } from '@/i18n/languages';
 import { DOC_LANGUAGES, loadDocIndex, type RenderedDoc } from './content';
 import { DOC_SECTIONS, DOC_SLUGS, type DocIndex, isDocSlug } from './pages';
 
@@ -47,8 +47,11 @@ describe('docs content', () => {
   });
 
   it('has nothing of its own for a language without docs', async () => {
-    const missing = ['ja', 'de', 'fr'].find((l) => !folders.includes(l));
-    expect(await loadDocIndex(missing ?? 'ja')).toEqual({
+    // A language that is still untranslated, whichever one that is today, and
+    // a code the app does not ship once every language has a folder: naming
+    // three by hand made this pass only until they were translated.
+    const missing = LANGUAGE_CODES.find((l) => !folders.includes(l)) ?? 'xx';
+    expect(await loadDocIndex(missing)).toEqual({
       sections: {},
       pages: {},
     });
