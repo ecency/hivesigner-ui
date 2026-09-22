@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "Utiliser Hivesigner",
+    "developers": "Développer avec Hivesigner",
+    "more": "Plus"
+  },
+  "pages": {
+    "index": {
+      "title": "Documentation Hivesigner",
+      "description": "Tout sur Hivesigner : pour celles et ceux qui s’en servent pour se connecter aux applications Hive et pour les développeurs qui l’intègrent aux leurs."
+    },
+    "accounts": {
+      "title": "Ajouter et gérer des comptes",
+      "description": "Ajoutez un compte Hive à Hivesigner, protégez-le avec un code d’accès et passez d’un compte à l’autre."
+    },
+    "signing-in": {
+      "title": "Se connecter aux applications",
+      "description": "Ce qui se passe quand une application vous demande de vous connecter, ce qu’elle peut faire ensuite et comment lui retirer son accès."
+    },
+    "signing": {
+      "title": "Vérifier et signer",
+      "description": "Ce que Hivesigner montre avant que vous signiez une transaction ou un message, avec la clé nécessaire à chacun."
+    },
+    "safety": {
+      "title": "Gardez vos clés en sécurité",
+      "description": "Quelle clé ajouter, où elle est enregistrée et comment repérer une fausse page Hivesigner."
+    },
+    "faq": {
+      "title": "Questions fréquentes",
+      "description": "Réponses aux questions courantes des utilisateurs et des développeurs."
+    }
+  }
+}
