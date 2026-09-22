@@ -23,6 +23,7 @@ export const DOC_LANGUAGES: readonly Language[] = [
   'pt',
   'ru',
   'tr',
+  'uk',
 ];
 
 /** Whether `lang` has docs of its own. */
