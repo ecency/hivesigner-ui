@@ -81,7 +81,7 @@ Retirer un compte supprime ses clés de ce navigateur uniquement. Votre compte H
 
 Si vous retirez le compte sélectionné, un autre compte de cet appareil devient le compte sélectionné.
 
-Si le navigateur ne laisse pas Hivesigner enregistrer le changement, vous voyez « Retiré pour cette session uniquement : le stockage n’est pas disponible, ce compte réapparaîtra donc quand vous rechargerez la page. »
+Si le navigateur ne laisse pas Hivesigner enregistrer le changement, vous voyez « Retiré pour cette session uniquement : le stockage n’est pas disponible, ce compte réapparaîtra donc quand vous rechargerez la page. »
 
 ## Si vous oubliez votre code d’accès {#forgotten-passcode}
 

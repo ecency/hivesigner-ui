@@ -105,7 +105,7 @@ Hivesigner ne vous laisse pas approuver une demande qu’il ne peut pas vérifie
 | « @COMPTE_APP n’est pas un compte Hive : il n’y a donc aucune application à autoriser. Retournez sur le site et réessayez. » | La demande nomme une application qui n’existe pas. |
 | « Ce site a demandé que votre connexion lui soit envoyée via une adresse http:// non chiffrée. Hivesigner ne l’envoie que via https. Demandez au site d’utiliser une adresse sécurisée. » | L’adresse de retour n’est pas sécurisée. |
 | « Ce site a demandé que votre connexion lui soit envoyée à une adresse qui n’est pas une URL web. Retournez sur le site et réessayez. » | L’adresse de retour n’est pas une adresse web. |
-| « Cette demande d’autorisation est incomplète : elle n’indique aucune application ou aucune URL de redirection. Retournez sur l’application et réessayez. » | Il manque des éléments à la demande. |
+| « Cette demande d’autorisation est incomplète : elle n’indique aucune application ou aucune URL de redirection. Retournez sur l’application et réessayez. » | Il manque des éléments à la demande. |
 
 Retournez sur l’application et réessayez. Si le problème persiste, sélectionnez **Signaler ce problème**. Cela envoie le lien et votre note facultative à l’équipe Hivesigner, avec les secrets masqués.
 

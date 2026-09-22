@@ -31,7 +31,7 @@ Sous la phrase, la carte liste les valeurs que porte l’opération :
 - pour une action personnalisée : chaque valeur de ses données, une par ligne, pour que rien ne soit tronqué
 - pour un changement d’autorités : le seuil, les clés et les comptes qu’il définit
 
-Un changement d’autorités signale aussi quand il retirerait vos clés, avec « clés : AUCUNE (votre clé est supprimée) ». Un seuil absent apparaît comme « seuil NON DÉFINI (traité comme 0) ».
+Un changement d’autorités signale aussi quand il retirerait vos clés, avec « clés : AUCUNE (votre clé est supprimée) ». Un seuil absent apparaît comme « seuil NON DÉFINI (traité comme 0) ».
 
 Dans le résumé et dans les détails, les caractères qui pourraient masquer du texte ou en changer le sens de lecture sont affichés comme `�`. Ce que vous lisez ne peut pas se faire passer pour autre chose.
 

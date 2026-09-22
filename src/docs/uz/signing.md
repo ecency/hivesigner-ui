@@ -115,7 +115,7 @@ Agar hisobda oʻsha kalit bu qurilmada boʻlmasa, ekran buni aytadi. Masalan: «
 
 **Hivesigner’ga kirish sifatida ishlashi mumkin boʻlgan xabar.** Baʼzi matnlar aynan Hivesigner’ga kirish koʻrinishida boʻladi. Ularni imzolash saytga hisobingizga kirish huquqini berib qoʻyadi. Hivesigner bunday matnni hech qachon imzolamaydi va «Bu xabar Hivesigner tokeni. Uni imzolash saytga hisobingizga kirish huquqini beradi, shuning uchun uni imzolab boʻlmaydi.» deb koʻrsatadi.
 
-**Hivesigner ishlata olmaydigan soʻrov.** Hivesigner xabari yoki qaytish manzili yoʻq soʻrovni rad etadi. Shuningdek, posting yoki active kalitdan boshqa kalitni soʻraydigan soʻrovni, Hive hisobi boʻlmagan narsani ilova deb koʻrsatadigan soʻrovni va qaytish manzili xavfsiz boʻlmagan yoki oʻsha ilova uchun roʻyxatdan oʻtkazilmagan soʻrovni ham rad etadi. Oʻshanda u «Bu imzolash soʻrovini ishlatib boʻlmaydi: unga xabar, posting yoki active kalit hamda ilova uchun roʻyxatdan oʻtkazilgan xavfsiz yoʻnaltirish URL manzili kerak. Saytga qayting va qaytadan urinib koʻring.» deb koʻrsatadi.
+**Hivesigner ishlata olmaydigan soʻrov.** Hivesigner xabari yoki qaytish manzili yoʻq soʻrovni rad etadi. Shuningdek, posting yoki active kalitdan boshqa kalitni soʻraydigan soʻrovni, Hive hisobi boʻlmagan narsani ilova deb koʻrsatadigan soʻrovni va qaytish manzili xavfsiz boʻlmagan yoki oʻsha ilova uchun roʻyxatdan oʻtkazilmagan soʻrovni ham rad etadi. Oʻshanda u «Bu imzo soʻrovidan foydalanib boʻlmaydi: unga xabar, posting yoki active kalit va ilova uchun roʻyxatdan oʻtkazilgan xavfsiz yoʻnaltirish URL manzili kerak. Saytga qayting va qaytadan urinib koʻring.» deb koʻrsatadi.
 
 Agar Hivesigner ilova maʼlumotlarini Hive tarmogʻidan oʻqiy olmasa, «Hisob maʼlumotlarini Hive tarmogʻidan yuklab boʻlmadi.» deb koʻrsatadi va oʻqiy olmaguncha hech narsani imzolamaydi. **Qayta urinish** tugmasini tanlang.
 
@@ -129,7 +129,7 @@ Hisobni oʻzingiz boshqarayotganingizni isbotlash uchun xabarni oʻzingiz ham im
 4. Kalitni **Imzolash uchun kalit** maydonida tanlang. U yerda tanlangan hisobning shu qurilmadagi kalitlari eng kuchlisidan boshlab keltiriladi va boshida eng kuchlisi tanlangan boʻladi. Boshqa kalit kerak boʻlmasa, uni **Posting** ga oʻzgartiring.
 5. **Xabarni imzolash** tugmasini tanlang.
 
-**Imzo tavsifi** boʻlimida **Muallif**, **Ishlatilgan vakolat**, **Tekshirish tokeni** va **Tekshirish havolasi** koʻrsatiladi. Tekshirish tokeni xabar, foydalanuvchi nomingiz va imzoni bitta matnga jamlaydi. Havolani yoki tokenni xabarni tekshirishi kerak boʻlgan kishiga bering.
+**Imzo xulosasi** boʻlimida **Muallif**, **Foydalanilgan vakolat**, **Tekshirish tokeni** va **Tekshirish havolasi** koʻrsatiladi. Tekshirish tokeni xabar, foydalanuvchi nomingiz va imzoni bitta matnga jamlaydi. Havolani yoki tokenni xabarni tekshirishi kerak boʻlgan kishiga bering.
 
 Imzo kalitingizni oshkor qilmaydi. Lekin u qaysi kalit bilan yaratilganini koʻrsatadi.
 
@@ -140,6 +140,6 @@ Imzo kalitingizni oshkor qilmaydi. Lekin u qaysi kalit bilan yaratilganini koʻr
 
 Tekshirish havolasi shu sahifani ochadi va xabarni oʻzi tekshiradi.
 
-Natijada «Imzo FOYDALANUVCHI uchun haqiqiy» yoki «Imzoni hisob kalitlari bilan tekshirib boʻlmadi.» deb yoziladi. Ostida **Muallif**, **Imzodan tiklangan ochiq kalit**, **Mos kelgan vakolat** (imzolagan kalit turi) va **Xabar** koʻrinadi.
+Natijada «Imzo FOYDALANUVCHI uchun haqiqiy» yoki «Imzoni hisob kalitlari bilan tasdiqlab boʻlmadi.» deb yoziladi. Ostida **Muallif**, **Imzodan tiklangan ochiq kalit**, **Mos kelgan vakolat** (imzolagan kalit turi) va **Xabar** koʻrinadi.
 
 Hivesigner imzoni hisob hozir Hive tarmogʻida ega boʻlgan kalitlar bilan solishtiradi. Hisob oʻshandan beri almashtirgan kalit bilan imzolangan xabar endi tekshiruvdan oʻtmaydi.

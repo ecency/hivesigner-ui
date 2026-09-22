@@ -70,7 +70,7 @@ Red sa nalogom iznad dugmeta kaže „Potpisujete kao“ i imenuje nalog koji po
 - **Odobri** potpisuje transakciju u vašem pregledaču i šalje je na Hive mrežu. Rezultat glasi „Transakcija je uspešno emitovana“ i uz njega stoji **ID transakcije** koji otvara transakciju u pretraživaču blokova.
 - **Potpiši** se pojavljuje umesto toga kada zahtev traži samo potpis. Hivesigner tada potpisuje transakciju bez slanja na mrežu i potpis predaje aplikaciji, ili ga prikaže kada zahtev ne imenuje nijedan sajt.
 
-Ako mreža odbije transakciju, videćete „Vaša transakcija nije emitovana“ i uz to „Poruku o grešci“ koju je mreža dala. Možete pokušati ponovo.
+Ako mreža odbije transakciju, videćete „Vaša transakcija nije emitovana“ i uz njega polje „Poruka o grešci“ sa onim što je mreža vratila. Možete pokušati ponovo.
 
 ## Sajt na koji se vraćate {#return-site}
 
@@ -113,9 +113,9 @@ Ako nalog nema taj ključ na ovom uređaju, ekran to kaže. Na primer: „Za ovo
 
 ### Zašto se neke poruke odbijaju {#refused-messages}
 
-**Poruka koja može da posluži kao prijava na Hivesigner.** Neki tekst ima tačno oblik Hivesigner prijave. Njegovo potpisivanje dalo bi sajtu pristup vašem nalogu. Hivesigner takav tekst nikada ne potpisuje i kaže „Ova poruka je Hivesigner token. Njenim potpisivanjem sajt bi dobio pristup vašem nalogu, pa se ne može potpisati.“
+**Poruka koja može da posluži kao prijava na Hivesigner.** Neki tekst ima tačno oblik Hivesigner prijave. Njegovo potpisivanje dalo bi sajtu pristup vašem nalogu. Hivesigner takav tekst nikada ne potpisuje i kaže „Ova poruka je Hivesigner token. Njeno potpisivanje bi sajtu dalo pristup vašem nalogu, zato ne može da se potpiše.“
 
-**Zahtev koji Hivesigner ne može da upotrebi.** Hivesigner odbija zahtev bez poruke ili bez povratne adrese. Odbija i zahtev za ključ koji nije ni za objavljivanje ni aktivni, zahtev koji kao aplikaciju imenuje nešto što nije Hive nalog, kao i zahtev čija povratna adresa nije bezbedna ili nije registrovana za tu aplikaciju. Tada kaže „Ovaj zahtev za potpisivanje se ne može upotrebiti: potrebni su poruka, ključ za objavljivanje ili aktivni ključ i bezbedan URL za preusmeravanje registrovan za aplikaciju. Vratite se na sajt i pokušajte ponovo.“
+**Zahtev koji Hivesigner ne može da upotrebi.** Hivesigner odbija zahtev bez poruke ili bez povratne adrese. Odbija i zahtev za ključ koji nije ni za objavljivanje ni aktivni, zahtev koji kao aplikaciju imenuje nešto što nije Hive nalog, kao i zahtev čija povratna adresa nije bezbedna ili nije registrovana za tu aplikaciju. Tada kaže „Ovaj zahtev za potpis ne može da se koristi: potrebni su poruka, ključ za objavljivanje ili aktivni ključ i bezbedan URL za preusmeravanje registrovan za aplikaciju. Vratite se na sajt i pokušajte ponovo.“
 
 Ako Hivesigner ne može da pročita podatke aplikacije sa Hive mreže, kaže „Nije moguće učitati podatke o nalogu sa Hive mreže.“ i dok ne uspe, ne potpisuje ništa. Izaberite **Pokušaj ponovo**.
 
@@ -129,7 +129,7 @@ Poruku možete potpisati i sami, da biste dokazali da upravljate nalogom.
 4. Ključ izaberite u polju **Ključ za potpisivanje**. Tu su navedeni ključevi izabranog naloga koji postoje na ovom uređaju, od najjačeg naniže, a najjači je unapred izabran. Promenite ga na **Objavljivanje** osim ako vam treba drugi.
 5. Izaberite **Potpiši poruku**.
 
-**Sažetak potpisa** prikazuje **Autora**, **Upotrebljeno ovlašćenje**, **Token za proveru** i **Link za proveru**. Token za proveru objedinjuje poruku, vaše korisničko ime i potpis u jedan tekst. Podelite link ili token sa onim ko treba da proveri poruku.
+**Pregled potpisa** prikazuje **Autora**, **Korišćeno ovlašćenje**, **Token za proveru** i **Link za proveru**. Token za proveru objedinjuje poruku, vaše korisničko ime i potpis u jedan tekst. Podelite link ili token sa onim ko treba da proveri poruku.
 
 Potpis ne otkriva vaš ključ, ali pokazuje kojim je ključem napravljen.
 
@@ -140,6 +140,6 @@ Potpis ne otkriva vaš ključ, ali pokazuje kojim je ključem napravljen.
 
 Link za proveru otvara ovu stranicu i sam proverava poruku.
 
-Rezultat glasi „Potpis je važeći za KORISNIK“ ili „Potpis nije moguće proveriti ključevima naloga.“ Ispod toga vidite **Autora**, **Javni ključ izveden iz potpisa**, **Podudarno ovlašćenje** (vrstu ključa koji je potpisao) i **Poruku**.
+Rezultat glasi „Potpis je važeći za KORISNIK“ ili „Potpis nije moguće potvrditi ključevima naloga.“ Ispod toga vidite **Autora**, **Javni ključ izveden iz potpisa**, **Podudarno ovlašćenje** (vrstu ključa koji je potpisao) i **Poruku**.
 
 Hivesigner potpis proverava ključevima koje nalog sada ima na Hive mreži. Poruka potpisana ključem koji je nalog u međuvremenu zamenio više se ne može proveriti.

@@ -67,10 +67,10 @@ Jeśli ta przeglądarka nie ma jeszcze żadnego konta, przycisk brzmi **Dalej** 
 
 Wiersz konta nad przyciskiem mówi „Podpisujesz jako” i wskazuje konto, które podpisuje. **Przełącz konto** pozwala wybrać inne. Zobacz [Przełączanie kont](/docs/accounts#switch-accounts).
 
-- **Zatwierdź** podpisuje transakcję w Twojej przeglądarce i wysyła ją do sieci Hive. Wynik brzmi „Transakcja została rozgłoszona w sieci” wraz z **Identyfikatorem transakcji**, który otwiera ją w eksploratorze bloków.
+- **Zatwierdź** podpisuje transakcję w Twojej przeglądarce i wysyła ją do sieci Hive. Wynik brzmi „Transakcja została rozgłoszona w sieci”, a obok niego **Identyfikator transakcji**, który otwiera ją w eksploratorze bloków.
 - **Podpisz** pojawia się zamiast tego, gdy żądanie prosi tylko o podpis. Hivesigner podpisuje transakcję, nie wysyłając jej do sieci. Przekazuje podpis aplikacji albo pokazuje go, gdy żądanie nie wskazuje żadnej witryny.
 
-Jeśli sieć odrzuci transakcję, zobaczysz „Twoja transakcja nie została rozgłoszona w sieci” wraz z „Komunikatem błędu” od sieci. Możesz spróbować ponownie.
+Jeśli sieć odrzuci transakcję, zobaczysz „Twoja transakcja nie została rozgłoszona w sieci” oraz pole „Komunikat błędu” z tym, co zwróciła sieć. Możesz spróbować ponownie.
 
 ## Witryna, do której wracasz {#return-site}
 

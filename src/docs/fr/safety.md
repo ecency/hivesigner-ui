@@ -42,7 +42,7 @@ Sur un ordinateur utilisé par d’autres personnes :
 - **Vérifiez où vous irez ensuite.** « Vous redirige vers HOST » et « Vous allez être redirigé vers HOST. » nomment le site qui reçoit le résultat. Ce doit être le site d’où vous venez.
 - **Vérifiez qui demande.** Une application choisit elle-même son nom affiché. La ligne « Compte Hive @COMPTE_APP » montre son véritable compte Hive. Sur la page d’autorisation ou de révocation d’une application, Hivesigner précise à propos du profil de l’application : « Toutes les informations ci-dessus sont publiées par le compte de l’application lui-même. Hivesigner n’en vérifie aucune. »
 - **Vérifiez la clé.** Un vote, un article ou un abonnement nécessitent la clé de publication. Si vous vouliez voter et que l’écran réclame votre clé active ou propriétaire, la demande fait autre chose. Arrêtez-vous.
-- **Lisez les changements d’autorité.** « clés : AUCUNE (votre clé est supprimée) » signifie que le changement retirerait votre clé de votre compte. N’approuvez un changement de vos clés que si vous l’avez lancé vous-même.
+- **Lisez les changements d’autorité.** « clés : AUCUNE (votre clé est supprimée) » signifie que le changement retirerait votre clé de votre compte. N’approuvez un changement de vos clés que si vous l’avez lancé vous-même.
 - **Lisez les avertissements.** « Cette demande n’agit pas au nom de @UTILISATEUR, mais au nom de @COMPTE. » signifie que la demande agit pour un autre compte.
 - **Ne signez que des messages que vous comprenez.** Un message signé prouve à quiconque que vous avez signé exactement ce texte.
 
