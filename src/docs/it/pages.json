@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "Usare Hivesigner",
+    "developers": "Sviluppare con Hivesigner",
+    "more": "Altro"
+  },
+  "pages": {
+    "index": {
+      "title": "Documentazione di Hivesigner",
+      "description": "Tutto su Hivesigner: per chi lo usa per accedere alle app di Hive e per chi lo integra nelle proprie."
+    },
+    "accounts": {
+      "title": "Aggiungere e gestire gli account",
+      "description": "Aggiungi un account Hive a Hivesigner, proteggilo con un codice di accesso e passa da un account all’altro."
+    },
+    "signing-in": {
+      "title": "Accedere alle app",
+      "description": "Che cosa succede quando un’app ti chiede di accedere, che cosa può fare dopo e come toglierle l’accesso."
+    },
+    "signing": {
+      "title": "Controllare e firmare",
+      "description": "Che cosa mostra Hivesigner prima che tu firmi una transazione o un messaggio, con la chiave che serve a ciascuno."
+    },
+    "safety": {
+      "title": "Tieni al sicuro le tue chiavi",
+      "description": "Quale chiave aggiungere, dove viene salvata e come riconoscere una pagina falsa di Hivesigner."
+    },
+    "faq": {
+      "title": "Domande frequenti",
+      "description": "Risposte alle domande più comuni di utenti e sviluppatori."
+    }
+  }
+}
