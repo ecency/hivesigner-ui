@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "使用 Hivesigner",
+    "developers": "用 Hivesigner 开发",
+    "more": "更多"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner 文档",
+      "description": "关于 Hivesigner 的一切：既面向用它登录 Hive 应用的用户，也面向把它集成进自家应用的开发者。"
+    },
+    "accounts": {
+      "title": "添加和管理账户",
+      "description": "把 Hive 账户添加到 Hivesigner，用本地密码保护它，并在账户之间切换。"
+    },
+    "signing-in": {
+      "title": "登录应用",
+      "description": "应用请求您登录时会发生什么，登录后它能做什么，以及如何撤销它的权限。"
+    },
+    "signing": {
+      "title": "查看与签名",
+      "description": "在您签署交易或消息之前 Hivesigner 会显示的内容，以及各自需要的密钥。"
+    },
+    "safety": {
+      "title": "保护好您的密钥",
+      "description": "该添加哪个密钥、密钥保存在哪里，以及如何识别假冒的 Hivesigner 页面。"
+    },
+    "faq": {
+      "title": "常见问题",
+      "description": "用户和开发者常见问题的解答。"
+    }
+  }
+}
