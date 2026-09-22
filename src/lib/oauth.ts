@@ -3,7 +3,11 @@
 // is the shared signed-message token (message-token.ts); this module only shapes
 // what is signed and how the browser is redirected, matching the Nuxt app
 // (oauth2/authorize.vue + login.vue + store/auth.ts signAndRedirectToCallback).
-import { effectiveProfile } from './app-profile';
+import {
+  appDisplayName,
+  registeredCallbacks,
+  saysItIsAnApp,
+} from './app-profile';
 import { type Account, getAccount } from './hive';
 import { isAbsoluteHttpUrl, resolveInternalPath } from './internal-path';
 import { createSignedMessage, encodeToken } from './message-token';
@@ -188,27 +192,18 @@ export interface AppProfile {
 }
 
 /** Read an app account's profile: its name, whether it is an app at all, and
-    the callbacks it registered. Read through `effectiveProfile`, the source
-    the API reads, so an app registered before the `version` convention is
-    judged on the same metadata its tokens are judged on. */
+    the callbacks it registered. Each question is answered where that answer
+    lives (lib/app-profile), because the two metadata copies disagree for an
+    app registered before the `version` convention. */
 export async function loadAppProfile(
   clientId: string,
 ): Promise<AppProfile | null> {
   const account = await getAccount(clientId);
   if (!account) return null;
-  const profile = effectiveProfile(account);
   return {
-    // The profile is the app account's own on-chain metadata, so `name` can be
-    // any JSON value. Accept it only when it is a string: rendering an object
-    // as a React child throws and takes the consent screen down.
-    name:
-      typeof profile.name === 'string' && profile.name
-        ? profile.name
-        : clientId,
-    isApp: profile.type === 'app',
-    redirectUris: Array.isArray(profile.redirect_uris)
-      ? profile.redirect_uris.filter((u: unknown) => typeof u === 'string')
-      : [],
+    name: appDisplayName(account, clientId),
+    isApp: saysItIsAnApp(account),
+    redirectUris: registeredCallbacks(account),
   };
 }
 

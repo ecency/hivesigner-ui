@@ -21,7 +21,7 @@ import {
 } from '@/components/ui';
 import { readAccountNow } from '@/lib/account-now';
 import { getKeys, stillSelected } from '@/lib/accounts';
-import { effectiveProfile, metadataOf } from '@/lib/app-profile';
+import { metadataOf, profileForEditing } from '@/lib/app-profile';
 import { type Account, getAccount } from '@/lib/hive';
 import { isValidRedirectUri } from '@/lib/oauth';
 import { accountKey } from '@/lib/query-keys';
@@ -62,7 +62,7 @@ export function secretHash(secret: string): string {
 }
 
 export function readProfile(account: Account | null | undefined): ProfileForm {
-  const profile = effectiveProfile(account);
+  const profile = profileForEditing(account);
   const s = (k: string) =>
     typeof profile[k] === 'string' ? (profile[k] as string) : '';
   return {
@@ -90,11 +90,11 @@ export function buildProfileMetadata(
 ): string {
   const existing = metadataOf(account);
   // The version below moves what the API reads to this profile, so it is built
-  // on everything its readers see now (see effectiveProfile). Anything the
+  // on everything its readers see now (see profileForEditing). Anything the
   // form does not show - the client secret, the IP allowlist that keeps other
   // addresses out - comes across with it rather than being dropped.
   const profile: Record<string, unknown> = {
-    ...effectiveProfile(account),
+    ...profileForEditing(account),
     name: form.name,
     about: form.about,
     website: form.website,

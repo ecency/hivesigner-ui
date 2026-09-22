@@ -42,13 +42,70 @@ export function profileIn(
   }
 }
 
-/** The profile as its readers see it: the posting one once it carries a
-    version, and the older copy laid under it until then, so a value only the
-    older one has is still found and a newer one always wins. */
-export function effectiveProfile(
+/** For EDITING and for the save that follows: the posting profile once it
+    carries a version, and the older copy laid under it until then, so writing
+    the version cannot lose a value only the older copy had (a client secret,
+    an IP allowlist). A merge is right here because nothing is discarded; it is
+    wrong for judging a request, which is what the two below are for. */
+export function profileForEditing(
   account: Account | null | undefined,
 ): Record<string, unknown> {
   const posting = asRecord(metadataOf(account).profile);
   if (posting.version) return posting;
   return { ...profileIn(account?.json_metadata), ...posting };
+}
+
+/**
+ * Whether the account presents itself as an app.
+ *
+ * Either copy counts. The API selects one profile and ignores the other
+ * (`getAppProfile`: the posting one once it has a version, else the older
+ * one), while everything here has always read the posting copy. Refusing an
+ * account that one of those two accepts would take a working integration
+ * offline, which is the expensive mistake; accepting one the API later turns
+ * down costs a code exchange that was already failing.
+ */
+export function saysItIsAnApp(account: Account | null | undefined): boolean {
+  const posting = asRecord(metadataOf(account).profile);
+  if (posting.type === 'app') return true;
+  return !posting.version && profileIn(account?.json_metadata).type === 'app';
+}
+
+const callbacks = (profile: Record<string, unknown>): string[] =>
+  Array.isArray(profile.redirect_uris)
+    ? profile.redirect_uris.filter((u): u is string => typeof u === 'string')
+    : [];
+
+/**
+ * The callbacks the account has registered: its own list, and the older copy
+ * only when the newer one has none at all.
+ *
+ * Not merged. The older copy is what the account looked like before any modern
+ * tool wrote the newer one, so it holds addresses its owner has since removed,
+ * and an emptied list is how a compromised callback is de-registered. Adding
+ * them back would undo that.
+ */
+export function registeredCallbacks(
+  account: Account | null | undefined,
+): string[] {
+  const posting = asRecord(metadataOf(account).profile);
+  const own = callbacks(posting);
+  if (own.length > 0 || posting.version) return own;
+  return callbacks(profileIn(account?.json_metadata));
+}
+
+/** The name to show for an app: its own, then the older copy's, then the
+    account name. Only a string: rendering an object as a React child throws
+    and takes the consent screen down. */
+export function appDisplayName(
+  account: Account | null | undefined,
+  clientId: string,
+): string {
+  for (const profile of [
+    asRecord(metadataOf(account).profile),
+    profileIn(account?.json_metadata),
+  ]) {
+    if (typeof profile.name === 'string' && profile.name) return profile.name;
+  }
+  return clientId;
 }
