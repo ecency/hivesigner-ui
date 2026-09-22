@@ -25,6 +25,46 @@
       "title": "Menjaga kunci Anda tetap aman",
       "description": "Kunci mana yang ditambahkan, di mana kunci itu disimpan, dan cara mengenali halaman Hivesigner palsu."
     },
+    "how-it-works": {
+      "title": "Cara kerja Hivesigner",
+      "description": "Hivesigner punya dua bagian, penanda tangan di peramban dan API. Begini sebuah aplikasi memakai masing-masing."
+    },
+    "register-app": {
+      "title": "Daftarkan aplikasi Anda",
+      "description": "Menjadikan sebuah akun Hive aplikasi Hivesigner: callback, rahasia klien dan otoritas posting yang diperlukannya."
+    },
+    "oauth2": {
+      "title": "Masuk dengan OAuth2",
+      "description": "Kirim orang ke Hivesigner untuk masuk dan kembali dengan token: alur token dan alur kode, cakupan dan parameter."
+    },
+    "tokens": {
+      "title": "Token",
+      "description": "Isi sebuah token Hivesigner, berapa lama berlaku dan bagaimana server Anda memeriksanya."
+    },
+    "api": {
+      "title": "REST API",
+      "description": "Titik akhir API Hivesigner: akun pengguna Anda, penyiaran, token dan direktori aplikasi."
+    },
+    "sign-links": {
+      "title": "Tautan tanda tangan",
+      "description": "Tautan yang membuka sebuah transaksi di Hivesigner untuk ditinjau dan ditandatangani, dengan callback setelahnya."
+    },
+    "message-signing": {
+      "title": "Penandatanganan pesan",
+      "description": "Minta seseorang menandatangani pesan dengan kuncinya, sejalan dengan requestSignBuffer milik Hive Keychain."
+    },
+    "sdk": {
+      "title": "SDK",
+      "description": "SDK JavaScript dan pustaka komunitas untuk Python."
+    },
+    "login-only": {
+      "title": "Masuk tanpa akses posting",
+      "description": "Pakai akun Hive untuk memasukkan orang ketika aplikasi Anda tidak pernah menyiarkan untuk mereka."
+    },
+    "image-uploads": {
+      "title": "Unggah gambar",
+      "description": "Biarkan orang mengunggah gambar dengan proses masuk Hivesigner mereka, lewat imagehoster yang Anda jalankan."
+    },
     "faq": {
       "title": "Tanya jawab",
       "description": "Jawaban untuk pertanyaan yang sering diajukan pengguna dan pengembang."
