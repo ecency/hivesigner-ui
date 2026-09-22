@@ -17,11 +17,21 @@ vi.mock('./content', async (importOriginal) => {
     sections: { users: 'Hivesigner benutzen' },
     pages: { accounts: { title: 'Konten', description: 'Konten verwalten.' } },
   };
+  // Persian for the one thing German cannot show: a language that reads the
+  // other way round.
+  const persian = {
+    sections: { users: 'استفاده از Hivesigner' },
+    pages: {
+      index: { title: 'مستندات', description: 'همه چیز.' },
+      accounts: { title: 'حساب‌ها', description: 'مدیریت حساب‌ها.' },
+    },
+  };
   return {
     ...real,
-    DOC_LANGUAGES: ['en', 'de'],
+    DOC_LANGUAGES: ['en', 'de', 'fa'],
     loadDocIndex: async (lang: string) => {
       if (lang === 'de' && h.failGerman) throw new Error('offline');
+      if (lang === 'fa') return persian;
       return lang === 'de' ? german : real.loadDocIndex(lang);
     },
     loadDocPage: async (lang: string, slug: 'accounts') => {
@@ -29,6 +39,8 @@ vi.mock('./content', async (importOriginal) => {
         h.failPages -= 1;
         throw new Error('offline');
       }
+      if (lang === 'fa')
+        return { html: '<p>حساب‌ها</p>', headings: [], links: [] };
       return lang === 'de'
         ? {
             html: '<p>Ein Konto hinzufügen. <a href="/docs/de">Start</a></p><h2 id="add">Hinzufügen</h2>',
@@ -47,7 +59,7 @@ import { _resetShownPage, leftDocs } from './shown';
 const clients: QueryClient[] = [];
 
 function show(
-  lang: 'en' | 'de',
+  lang: 'en' | 'de' | 'fa',
   slug: string,
   pathname: string,
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
@@ -152,6 +164,36 @@ describe('a docs page', () => {
     expect(
       document.querySelector('link[rel="canonical"]')?.getAttribute('href'),
     ).toMatch(/\/docs\/de\/accounts$/);
+  });
+
+  // The contents and the cards are titles the docs supply, so they are in the
+  // language of the docs and not in the one the app is being read in. Saying
+  // so is what lets a screen reader pick the voice and an RTL title sit the
+  // way round it is written.
+  it('says which language each title it takes from the docs is in', async () => {
+    show('fa', 'index', '/docs/fa');
+    await screen.findByRole('heading', { level: 1, name: 'مستندات' });
+    // The app itself is still English; only the docs' own words are Persian.
+    expect(document.documentElement).toHaveAttribute('lang', 'en');
+    const nav = contents();
+    const persian = within(nav).getByRole('link', { name: 'حساب‌ها' });
+    expect(persian).toHaveAttribute('lang', 'fa');
+    expect(persian).toHaveAttribute('dir', 'rtl');
+    // A page Persian has not translated keeps its English title, and says
+    // that too: one list, two languages.
+    const english = within(nav).getByRole('link', { name: 'Tokens' });
+    expect(english).toHaveAttribute('lang', 'en');
+    expect(english).toHaveAttribute('dir', 'ltr');
+    expect(within(nav).getByText('استفاده از Hivesigner')).toHaveAttribute(
+      'dir',
+      'rtl',
+    );
+    // And the cards on the docs home.
+    const card = screen
+      .getAllByRole('link', { name: /حساب‌ها/ })
+      .find((a) => a.closest('article'));
+    expect(card).toHaveAttribute('dir', 'rtl');
+    expect(card).toHaveAttribute('lang', 'fa');
   });
 
   it('shows English where a language has no translation, says so and keeps it out of search', async () => {

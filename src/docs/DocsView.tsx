@@ -28,6 +28,23 @@ import { showDocPage } from './shown';
 
 const SOURCE = 'https://github.com/ecency/hivesigner-ui/blob/development';
 
+/**
+ * How to say that a piece of text is in a language: both attributes, always.
+ * `lang` alone tells a screen reader which voice to read it in and leaves the
+ * layout to the app's own direction, so an Arabic title in a page the reader
+ * has set to English is laid out left to right.
+ */
+const inLanguage = (code: Language) => {
+  const { htmlLang, rtl } = languageInfo(code);
+  return {
+    lang: htmlLang ?? code,
+    dir: rtl ? ('rtl' as const) : ('ltr' as const),
+  };
+};
+
+/** A piece of text, with the language it turned out to be in. */
+type Shown = { text: string; lang: Language };
+
 // English's page list is in the bundle: no wait for it.
 const indexQuery = (lang: string) => ({
   queryKey: docsIndexKey(lang),
@@ -75,8 +92,21 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
       ? appLang
       : null;
 
-  const titleOf = (s: DocSlug) =>
-    (own.data?.pages[s] ?? englishIndex.pages[s])?.title ?? s;
+  // A language with only some of the pages translated shows English titles
+  // for the rest, so each one says which language it is really in rather
+  // than the whole list claiming the language in the address.
+  const titleOf = (s: DocSlug): Shown => ({
+    text: (own.data?.pages[s] ?? englishIndex.pages[s])?.title ?? s,
+    lang: own.data?.pages[s] ? lang : 'en',
+  });
+  const descriptionOf = (s: DocSlug): Shown => ({
+    text: (own.data?.pages[s] ?? englishIndex.pages[s])?.description ?? '',
+    lang: own.data?.pages[s] ? lang : 'en',
+  });
+  const sectionOf = (key: (typeof DOC_SECTIONS)[number]['key']): Shown => ({
+    text: own.data?.sections[key] ?? englishIndex.sections[key],
+    lang: own.data?.sections[key] ? lang : 'en',
+  });
   const info = own.data?.pages[slug] ?? englishIndex.pages[slug];
   const title = info?.title ?? slug;
 
@@ -158,7 +188,6 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
   const order = DOC_SLUGS.indexOf(slug);
   const previous = order > 0 ? DOC_SLUGS[order - 1] : null;
   const next = order < DOC_SLUGS.length - 1 ? DOC_SLUGS[order + 1] : null;
-  const { htmlLang, rtl } = languageInfo(pageLang);
 
   return (
     <div className="flex flex-col gap-6 py-6 sm:py-8 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:items-start lg:gap-10">
@@ -166,20 +195,19 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
         lang={lang}
         slug={slug}
         titleOf={titleOf}
-        sectionOf={(key) =>
-          own.data?.sections[key] ?? englishIndex.sections[key]
-        }
+        sectionOf={sectionOf}
         headings={page.data?.headings ?? []}
+        headingsLang={pageLang}
       />
 
-      {/* The title and the page are in the page's language; the notes and
-          the links around them are in the app's. */}
+      {/* The title, the page and every title taken from the docs are in the
+          language the docs have them in; the notes and the words the app
+          itself supplies around them are in the app's. */}
       <article className="flex min-w-0 flex-col gap-4">
         <h1
           ref={heading}
           tabIndex={-1}
-          lang={htmlLang ?? pageLang}
-          dir={rtl ? 'rtl' : 'ltr'}
+          {...inLanguage(pageLang)}
           className={`${h1} outline-none`}
         >
           {title}
@@ -224,8 +252,7 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
           // any HTML in the source refused (scripts/docs-markdown.mjs).
           <div
             ref={followLinks}
-            lang={htmlLang ?? pageLang}
-            dir={rtl ? 'rtl' : 'ltr'}
+            {...inLanguage(pageLang)}
             className="docs-prose"
             // biome-ignore lint/security/noDangerouslySetInnerHtml: build-time HTML from the docs Markdown, raw HTML refused at build time
             dangerouslySetInnerHTML={{
@@ -247,23 +274,22 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
           <div className="flex flex-col gap-6">
             {DOC_SECTIONS.map((section) => (
               <section key={section.key} className="flex flex-col gap-3">
-                <h2 className={h2}>
-                  {own.data?.sections[section.key] ??
-                    englishIndex.sections[section.key]}
+                <h2 className={h2} {...inLanguage(sectionOf(section.key).lang)}>
+                  {sectionOf(section.key).text}
                 </h2>
                 <div className={cardGrid}>
                   {section.pages.map((s) => (
+                    // The card is a title and a description, both from the
+                    // docs, so the card itself is in their language.
                     <DocLink
                       key={s}
                       href={docHref(s, lang)}
+                      {...inLanguage(titleOf(s).lang)}
                       className={`${card} flex flex-col gap-1 text-ink no-underline hover:border-line-strong`}
                     >
-                      <span className="font-semibold">{titleOf(s)}</span>
+                      <span className="font-semibold">{titleOf(s).text}</span>
                       <span className="text-[13px] leading-[1.5] text-muted">
-                        {
-                          (own.data?.pages[s] ?? englishIndex.pages[s])
-                            ?.description
-                        }
+                        {descriptionOf(s).text}
                       </span>
                     </DocLink>
                   ))}
@@ -276,14 +302,20 @@ export function DocsView({ lang, slug }: { lang: Language; slug: DocSlug }) {
         <div className="mt-4 flex flex-wrap justify-between gap-3 border-t border-line pt-4 text-[13px]">
           {previous ? (
             <DocLink href={docHref(previous, lang)} className={link}>
-              {t('docs.previous')}: {titleOf(previous)}
+              {t('docs.previous')}:{' '}
+              <span {...inLanguage(titleOf(previous).lang)}>
+                {titleOf(previous).text}
+              </span>
             </DocLink>
           ) : (
             <span />
           )}
           {next && (
             <DocLink href={docHref(next, lang)} className={link}>
-              {t('docs.next')}: {titleOf(next)}
+              {t('docs.next')}:{' '}
+              <span {...inLanguage(titleOf(next).lang)}>
+                {titleOf(next).text}
+              </span>
             </DocLink>
           )}
         </div>
@@ -310,12 +342,16 @@ function DocsNav({
   titleOf,
   sectionOf,
   headings,
+  headingsLang,
 }: {
   lang: Language;
   slug: DocSlug;
-  titleOf: (slug: DocSlug) => string;
-  sectionOf: (key: (typeof DOC_SECTIONS)[number]['key']) => string;
+  titleOf: (slug: DocSlug) => Shown;
+  sectionOf: (key: (typeof DOC_SECTIONS)[number]['key']) => Shown;
   headings: { level: number; id: string; text: string }[];
+  /** The headings are the shown page's, which is English while the language
+      in the address has not translated it. */
+  headingsLang: Language;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -348,25 +384,30 @@ function DocsNav({
           href={docHref('index', lang)}
           // Exact: it is not the current page on every page under it.
           activeOptions={{ exact: true }}
+          {...inLanguage(titleOf('index').lang)}
           className={`${item} ${slug === 'index' ? current : ''}`}
           aria-current={slug === 'index' ? 'page' : undefined}
         >
-          {titleOf('index')}
+          {titleOf('index').text}
         </DocLink>
         {DOC_SECTIONS.map((section) => (
           <div key={section.key} className="flex flex-col gap-1">
-            <div className="px-2 text-[11.5px] font-semibold tracking-[0.08em] text-muted uppercase rtl:tracking-normal">
-              {sectionOf(section.key)}
+            <div
+              {...inLanguage(sectionOf(section.key).lang)}
+              className="px-2 text-[11.5px] font-semibold tracking-[0.08em] text-muted uppercase rtl:tracking-normal"
+            >
+              {sectionOf(section.key).text}
             </div>
             <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
               {section.pages.map((s) => (
                 <li key={s}>
                   <DocLink
                     href={docHref(s, lang)}
+                    {...inLanguage(titleOf(s).lang)}
                     className={`${item} ${s === slug ? current : ''}`}
                     aria-current={s === slug ? 'page' : undefined}
                   >
-                    {titleOf(s)}
+                    {titleOf(s).text}
                   </DocLink>
                   {s === slug && headings.some((h) => h.level === 2) && (
                     <ul className="m-0 mt-0.5 mb-1 flex list-none flex-col border-s border-line ps-2 ms-3">
@@ -376,6 +417,7 @@ function DocsNav({
                           <li key={h.id}>
                             <a
                               href={`#${h.id}`}
+                              {...inLanguage(headingsLang)}
                               className="block px-2 py-0.5 text-[12.5px] text-muted no-underline hover:text-ink"
                             >
                               {h.text}
