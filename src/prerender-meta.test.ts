@@ -22,6 +22,19 @@ const {
   docsLlms,
   writeDocPages,
 } = await import('../scripts/prerender-meta.mjs');
+/** A string as the app's own German dictionary words it. */
+const german = (key: string) =>
+  key
+    .split('.')
+    .reduce<Record<string, never>>(
+      (at, part) => at[part],
+      JSON.parse(
+        readFileSync(
+          join(process.cwd(), 'src/i18n/locales/de-DE.json'),
+          'utf8',
+        ),
+      ),
+    ) as unknown as string;
 const shell = readFileSync(
   join(process.cwd(), 'template.html'),
   'utf8',
@@ -214,6 +227,32 @@ describe('prerendered docs', () => {
     expect(out).toContain('<h1>Sign in with OAuth2</h1>');
     expect(out).toContain('href="/docs/de/tokens#check"');
     expect(out).not.toContain('href="/docs/tokens');
+    // The app writes this note once it runs. A reader who runs no scripts
+    // gets only this file, so it has to say for itself why the page is
+    // English, in the language the address asked for.
+    expect(out).toContain(
+      `<p role="note" lang="de" dir="ltr">${german('docs.not_translated').replace('{language}', 'Deutsch')}</p>`,
+    );
+  });
+
+  it('writes that note right to left for a language that reads that way', () => {
+    const page = en.pages.find((p: { slug: string }) => p.slug === 'oauth2');
+    const out = docPageHtml(shell, {
+      lang: 'fa',
+      index: { ...de.index, pages: en.index.pages },
+      page: { ...page, info: en.index.pages.oauth2 },
+      languages: [],
+      siteUrl: site,
+      fallback: true,
+    });
+    // The page is English and stays LTR; the note is not.
+    expect(out).toContain('<article lang="en" dir="ltr">');
+    expect(out).toContain('<p role="note" lang="fa" dir="rtl">');
+    expect(out).toContain('فارسی');
+  });
+
+  it('says nothing of the kind on a page the language really has', () => {
+    expect(html('de', 'oauth2')).not.toContain('role="note"');
   });
 
   it('lists only the English address of a page no other language has', () => {

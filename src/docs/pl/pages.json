@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "Korzystanie z Hivesigner",
+    "developers": "Tworzenie z Hivesigner",
+    "more": "Więcej"
+  },
+  "pages": {
+    "index": {
+      "title": "Dokumentacja Hivesigner",
+      "description": "Wszystko o Hivesigner: dla osób, które logują się nim do aplikacji Hive, i dla twórców, którzy dodają go do swoich."
+    },
+    "accounts": {
+      "title": "Dodawanie kont i zarządzanie nimi",
+      "description": "Dodaj konto Hive do Hivesigner, chroń je kodem dostępu i przełączaj się między kontami."
+    },
+    "signing-in": {
+      "title": "Logowanie do aplikacji",
+      "description": "Co się dzieje, gdy aplikacja prosi o zalogowanie, co może potem robić i jak cofnąć jej dostęp."
+    },
+    "signing": {
+      "title": "Sprawdzanie i podpisywanie",
+      "description": "Co Hivesigner pokazuje, zanim podpiszesz transakcję lub wiadomość, i jakiego klucza wymaga każda z nich."
+    },
+    "safety": {
+      "title": "Chroń swoje klucze",
+      "description": "Który klucz dodać, gdzie jest przechowywany i jak rozpoznać fałszywą stronę Hivesigner."
+    },
+    "how-it-works": {
+      "title": "Jak działa Hivesigner",
+      "description": "Hivesigner ma dwie części, podpisującego w przeglądarce i API. Tak korzysta z nich aplikacja."
+    },
+    "register-app": {
+      "title": "Zarejestruj aplikację",
+      "description": "Zamień konto Hive w aplikację Hivesigner: adresy zwrotne, sekret klienta i potrzebne uprawnienie do publikowania."
+    },
+    "oauth2": {
+      "title": "Logowanie przez OAuth2",
+      "description": "Wyślij ludzi do Hivesigner, aby się zalogowali i wrócili z tokenem: przepływ z tokenem i z kodem, zakresy i parametry."
+    },
+    "tokens": {
+      "title": "Tokeny",
+      "description": "Co zawiera token Hivesigner, jak długo działa i jak sprawdza go Twój serwer."
+    },
+    "api": {
+      "title": "API REST",
+      "description": "Punkty końcowe API Hivesigner: konto użytkownika, rozgłaszanie, tokeny i katalog aplikacji."
+    },
+    "sign-links": {
+      "title": "Linki podpisu",
+      "description": "Linki, które otwierają transakcję w Hivesigner do przejrzenia i podpisania, z adresem zwrotnym na koniec."
+    },
+    "message-signing": {
+      "title": "Podpisywanie wiadomości",
+      "description": "Poproś osobę o podpisanie wiadomości jej kluczem, zgodnie z requestSignBuffer z Hive Keychain."
+    },
+    "sdk": {
+      "title": "SDK",
+      "description": "SDK JavaScript i biblioteki społeczności dla Pythona."
+    },
+    "login-only": {
+      "title": "Logowanie bez dostępu do publikowania",
+      "description": "Użyj konta Hive do logowania ludzi, gdy Twoja aplikacja nigdy nie rozgłasza w ich imieniu."
+    },
+    "image-uploads": {
+      "title": "Wysyłanie obrazów",
+      "description": "Pozwól ludziom wysyłać obrazy przy użyciu logowania Hivesigner, przez imagehostera, którego sam prowadzisz."
+    },
+    "faq": {
+      "title": "Częste pytania",
+      "description": "Odpowiedzi na częste pytania użytkowników i twórców aplikacji."
+    }
+  }
+}

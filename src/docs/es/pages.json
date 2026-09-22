@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "Usar Hivesigner",
+    "developers": "Crear con Hivesigner",
+    "more": "Más"
+  },
+  "pages": {
+    "index": {
+      "title": "Documentación de Hivesigner",
+      "description": "Todo sobre Hivesigner: para quienes inician sesión en aplicaciones de Hive con él y para quienes lo añaden a las suyas."
+    },
+    "accounts": {
+      "title": "Añadir y gestionar cuentas",
+      "description": "Añade una cuenta de Hive a Hivesigner, protégela con un código de acceso y cambia de una cuenta a otra."
+    },
+    "signing-in": {
+      "title": "Iniciar sesión en aplicaciones",
+      "description": "Qué pasa cuando una aplicación te pide iniciar sesión, qué puede hacer después y cómo retirarle el acceso."
+    },
+    "signing": {
+      "title": "Revisar y firmar",
+      "description": "Lo que Hivesigner te muestra antes de firmar una transacción o un mensaje, con la clave que necesita cada uno."
+    },
+    "safety": {
+      "title": "Protege tus claves",
+      "description": "Qué clave añadir, dónde se guarda y cómo reconocer una página falsa de Hivesigner."
+    },
+    "how-it-works": {
+      "title": "Cómo funciona Hivesigner",
+      "description": "Hivesigner tiene dos partes, el firmador en el navegador y la API. Así usa cada una una aplicación."
+    },
+    "register-app": {
+      "title": "Registra tu aplicación",
+      "description": "Convierte una cuenta de Hive en una aplicación de Hivesigner: URL de retorno, secreto de cliente y la autoridad de publicación que necesita."
+    },
+    "oauth2": {
+      "title": "Iniciar sesión con OAuth2",
+      "description": "Envía a las personas a Hivesigner para iniciar sesión y volver con un token: los flujos de token y de código, los alcances y los parámetros."
+    },
+    "tokens": {
+      "title": "Tokens",
+      "description": "Qué contiene un token de Hivesigner, cuánto dura y cómo lo comprueba tu servidor."
+    },
+    "api": {
+      "title": "API REST",
+      "description": "Los puntos finales de la API de Hivesigner: la cuenta de tu usuario, la transmisión, los tokens y el directorio de aplicaciones."
+    },
+    "sign-links": {
+      "title": "Enlaces de firma",
+      "description": "Enlaces que abren una transacción en Hivesigner para revisarla y firmarla, con una URL de retorno al terminar."
+    },
+    "message-signing": {
+      "title": "Firma de mensajes",
+      "description": "Pide a una persona que firme un mensaje con su clave, compatible con requestSignBuffer de Hive Keychain."
+    },
+    "sdk": {
+      "title": "SDK",
+      "description": "El SDK de JavaScript y las bibliotecas de la comunidad para Python."
+    },
+    "login-only": {
+      "title": "Inicio de sesión sin acceso de publicación",
+      "description": "Usa una cuenta de Hive para iniciar la sesión de las personas cuando tu aplicación nunca transmite por ellas."
+    },
+    "image-uploads": {
+      "title": "Subida de imágenes",
+      "description": "Permite a las personas subir imágenes con su inicio de sesión de Hivesigner, a través de un imagehoster que tú gestionas."
+    },
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "description": "Respuestas a las preguntas más habituales de usuarios y desarrolladores."
+    }
+  }
+}

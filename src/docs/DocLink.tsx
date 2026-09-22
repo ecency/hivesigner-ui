@@ -14,6 +14,10 @@ export function DocLink({
   activeProps?: { className?: string };
   activeOptions?: { exact?: boolean };
   'aria-current'?: 'page';
+  // A link whose text comes from the docs is in the docs' language, which is
+  // not always the one the app is being shown in.
+  lang?: string;
+  dir?: 'ltr' | 'rtl';
   children: ReactNode;
 }) {
   const splat = href.slice('/docs/'.length);

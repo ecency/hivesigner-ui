@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "Hivesigner'ı kullanmak",
+    "developers": "Hivesigner ile geliştirme",
+    "more": "Daha fazlası"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner belgeleri",
+      "description": "Hivesigner hakkında her şey: onunla Hive uygulamalarına giriş yapanlar ve onu kendi uygulamasına ekleyen geliştiriciler için."
+    },
+    "accounts": {
+      "title": "Hesap ekleme ve yönetme",
+      "description": "Hivesigner'a bir Hive hesabı ekleyin, erişim koduyla koruyun ve hesaplar arasında geçiş yapın."
+    },
+    "signing-in": {
+      "title": "Uygulamalara giriş yapma",
+      "description": "Bir uygulama giriş yapmanızı istediğinde neler olur, sonrasında neler yapabilir ve erişimini nasıl kaldırırsınız."
+    },
+    "signing": {
+      "title": "İnceleme ve imzalama",
+      "description": "Bir işlemi veya mesajı imzalamadan önce Hivesigner'ın gösterdikleri ve her birinin gerektirdiği anahtar."
+    },
+    "safety": {
+      "title": "Anahtarlarınızı güvende tutun",
+      "description": "Hangi anahtarı eklemeli, nerede saklanır ve sahte bir Hivesigner sayfası nasıl anlaşılır."
+    },
+    "how-it-works": {
+      "title": "Hivesigner nasıl çalışır",
+      "description": "Hivesigner'ın iki parçası vardır: tarayıcı imzalayıcısı ve API. Bir uygulama her birini şöyle kullanır."
+    },
+    "register-app": {
+      "title": "Uygulamanızı kaydedin",
+      "description": "Bir Hive hesabını Hivesigner uygulamasına dönüştürün: geri çağırma adresleri, istemci gizli anahtarı ve gereken gönderi yetkisi."
+    },
+    "oauth2": {
+      "title": "OAuth2 ile giriş",
+      "description": "Kişileri giriş yapıp bir token ile dönmeleri için Hivesigner'a gönderin: token ve kod akışları, kapsamlar ve parametreler."
+    },
+    "tokens": {
+      "title": "Token'lar",
+      "description": "Bir Hivesigner token'ı neler taşır, ne kadar süre geçerlidir ve sunucunuz onu nasıl denetler."
+    },
+    "api": {
+      "title": "REST API",
+      "description": "Hivesigner API uç noktaları: kullanıcınızın hesabı, yayınlama, token'lar ve uygulama dizini."
+    },
+    "sign-links": {
+      "title": "İmza bağlantıları",
+      "description": "Bir işlemi incelenip imzalanmak üzere Hivesigner'da açan bağlantılar, iş bittiğinde bir geri çağırma adresiyle."
+    },
+    "message-signing": {
+      "title": "Mesaj imzalama",
+      "description": "Bir kullanıcıdan bir mesajı anahtarıyla imzalamasını isteyin; Hive Keychain'in requestSignBuffer işleviyle uyumludur."
+    },
+    "sdk": {
+      "title": "SDK'lar",
+      "description": "JavaScript SDK'sı ve Python için topluluk kütüphaneleri."
+    },
+    "login-only": {
+      "title": "Gönderi erişimi olmadan giriş",
+      "description": "Uygulamanız hiçbir zaman kullanıcılar adına yayın yapmıyorsa, kişileri giriş yaptırmak için bir Hive hesabı kullanın."
+    },
+    "image-uploads": {
+      "title": "Görsel yükleme",
+      "description": "Kişilerin Hivesigner girişleriyle, sizin çalıştırdığınız bir imagehoster üzerinden görsel yüklemesine izin verin."
+    },
+    "faq": {
+      "title": "Sık sorulan sorular",
+      "description": "Kullanıcıların ve geliştiricilerin sık sorduğu soruların yanıtları."
+    }
+  }
+}

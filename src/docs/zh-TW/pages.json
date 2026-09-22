@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "使用 Hivesigner",
+    "developers": "用 Hivesigner 開發",
+    "more": "更多"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner 文件",
+      "description": "關於 Hivesigner 的一切：既寫給用它登入 Hive 應用程式的人，也寫給把它整合進自家應用程式的開發者。"
+    },
+    "accounts": {
+      "title": "新增與管理帳號",
+      "description": "把 Hive 帳號加入 Hivesigner，用本機密碼保護它，並在帳號之間切換。"
+    },
+    "signing-in": {
+      "title": "登入應用程式",
+      "description": "應用程式要求你登入時會發生什麼、登入後它能做什麼，以及如何撤銷它的權限。"
+    },
+    "signing": {
+      "title": "檢視與簽署",
+      "description": "在你簽署交易或訊息之前 Hivesigner 會顯示的內容，以及各自需要的金鑰。"
+    },
+    "safety": {
+      "title": "保護好你的金鑰",
+      "description": "該新增哪把金鑰、金鑰存在哪裡，以及如何辨識假冒的 Hivesigner 頁面。"
+    },
+    "how-it-works": {
+      "title": "Hivesigner 如何運作",
+      "description": "Hivesigner 有兩個部分：瀏覽器簽署器和 API。應用程式就是這樣使用它們的。"
+    },
+    "register-app": {
+      "title": "註冊應用程式",
+      "description": "把一個 Hive 帳號變成 Hivesigner 應用程式：回呼網址、用戶端密鑰，以及它需要的發文權限。"
+    },
+    "oauth2": {
+      "title": "用 OAuth2 登入",
+      "description": "把人們送到 Hivesigner 登入並帶著權杖回來：權杖流程與授權碼流程、權限範圍和參數。"
+    },
+    "tokens": {
+      "title": "權杖",
+      "description": "Hivesigner 權杖包含什麼、能用多久，以及你的伺服器如何檢查它。"
+    },
+    "api": {
+      "title": "REST API",
+      "description": "Hivesigner 的 API 端點：使用者帳號、廣播、權杖和應用程式目錄。"
+    },
+    "sign-links": {
+      "title": "簽署連結",
+      "description": "在 Hivesigner 中打開一筆交易供查看和簽署的連結，完成後可回到回呼網址。"
+    },
+    "message-signing": {
+      "title": "訊息簽署",
+      "description": "請使用者用自己的金鑰簽署一則訊息，與 Hive Keychain 的 requestSignBuffer 相容。"
+    },
+    "sdk": {
+      "title": "SDK",
+      "description": "JavaScript SDK 以及 Python 的社群函式庫。"
+    },
+    "login-only": {
+      "title": "不需發文權限的登入",
+      "description": "當你的應用程式從不替使用者廣播時，用一個 Hive 帳號讓人們登入。"
+    },
+    "image-uploads": {
+      "title": "圖片上傳",
+      "description": "讓人們用自己的 Hivesigner 登入，透過你自己架設的 imagehoster 上傳圖片。"
+    },
+    "faq": {
+      "title": "常見問題",
+      "description": "使用者與開發者常見問題的解答。"
+    }
+  }
+}

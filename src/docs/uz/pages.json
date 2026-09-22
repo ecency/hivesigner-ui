@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "Hivesigner’dan foydalanish",
+    "developers": "Hivesigner bilan ishlab chiqish",
+    "more": "Yana"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner hujjatlari",
+      "description": "Hivesigner haqida hamma narsa: u bilan Hive ilovalariga kiradiganlar va uni oʻz ilovasiga qoʻshadigan dasturchilar uchun."
+    },
+    "accounts": {
+      "title": "Hisob qoʻshish va boshqarish",
+      "description": "Hivesigner’ga Hive hisobi qoʻshing, uni himoya kodi bilan himoyalang va hisoblar oʻrtasida almashing."
+    },
+    "signing-in": {
+      "title": "Ilovalarga kirish",
+      "description": "Ilova kirishni soʻraganda nima boʻladi, keyin u nima qila oladi va uning ruxsatini qanday bekor qilasiz."
+    },
+    "signing": {
+      "title": "Koʻrib chiqish va imzolash",
+      "description": "Tranzaksiya yoki xabarni imzolashdan oldin Hivesigner nimani koʻrsatadi va har biriga qaysi kalit kerak."
+    },
+    "safety": {
+      "title": "Kalitlaringizni xavfsiz saqlang",
+      "description": "Qaysi kalitni qoʻshish kerak, u qayerda saqlanadi va soxta Hivesigner sahifasini qanday tanish mumkin."
+    },
+    "how-it-works": {
+      "title": "Hivesigner qanday ishlaydi",
+      "description": "Hivesigner ikki qismdan iborat: brauzer imzolovchisi va API. Ilova ularning har birini shunday ishlatadi."
+    },
+    "register-app": {
+      "title": "Ilovangizni roʻyxatdan oʻtkazing",
+      "description": "Hive hisobini Hivesigner ilovasiga aylantiring: callback manzillari, mijoz maxfiy kaliti va kerakli posting vakolati."
+    },
+    "oauth2": {
+      "title": "OAuth2 orqali kirish",
+      "description": "Odamlarni kirib, token bilan qaytishlari uchun Hivesigner'ga yuboring: token va kod oqimlari, ruxsat doiralari hamda parametrlar."
+    },
+    "tokens": {
+      "title": "Tokenlar",
+      "description": "Hivesigner tokeni nimalarni saqlaydi, qancha vaqt amal qiladi va serveringiz uni qanday tekshiradi."
+    },
+    "api": {
+      "title": "REST API",
+      "description": "Hivesigner API manzillari: foydalanuvchingizning hisobi, tranzaksiya yuborish, tokenlar va ilovalar katalogi."
+    },
+    "sign-links": {
+      "title": "Imzo havolalari",
+      "description": "Tranzaksiyani koʻrib chiqish va imzolash uchun Hivesigner'da ochadigan havolalar, tugagach callback manzili bilan."
+    },
+    "message-signing": {
+      "title": "Xabar imzolash",
+      "description": "Foydalanuvchidan xabarni kaliti bilan imzolashni soʻrang; Hive Keychain'ning requestSignBuffer funksiyasi bilan mos keladi."
+    },
+    "sdk": {
+      "title": "SDK",
+      "description": "JavaScript SDK va Python uchun jamoa kutubxonalari."
+    },
+    "login-only": {
+      "title": "Posting ruxsatisiz kirish",
+      "description": "Ilovangiz odamlar nomidan hech narsa yubormasa, ularni tizimga kiritish uchun Hive hisobidan foydalaning."
+    },
+    "image-uploads": {
+      "title": "Rasm yuklash",
+      "description": "Odamlarga oʻz Hivesigner kirishlari bilan, siz yuritadigan imagehoster orqali rasm yuklash imkonini bering."
+    },
+    "faq": {
+      "title": "Koʻp beriladigan savollar",
+      "description": "Foydalanuvchilar va dasturchilarning odatiy savollariga javoblar."
+    }
+  }
+}

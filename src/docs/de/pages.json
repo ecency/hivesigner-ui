@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "Hivesigner verwenden",
+    "developers": "Mit Hivesigner entwickeln",
+    "more": "Mehr"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner-Dokumentation",
+      "description": "Alles über Hivesigner: für Menschen, die sich damit bei Hive-Apps anmelden, und für Entwickler, die es in ihre Apps einbauen."
+    },
+    "accounts": {
+      "title": "Konten hinzufügen und verwalten",
+      "description": "Ein Hive-Konto zu Hivesigner hinzufügen, es mit einem Passcode schützen und zwischen Konten wechseln."
+    },
+    "signing-in": {
+      "title": "Bei Apps anmelden",
+      "description": "Was passiert, wenn eine App Sie zum Anmelden auffordert, was sie danach tun kann und wie Sie ihren Zugriff entziehen."
+    },
+    "signing": {
+      "title": "Prüfen und signieren",
+      "description": "Was Hivesigner zeigt, bevor Sie eine Transaktion oder eine Nachricht signieren, samt dem Schlüssel, den jede braucht."
+    },
+    "safety": {
+      "title": "Ihre Schlüssel sicher aufbewahren",
+      "description": "Welchen Schlüssel Sie hinzufügen, wo er liegt und wie Sie eine gefälschte Hivesigner-Seite erkennen."
+    },
+    "how-it-works": {
+      "title": "Wie Hivesigner funktioniert",
+      "description": "Hivesigner hat zwei Teile, den Signierer im Browser und die API. So nutzt eine App jeden davon."
+    },
+    "register-app": {
+      "title": "Ihre App registrieren",
+      "description": "Aus einem Hive-Konto eine Hivesigner-App machen: Callbacks, Client-Secret und die nötige Posting-Berechtigung."
+    },
+    "oauth2": {
+      "title": "Anmelden mit OAuth2",
+      "description": "Menschen zum Anmelden zu Hivesigner schicken und mit einem Token zurückkommen: Token- und Code-Flow, Berechtigungsumfänge und Parameter."
+    },
+    "tokens": {
+      "title": "Tokens",
+      "description": "Was ein Hivesigner-Token enthält, wie lange es gilt und wie Ihr Server es prüft."
+    },
+    "api": {
+      "title": "REST-API",
+      "description": "Die Endpunkte der Hivesigner-API: das Konto Ihres Nutzers, Übertragen, Tokens und das App-Verzeichnis."
+    },
+    "sign-links": {
+      "title": "Signaturlinks",
+      "description": "Links, die eine Transaktion in Hivesigner zum Prüfen und Signieren öffnen, mit einem Callback am Ende."
+    },
+    "message-signing": {
+      "title": "Nachrichten signieren",
+      "description": "Eine Person bitten, eine Nachricht mit ihrem Schlüssel zu signieren, kompatibel mit requestSignBuffer von Hive Keychain."
+    },
+    "sdk": {
+      "title": "SDKs",
+      "description": "Das JavaScript-SDK und Community-Bibliotheken für Python."
+    },
+    "login-only": {
+      "title": "Anmelden ohne Posting-Zugriff",
+      "description": "Ein Hive-Konto zum Anmelden von Menschen nutzen, wenn Ihre App nie für sie überträgt."
+    },
+    "image-uploads": {
+      "title": "Bilder hochladen",
+      "description": "Menschen mit ihrer Hivesigner-Anmeldung Bilder hochladen lassen, über einen imagehoster, den Sie betreiben."
+    },
+    "faq": {
+      "title": "Häufige Fragen",
+      "description": "Antworten auf häufige Fragen von Nutzern und Entwicklern."
+    }
+  }
+}

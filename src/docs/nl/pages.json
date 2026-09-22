@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "Hivesigner gebruiken",
+    "developers": "Bouwen met Hivesigner",
+    "more": "Meer"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner-documentatie",
+      "description": "Alles over Hivesigner: voor mensen die er mee inloggen bij Hive-apps en voor ontwikkelaars die hem in hun eigen app inbouwen."
+    },
+    "accounts": {
+      "title": "Accounts toevoegen en beheren",
+      "description": "Voeg een Hive-account toe aan Hivesigner, beveilig het met een toegangscode en wissel tussen accounts."
+    },
+    "signing-in": {
+      "title": "Inloggen bij apps",
+      "description": "Wat er gebeurt als een app je vraagt in te loggen, wat ze daarna kan doen en hoe je haar toegang intrekt."
+    },
+    "signing": {
+      "title": "Controleren en ondertekenen",
+      "description": "Wat Hivesigner toont voordat je een transactie of een bericht ondertekent, met de sleutel die elk daarvan nodig heeft."
+    },
+    "safety": {
+      "title": "Houd je sleutels veilig",
+      "description": "Welke sleutel je toevoegt, waar die wordt bewaard en hoe je een nep-Hivesignerpagina herkent."
+    },
+    "how-it-works": {
+      "title": "Hoe Hivesigner werkt",
+      "description": "Hivesigner heeft twee delen, de ondertekenaar in de browser en de API. Zo gebruikt een app ze allebei."
+    },
+    "register-app": {
+      "title": "Je app registreren",
+      "description": "Van een Hive-account een Hivesigner-app maken: callbacks, clientgeheim en de posting-bevoegdheid die nodig is."
+    },
+    "oauth2": {
+      "title": "Inloggen met OAuth2",
+      "description": "Mensen naar Hivesigner sturen om in te loggen en met een token terug te komen: de token- en codestroom, reikwijdten en parameters."
+    },
+    "tokens": {
+      "title": "Tokens",
+      "description": "Wat een Hivesigner-token bevat, hoe lang het geldt en hoe jouw server het controleert."
+    },
+    "api": {
+      "title": "REST-API",
+      "description": "De eindpunten van de Hivesigner-API: het account van je gebruiker, uitzenden, tokens en de appgids."
+    },
+    "sign-links": {
+      "title": "Ondertekeningslinks",
+      "description": "Links die een transactie in Hivesigner openen om te bekijken en te ondertekenen, met een callback als het klaar is."
+    },
+    "message-signing": {
+      "title": "Berichten ondertekenen",
+      "description": "Iemand vragen een bericht met zijn sleutel te ondertekenen, passend bij requestSignBuffer van Hive Keychain."
+    },
+    "sdk": {
+      "title": "SDK's",
+      "description": "De JavaScript-SDK en bibliotheken uit de gemeenschap voor Python."
+    },
+    "login-only": {
+      "title": "Inloggen zonder posting-toegang",
+      "description": "Een Hive-account gebruiken om mensen te laten inloggen wanneer jouw app nooit voor hen uitzendt."
+    },
+    "image-uploads": {
+      "title": "Afbeeldingen uploaden",
+      "description": "Mensen afbeeldingen laten uploaden met hun Hivesigner-inlog, via een imagehoster die jij draait."
+    },
+    "faq": {
+      "title": "Veelgestelde vragen",
+      "description": "Antwoorden op veelgestelde vragen van gebruikers en ontwikkelaars."
+    }
+  }
+}

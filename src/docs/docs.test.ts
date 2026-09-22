@@ -2,12 +2,21 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import operations from '@/data/operations.json';
-import { isLanguage } from '@/i18n/languages';
-import { DOC_LANGUAGES, loadDocIndex, type RenderedDoc } from './content';
+import { isLanguage, LANGUAGE_CODES } from '@/i18n/languages';
+import {
+  DOC_LANGUAGES,
+  hasPage,
+  loadDocIndex,
+  loadDocPage,
+  type RenderedDoc,
+} from './content';
 import { DOC_SECTIONS, DOC_SLUGS, type DocIndex, isDocSlug } from './pages';
 
 // Every docs page in every language, rendered as the build renders them.
 const { renderDoc } = await import('../../scripts/docs-markdown.mjs');
+// The same reading of a fenced block the splicer preserves, so that what is
+// compared here and what it carries over cannot be two different things.
+const { fences } = await import('../../scripts/docs-fences.mjs');
 
 const DIR = join(process.cwd(), 'src', 'docs');
 const folders = readdirSync(DIR, { withFileTypes: true })
@@ -47,11 +56,38 @@ describe('docs content', () => {
   });
 
   it('has nothing of its own for a language without docs', async () => {
-    const missing = ['ja', 'de', 'fr'].find((l) => !folders.includes(l));
-    expect(await loadDocIndex(missing ?? 'ja')).toEqual({
+    // A language that is still untranslated, whichever one that is today, and
+    // a code the app does not ship once every language has a folder: naming
+    // three by hand made this pass only until they were translated.
+    const missing = LANGUAGE_CODES.find((l) => !folders.includes(l)) ?? 'xx';
+    expect(await loadDocIndex(missing)).toEqual({
       sections: {},
       pages: {},
     });
+  });
+
+  // The tests above read the files; the app imports them. A folder whose name
+  // the bundler resolves differently (zh-CN against zh-cn) would pass every
+  // check above and still fail for the reader.
+  it.each([...DOC_LANGUAGES])('loads every page %s lists', async (lang) => {
+    const index = await loadDocIndex(lang);
+    expect(Object.keys(index.pages).length, lang).toBeGreaterThan(0);
+    for (const slug of DOC_SLUGS) {
+      if (!hasPage(index, slug)) continue;
+      const page = await loadDocPage(lang, slug);
+      expect(page.html.length, `${lang}/${slug}`).toBeGreaterThan(0);
+    }
+  });
+
+  // An indented fence (a sample inside a list item) is still a code block.
+  // Reading it as prose would hand a translator English to translate, and
+  // the check above would then compare two pages that both miss it.
+  it('reads every fenced block on every page', () => {
+    for (const [lang, { pages }] of docs)
+      for (const [slug, page] of pages) {
+        const lines = (page.source.match(/^[ \t]*```/gm) ?? []).length;
+        expect(fences(page.source).length * 2, `${lang}/${slug}`).toBe(lines);
+      }
   });
 
   it('has every page and section in English', () => {
@@ -101,8 +137,7 @@ describe('docs content', () => {
 
   it('keeps the headings, code and links of the English page in a translation', () => {
     const drift: string[] = [];
-    const code = (page: Page) =>
-      (page.source.match(/```[\s\S]*?```/g) ?? []).join('\n');
+    const code = (page: Page) => fences(page.source).join('\n');
     for (const [lang, { pages }] of docs) {
       if (lang === 'en') continue;
       for (const [slug, page] of pages) {

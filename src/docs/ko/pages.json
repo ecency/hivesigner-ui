@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "Hivesigner 사용하기",
+    "developers": "Hivesigner로 개발하기",
+    "more": "더 보기"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner 문서",
+      "description": "Hivesigner에 대한 모든 것. Hivesigner로 Hive 앱에 로그인하는 사람과 자기 앱에 Hivesigner를 넣는 개발자를 위한 문서입니다."
+    },
+    "accounts": {
+      "title": "계정 추가와 관리",
+      "description": "Hive 계정을 Hivesigner에 추가하고, 패스코드로 보호하고, 계정을 전환하는 방법입니다."
+    },
+    "signing-in": {
+      "title": "앱에 로그인하기",
+      "description": "앱이 로그인을 요청하면 어떤 일이 일어나는지, 그 뒤 앱이 무엇을 할 수 있는지, 접근 권한을 어떻게 취소하는지 설명합니다."
+    },
+    "signing": {
+      "title": "검토와 서명",
+      "description": "거래나 메시지에 서명하기 전에 Hivesigner가 보여주는 내용과 각각에 필요한 키를 설명합니다."
+    },
+    "safety": {
+      "title": "키를 안전하게 지키기",
+      "description": "어떤 키를 추가할지, 키가 어디에 저장되는지, 가짜 Hivesigner 페이지를 어떻게 알아볼지 설명합니다."
+    },
+    "how-it-works": {
+      "title": "Hivesigner의 동작 방식",
+      "description": "Hivesigner는 브라우저 서명 화면과 API 두 부분으로 되어 있습니다. 앱이 각각을 어떻게 쓰는지 설명합니다."
+    },
+    "register-app": {
+      "title": "앱 등록하기",
+      "description": "Hive 계정을 Hivesigner 앱으로 만드는 법. 콜백, 클라이언트 시크릿, 필요한 게시 권한."
+    },
+    "oauth2": {
+      "title": "OAuth2로 로그인",
+      "description": "사람들을 Hivesigner로 보내 로그인시키고 토큰과 함께 돌려받습니다. 토큰 흐름과 코드 흐름, 권한 범위, 매개변수."
+    },
+    "tokens": {
+      "title": "토큰",
+      "description": "Hivesigner 토큰에 무엇이 들어 있는지, 얼마나 유효한지, 서버에서 어떻게 확인하는지."
+    },
+    "api": {
+      "title": "REST API",
+      "description": "Hivesigner API의 엔드포인트. 사용자 계정, 브로드캐스트, 토큰, 앱 목록."
+    },
+    "sign-links": {
+      "title": "서명 링크",
+      "description": "Hivesigner에서 거래를 열어 확인하고 서명하게 하는 링크. 끝나면 콜백으로 돌려보냅니다."
+    },
+    "message-signing": {
+      "title": "메시지 서명",
+      "description": "사용자에게 자신의 키로 메시지에 서명하도록 요청합니다. Hive Keychain의 requestSignBuffer와 호환됩니다."
+    },
+    "sdk": {
+      "title": "SDK",
+      "description": "JavaScript SDK와 Python용 커뮤니티 라이브러리."
+    },
+    "login-only": {
+      "title": "게시 접근 없는 로그인",
+      "description": "앱이 사용자를 대신해 아무것도 브로드캐스트하지 않을 때 Hive 계정으로 로그인시키는 법."
+    },
+    "image-uploads": {
+      "title": "이미지 올리기",
+      "description": "직접 운영하는 imagehoster를 통해 Hivesigner 로그인으로 이미지를 올릴 수 있게 합니다."
+    },
+    "faq": {
+      "title": "자주 묻는 질문",
+      "description": "사용자와 개발자가 자주 묻는 질문에 대한 답변입니다."
+    }
+  }
+}

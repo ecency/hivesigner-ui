@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "Hivesigner を使う",
+    "developers": "Hivesigner で開発する",
+    "more": "その他"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner ドキュメント",
+      "description": "Hivesigner のすべて。Hivesigner で Hive アプリにログインする人と、自分のアプリに組み込む開発者のために。"
+    },
+    "accounts": {
+      "title": "アカウントの追加と管理",
+      "description": "Hive アカウントを Hivesigner に追加し、パスコードで保護し、アカウントを切り替える方法。"
+    },
+    "signing-in": {
+      "title": "アプリへのログイン",
+      "description": "アプリからログインを求められたときに何が起きるか、そのあとアプリに何ができるか、アクセスを取り消す方法。"
+    },
+    "signing": {
+      "title": "確認と署名",
+      "description": "トランザクションやメッセージに署名する前に Hivesigner が示す内容と、それぞれに必要なキー。"
+    },
+    "safety": {
+      "title": "キーを安全に保つ",
+      "description": "どのキーを追加するか、どこに保存されるか、偽の Hivesigner ページを見分ける方法。"
+    },
+    "how-it-works": {
+      "title": "Hivesigner の仕組み",
+      "description": "Hivesigner はブラウザー署名画面と API の二つからなります。アプリがそれぞれをどう使うかを説明します。"
+    },
+    "register-app": {
+      "title": "アプリを登録する",
+      "description": "Hive アカウントを Hivesigner のアプリにする手順。コールバック、クライアントシークレット、必要な投稿権限。"
+    },
+    "oauth2": {
+      "title": "OAuth2 でのログイン",
+      "description": "利用者を Hivesigner へ送ってログインさせ、トークンとともに戻します。トークンフローとコードフロー、スコープ、パラメーター。"
+    },
+    "tokens": {
+      "title": "トークン",
+      "description": "Hivesigner のトークンの中身、有効期間、サーバーでの確認方法。"
+    },
+    "api": {
+      "title": "REST API",
+      "description": "Hivesigner API のエンドポイント。利用者のアカウント、ブロードキャスト、トークン、アプリ一覧。"
+    },
+    "sign-links": {
+      "title": "署名リンク",
+      "description": "Hivesigner でトランザクションを開いて確認し署名するためのリンク。完了後のコールバック付き。"
+    },
+    "message-signing": {
+      "title": "メッセージ署名",
+      "description": "利用者に自分の鍵でメッセージへ署名してもらう方法。Hive Keychain の requestSignBuffer と互換です。"
+    },
+    "sdk": {
+      "title": "SDK",
+      "description": "JavaScript SDK と、Python 向けのコミュニティライブラリー。"
+    },
+    "login-only": {
+      "title": "投稿アクセスなしのログイン",
+      "description": "アプリが利用者に代わってブロードキャストしない場合に、Hive アカウントでログインさせる方法。"
+    },
+    "image-uploads": {
+      "title": "画像のアップロード",
+      "description": "自分で動かす imagehoster を通じて、Hivesigner のログインで画像をアップロードできるようにします。"
+    },
+    "faq": {
+      "title": "よくある質問",
+      "description": "利用者と開発者からよく寄せられる質問への回答。"
+    }
+  }
+}

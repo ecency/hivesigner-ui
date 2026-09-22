@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "使用 Hivesigner",
+    "developers": "用 Hivesigner 开发",
+    "more": "更多"
+  },
+  "pages": {
+    "index": {
+      "title": "Hivesigner 文档",
+      "description": "关于 Hivesigner 的一切：既面向用它登录 Hive 应用的用户，也面向把它集成进自家应用的开发者。"
+    },
+    "accounts": {
+      "title": "添加和管理账户",
+      "description": "把 Hive 账户添加到 Hivesigner，用本地密码保护它，并在账户之间切换。"
+    },
+    "signing-in": {
+      "title": "登录应用",
+      "description": "应用请求您登录时会发生什么，登录后它能做什么，以及如何撤销它的权限。"
+    },
+    "signing": {
+      "title": "查看与签名",
+      "description": "在您签署交易或消息之前 Hivesigner 会显示的内容，以及各自需要的密钥。"
+    },
+    "safety": {
+      "title": "保护好您的密钥",
+      "description": "该添加哪个密钥、密钥保存在哪里，以及如何识别假冒的 Hivesigner 页面。"
+    },
+    "how-it-works": {
+      "title": "Hivesigner 如何工作",
+      "description": "Hivesigner 由两部分组成：浏览器签名器和 API。应用就是这样使用它们的。"
+    },
+    "register-app": {
+      "title": "注册应用",
+      "description": "把一个 Hive 账户变成 Hivesigner 应用：回调地址、客户端密钥，以及它需要的发布权限。"
+    },
+    "oauth2": {
+      "title": "使用 OAuth2 登录",
+      "description": "把人们送到 Hivesigner 登录并带着令牌回来：令牌流程与授权码流程、权限范围和参数。"
+    },
+    "tokens": {
+      "title": "令牌",
+      "description": "Hivesigner 令牌包含什么、能用多久，以及您的服务器如何检查它。"
+    },
+    "api": {
+      "title": "REST API",
+      "description": "Hivesigner 的 API 端点：用户账户、广播、令牌和应用目录。"
+    },
+    "sign-links": {
+      "title": "签名链接",
+      "description": "在 Hivesigner 中打开一笔交易供查看和签名的链接，完成后可跳转回调地址。"
+    },
+    "message-signing": {
+      "title": "消息签名",
+      "description": "请用户用自己的密钥签署一条消息，与 Hive Keychain 的 requestSignBuffer 兼容。"
+    },
+    "sdk": {
+      "title": "SDK",
+      "description": "JavaScript SDK 以及 Python 的社区库。"
+    },
+    "login-only": {
+      "title": "无发布权限的登录",
+      "description": "当您的应用从不替用户广播时，用一个 Hive 账户为人们登录。"
+    },
+    "image-uploads": {
+      "title": "图片上传",
+      "description": "让人们用自己的 Hivesigner 登录，通过您自行运行的 imagehoster 上传图片。"
+    },
+    "faq": {
+      "title": "常见问题",
+      "description": "用户和开发者常见问题的解答。"
+    }
+  }
+}

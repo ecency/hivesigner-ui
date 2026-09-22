@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "Dùng Hivesigner",
+    "developers": "Phát triển với Hivesigner",
+    "more": "Thêm"
+  },
+  "pages": {
+    "index": {
+      "title": "Tài liệu Hivesigner",
+      "description": "Mọi điều về Hivesigner: dành cho người dùng nó để đăng nhập vào ứng dụng Hive và cho nhà phát triển đưa nó vào ứng dụng của mình."
+    },
+    "accounts": {
+      "title": "Thêm và quản lý tài khoản",
+      "description": "Thêm tài khoản Hive vào Hivesigner, bảo vệ bằng mã mở khóa và chuyển đổi giữa các tài khoản."
+    },
+    "signing-in": {
+      "title": "Đăng nhập vào ứng dụng",
+      "description": "Điều gì xảy ra khi một ứng dụng yêu cầu bạn đăng nhập, sau đó nó làm được gì và cách thu hồi quyền của nó."
+    },
+    "signing": {
+      "title": "Xem xét và ký",
+      "description": "Những gì Hivesigner hiển thị trước khi bạn ký một giao dịch hay thông điệp, kèm khóa mà mỗi loại cần."
+    },
+    "safety": {
+      "title": "Giữ an toàn cho khóa của bạn",
+      "description": "Nên thêm khóa nào, khóa được lưu ở đâu và cách nhận ra trang Hivesigner giả mạo."
+    },
+    "how-it-works": {
+      "title": "Hivesigner hoạt động thế nào",
+      "description": "Hivesigner có hai phần: trình ký trong trình duyệt và API. Đây là cách một ứng dụng dùng từng phần."
+    },
+    "register-app": {
+      "title": "Đăng ký ứng dụng",
+      "description": "Biến một tài khoản Hive thành ứng dụng Hivesigner: callback, khóa bí mật của client và quyền posting mà nó cần."
+    },
+    "oauth2": {
+      "title": "Đăng nhập bằng OAuth2",
+      "description": "Đưa mọi người đến Hivesigner để đăng nhập rồi quay về kèm một token: luồng token và luồng mã, phạm vi và tham số."
+    },
+    "tokens": {
+      "title": "Token",
+      "description": "Token Hivesigner chứa những gì, tồn tại bao lâu và máy chủ của bạn kiểm tra nó ra sao."
+    },
+    "api": {
+      "title": "REST API",
+      "description": "Các điểm cuối của API Hivesigner: tài khoản người dùng, phát giao dịch, token và danh mục ứng dụng."
+    },
+    "sign-links": {
+      "title": "Liên kết ký",
+      "description": "Những liên kết mở một giao dịch trong Hivesigner để xem lại và ký, kèm một callback khi xong."
+    },
+    "message-signing": {
+      "title": "Ký thông điệp",
+      "description": "Yêu cầu người dùng ký một thông điệp bằng khóa của họ, tương thích với requestSignBuffer của Hive Keychain."
+    },
+    "sdk": {
+      "title": "SDK",
+      "description": "JavaScript SDK và các thư viện cộng đồng cho Python."
+    },
+    "login-only": {
+      "title": "Đăng nhập không cần quyền posting",
+      "description": "Dùng một tài khoản Hive để đăng nhập cho mọi người khi ứng dụng của bạn không bao giờ phát giao dịch thay họ."
+    },
+    "image-uploads": {
+      "title": "Tải ảnh lên",
+      "description": "Cho mọi người tải ảnh lên bằng lần đăng nhập Hivesigner của họ, qua một imagehoster do bạn tự chạy."
+    },
+    "faq": {
+      "title": "Câu hỏi thường gặp",
+      "description": "Giải đáp những câu hỏi thường gặp của người dùng và nhà phát triển."
+    }
+  }
+}

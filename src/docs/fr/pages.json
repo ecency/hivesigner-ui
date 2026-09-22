@@ -1,0 +1,73 @@
+{
+  "sections": {
+    "users": "Utiliser Hivesigner",
+    "developers": "Développer avec Hivesigner",
+    "more": "Plus"
+  },
+  "pages": {
+    "index": {
+      "title": "Documentation Hivesigner",
+      "description": "Tout sur Hivesigner : pour celles et ceux qui s’en servent pour se connecter aux applications Hive et pour les développeurs qui l’intègrent aux leurs."
+    },
+    "accounts": {
+      "title": "Ajouter et gérer des comptes",
+      "description": "Ajoutez un compte Hive à Hivesigner, protégez-le avec un code d’accès et passez d’un compte à l’autre."
+    },
+    "signing-in": {
+      "title": "Se connecter aux applications",
+      "description": "Ce qui se passe quand une application vous demande de vous connecter, ce qu’elle peut faire ensuite et comment lui retirer son accès."
+    },
+    "signing": {
+      "title": "Vérifier et signer",
+      "description": "Ce que Hivesigner montre avant que vous signiez une transaction ou un message, avec la clé nécessaire à chacun."
+    },
+    "safety": {
+      "title": "Gardez vos clés en sécurité",
+      "description": "Quelle clé ajouter, où elle est enregistrée et comment repérer une fausse page Hivesigner."
+    },
+    "how-it-works": {
+      "title": "Comment fonctionne Hivesigner",
+      "description": "Hivesigner a deux parties, le signataire dans le navigateur et l’API. Voici comment une application utilise chacune."
+    },
+    "register-app": {
+      "title": "Enregistrer votre application",
+      "description": "Faire d’un compte Hive une application Hivesigner : URL de rappel, secret client et l’autorité de publication qu’il lui faut."
+    },
+    "oauth2": {
+      "title": "Se connecter avec OAuth2",
+      "description": "Envoyer les gens se connecter sur Hivesigner et revenir avec un jeton : les flux par jeton et par code, les portées et les paramètres."
+    },
+    "tokens": {
+      "title": "Jetons",
+      "description": "Ce que contient un jeton Hivesigner, combien de temps il dure et comment votre serveur le vérifie."
+    },
+    "api": {
+      "title": "API REST",
+      "description": "Les points d’accès de l’API Hivesigner : le compte de votre utilisateur, la diffusion, les jetons et l’annuaire des applications."
+    },
+    "sign-links": {
+      "title": "Liens de signature",
+      "description": "Des liens qui ouvrent une transaction dans Hivesigner pour examen et signature, avec une URL de rappel à la fin."
+    },
+    "message-signing": {
+      "title": "Signature de messages",
+      "description": "Demander à une personne de signer un message avec sa clé, compatible avec le requestSignBuffer de Hive Keychain."
+    },
+    "sdk": {
+      "title": "SDK",
+      "description": "Le SDK JavaScript et les bibliothèques communautaires pour Python."
+    },
+    "login-only": {
+      "title": "Connexion sans accès de publication",
+      "description": "Utiliser un compte Hive pour connecter les gens quand votre application ne diffuse jamais pour eux."
+    },
+    "image-uploads": {
+      "title": "Téléversement d’images",
+      "description": "Laisser les gens téléverser des images avec leur connexion Hivesigner, via un imagehoster que vous gérez."
+    },
+    "faq": {
+      "title": "Questions fréquentes",
+      "description": "Réponses aux questions courantes des utilisateurs et des développeurs."
+    }
+  }
+}
