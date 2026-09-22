@@ -25,6 +25,46 @@
       "title": "Čuvajte svoje ključeve bezbedno",
       "description": "Koji ključ da dodate, gde se čuva i kako da prepoznate lažnu stranicu servisa Hivesigner."
     },
+    "how-it-works": {
+      "title": "Kako Hivesigner radi",
+      "description": "Hivesigner ima dva dela, potpisnika u pregledaču i API. Ovako aplikacija koristi svaki od njih."
+    },
+    "register-app": {
+      "title": "Registrujte aplikaciju",
+      "description": "Kako od Hive naloga napraviti Hivesigner aplikaciju: povratne adrese, tajna klijenta i potrebno ovlašćenje za objavljivanje."
+    },
+    "oauth2": {
+      "title": "Prijava preko OAuth2",
+      "description": "Pošaljite ljude na Hivesigner da se prijave i vrate sa tokenom: tokovi sa tokenom i sa kodom, opsezi pristupa i parametri."
+    },
+    "tokens": {
+      "title": "Tokeni",
+      "description": "Šta Hivesigner token sadrži, koliko traje i kako ga vaš server proverava."
+    },
+    "api": {
+      "title": "REST API",
+      "description": "Krajnje tačke Hivesigner API-ja: nalog vašeg korisnika, emitovanje, tokeni i spisak aplikacija."
+    },
+    "sign-links": {
+      "title": "Veze za potpis",
+      "description": "Veze koje otvaraju transakciju u Hivesigner-u na pregled i potpis, sa povratnom adresom na kraju."
+    },
+    "message-signing": {
+      "title": "Potpisivanje poruka",
+      "description": "Zatražite od osobe da poruku potpiše svojim ključem, u skladu sa requestSignBuffer iz Hive Keychain-a."
+    },
+    "sdk": {
+      "title": "SDK",
+      "description": "JavaScript SDK i biblioteke zajednice za Python."
+    },
+    "login-only": {
+      "title": "Prijava bez pristupa objavljivanju",
+      "description": "Koristite Hive nalog za prijavu ljudi kada vaša aplikacija nikada ne emituje u njihovo ime."
+    },
+    "image-uploads": {
+      "title": "Otpremanje slika",
+      "description": "Dozvolite ljudima da otpremaju slike svojom Hivesigner prijavom, preko imagehoster-a koji sami držite."
+    },
     "faq": {
       "title": "Česta pitanja",
       "description": "Odgovori na uobičajena pitanja korisnika i programera."
