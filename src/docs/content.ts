@@ -12,7 +12,7 @@ export interface RenderedDoc {
 
 /** The languages with a docs folder of their own, `src/docs/<code>/`, by
     the app's own codes. The docs tests check this list against the folders. */
-export const DOC_LANGUAGES: readonly Language[] = ['en'];
+export const DOC_LANGUAGES: readonly Language[] = ['en', 'es'];
 
 /** Whether `lang` has docs of its own. */
 export const hasDocs = (lang: string, languages = DOC_LANGUAGES) =>

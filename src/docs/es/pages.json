@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "users": "Usar Hivesigner",
+    "developers": "Crear con Hivesigner",
+    "more": "Más"
+  },
+  "pages": {
+    "index": {
+      "title": "Documentación de Hivesigner",
+      "description": "Todo sobre Hivesigner: para quienes inician sesión en aplicaciones de Hive con él y para quienes lo añaden a las suyas."
+    },
+    "accounts": {
+      "title": "Añadir y gestionar cuentas",
+      "description": "Añade una cuenta de Hive a Hivesigner, protégela con un código de acceso y cambia de una cuenta a otra."
+    },
+    "signing-in": {
+      "title": "Iniciar sesión en aplicaciones",
+      "description": "Qué pasa cuando una aplicación te pide iniciar sesión, qué puede hacer después y cómo retirarle el acceso."
+    },
+    "signing": {
+      "title": "Revisar y firmar",
+      "description": "Lo que Hivesigner te muestra antes de firmar una transacción o un mensaje, con la clave que necesita cada uno."
+    },
+    "safety": {
+      "title": "Protege tus claves",
+      "description": "Qué clave añadir, dónde se guarda y cómo reconocer una página falsa de Hivesigner."
+    },
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "description": "Respuestas a las preguntas más habituales de usuarios y desarrolladores."
+    }
+  }
+}
