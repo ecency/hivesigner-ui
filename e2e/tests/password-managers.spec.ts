@@ -92,6 +92,9 @@ test('import offers username and key as the login, and the passcode as nobody’
       passAutocomplete: pass.getAttribute('autocomplete'),
       passIgnored: pass.getAttribute('data-1p-ignore'),
       passInLogin: Array.from(login.elements).includes(pass),
+      // iOS AutoFill groups by the <form> a field sits in, not by its owner,
+      // and filled the key into the passcode (#162).
+      passInsideLogin: login.contains(pass),
       passFormHoldsOnlyIt:
         !!pass.form &&
         pass.form !== login &&
@@ -107,6 +110,7 @@ test('import offers username and key as the login, and the passcode as nobody’
     passAutocomplete: 'one-time-code',
     passIgnored: 'true',
     passInLogin: false,
+    passInsideLogin: false,
     passFormHoldsOnlyIt: true,
   });
 });
@@ -127,6 +131,22 @@ test('Enter in the passcode adds the account, and only the login form is ever su
         .accountsKeychains?.pmimport?.password ?? '',
   );
   expect(stored.startsWith('{')).toBe(true);
+});
+
+test('Enter in the key submits the login form through the button outside it', async ({
+  page,
+}) => {
+  await setUp(page);
+  await page.goto('/import', { waitUntil: 'networkidle' });
+  await page.getByRole('checkbox').uncheck();
+  await page.fill('input[name="username"]', 'pmenterkey');
+  await page.fill('input[name="password"]', WIF);
+  await page.press('input[name="password"]', 'Enter');
+  await page.waitForURL('**/accounts', { timeout: 20_000 });
+  const submits = await page.evaluate(
+    () => (window as unknown as { __submits: Submits }).__submits,
+  );
+  expect(submits).toEqual([{ names: ['username', 'password'] }]);
 });
 
 test('the unlock passcode is nobody’s password, and Enter unlocks', async ({
