@@ -213,6 +213,11 @@ describe('import and password managers (#136)', () => {
     expect(passcode).toHaveAttribute('data-1p-ignore', 'true');
     expect(passcode.form).not.toBe(form);
     expect(Array.from(form.elements)).not.toContain(passcode);
+    // Not inside it in the markup either: iOS AutoFill groups by the <form>
+    // element a field sits in and filled the key into the passcode (#162).
+    expect(form.contains(passcode)).toBe(false);
+    // The button still submits the login form from outside it.
+    expect((screen.getByRole('button') as HTMLButtonElement).form).toBe(form);
   });
 
   it('adds the account on Enter in the passcode field, and empties it before leaving', async () => {

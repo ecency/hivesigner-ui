@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useId, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { SecretInput } from '@/components/SecretInput';
@@ -46,6 +46,8 @@ function Import() {
   const [passcode, setPasscode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const loginFormId = useId();
+  const submitRef = useRef<HTMLButtonElement>(null);
 
   const canSubmit =
     USERNAME_RE.test(username.trim()) &&
@@ -123,7 +125,7 @@ function Import() {
   return (
     // A form stays one readable column: the shell widens on a desktop, but
     // stretching these inputs across it would only make them harder to read.
-    <form onSubmit={onSubmit} className={`${page} ${formColumn}`}>
+    <div className={`${page} ${formColumn}`}>
       <div className="flex flex-col gap-1">
         <h1 className={h1}>{t('import.add_account')}</h1>
         <p className={`${mutedXs} m-0 leading-[1.45]`}>
@@ -131,32 +133,39 @@ function Import() {
         </p>
       </div>
 
-      <label className={label}>
-        <span className={labelText}>{t('import.username')}</span>
-        <input
-          className={field}
-          name="username"
-          autoComplete="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="hiveuser"
-        />
-      </label>
+      {/* The login form holds the username and the key and nothing else, in
+          the markup as well as in ownership. iOS AutoFill groups the fields
+          INSIDE a <form> element whatever form they belong to, so with the
+          passcode in here it filled the saved key into the passcode (#162).
+          `contents` keeps the page's spacing. */}
+      <form id={loginFormId} onSubmit={onSubmit} className="contents">
+        <label className={label}>
+          <span className={labelText}>{t('import.username')}</span>
+          <input
+            className={field}
+            name="username"
+            autoComplete="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="hiveuser"
+          />
+        </label>
 
-      <label className={label}>
-        <span className={labelText}>{t('import.private_key')}</span>
-        {/* The one login credential on this page: username plus this key is
+        <label className={label}>
+          <span className={labelText}>{t('import.private_key')}</span>
+          {/* The one login credential on this page: username plus this key is
             what a password manager should save and fill. */}
-        <input
-          className={`${field} font-mono`}
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          value={secret}
-          onChange={(e) => setSecret(e.target.value)}
-        />
-        <span className={mutedXs}>{t('import.private_key_hint')}</span>
-      </label>
+          <input
+            className={`${field} font-mono`}
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            value={secret}
+            onChange={(e) => setSecret(e.target.value)}
+          />
+          <span className={mutedXs}>{t('import.private_key_hint')}</span>
+        </label>
+      </form>
 
       <div className="flex flex-col gap-2.5">
         <label className="flex items-center gap-2 text-[13.5px]">
@@ -179,7 +188,7 @@ function Import() {
               name="passcode"
               value={passcode}
               onChange={setPasscode}
-              onEnter="submit-form"
+              onEnter={() => submitRef.current?.click()}
             />
             {/* Which secret this is has to be said out loud. Three different
                 things could plausibly go in a password box on this screen - a
@@ -196,9 +205,13 @@ function Import() {
         </div>
       )}
 
-      {/* Full width under the thumb on a phone, its own size once there is room. */}
+      {/* Full width under the thumb on a phone, its own size once there is
+          room. It sits outside the login form and submits it; Enter in the
+          passcode clicks it, so a disabled button still refuses the submit. */}
       <button
+        ref={submitRef}
         type="submit"
+        form={loginFormId}
         disabled={!canSubmit}
         className={`${btnPrimary} cursor-pointer sm:self-start`}
       >
@@ -210,6 +223,6 @@ function Import() {
           {t('import.accounts_on_device', { count: usernames.length })}
         </p>
       )}
-    </form>
+    </div>
   );
 }
