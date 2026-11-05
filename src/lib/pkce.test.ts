@@ -57,6 +57,27 @@ describe('pkceChallenge', () => {
     expect(pkceChallenge(req({ client_id: undefined }))).toBeNull();
   });
 
+  it('takes an app scheme from the legacy redirect alias when an app is named', () => {
+    const legacy = normalizeLoginRequest({
+      client_id: 'myapp',
+      redirect: 'myapp://cb',
+      response_type: 'code',
+      code_challenge: CHALLENGE,
+      code_challenge_method: 'S256',
+    });
+    expect(legacy.redirectUri).toBe('myapp://cb');
+    // No app named: an app scheme is never a callback for a bare sign-in.
+    expect(
+      normalizeLoginRequest({ redirect: 'myapp://cb' }).redirectUri,
+    ).toBeUndefined();
+    expect(
+      normalizeLoginRequest({
+        client_id: 'myapp',
+        redirect: 'javascript:alert(1)',
+      }).redirectUri,
+    ).toBeUndefined();
+  });
+
   it('is read from the legacy /login query too', () => {
     const legacy = normalizeLoginRequest({ ...pkceQuery, scope: 'posting' });
     expect(pkceChallenge(legacy)).toBe(CHALLENGE);
@@ -226,6 +247,35 @@ describe('the PKCE code', () => {
     );
   });
 
+  it('says when the user approved sign-in only, so the exchange cannot give posting access', () => {
+    const decoded = decodeToken(
+      buildAuthToken(req({ scope: 'login' }), 'alice', WIF, 'posting'),
+    );
+    expect(JSON.stringify(decoded?.payload.signed_message)).toBe(
+      JSON.stringify({
+        type: 'code',
+        app: 'myapp',
+        scope: 'login',
+        code_challenge: CHALLENGE,
+        code_challenge_method: 'S256',
+      }),
+    );
+    // Without PKCE too: a login-only code never stands for posting access.
+    const plain = decodeToken(
+      buildAuthToken(
+        req({ scope: 'login', code_challenge: undefined }),
+        'alice',
+        WIF,
+        'posting',
+      ),
+    );
+    expect(plain?.payload.signed_message).toEqual({
+      type: 'code',
+      app: 'myapp',
+      scope: 'login',
+    });
+  });
+
   it('carries no challenge when the request had none, or one that is not usable', () => {
     for (const over of [
       { code_challenge: undefined, code_challenge_method: undefined },
@@ -290,6 +340,23 @@ describe('the grant detour', () => {
     expect(
       grantReturnTarget('myapp', { redirect_uri: 'javascript:alert(1)' }),
     ).toBeNull();
+    // Nothing is granted on the way to a consent that would refuse the app
+    // scheme: it needs a code request with a usable S256 challenge.
+    for (const over of [
+      { code_challenge: undefined },
+      { code_challenge_method: 'plain' },
+      { response_type: 'token' },
+    ])
+      expect(
+        grantReturnTarget('myapp', {
+          redirect_uri: 'myapp://cb',
+          response_type: 'code',
+          code_challenge: CHALLENGE,
+          code_challenge_method: 'S256',
+          ...over,
+        }),
+        JSON.stringify(over),
+      ).toBeNull();
   });
 
   it('does not invent a challenge the request did not have', () => {

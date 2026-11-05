@@ -110,7 +110,12 @@ export function normalizeLoginRequest(
     // as an OAuth callback turned that flow into an invalid-request error.
     // Not decoded: the router's parseSearch already did (see
     // normalizeAuthRequest).
-    redirectUri: query.redirect_uri || absoluteRedirect(query.redirect),
+    redirectUri:
+      query.redirect_uri ||
+      absoluteRedirect(
+        query.redirect,
+        !!(pathClientId || query.clientId || query.client_id),
+      ),
     scope,
     responseType: query.response_type === 'code' ? 'code' : 'token',
     state: query.state,
@@ -118,8 +123,14 @@ export function normalizeLoginRequest(
   };
 }
 
-function absoluteRedirect(value: string | undefined): string | undefined {
-  return isAbsoluteHttpUrl(value) ? value : undefined;
+function absoluteRedirect(
+  value: string | undefined,
+  forApp: boolean,
+): string | undefined {
+  if (isAbsoluteHttpUrl(value)) return value;
+  // A named app's own scheme is a callback too; consent accepts it only for
+  // a PKCE code request it has registered.
+  return forApp && value && isAppSchemeCallback(value) ? value : undefined;
 }
 
 /**
@@ -412,6 +423,9 @@ export function buildAuthToken(
   // approved. The field order is part of the format: the signature covers
   // JSON.stringify of this object, and other signers (the Ecency app) build
   // the same bytes. See docs/pkce.
+  // A code the user approved for sign-in only says so: the API then gives a
+  // login token for it, never posting access the consent did not show.
+  if (type === 'code' && req.scope === 'login') message.scope = 'login';
   const challenge = pkceChallenge(req);
   if (challenge) {
     message.code_challenge = challenge;
@@ -526,6 +540,13 @@ export function grantReturnTarget(
     if (query.code_challenge) search.code_challenge = query.code_challenge;
     if (query.code_challenge_method)
       search.code_challenge_method = query.code_challenge_method;
+    // The grant is broadcast before consent: never for an app scheme that
+    // consent would refuse, which is any but a PKCE code request.
+    if (
+      isAppSchemeCallback(callback) &&
+      !pkceChallenge(normalizeAuthRequest(search))
+    )
+      return null;
     return { to: '/login', search };
   }
   if (!resolveInternalPath(callback)) return null;

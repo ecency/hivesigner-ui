@@ -61,7 +61,7 @@ Dans le flux par jeton, votre URL de rappel reçoit `access_token`, `expires_in`
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-Le SDK n’a pas de méthode pour l’échange du flux par code. Votre serveur envoie lui-même le code et le secret client à l’API, comme le montre [Échanger le code](/docs/oauth2#exchange-code).
+Depuis le SDK 4.1, `client.exchangeCode(code, codeVerifier, clientSecret)` envoie un code à l’API : une app native passe son vérificateur PKCE, un serveur son secret client. Avec un SDK plus ancien, votre serveur envoie lui-même le code et le secret client à l’API, comme le montre [Échanger le code](/docs/oauth2#exchange-code).
 
 ### Obtenir la personne {#me}
 

@@ -61,7 +61,7 @@ W przepływie z tokenem Twój adres zwrotny dostaje `access_token`, `expires_in`
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-SDK nie ma metody do wymiany w przepływie z kodem. Twój serwer sam wysyła kod i sekret klienta do API, tak jak pokazuje [Wymień kod](/docs/oauth2#exchange-code).
+Od SDK 4.1 metoda `client.exchangeCode(code, codeVerifier, clientSecret)` wysyła kod do API: aplikacja natywna podaje swój weryfikator PKCE, a serwer sekret klienta. W starszym SDK Twój serwer sam wysyła kod i sekret klienta do API, tak jak pokazuje [Wymień kod](/docs/oauth2#exchange-code).
 
 ### Pobierz osobę {#me}
 

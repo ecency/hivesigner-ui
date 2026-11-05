@@ -61,7 +61,7 @@ const url = client.getLoginURL('STATE');
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-コードフローの交換用のメソッドは SDK にありません。[コードを交換する](/docs/oauth2#exchange-code)が示すとおり、サーバーが自分でコードとクライアントシークレットを API へ送ります。
+SDK 4.1 以降は、`client.exchangeCode(code, codeVerifier, clientSecret)` がコードを API へ送ります。ネイティブアプリは PKCE ベリファイアを、サーバーはクライアントシークレットを渡します。それより古い SDK では、[コードを交換する](/docs/oauth2#exchange-code)が示すとおり、サーバーが自分でコードとクライアントシークレットを API へ送ります。
 
 ### 利用者を取得する {#me}
 

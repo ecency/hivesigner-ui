@@ -6,7 +6,7 @@ PKCE (Proof Key for Code Exchange, RFC 7636) lets an app that cannot keep a secr
 - **Your own scheme as the callback.** Any app on a device can claim a scheme like `myapp://`, so Hivesigner never sends a token to one. With PKCE it sends a code instead. Only your app can exchange it.
 - **A stolen code is worthless.** The exchange needs the verifier, which never travels through the browser.
 - **The challenge is signed.** Hivesigner puts the challenge inside the code that the user's key signs. Nobody can swap or remove it after the user approved.
-- **Short lived and single use.** A PKCE code can be exchanged once, within 10 minutes (with up to 5 more for a device clock that is off).
+- **Short lived and single use.** A PKCE code can be exchanged once, within 10 minutes (with up to 5 more for a device clock that is off). The API keeps used codes in memory, so a restart forgets them; the verifier is still needed.
 - **Existing apps keep working.** A code without a challenge works exactly as before. See [Existing apps](#existing-apps).
 
 ## How it works {#how-it-works}
@@ -67,7 +67,7 @@ const challenge = base64url(new Uint8Array(digest));
 
 To test your own code, the verifier `dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk` gives the challenge `E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM` (RFC 7636, appendix B).
 
-With the JavaScript SDK, `createPkcePair()` does this for you. See [Use the JavaScript SDK](#with-the-sdk).
+With the JavaScript SDK (4.1 or later), `createPkcePair()` does this for you. See [Use the JavaScript SDK](#with-the-sdk).
 
 ### 2. Send the user to Hivesigner {#authorize}
 
@@ -144,6 +144,7 @@ const tokens = await client.exchangeCode(code, codeVerifier);
 | The token flow with `myapp://callback` | Refused: a token is never sent to a custom scheme |
 | An https callback with a valid S256 challenge | Accepted: the code carries the challenge |
 | An https callback with `plain` or a malformed challenge | Accepted as before: the challenge is ignored and the code needs the client secret |
+| `scope=login` with `response_type=code` | The code says `scope: "login"` and is exchanged for a login token, never posting access |
 
 | Exchange | Result |
 | --- | --- |
@@ -155,6 +156,8 @@ const tokens = await client.exchangeCode(code, codeVerifier);
 | A code whose challenge was changed | `401 invalid_grant`: the user's signature no longer matches |
 | A PKCE code used as a token, for example at `/api/me` | `401 invalid_grant` |
 | A code without a challenge, with the client secret | Tokens and a refresh token, as before |
+| A `client_secret` that is wrong, or not a string | `401 invalid_grant`, even when PKCE alone would do |
+| No secret, for an app with an IP allowlist (`allowed_ips`) | `401 invalid_grant`: such an app always needs its secret |
 
 A wrong verifier does not use up the code: the app that holds the right one can still exchange it.
 
@@ -171,7 +174,7 @@ When your website (with the secret) and your mobile app (without it) share one a
 
 Only the value `true` counts. Leave it off when every client of the account can keep the secret.
 
-Turn it on only when you control every callback registered on the account. With it, whoever receives a code at one of those callbacks after starting the sign-in can exchange it without the secret. For an https or loopback callback that is no new exposure, since the token flow already sends a token there. A custom scheme can be claimed by any app on the device, so give the native app a verified App Link or Universal Link where you can. An IP allowlist (`allowed_ips`) applies to every exchange, so an account with one cannot serve a native app.
+Turn it on only when you control every callback registered on the account. With it, whoever receives a code at one of those callbacks after starting the sign-in can exchange it without the secret. For an https or loopback callback that is no new exposure, since the token flow already sends a token there. A custom scheme can be claimed by any app on the device, so give the native app a verified App Link or Universal Link where you can. An account with an IP allowlist (`allowed_ips`) always needs the secret, so it cannot serve a native app.
 
 ## What PKCE does not cover {#limits}
 
@@ -195,7 +198,7 @@ A `plain` or malformed challenge is ignored as before.
 
 ## The code format {#code-format}
 
-A code is a Hivesigner token of `type` `code`. See [What a token looks like](/docs/tokens#format). With PKCE its `signed_message` has two more fields, in this order:
+A code is a Hivesigner token of `type` `code`. See [What a token looks like](/docs/tokens#format). With PKCE its `signed_message` has two more fields, in this order. A code for a sign-in only request (`scope=login`) also has `"scope": "login"` right after `app`.
 
 ```json
 {

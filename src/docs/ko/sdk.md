@@ -61,7 +61,7 @@ const url = client.getLoginURL('STATE');
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-코드 흐름의 교환을 위한 메서드는 SDK에 없습니다. [코드 교환하기](/docs/oauth2#exchange-code)가 보여 주듯, 서버가 직접 코드와 클라이언트 시크릿을 API로 보냅니다.
+SDK 4.1부터는 `client.exchangeCode(code, codeVerifier, clientSecret)`가 코드를 API로 보냅니다. 네이티브 앱은 PKCE 검증자를, 서버는 클라이언트 시크릿을 넘깁니다. 더 오래된 SDK에서는 [코드 교환하기](/docs/oauth2#exchange-code)가 보여 주듯, 서버가 직접 코드와 클라이언트 시크릿을 API로 보냅니다.
 
 ### 사용자 가져오기 {#me}
 

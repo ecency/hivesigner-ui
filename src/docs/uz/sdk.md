@@ -61,7 +61,7 @@ Token oqimida callback manzilingiz `access_token`, `expires_in` va `username` qi
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-SDK'da kod oqimidagi almashinuv uchun usul yoʻq. Serveringiz kod va mijoz maxfiy kalitini API'ga oʻzi yuboradi, buni [Kodni almashtiring](/docs/oauth2#exchange-code) koʻrsatadi.
+SDK 4.1 dan boshlab `client.exchangeCode(code, codeVerifier, clientSecret)` kodni API'ga yuboradi: native ilova oʻzining PKCE verifikatorini, server esa mijoz maxfiy kalitini beradi. Eskiroq SDK'da serveringiz kod va mijoz maxfiy kalitini API'ga oʻzi yuboradi, buni [Kodni almashtiring](/docs/oauth2#exchange-code) koʻrsatadi.
 
 ### Foydalanuvchini oling {#me}
 

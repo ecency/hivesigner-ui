@@ -61,7 +61,7 @@ const url = client.getLoginURL('STATE');
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-कोड फ़्लो के आदान-प्रदान के लिए SDK में कोई मेथड नहीं है। आपका सर्वर कोड और क्लाइंट सीक्रेट ख़ुद API को भेजता है, जैसा [कोड बदलें](/docs/oauth2#exchange-code) दिखाता है।
+SDK 4.1 से `client.exchangeCode(code, codeVerifier, clientSecret)` API को एक कोड भेजता है: नेटिव ऐप अपना PKCE वेरिफ़ायर देता है और सर्वर अपना क्लाइंट सीक्रेट। पुराने SDK में आपका सर्वर कोड और क्लाइंट सीक्रेट ख़ुद API को भेजता है, जैसा [कोड बदलें](/docs/oauth2#exchange-code) दिखाता है।
 
 ### उपयोगकर्ता लें {#me}
 

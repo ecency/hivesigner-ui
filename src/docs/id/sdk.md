@@ -61,7 +61,7 @@ Dalam alur token, callback Anda menerima `access_token`, `expires_in` dan `usern
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-SDK tidak punya metode untuk penukaran pada alur kode. Server Anda sendiri yang mengirim kode dan rahasia klien ke API, seperti ditunjukkan [Menukarkan kode](/docs/oauth2#exchange-code).
+Sejak SDK 4.1, `client.exchangeCode(code, codeVerifier, clientSecret)` mengirim kode ke API: aplikasi native menyertakan verifier PKCE-nya, sedangkan server menyertakan rahasia kliennya. Dengan SDK yang lebih lama, server Anda sendiri yang mengirim kode dan rahasia klien ke API, seperti ditunjukkan [Menukarkan kode](/docs/oauth2#exchange-code).
 
 ### Mengambil orangnya {#me}
 
