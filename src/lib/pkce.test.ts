@@ -130,6 +130,10 @@ describe('custom scheme callbacks', () => {
       'shortcuts://run-shortcut?name=x',
       'facetime:123',
       'magnet:?xt=x',
+      'smb://host/share',
+      'shell:startup',
+      'ms:x',
+      'MyApp://cb',
       'my-app://cb',
       'my+app://cb',
     ])

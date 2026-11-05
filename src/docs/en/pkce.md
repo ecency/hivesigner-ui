@@ -41,10 +41,10 @@ The verifier is the only thing that turns the code into a token. It never leaves
 
 Set up your app account as on [Register your app](/docs/register-app), with two differences:
 
-- **Callback.** Add your app's own scheme to Redirect URIs, for example `myapp://callback` or `com.example.myapp:/callback`. It has to match exactly, with no `#fragment`. The scheme is a plain name such as `myapp` or a reverse domain name such as `com.example.my-app`, in plain ASCII. Hivesigner accepts it only for a code request with a valid PKCE challenge. An https App Link or Universal Link, or a loopback address, works as well.
+- **Callback.** Add your app's own scheme to Redirect URIs, for example `myapp://callback` or `com.example.myapp:/callback`. It has to match exactly, with no `#fragment`. The scheme is a lowercase plain name such as `myapp` or a lowercase reverse domain name such as `com.example.my-app`, in plain ASCII. Hivesigner accepts it only for a code request with a valid PKCE challenge. An https App Link or Universal Link, or a loopback address, works as well.
 - **No client secret.** An app account with no secret is treated as an app that cannot keep one. PKCE alone is enough to exchange its codes. If the account already has a secret because a server uses it too, see [A server and a native app on one account](#pkce-public).
 
-Schemes that run code or open something other than your app are never accepted as a callback: `javascript`, `data`, `vbscript`, `file`, `blob`, `about`, `intent`, `market`, browser schemes such as `googlechrome` or `firefox`. Also any scheme with a dash or a plus before its first dot (`x-safari-https`, `ms-msdt`, `web+app`).
+Schemes that run code or open something other than your app are never accepted as a callback: `javascript`, `data`, `vbscript`, `file`, `blob`, `about`, `intent`, `market`, browser schemes such as `googlechrome` or `firefox`. Also any scheme with a plus, or a dash before its first dot (`x-safari-https`, `ms-msdt`, `web+app`).
 
 ## Step by step {#steps}
 

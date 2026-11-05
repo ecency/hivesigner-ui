@@ -263,6 +263,14 @@ const NOT_APP_SCHEMES = new Set([
   'shortcuts',
   'facetime',
   'magnet',
+  // OS handlers that reach file shares or local shells.
+  'smb',
+  'afp',
+  'shell',
+  'mhtml',
+  'res',
+  'mk',
+  'ms',
 ]);
 
 /**
