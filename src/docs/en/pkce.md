@@ -6,8 +6,8 @@ PKCE (Proof Key for Code Exchange, RFC 7636) lets an app that cannot keep a secr
 - **Your own scheme as the callback.** Any app on a device can claim a scheme like `myapp://`, so Hivesigner never sends a token to one. With PKCE it sends a code instead. Only your app can exchange it.
 - **A stolen code is worthless.** The exchange needs the verifier, which never travels through the browser.
 - **The challenge is signed.** Hivesigner puts the challenge inside the code that the user's key signs. Nobody can swap or remove it after the user approved.
-- **Short lived and single use.** A PKCE code can be exchanged once, within 10 minutes.
-- **Nothing changes for existing apps.** A code without a challenge works exactly as before.
+- **Short lived and single use.** A PKCE code can be exchanged once, within 10 minutes (with up to 5 more for a device clock that is off).
+- **Existing apps keep working.** A code without a challenge works exactly as before. See [Existing apps](#existing-apps).
 
 ## How it works {#how-it-works}
 
@@ -29,7 +29,7 @@ PKCE (Proof Key for Code Exchange, RFC 7636) lets an app that cannot keep a secr
 
  5. POST /api/oauth2/token ─────────────────────────────────────► 6. checks the user's signature,
     code + code_verifier                                              SHA256(verifier) == challenge,
-                                                                      age under 10 minutes,
+                                                                      age under 10 minutes (+5),
                                                                       not used before
 
  7. access_token ◄──────────────────────────────────────────────── issues the token
@@ -41,10 +41,10 @@ The verifier is the only thing that turns the code into a token. It never leaves
 
 Set up your app account as on [Register your app](/docs/register-app), with two differences:
 
-- **Callback.** Add your app's own scheme to Redirect URIs, for example `myapp://callback` or `com.example.myapp:/callback`. It has to match exactly, with no `#fragment`. Hivesigner accepts it only for a code request with a valid PKCE challenge. An https App Link or Universal Link, or a loopback address, works as well.
+- **Callback.** Add your app's own scheme to Redirect URIs, for example `myapp://callback` or `com.example.myapp:/callback`. It has to match exactly, with no `#fragment`. The scheme is a plain name such as `myapp` or a reverse domain name such as `com.example.my-app`, in plain ASCII. Hivesigner accepts it only for a code request with a valid PKCE challenge. An https App Link or Universal Link, or a loopback address, works as well.
 - **No client secret.** An app account with no secret is treated as an app that cannot keep one. PKCE alone is enough to exchange its codes. If the account already has a secret because a server uses it too, see [A server and a native app on one account](#pkce-public).
 
-These schemes are never accepted as a callback, because they run code or open something other than your app: `javascript`, `data`, `vbscript`, `file`, `blob`, `about`, `intent`, `http` off loopback and other browser schemes.
+Schemes that run code or open something other than your app are never accepted as a callback: `javascript`, `data`, `vbscript`, `file`, `blob`, `about`, `intent`, `market`, browser schemes such as `googlechrome` or `firefox`. Also any scheme with a dash or a plus before its first dot (`x-safari-https`, `ms-msdt`, `web+app`).
 
 ## Step by step {#steps}
 
@@ -150,7 +150,8 @@ const tokens = await client.exchangeCode(code, codeVerifier);
 | A PKCE code with the right verifier | Tokens |
 | A wrong, missing or malformed verifier | `401 invalid_grant` |
 | The same code a second time | `401 invalid_grant` "The code was already used" |
-| A PKCE code older than 10 minutes | `401 invalid_grant` "The code has expired" |
+| A PKCE code older than 15 minutes (10, plus 5 for clock differences) | `401 invalid_grant` "The code has expired" |
+| A PKCE code dated more than 5 minutes ahead | `401 invalid_grant` "The code is dated in the future" |
 | A code whose challenge was changed | `401 invalid_grant`: the user's signature no longer matches |
 | A PKCE code used as a token, for example at `/api/me` | `401 invalid_grant` |
 | A code without a challenge, with the client secret | Tokens and a refresh token, as before |
@@ -170,17 +171,27 @@ When your website (with the secret) and your mobile app (without it) share one a
 
 Only the value `true` counts. Leave it off when every client of the account can keep the secret.
 
+Turn it on only when you control every callback registered on the account. With it, whoever receives a code at one of those callbacks after starting the sign-in can exchange it without the secret. For an https or loopback callback that is no new exposure, since the token flow already sends a token there. A custom scheme can be claimed by any app on the device, so give the native app a verified App Link or Universal Link where you can. An IP allowlist (`allowed_ips`) applies to every exchange, so an account with one cannot serve a native app.
+
 ## What PKCE does not cover {#limits}
 
 PKCE stops a code that was caught on the way from being used. It does not stop another app on the same device from claiming your scheme and starting a sign-in of its own, with its own verifier, while the consent screen names your app. If the user approves, that app gets a token for your app.
 
 - **Prefer an https callback that the system opens only in your app** (Android App Links, iOS Universal Links) when you can. PKCE still protects the code there.
 - **Use a scheme based on a domain you own**, such as `com.example.myapp:/callback`, so it is less likely to collide with another app.
-- **The consent screen shows the callback** ("Sends you to myapp://callback"), so a user can see where the answer goes.
+- **Keep scopes and trust in proportion.** The consent screen names your app and shows your registered callback either way, so it cannot tell a user which app will open it.
 
 ## Existing apps {#existing-apps}
 
 Nothing changes for an app that does not send a challenge. Its codes need the client secret, have no age limit and can be exchanged more than once, as before. Its https and loopback callbacks work as before. The token flow still refuses custom schemes.
+
+Some OAuth libraries send an S256 challenge on their own. For such an app the code now carries the challenge, so:
+
+- the exchange needs the verifier as well as the secret (these libraries send both);
+- the code can be exchanged once, within the time above;
+- the code is no longer accepted as a token at `/api/me`. Exchange it first.
+
+A `plain` or malformed challenge is ignored as before.
 
 ## The code format {#code-format}
 
@@ -201,4 +212,4 @@ The signature covers SHA-256 of these exact bytes, with no spaces:
 {"signed_message":{"type":"code","app":"myapp","code_challenge":"E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM","code_challenge_method":"S256"},"authors":["alice"],"timestamp":1800000000}
 ```
 
-Its SHA-256 is `8de0c7bf487c57a3f4b3a616d139c4c6a4a1a61411c7cd222cd796d924c22836`. Another signer that issues Hivesigner codes, such as a wallet app signing in to a sister app, has to produce the same bytes, signed by one of the user's posting, active or owner keys. The API then exchanges that code like any other.
+Its SHA-256 is `8de0c7bf487c57a3f4b3a616d139c4c6a4a1a61411c7cd222cd796d924c22836`. The `timestamp` is Unix time in whole seconds: a value in milliseconds is refused as dated in the future. Another signer that issues Hivesigner codes, such as a wallet app signing in to a sister app, has to produce the same bytes, signed by one of the user's posting, active or owner keys. The API then exchanges that code like any other.

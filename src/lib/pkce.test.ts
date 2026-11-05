@@ -102,6 +102,46 @@ describe('custom scheme callbacks', () => {
     }
   });
 
+  it('refuse invisible, bidi or other non-ASCII characters that could spoof the consent screen', () => {
+    for (const uri of [
+      'myapp://cb/\u202emoc.ycnece',
+      'myapp://cb\u200b',
+      'myapp://c\u0430llback',
+      'myapp://cb x',
+      'myapp://cb\u0000',
+    ])
+      expect(isAppSchemeCallback(uri), JSON.stringify(uri)).toBe(false);
+  });
+
+  it('refuse browser, store and OS handler schemes, and any scheme shape but a plain or reverse domain name', () => {
+    for (const uri of [
+      'x-safari-https://evil.example',
+      'googlechrome://evil.example',
+      'googlechromes://evil.example',
+      'microsoft-edge:https://evil.example',
+      'firefox://open-url?url=https://evil.example',
+      'opera://x',
+      'web+evil://x',
+      'ms-msdt:/id',
+      'search-ms:query=x',
+      'itms-services://?action=download-manifest',
+      'itms-apps://x',
+      'market://details?id=x',
+      'shortcuts://run-shortcut?name=x',
+      'facetime:123',
+      'magnet:?xt=x',
+      'my-app://cb',
+      'my+app://cb',
+    ])
+      expect(isAppSchemeCallback(uri), uri).toBe(false);
+    for (const uri of [
+      'myapp2://cb',
+      'com.example.my-app:/cb',
+      'io.ecency.waves://auth',
+    ])
+      expect(isAppSchemeCallback(uri), uri).toBe(true);
+  });
+
   it('keeps https and loopback registrable as before', () => {
     expect(isRegistrableRedirectUri('https://myapp.example/cb')).toBe(true);
     expect(isRegistrableRedirectUri('http://127.0.0.1/auth')).toBe(true);
@@ -222,6 +262,30 @@ describe('the grant detour', () => {
       code_challenge: CHALLENGE,
       code_challenge_method: 'S256',
     });
+  });
+
+  it('carries an app scheme callback to consent, which decides on it', () => {
+    const target = grantReturnTarget('myapp', {
+      redirect_uri: 'myapp://cb',
+      response_type: 'code',
+      scope: 'posting',
+      code_challenge: CHALLENGE,
+      code_challenge_method: 'S256',
+    });
+    expect(target).toEqual({
+      to: '/login',
+      search: {
+        client_id: 'myapp',
+        redirect_uri: 'myapp://cb',
+        scope: 'posting',
+        response_type: 'code',
+        code_challenge: CHALLENGE,
+        code_challenge_method: 'S256',
+      },
+    });
+    expect(
+      grantReturnTarget('myapp', { redirect_uri: 'javascript:alert(1)' }),
+    ).toBeNull();
   });
 
   it('does not invent a challenge the request did not have', () => {

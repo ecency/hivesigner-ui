@@ -254,6 +254,15 @@ const NOT_APP_SCHEMES = new Set([
   'wss',
   'hive',
   'hivesigner',
+  // Browsers and stores that open whatever follows them.
+  'googlechrome',
+  'googlechromes',
+  'firefox',
+  'safari',
+  'market',
+  'shortcuts',
+  'facetime',
+  'magnet',
 ]);
 
 /**
@@ -264,7 +273,14 @@ const NOT_APP_SCHEMES = new Set([
  * useless without the verifier, which only the app that asked holds.
  */
 export function isAppSchemeCallback(value: string): boolean {
-  const match = /^([a-z][a-z0-9+.-]*):(.*)$/.exec(value);
+  // Printable ASCII only: the consent screen shows this address, and an
+  // invisible or bidi character could make it read as another one.
+  if (!/^[\x21-\x7e]+$/.test(value)) return false;
+  // A plain name (myapp) or a reverse domain name (com.example.my-app), the
+  // shapes RFC 8252 asks of native apps. This alone leaves out the browser
+  // and OS handlers spelled with a dash or a plus: x-safari-https,
+  // microsoft-edge, ms-msdt, search-ms, itms-services, web+anything.
+  const match = /^([a-z][a-z0-9]*(?:\.[a-z0-9-]+)*):(.*)$/.exec(value);
   if (!match || !match[2] || value.includes('#')) return false;
   if (NOT_APP_SCHEMES.has(match[1])) return false;
   try {
@@ -465,7 +481,8 @@ export type { Account };
  *    for THIS app, so the callback is checked against the app's registered
  *    redirect_uris, which the Nuxt page never did.
  *
- * Anything else (no callback, an off-site path, a non-http scheme) yields null
+ * Anything else (no callback, an off-site path, a scheme that is neither web
+ * nor an app's own) yields null
  * and the page falls back to the account list, as before this existed. The
  * rewrite dropped the callback entirely: a user sent through the detour
  * granted authority and then landed on their account list, and the login
@@ -488,7 +505,9 @@ export function grantReturnTarget(
   if (mode === 'revoke') return null;
   const callback = query.redirect_uri || query.redirect;
   if (!callback) return null;
-  if (isAbsoluteHttpUrl(callback)) {
+  // An app scheme goes through consent the same way: it accepts one only for
+  // a PKCE code request.
+  if (isAbsoluteHttpUrl(callback) || isAppSchemeCallback(callback)) {
     const search: Record<string, string> = {
       client_id: appName,
       redirect_uri: callback,

@@ -216,8 +216,12 @@ describe('buildProfileMetadata', () => {
       ),
     );
     expect(off.profile).not.toHaveProperty('pkce_public');
-    expect(readProfile(app({ pkce_public: true }) as never).pkce_public).toBe('1');
-    expect(readProfile(app({ pkce_public: 'true' }) as never).pkce_public).toBe('0');
+    expect(readProfile(app({ pkce_public: true }) as never).pkce_public).toBe(
+      '1',
+    );
+    expect(readProfile(app({ pkce_public: 'true' }) as never).pkce_public).toBe(
+      '0',
+    );
   });
 
   it('drops the creator when it is cleared', () => {
