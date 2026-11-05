@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | Sim | Para onde o Hivesigner manda a pessoa de volta. Precisa ser exatamente uma das URIs de redirecionamento do seu aplicativo. Veja [URLs de retorno](/docs/register-app#callbacks). |
 | `scope` | Não | `login`, `posting` ou `offline`. Veja [Escopos](#scopes). Sem ele, a solicitação pede acesso de postagem. |
 | `response_type` | Não | `code` inicia o [fluxo por código](#code-flow). Qualquer outro valor, ou nenhum, significa o [fluxo por token](#token-flow). |
+| `code_challenge`, `code_challenge_method` | Não | PKCE para um aplicativo que não consegue guardar um segredo do cliente. Veja [PKCE para aplicativos móveis e de desktop](/docs/pkce). |
 | `state` | Recomendado | Um valor aleatório que o Hivesigner devolve sem alteração. Veja [Proteger a solicitação com state](#state). |
 | `account` | Não | Um nome de usuário do Hive. Quando essa conta está no dispositivo da pessoa, o Hivesigner a seleciona. Caso contrário, ignora. `select_account` também é lido. |
 

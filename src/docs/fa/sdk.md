@@ -61,7 +61,7 @@ const url = client.getLoginURL('STATE');
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-کیت برای مبادله جریان کد تابعی ندارد. سرور شما خودش کد و کلید محرمانه کلاینت را به API می‌فرستد، همان‌گونه که [کد را مبادله کنید](/docs/oauth2#exchange-code) نشان می‌دهد.
+از کیت نسخه 4.1 به بعد، `client.exchangeCode(code, codeVerifier, clientSecret)` یک کد را به API می‌فرستد: برنامه بومی تأییدکننده PKCE خود را می‌دهد و سرور کلید محرمانه‌اش را. با کیت قدیمی‌تر، سرور شما خودش کد و کلید محرمانه کلاینت را به API می‌فرستد، همان‌گونه که [کد را مبادله کنید](/docs/oauth2#exchange-code) نشان می‌دهد.
 
 ### کاربر را بگیرید {#me}
 

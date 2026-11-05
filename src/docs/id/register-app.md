@@ -42,10 +42,10 @@ Callback (yaitu `redirect_uri` dalam sebuah permintaan masuk) adalah tempat Hive
 - **Cocok persis.** `redirect_uri` dalam permintaan harus salah satu URI pengalihan Anda, aksara demi aksara: skema, host, porta, jalur dan kueri.
 - **https saja.** Callback harus memakai `https://`. `http://` biasa hanya diterima pada loopback: `localhost`, `127.0.0.1` atau `[::1]`.
 - **Porta loopback boleh berubah.** Callback loopback terdaftar dengan http biasa cocok dengan host dan porta loopback mana pun yang jalur, kueri, fragmen dan info penggunanya sama. Callback loopback yang terdaftar dengan `https://` tetap harus cocok persis.
-- **Tanpa skema sendiri.** Callback seperti `myapp://callback` ditolak. Lihat [Aplikasi ponsel dan desktop](#native-apps).
+- **Skema sendiri hanya dengan PKCE.** Callback seperti `myapp://callback` hanya diterima untuk permintaan kode yang dilindungi PKCE. Lihat [Aplikasi ponsel dan desktop](#native-apps).
 - **Tanpa fragmen.** Jangan menambahkan `#fragment` pada callback.
 
-Halaman profil menolak menyimpan callback yang tidak akan pernah bisa bekerja, dengan pesan «Bukan callback yang dapat digunakan (https, atau http di localhost)».
+Halaman profil menolak menyimpan callback yang tidak akan pernah bisa bekerja, dengan pesan «Bukan callback yang dapat digunakan (https, http di localhost, atau skema aplikasi seperti myapp://callback)».
 
 ### Contoh {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Diterima: loopback, jalur sama |
 | `http://127.0.0.1:3000/other` | Ditolak: jalur lain |
 | `https://localhost:3000/auth` | Ditolak: https tidak cocok dengan pendaftaran http biasa |
-| `myapp://auth` | Ditolak: skema sendiri |
+| `myapp://auth` | Ditolak, kecuali terdaftar dan permintaannya adalah permintaan kode dengan PKCE |
 
 Untuk menerima kueri pada callback Anda, daftarkan callback itu dengan kueri yang persis sama. Hivesigner mempertahankan kueri milik callback Anda dan menambahkan parameternya sesudah itu.
 
 ### Aplikasi ponsel dan desktop {#native-apps}
 
-Hivesigner meletakkan token di dalam URL callback. Skema sendiri seperti `myapp://` tidak terikat pada satu aplikasi: aplikasi lain di perangkat yang sama dapat mengakuinya dan menerima token itu. Karena itu Hivesigner menolak skema sendiri dan hanya mengirim token ke alamat https atau ke loopback pada perangkat orang itu.
+Hivesigner meletakkan token di dalam URL callback. Skema sendiri seperti `myapp://` tidak terikat pada satu aplikasi: aplikasi lain di perangkat yang sama dapat mengakuinya dan menerima token itu. Karena itu Hivesigner tidak pernah mengirim token ke skema sendiri, hanya ke alamat https atau ke loopback pada perangkat orang itu.
 
 Aplikasi asli memakai salah satu dari cara ini:
 
 - **Tautan https miliknya sendiri.** Daftarkan callback pada ranah Anda yang dibuka sistem operasi di dalam aplikasi Anda (App Links di Android atau Universal Links di iOS).
 - **Callback loopback.** Aplikasi menyimak pengalihan di `127.0.0.1`. Daftarkan `http://127.0.0.1/auth` (atau `localhost`) lalu pakai porta bebas mana pun saat berjalan: portanya tidak harus sama.
+- **Skema sendiri dengan PKCE.** Aplikasi mendaftarkan `myapp://callback`, memakai alur kode dengan tantangan PKCE, dan tidak memerlukan rahasia klien. Hivesigner mengirim kode yang hanya dapat ditukar oleh aplikasi itu. Lihat [PKCE untuk aplikasi ponsel dan desktop](/docs/pkce).
 
 ## Rahasia klien {#client-secret}
 

@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | Evet | Hivesigner'ın kullanıcıyı geri gönderdiği yer. Uygulamanızın Yönlendirme URI'lerinden biriyle tam olarak aynı olmalıdır. Bkz. [Geri çağırma adresleri](/docs/register-app#callbacks). |
 | `scope` | Hayır | `login`, `posting` ya da `offline`. Bkz. [Kapsamlar](#scopes). Bu olmadan istek gönderi erişimi ister. |
 | `response_type` | Hayır | `code` değeri [kod akışını](#code-flow) başlatır. Başka bir değer ya da hiçbiri [token akışı](#token-flow) demektir. |
+| `code_challenge`, `code_challenge_method` | Hayır | İstemci gizli anahtarını saklayamayan bir uygulama için PKCE. Bkz. [Mobil ve masaüstü uygulamalar için PKCE](/docs/pkce). |
 | `state` | Önerilir | Hivesigner'ın değiştirmeden geri döndürdüğü rastgele bir değer. Bkz. [İsteği state ile koruyun](#state). |
 | `account` | Hayır | Bir Hive kullanıcı adı. O hesap kullanıcının cihazındaysa Hivesigner onu seçer. Değilse yok sayılır. `select_account` de okunur. |
 

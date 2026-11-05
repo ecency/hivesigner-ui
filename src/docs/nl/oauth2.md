@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | Ja | Waar Hivesigner de persoon naartoe terugstuurt. Moet precies een van de doorstuur-URI's van jouw app zijn. Zie [Callbacks](/docs/register-app#callbacks). |
 | `scope` | Nee | `login`, `posting` of `offline`. Zie [Reikwijdten](#scopes). Zonder deze vraagt het verzoek posting-toegang. |
 | `response_type` | Nee | `code` start de [codestroom](#code-flow). Elke andere waarde, of geen, betekent de [tokenstroom](#token-flow). |
+| `code_challenge`, `code_challenge_method` | Nee | PKCE voor een app die geen clientgeheim kan bewaren. Zie [PKCE voor mobiele en desktop-apps](/docs/pkce). |
 | `state` | Aanbevolen | Een willekeurige waarde die Hivesigner ongewijzigd teruggeeft. Zie [Het verzoek beschermen met state](#state). |
 | `account` | Nee | Een Hive-gebruikersnaam. Staat dat account op het apparaat van de persoon, dan kiest Hivesigner het. Anders wordt het genegeerd. `select_account` wordt ook gelezen. |
 

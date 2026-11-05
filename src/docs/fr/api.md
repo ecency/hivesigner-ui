@@ -152,7 +152,7 @@ Les transferts et les autres opérations de portefeuille nécessitent la clé ac
 Échange un code contre des jetons, ou un jeton de rafraîchissement contre de nouveaux jetons. Ne l’appelez que depuis votre serveur. Voir [Le flux par code](/docs/oauth2#code-flow).
 
 - **Méthode :** `POST`, avec les valeurs dans le corps.
-- **Corps :** `code` et `client_secret`, ou `refresh_token` et `client_secret`.
+- **Corps :** `code` et `client_secret`, ou `refresh_token` et `client_secret`. Un code avec défi PKCE exige aussi `code_verifier`, et une application sans secret envoie seulement `code` et `code_verifier`. Voir [PKCE pour les applications mobiles et de bureau](/docs/pkce).
 - **En-têtes :** n’envoyez aucun en-tête `Authorization`.
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Chaque appel renvoie un nouveau jeton d’accès et un nouveau jeton de rafraîchissement. Les deux sont signés par @hivesigner. `expires_in` est la durée de vie du jeton d’accès en secondes (7 jours).
+Chaque appel renvoie un nouveau jeton d’accès et un nouveau jeton de rafraîchissement, signés par @hivesigner. Il n’y a pas de jeton de rafraîchissement pour un code de connexion seule (`scope=login`) ni pour un échange PKCE sans secret client. `expires_in` est la durée de vie du jeton d’accès en secondes (7 jours).
 
 Erreurs : `401 invalid_grant`. La description est « The token has invalid role » quand la valeur envoyée n’est ni un code ni un jeton de rafraîchissement valide. Elle est « The code or secret is not valid » quand le code ou le secret ne correspond pas.
 

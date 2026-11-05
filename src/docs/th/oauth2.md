@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | ใช่ | ที่ที่ Hivesigner จะส่งผู้ใช้กลับไป ต้องตรงกับ URI สำหรับเปลี่ยนเส้นทางของแอปคุณอย่างใดอย่างหนึ่งพอดี ดู [callback](/docs/register-app#callbacks) |
 | `scope` | ไม่ | `login`, `posting` หรือ `offline` ดู [ขอบเขตสิทธิ์](#scopes) หากไม่มี คำขอจะขอสิทธิ์ posting |
 | `response_type` | ไม่ | ค่า `code` เริ่ม [โฟลว์แบบโค้ด](#code-flow) ค่าอื่นหรือไม่ใส่เลยหมายถึง [โฟลว์แบบโทเค็น](#token-flow) |
+| `code_challenge`, `code_challenge_method` | ไม่ | PKCE สำหรับแอปที่เก็บไคลเอ็นต์ซีเคร็ตไม่ได้ ดู [PKCE สำหรับแอปมือถือและเดสก์ท็อป](/docs/pkce) |
 | `state` | แนะนำ | ค่าสุ่มที่ Hivesigner ส่งกลับมาโดยไม่เปลี่ยนแปลง ดู [ป้องกันคำขอด้วย state](#state) |
 | `account` | ไม่ | ชื่อผู้ใช้ Hive เมื่อบัญชีนั้นอยู่บนอุปกรณ์ของผู้ใช้ Hivesigner จะเลือกให้ ถ้าไม่มีก็ไม่สนใจ และระบบอ่าน `select_account` ด้วย |
 

@@ -152,7 +152,7 @@ curl -X POST https://hivesigner.com/api/broadcast \
 تستبدل كودًا برموز، أو رمز تجديد برموز جديدة. استدعِها من خادمك فقط. راجع [التدفق بالكود](/docs/oauth2#code-flow).
 
 - **الطريقة:** `POST`، مع القيم في الجسم.
-- **الجسم:** `code` و`client_secret`، أو `refresh_token` و`client_secret`.
+- **الجسم:** `code` و`client_secret`، أو `refresh_token` و`client_secret`. والكود المقترن بتحدّي PKCE يحتاج أيضًا إلى `code_verifier`، والتطبيق بلا مفتاح سري يرسل `code` و`code_verifier` فقط. راجع [PKCE للتطبيقات على الجوال وسطح المكتب](/docs/pkce).
 - **الترويسات:** لا ترسل أي ترويسة `Authorization`.
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-كل استدعاء يعيد رمز وصول جديدًا ورمز تجديد جديدًا. ويوقّعهما @hivesigner. و`expires_in` هو عمر رمز الوصول بالثواني (7 أيام).
+كل استدعاء يعيد رمز وصول جديدًا ورمز تجديد جديدًا، موقّعين من @hivesigner. ولا يوجد رمز تجديد لرمز مخصص لتسجيل الدخول فقط (`scope=login`) ولا لتبادل PKCE بلا سر العميل. و`expires_in` هو عمر رمز الوصول بالثواني (7 أيام).
 
 الأخطاء: `401 invalid_grant`. ويكون الوصف "The token has invalid role" عندما لا تكون القيمة المرسلة كودًا ولا رمز تجديد صالحًا. ويكون "The code or secret is not valid" عندما لا يتطابق الكود أو المفتاح السري.
 

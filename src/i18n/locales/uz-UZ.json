@@ -276,14 +276,15 @@
     "website": "Veb-sayt",
     "location": "Joylashuv",
     "redirect_uris": "Yoʻnaltirish URI manzillari",
-    "one_uri_line": "Har bir qatorga bitta URI yozing. Har biri protokolni oʻz ichiga olsin, fragment yoki nisbiy yoʻl boʻlmasin.",
+    "one_uri_line": "Har bir qatorga bitta URI yozing. Har biri protokolni oʻz ichiga olsin, fragment yoki nisbiy yoʻl boʻlmasin. myapp://callback kabi ilova sxemasi faqat PKCE bilan kod oqimida ishlaydi.",
     "creator": "Yaratuvchi",
     "status": "Holat",
     "production": "Produksiya",
     "sandbox": "Sinov muhiti",
     "secret": "Mijoz maxfiy kaliti",
     "blank_field": "Joriy maxfiy kalitni saqlab qolish uchun boʻsh qoldiring.",
-    "bad_callbacks": "Yaroqsiz callback manzillari (https yoki localhost uchun http boʻlishi kerak): {uris}"
+    "bad_callbacks": "Yaroqsiz callback manzili (https, localhost uchun http yoki myapp://callback kabi ilova sxemasi boʻlishi kerak): {uris}",
+    "pkce_public": "Ushbu ilovaning native ilovasiga PKCE kodlarini secretsiz almashtirishga ruxsat berish"
   },
   "signs": {
     "nothing_matches": "Hech narsa topilmadi.",

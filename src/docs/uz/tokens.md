@@ -54,7 +54,7 @@ Dekodlash tekshirish degani emas. Har kim shu shaklga dekodlanadigan satrni tuzi
 
 | Token | `type` | `app` | Kim imzolaydi | Uni qayerdan olasiz |
 | --- | --- | --- | --- | --- |
-| Kirish tokeni, token oqimi | `posting` | Sizning ilovangiz | Foydalanuvchining posting kaliti yoki Hivesigner bu hisob uchun posting kalitini saqlamasa, uning active kaliti | Callback manzilingizdagi `access_token` |
+| Kirish tokeni, token oqimi | `posting` yoki faqat kirish uchun kodda (`scope=login`) `login` | Sizning ilovangiz | Foydalanuvchining posting kaliti yoki Hivesigner bu hisob uchun posting kalitini saqlamasa, uning active kaliti | Callback manzilingizdagi `access_token` |
 | Kirish tokeni, `scope=login` | `login` | Sizning ilovangiz | Foydalanuvchining posting yoki active kaliti | Callback manzilingizdagi `access_token` |
 | Kirish tokeni, ilova hisobi yoʻq sayt | `login` | Yoʻq | Foydalanuvchining posting yoki active kaliti | Callback manzilingizdagi `access_token` |
 | Kod | `code` | Sizning ilovangiz | Foydalanuvchining posting yoki active kaliti | Callback manzilingizdagi `code` |

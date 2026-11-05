@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | Da | Kuda Hivesigner vraća osobu. Mora da bude tačno jedna od URI adresa za preusmeravanje vaše aplikacije. Pogledajte [Povratne adrese](/docs/register-app#callbacks). |
 | `scope` | Ne | `login`, `posting` ili `offline`. Pogledajte [Opsezi pristupa](#scopes). Bez njega zahtev traži pristup objavljivanju. |
 | `response_type` | Ne | `code` pokreće [tok sa kodom](#code-flow). Svaka druga vrednost, ili nijedna, znači [tok sa tokenom](#token-flow). |
+| `code_challenge`, `code_challenge_method` | Ne | PKCE za aplikaciju koja ne može da čuva tajnu klijenta. Pogledajte [PKCE za mobilne i računarske aplikacije](/docs/pkce). |
 | `state` | Preporučen | Nasumična vrednost koju Hivesigner vraća nepromenjenu. Pogledajte [Zaštitite zahtev preko state](#state). |
 | `account` | Ne | Hive korisničko ime. Kada je taj nalog na uređaju osobe, Hivesigner ga bira. Inače ga zanemaruje. Čita se i `select_account`. |
 

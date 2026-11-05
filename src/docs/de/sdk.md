@@ -61,7 +61,7 @@ Im Token-Flow erhält Ihr Callback `access_token`, `expires_in` und `username`. 
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-Für den Tausch im Code-Flow hat das SDK keine Methode. Ihr Server sendet Code und Client-Secret selbst an die API, wie [Den Code tauschen](/docs/oauth2#exchange-code) zeigt.
+Ab SDK 4.1 sendet `client.exchangeCode(code, codeVerifier, clientSecret)` einen Code an die API: Eine native App übergibt ihren PKCE-Verifier, ein Server sein Client-Secret. Bei einem älteren SDK sendet Ihr Server Code und Client-Secret selbst an die API, wie [Den Code tauschen](/docs/oauth2#exchange-code) zeigt.
 
 ### Die Person abrufen {#me}
 

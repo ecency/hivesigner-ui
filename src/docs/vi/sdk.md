@@ -61,7 +61,7 @@ Trong luồng token, callback của bạn nhận `access_token`, `expires_in` v�
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-SDK không có phương thức cho bước đổi mã của luồng mã. Máy chủ của bạn tự gửi mã và khóa bí mật của client tới API, như [Đổi mã](/docs/oauth2#exchange-code) trình bày.
+Từ SDK 4.1, `client.exchangeCode(code, codeVerifier, clientSecret)` gửi một mã tới API: ứng dụng native truyền PKCE verifier của nó, còn máy chủ truyền khóa bí mật của client. Với SDK cũ hơn, máy chủ của bạn tự gửi mã và khóa bí mật của client tới API, như [Đổi mã](/docs/oauth2#exchange-code) trình bày.
 
 ### Lấy người dùng {#me}
 

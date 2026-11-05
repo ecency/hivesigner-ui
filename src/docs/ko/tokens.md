@@ -54,7 +54,7 @@ export function decodeToken(token) {
 
 | 토큰 | `type` | `app` | 서명한 주체 | 받는 곳 |
 | --- | --- | --- | --- | --- |
-| 액세스 토큰, 토큰 흐름 | `posting` | 여러분의 앱 | 사용자의 게시 키, 또는 Hivesigner에 그 계정의 게시 키가 없으면 활성 키 | 여러분 콜백의 `access_token` |
+| 액세스 토큰, 토큰 흐름 | `posting`, 로그인 전용 코드(`scope=login`)는 `login` | 여러분의 앱 | 사용자의 게시 키, 또는 Hivesigner에 그 계정의 게시 키가 없으면 활성 키 | 여러분 콜백의 `access_token` |
 | 로그인 토큰, `scope=login` | `login` | 여러분의 앱 | 사용자의 게시 키 또는 활성 키 | 여러분 콜백의 `access_token` |
 | 로그인 토큰, 앱 계정이 없는 사이트 | `login` | 없음 | 사용자의 게시 키 또는 활성 키 | 여러분 콜백의 `access_token` |
 | 코드 | `code` | 여러분의 앱 | 사용자의 게시 키 또는 활성 키 | 여러분 콜백의 `code` |

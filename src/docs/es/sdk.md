@@ -61,7 +61,7 @@ En el flujo de token, tu URL de retorno recibe `access_token`, `expires_in` y `u
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-El SDK no tiene ningún método para el intercambio del flujo de código. Tu servidor envía por su cuenta el código y el secreto de cliente a la API, como muestra [Intercambia el código](/docs/oauth2#exchange-code).
+Desde el SDK 4.1, `client.exchangeCode(code, codeVerifier, clientSecret)` envía un código a la API: una app nativa pasa su verificador PKCE y un servidor, su secreto de cliente. Con un SDK anterior, tu servidor envía por su cuenta el código y el secreto de cliente a la API, como muestra [Intercambia el código](/docs/oauth2#exchange-code).
 
 ### Obtén la persona {#me}
 

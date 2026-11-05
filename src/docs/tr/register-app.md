@@ -42,10 +42,10 @@ Geri çağırma adresi (bir giriş isteğindeki `redirect_uri`), Hivesigner'ın 
 - **Tam eşleşme.** İstekteki `redirect_uri`, Yönlendirme URI'lerinizden biriyle karakteri karakterine aynı olmalıdır: şema, ana makine, port, yol ve sorgu.
 - **Yalnızca https.** Bir geri çağırma adresi `https://` kullanmalıdır. Düz `http://` yalnızca geri döngüde kabul edilir: `localhost`, `127.0.0.1` ya da `[::1]`.
 - **Geri döngü portları değişebilir.** Kayıtlı düz http geri döngü adresi, aynı yol, sorgu, parça ve kullanıcı bilgisine sahip her geri döngü ana makinesi ve portuyla eşleşir. Kayıtlı bir `https://` geri döngü adresi ise tam eşleşme olarak kalır.
-- **Özel şema yok.** `myapp://callback` gibi bir adres reddedilir. Bkz. [Mobil ve masaüstü uygulamalar](#native-apps).
+- **Özel şema yalnızca PKCE ile.** `myapp://callback` gibi bir adres yalnızca PKCE ile korunan bir kod isteği için kabul edilir. Bkz. [Mobil ve masaüstü uygulamalar](#native-apps).
 - **Parça yok.** Bir geri çağırma adresine `#fragment` eklemeyin.
 
-Profil sayfası, hiçbir zaman çalışamayacak bir adresi kaydetmeyi “Kullanılamayan geri çağırma adresleri (https ya da localhost üzerinde http olmalı)” diyerek reddeder.
+Profil sayfası, hiçbir zaman çalışamayacak bir adresi kaydetmeyi “Kullanılamayan geri çağırma adresi (https, localhost üzerinde http ya da myapp://callback gibi bir uygulama şeması olmalı)” diyerek reddeder.
 
 ### Örnekler {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Kabul edildi: geri döngü, aynı yol |
 | `http://127.0.0.1:3000/other` | Reddedildi: başka bir yol |
 | `https://localhost:3000/auth` | Reddedildi: https, düz http kaydıyla eşleşmez |
-| `myapp://auth` | Reddedildi: özel şema |
+| `myapp://auth` | Reddedildi; kayıtlıysa ve istek PKCE'li bir kod isteğiyse kabul edilir |
 
 Geri çağırma adresinizde bir sorgu kabul etmek için adresi tam olarak o sorguyla kaydedin. Hivesigner sizin sorgunuzu olduğu gibi tutar ve kendi parametrelerini sonrasına ekler.
 
 ### Mobil ve masaüstü uygulamalar {#native-apps}
 
-Hivesigner token'ı geri çağırma adresinin içine koyar. `myapp://` gibi özel bir şema tek bir uygulamaya bağlı değildir: aynı cihazdaki başka bir uygulama onu sahiplenip token'ı alabilir. Bu yüzden Hivesigner özel şemaları reddeder ve token'ları yalnızca bir https adresine ya da kullanıcının kendi cihazındaki geri döngüye gönderir.
+Hivesigner token'ı geri çağırma adresinin içine koyar. `myapp://` gibi özel bir şema tek bir uygulamaya bağlı değildir: aynı cihazdaki başka bir uygulama onu sahiplenip token'ı alabilir. Bu yüzden Hivesigner token'ı hiçbir zaman özel bir şemaya göndermez, yalnızca bir https adresine ya da kullanıcının kendi cihazındaki geri döngüye gönderir.
 
-Yerel bir uygulama bunun yerine şunlardan birini kullanır:
+Yerel bir uygulama şunlardan birini kullanır:
 
 - **Sahibi olduğu bir https bağlantısı.** Kendi alan adınızda, işletim sisteminin uygulamanızda açtığı bir adres kaydedin (Android App Links ya da iOS Universal Links).
 - **Bir geri döngü adresi.** Uygulama yönlendirme için `127.0.0.1` üzerinde dinler. `http://127.0.0.1/auth` (ya da `localhost`) adresini kaydedin ve çalışma zamanında boş olan herhangi bir portu kullanın: portun eşleşmesi gerekmez.
+- **PKCE ile kendi şeması.** Uygulama `myapp://callback` kaydeder, PKCE sınamalı kod akışını kullanır ve istemci gizli anahtarına ihtiyaç duymaz. Hivesigner yalnızca uygulamanın değiştirebileceği bir kod gönderir. Bkz. [Mobil ve masaüstü uygulamalar için PKCE](/docs/pkce).
 
 ## İstemci gizli anahtarı {#client-secret}
 

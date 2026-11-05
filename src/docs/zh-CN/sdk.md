@@ -61,7 +61,7 @@ const url = client.getLoginURL('STATE');
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-SDK 没有提供授权码流程中兑换授权码的方法。您的服务器要自行把授权码和客户端密钥发送到 API，正如[兑换授权码](/docs/oauth2#exchange-code)所示。
+从 SDK 4.1 起，`client.exchangeCode(code, codeVerifier, clientSecret)` 会把授权码发送到 API：原生应用传入其 PKCE 校验码，服务器传入其客户端密钥。使用更旧的 SDK 时，您的服务器要自行把授权码和客户端密钥发送到 API，正如[兑换授权码](/docs/oauth2#exchange-code)所示。
 
 ### 获取用户 {#me}
 

@@ -271,14 +271,15 @@
     "website": "Trang web",
     "location": "Vị trí",
     "redirect_uris": "URI chuyển hướng",
-    "one_uri_line": "Mỗi dòng một URI, mỗi URI phải có giao thức, không có phân mảnh (fragment) hay đường dẫn tương đối.",
+    "one_uri_line": "Mỗi dòng một URI, mỗi URI phải có giao thức, không có phân mảnh (fragment) hay đường dẫn tương đối. Scheme ứng dụng như myapp://callback chỉ hoạt động với luồng code có PKCE.",
     "creator": "Người tạo",
     "status": "Trạng thái",
     "production": "Chính thức",
     "sandbox": "Thử nghiệm",
     "secret": "Khóa bí mật của client",
     "blank_field": "Để trống để giữ nguyên khóa bí mật hiện tại.",
-    "bad_callbacks": "Callback không sử dụng được (phải là https, hoặc http trên localhost): {uris}"
+    "bad_callbacks": "Callback không sử dụng được (phải là https, http trên localhost, hoặc scheme ứng dụng như myapp://callback): {uris}",
+    "pkce_public": "Cho phép ứng dụng native của ứng dụng này đổi mã PKCE mà không cần secret"
   },
   "signs": {
     "nothing_matches": "Không có kết quả phù hợp.",

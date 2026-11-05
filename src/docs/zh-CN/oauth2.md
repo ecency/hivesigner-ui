@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | 必填 | Hivesigner 把用户送回的地址。它必须与您应用的某个重定向 URI 完全一致。参见[回调地址](/docs/register-app#callbacks)。 |
 | `scope` | 选填 | `login`、`posting` 或 `offline`。参见[权限范围](#scopes)。没有它时，请求索取发布权限。 |
 | `response_type` | 选填 | 取值 `code` 会启动[授权码流程](#code-flow)。其他取值或不填表示[令牌流程](#token-flow)。 |
+| `code_challenge`, `code_challenge_method` | 选填 | 适用于无法保管客户端密钥的应用的 PKCE。参见[移动端和桌面端应用的 PKCE](/docs/pkce)。 |
 | `state` | 建议填写 | 一个随机值，Hivesigner 会原样返回。参见[用 state 保护请求](#state)。 |
 | `account` | 选填 | 一个 Hive 用户名。当该账户在用户的设备上时，Hivesigner 会选中它；否则忽略。`select_account` 也会被读取。 |
 

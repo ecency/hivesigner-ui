@@ -271,14 +271,15 @@
     "website": "網站",
     "location": "所在地",
     "redirect_uris": "重新導向 URI",
-    "one_uri_line": "每行一個 URI，每個都必須包含通訊協定，且不可包含片段識別碼或相對路徑。",
+    "one_uri_line": "每行一個 URI，每個都必須包含通訊協定，且不可包含片段識別碼或相對路徑。myapp://callback 這類應用程式協定僅適用於使用 PKCE 的授權碼流程。",
     "creator": "建立者",
     "status": "狀態",
     "production": "正式環境",
     "sandbox": "沙箱環境",
     "secret": "用戶端密鑰",
     "blank_field": "留空以保留目前的密鑰。",
-    "bad_callbacks": "無法使用的回呼網址（僅限 https，或 localhost 上的 http）：{uris}"
+    "bad_callbacks": "無法使用的回呼網址（僅限 https、localhost 上的 http，或 myapp://callback 這類應用程式協定）：{uris}",
+    "pkce_public": "允許此應用程式的原生應用程式在沒有密鑰的情況下兌換 PKCE 授權碼"
   },
   "signs": {
     "nothing_matches": "沒有相符的項目。",

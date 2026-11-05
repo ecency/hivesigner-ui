@@ -61,7 +61,7 @@ Token akışında geri çağırma adresiniz `access_token`, `expires_in` ve `use
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-SDK'da kod akışının takası için bir yöntem yoktur. Sunucunuz kodu ve istemci gizli anahtarını API'ye kendisi gönderir; [Kodu takas edin](/docs/oauth2#exchange-code) bunu gösterir.
+SDK 4.1'den itibaren `client.exchangeCode(code, codeVerifier, clientSecret)` bir kodu API'ye gönderir: yerel uygulama PKCE doğrulayıcısını, sunucu ise istemci gizli anahtarını verir. Daha eski bir SDK'da sunucunuz kodu ve istemci gizli anahtarını API'ye kendisi gönderir; [Kodu takas edin](/docs/oauth2#exchange-code) bunu gösterir.
 
 ### Kullanıcıyı alın {#me}
 

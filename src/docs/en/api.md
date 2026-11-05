@@ -152,7 +152,7 @@ Transfers and other wallet operations need the user's active key. Send them as [
 Exchanges a code for tokens, or a refresh token for new tokens. Call it from your server only. See [The code flow](/docs/oauth2#code-flow).
 
 - **Method:** `POST`, with the values in the body.
-- **Body:** `code` and `client_secret`, or `refresh_token` and `client_secret`.
+- **Body:** `code` and `client_secret`, or `refresh_token` and `client_secret`. A code with a PKCE challenge also needs `code_verifier`. An app with no secret sends only `code` and `code_verifier`. See [PKCE for mobile and desktop apps](/docs/pkce).
 - **Headers:** send no `Authorization` header.
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Each call returns a new access token and a new refresh token. Both are signed by @hivesigner. `expires_in` is the access token's lifetime in seconds (7 days).
+Each call returns a new access token and a new refresh token, signed by @hivesigner. There is no refresh token for a sign-in only code (`scope=login`) or for a PKCE exchange without a client secret. `expires_in` is the access token's lifetime in seconds (7 days).
 
 Errors: `401 invalid_grant`. The description is "The token has invalid role" when the value sent is not a valid code or refresh token. It is "The code or secret is not valid" when the code or the secret does not match.
 

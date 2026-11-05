@@ -152,7 +152,7 @@ curl -X POST https://hivesigner.com/api/broadcast \
 একটি কোডকে টোকেনে, বা একটি রিফ্রেশ টোকেনকে নতুন টোকেনে বদলে দেয়। শুধু আপনার সার্ভার থেকেই ডাকুন। দেখুন [কোড ফ্লো](/docs/oauth2#code-flow)।
 
 - **মেথড:** `POST`, মানগুলো বডিতে।
-- **বডি:** `code` আর `client_secret`, অথবা `refresh_token` আর `client_secret`।
+- **বডি:** `code` আর `client_secret`, অথবা `refresh_token` আর `client_secret`। PKCE চ্যালেঞ্জসহ কোডের জন্য `code_verifier`-ও লাগে, আর সিক্রেটবিহীন অ্যাপ শুধু `code` ও `code_verifier` পাঠায়। দেখুন [মোবাইল আর ডেস্কটপ অ্যাপের জন্য PKCE](/docs/pkce)।
 - **হেডার:** কোনো `Authorization` হেডার পাঠাবেন না।
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-প্রতিটি কল একটি নতুন অ্যাক্সেস টোকেন আর একটি নতুন রিফ্রেশ টোকেন ফেরত দেয়। দুটিই @hivesigner সাইন করে। `expires_in` হলো অ্যাক্সেস টোকেনের আয়ু, সেকেন্ডে (৭ দিন)।
+প্রতিটি কল একটি নতুন অ্যাক্সেস টোকেন আর একটি নতুন রিফ্রেশ টোকেন ফেরত দেয়। দুটিই @hivesigner সাইন করে। শুধু সাইন-ইনের কোডের (`scope=login`) জন্য, কিংবা ক্লায়েন্ট সিক্রেট ছাড়া PKCE এক্সচেঞ্জের জন্য কোনো রিফ্রেশ টোকেন নেই। `expires_in` হলো অ্যাক্সেস টোকেনের আয়ু, সেকেন্ডে (৭ দিন)।
 
 ত্রুটি: `401 invalid_grant`। পাঠানো মানটি বৈধ কোড বা রিফ্রেশ টোকেন না হলে বিবরণ হয় "The token has invalid role"। কোড বা সিক্রেট না মিললে বিবরণ হয় "The code or secret is not valid"।
 

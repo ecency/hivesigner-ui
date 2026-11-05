@@ -271,14 +271,15 @@
     "website": "웹사이트",
     "location": "위치",
     "redirect_uris": "리디렉션 URI",
-    "one_uri_line": "한 줄에 URI를 하나씩 입력하세요. 각 URI에는 프로토콜이 있어야 하며, 프래그먼트나 상대 경로는 사용할 수 없습니다.",
+    "one_uri_line": "한 줄에 URI를 하나씩 입력하세요. 각 URI에는 프로토콜이 있어야 하며, 프래그먼트나 상대 경로는 사용할 수 없습니다. myapp://callback 같은 앱 스킴은 PKCE를 사용하는 코드 플로에서만 작동합니다.",
     "creator": "제작자",
     "status": "상태",
     "production": "프로덕션",
     "sandbox": "샌드박스",
     "secret": "클라이언트 시크릿",
     "blank_field": "현재 시크릿을 유지하려면 비워 두세요.",
-    "bad_callbacks": "사용할 수 없는 콜백(https 또는 localhost의 http만 가능): {uris}"
+    "bad_callbacks": "사용할 수 없는 콜백(https, localhost의 http, 또는 myapp://callback 같은 앱 스킴만 가능): {uris}",
+    "pkce_public": "이 앱의 네이티브 앱이 시크릿 없이 PKCE 코드를 교환하도록 허용"
   },
   "signs": {
     "nothing_matches": "일치하는 항목이 없습니다.",

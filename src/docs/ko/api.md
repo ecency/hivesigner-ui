@@ -152,7 +152,7 @@ Hive 노드가 거래를 받아들이는 즉시 API가 답합니다. `result.id`
 코드를 토큰으로, 또는 갱신 토큰을 새 토큰으로 바꿉니다. 서버에서만 호출하세요. [코드 흐름](/docs/oauth2#code-flow)을 보세요.
 
 - **메서드:** `POST`. 값은 본문에 넣습니다.
-- **본문:** `code`와 `client_secret`, 또는 `refresh_token`과 `client_secret`.
+- **본문:** `code`와 `client_secret`, 또는 `refresh_token`과 `client_secret`. PKCE 챌린지가 있는 코드에는 `code_verifier`도 필요하며, 시크릿이 없는 앱은 `code`와 `code_verifier`만 보냅니다. [모바일과 데스크톱 앱을 위한 PKCE](/docs/pkce)을 보세요.
 - **헤더:** `Authorization` 헤더를 붙이지 마세요.
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-호출할 때마다 새 액세스 토큰과 새 갱신 토큰이 돌아옵니다. 둘 다 @hivesigner가 서명합니다. `expires_in`은 액세스 토큰의 수명이며 초 단위입니다(7일).
+호출할 때마다 새 액세스 토큰과 새 갱신 토큰이 돌아옵니다. 둘 다 @hivesigner가 서명합니다. 로그인 전용 코드(`scope=login`)나 클라이언트 시크릿 없는 PKCE 교환에는 갱신 토큰이 없습니다. `expires_in`은 액세스 토큰의 수명이며 초 단위입니다(7일).
 
 오류: `401 invalid_grant`. 보낸 값이 유효한 코드도 갱신 토큰도 아니면 설명은 "The token has invalid role"입니다. 코드나 시크릿이 맞지 않으면 "The code or secret is not valid"입니다.
 

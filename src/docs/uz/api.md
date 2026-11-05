@@ -152,7 +152,7 @@ Pul oʻtkazmalari va hamyon bilan bogʻliq boshqa amallar foydalanuvchining acti
 Kodni tokenlarga yoki yangilash tokenini yangi tokenlarga almashtiradi. Uni faqat serveringizdan chaqiring. Qarang: [Kod oqimi](/docs/oauth2#code-flow).
 
 - **Usul:** `POST`, qiymatlar tanada.
-- **Tana:** `code` va `client_secret` yoki `refresh_token` va `client_secret`.
+- **Tana:** `code` va `client_secret` yoki `refresh_token` va `client_secret`. PKCE challenge bilan kelgan kod uchun `code_verifier` ham kerak, maxfiy kaliti yoʻq ilova esa faqat `code` va `code_verifier` yuboradi. Qarang: [Mobil va ish stoli ilovalari uchun PKCE](/docs/pkce).
 - **Sarlavhalar:** `Authorization` sarlavhasini yubormang.
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Har bir chaqiruv yangi kirish tokeni va yangi yangilash tokenini qaytaradi. Ikkalasini ham @hivesigner imzolaydi. `expires_in` bu kirish tokenining sekundlardagi amal qilish muddati (7 kun).
+Har bir chaqiruv yangi kirish tokeni va yangi yangilash tokenini qaytaradi. Ikkalasini ham @hivesigner imzolaydi. Faqat kirish uchun kod (`scope=login`) yoki mijoz siriz PKCE almashinuvi uchun yangilash tokeni bo‘lmaydi. `expires_in` bu kirish tokenining sekundlardagi amal qilish muddati (7 kun).
 
 Xatolar: `401 invalid_grant`. Yuborilgan qiymat yaroqli kod yoki yangilash tokeni boʻlmaganda tavsif «The token has invalid role» boʻladi. Kod yoki maxfiy kalit mos kelmaganda esa «The code or secret is not valid» boʻladi.
 

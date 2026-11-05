@@ -276,14 +276,15 @@
     "website": "وب‌سایت",
     "location": "مکان",
     "redirect_uris": "نشانی‌های URI بازگشت",
-    "one_uri_line": "در هر خط یک URI، هرکدام همراه با پروتکل، بدون بخش # (fragment) و بدون مسیر نسبی.",
+    "one_uri_line": "در هر خط یک URI، هرکدام همراه با پروتکل، بدون بخش # (fragment) و بدون مسیر نسبی. طرحواره‌ی برنامه مانند myapp://callback فقط در جریان کد (code) همراه با PKCE کار می‌کند.",
     "creator": "سازنده",
     "status": "وضعیت",
     "production": "محیط عملیاتی",
     "sandbox": "محیط آزمایشی",
     "secret": "کلید محرمانه کلاینت",
     "blank_field": "برای حفظ کلید محرمانه فعلی، این فیلد را خالی بگذارید.",
-    "bad_callbacks": "نشانی بازگشت قابل‌استفاده نیست (https، یا http روی localhost): {uris}"
+    "bad_callbacks": "نشانی بازگشت قابل‌استفاده نیست (https، http روی localhost، یا طرحواره‌ی برنامه مانند myapp://callback): {uris}",
+    "pkce_public": "اجازه بده برنامه‌ی بومی این برنامه کدهای PKCE را بدون رمز محرمانه (secret) مبادله کند"
   },
   "signs": {
     "nothing_matches": "موردی پیدا نشد.",

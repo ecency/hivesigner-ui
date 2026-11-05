@@ -152,7 +152,7 @@ Chuyển khoản và các thao tác ví khác cần khóa active của người 
 Đổi một mã lấy token, hoặc một token làm mới lấy bộ token mới. Chỉ gọi từ máy chủ của bạn. Xem [Luồng mã](/docs/oauth2#code-flow).
 
 - **Phương thức:** `POST`, với các giá trị nằm trong thân.
-- **Thân:** `code` và `client_secret`, hoặc `refresh_token` và `client_secret`.
+- **Thân:** `code` và `client_secret`, hoặc `refresh_token` và `client_secret`. Code có thử thách PKCE cần thêm `code_verifier`, còn ứng dụng không có khóa bí mật chỉ gửi `code` và `code_verifier`. Xem [PKCE cho ứng dụng di động và máy tính](/docs/pkce).
 - **Header:** đừng gửi header `Authorization`.
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Mỗi lần gọi trả về một token truy cập mới và một token làm mới mới. Cả hai đều do @hivesigner ký. `expires_in` là thời hạn của token truy cập tính bằng giây (7 ngày).
+Mỗi lần gọi trả về một token truy cập mới và một token làm mới mới, do @hivesigner ký. Không có token làm mới cho mã chỉ để đăng nhập (`scope=login`) hay cho lần đổi PKCE không có client secret. `expires_in` là thời hạn của token truy cập tính bằng giây (7 ngày).
 
 Lỗi: `401 invalid_grant`. Phần mô tả là “The token has invalid role” khi giá trị gửi lên không phải mã hoặc token làm mới hợp lệ. Nó là “The code or secret is not valid” khi mã hoặc khóa bí mật không khớp.
 

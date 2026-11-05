@@ -276,14 +276,15 @@
     "website": "Website",
     "location": "Locatie",
     "redirect_uris": "Doorstuur-URI's",
-    "one_uri_line": "Eén URI per regel, elk met een protocol en zonder fragmenten of relatieve paden.",
+    "one_uri_line": "Eén URI per regel, elk met een protocol en zonder fragmenten of relatieve paden. Een app-schema zoals myapp://callback werkt alleen met de codeflow met PKCE.",
     "creator": "Maker",
     "status": "Status",
     "production": "Productie",
     "sandbox": "Sandbox",
     "secret": "Clientgeheim",
     "blank_field": "Laat leeg om het huidige geheim te behouden.",
-    "bad_callbacks": "Geen bruikbaar callback-adres (https, of http op localhost): {uris}"
+    "bad_callbacks": "Geen bruikbaar callback-adres (https, http op localhost of een app-schema zoals myapp://callback): {uris}",
+    "pkce_public": "Laat de native app van deze app PKCE-codes inwisselen zonder het secret"
   },
   "signs": {
     "nothing_matches": "Niets gevonden.",

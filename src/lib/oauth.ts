@@ -20,6 +20,37 @@ export interface AuthRequest {
   scope: string;
   responseType: ResponseType;
   state?: string;
+  /** PKCE (RFC 7636), as the app sent it. Read through pkceChallenge(). */
+  codeChallenge?: string;
+  codeChallengeMethod?: string;
+}
+
+/**
+ * The PKCE challenge to sign into the code, or null.
+ *
+ * Only a code request for a named app with a well formed S256 challenge has
+ * one. Anything else that looks like PKCE (the `plain` method, no method,
+ * a malformed value, a challenge on the token flow) is IGNORED, which is what
+ * Hivesigner always did with these parameters: some OAuth libraries send a
+ * challenge by default, and refusing them now would break apps that work.
+ * Ignoring one only means the code carries no challenge, and such a code still
+ * needs the client secret, exactly as before.
+ */
+export function pkceChallenge(req: AuthRequest): string | null {
+  if (req.responseType !== 'code' || !req.clientId) return null;
+  if (req.codeChallengeMethod !== 'S256') return null;
+  const challenge = req.codeChallenge;
+  return challenge && /^[A-Za-z0-9_-]{43}$/.test(challenge) ? challenge : null;
+}
+
+/** The PKCE fields of a query, only those it actually has. */
+function pkceFields(query: Record<string, string | undefined>) {
+  return {
+    ...(query.code_challenge ? { codeChallenge: query.code_challenge } : {}),
+    ...(query.code_challenge_method
+      ? { codeChallengeMethod: query.code_challenge_method }
+      : {}),
+  };
 }
 
 /**
@@ -50,6 +81,7 @@ export function normalizeAuthRequest(
     scope,
     responseType,
     state: query.state,
+    ...pkceFields(query),
   };
 }
 
@@ -69,7 +101,7 @@ export function normalizeLoginRequest(
   query: Record<string, string>,
   pathClientId?: string,
 ): AuthRequest {
-  const scope = query.scope === 'posting' ? 'posting' : 'login';
+  const scope = legacyScope(query);
   return {
     clientId: pathClientId || query.clientId || query.client_id,
     // `redirect` is only a CALLBACK when it is an absolute http(s) URL. A
@@ -78,15 +110,42 @@ export function normalizeLoginRequest(
     // as an OAuth callback turned that flow into an invalid-request error.
     // Not decoded: the router's parseSearch already did (see
     // normalizeAuthRequest).
-    redirectUri: query.redirect_uri || absoluteRedirect(query.redirect),
+    redirectUri:
+      query.redirect_uri ||
+      absoluteRedirect(
+        query.redirect,
+        !!(pathClientId || query.clientId || query.client_id),
+      ),
     scope,
     responseType: query.response_type === 'code' ? 'code' : 'token',
     state: query.state,
+    ...pkceFields(query),
   };
 }
 
-function absoluteRedirect(value: string | undefined): string | undefined {
-  return isAbsoluteHttpUrl(value) ? value : undefined;
+/**
+ * The scope of a legacy request (/login, the /authorize/:app detour).
+ *
+ * The token flow falls back to login, as login.vue did. A CODE request is
+ * posting unless it names scope=login: a code has always been exchanged for
+ * posting access, and an app using the code flow without a scope relies on
+ * that. Showing it as posting keeps the consent honest; a code for an explicit
+ * scope=login is marked as such (buildAuthToken) and gets a login token.
+ */
+function legacyScope(query: Record<string, string | undefined>): string {
+  if (query.response_type === 'code')
+    return query.scope === 'login' ? 'login' : 'posting';
+  return query.scope === 'posting' ? 'posting' : 'login';
+}
+
+function absoluteRedirect(
+  value: string | undefined,
+  forApp: boolean,
+): string | undefined {
+  if (isAbsoluteHttpUrl(value)) return value;
+  // A named app's own scheme is a callback too; consent accepts it only for
+  // a PKCE code request it has registered.
+  return forApp && value && isAppSchemeCallback(value) ? value : undefined;
 }
 
 /**
@@ -183,6 +242,98 @@ export function isValidRedirectUri(value: string): boolean {
   }
 }
 
+/**
+ * Schemes that are never an app's callback: they run script, read local data,
+ * open browser internals, start another app by intent, or are ordinary web,
+ * mail and phone links. Everything here would let a consent screen send a
+ * signed code somewhere that is not the app that asked.
+ */
+const NOT_APP_SCHEMES = new Set([
+  'http',
+  'https',
+  'javascript',
+  'data',
+  'vbscript',
+  'file',
+  'blob',
+  'about',
+  'filesystem',
+  'view-source',
+  'intent',
+  'android-app',
+  'chrome',
+  'chrome-extension',
+  'moz-extension',
+  'safari-extension',
+  'ms-browser-extension',
+  'edge',
+  'opera',
+  'brave',
+  'resource',
+  'jar',
+  'content',
+  'mailto',
+  'tel',
+  'sms',
+  'ftp',
+  'ws',
+  'wss',
+  'hive',
+  'hivesigner',
+  // Browsers and stores that open whatever follows them.
+  'googlechrome',
+  'googlechromes',
+  'firefox',
+  'safari',
+  'market',
+  'shortcuts',
+  'facetime',
+  'magnet',
+  // OS handlers that reach file shares or local shells.
+  'smb',
+  'afp',
+  'shell',
+  'mhtml',
+  'res',
+  'mk',
+  'ms',
+]);
+
+/**
+ * A native app's own scheme, such as `myapp://cb` or `com.example.app:/cb`
+ * (RFC 8252 section 7.1). Lowercase scheme as registered, no fragment, and
+ * none of NOT_APP_SCHEMES. Accepted as a callback ONLY with PKCE, because any
+ * app on a device can claim a scheme: what keeps the code safe is that it is
+ * useless without the verifier, which only the app that asked holds.
+ */
+export function isAppSchemeCallback(value: string): boolean {
+  // Printable ASCII only: the consent screen shows this address, and an
+  // invisible or bidi character could make it read as another one.
+  if (!/^[\x21-\x7e]+$/.test(value)) return false;
+  // A plain name (myapp) or a reverse domain name (com.example.my-app), the
+  // shapes RFC 8252 asks of native apps. This alone leaves out the browser
+  // and OS handlers spelled with a dash or a plus: x-safari-https,
+  // microsoft-edge, ms-msdt, search-ms, itms-services, web+anything.
+  const match = /^([a-z][a-z0-9]*(?:\.[a-z0-9-]+)*):(.*)$/.exec(value);
+  if (!match || !match[2] || value.includes('#')) return false;
+  if (NOT_APP_SCHEMES.has(match[1])) return false;
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Whether an app may save this callback on its profile: an https or loopback
+ * address (usable by any flow), or its own app scheme (usable only by a PKCE
+ * code request, which the consent screen checks per request).
+ */
+export function isRegistrableRedirectUri(value: string): boolean {
+  return isValidRedirectUri(value) || isAppSchemeCallback(value);
+}
+
 export interface AppProfile {
   name: string;
   redirectUris: string[];
@@ -253,8 +404,11 @@ export function isRegisteredRedirect(
   // where the request is refused.
   profile: Pick<AppProfile, 'redirectUris'>,
   callback: string,
+  // A PKCE code request (pkceChallenge), the only kind an app scheme serves.
+  { pkce = false }: { pkce?: boolean } = {},
 ): boolean {
-  if (!isValidRedirectUri(callback)) return false;
+  if (!isValidRedirectUri(callback) && !(pkce && isAppSchemeCallback(callback)))
+    return false;
   return profile.redirectUris.some(
     (registered) =>
       registered === callback || loopbackMatch(registered, callback),
@@ -277,7 +431,21 @@ export function buildAuthToken(
   authority: string,
 ): string {
   const type = req.responseType === 'code' ? 'code' : req.scope;
-  const message = req.clientId ? { type, app: req.clientId } : { type };
+  const message: Record<string, string> = req.clientId
+    ? { type, app: req.clientId }
+    : { type };
+  // Signed INTO the code, so it cannot be swapped or dropped after the user
+  // approved. The field order is part of the format: the signature covers
+  // JSON.stringify of this object, and other signers (the Ecency app) build
+  // the same bytes. See docs/pkce.
+  // A code the user approved for sign-in only says so: the API then gives a
+  // login token for it, never posting access the consent did not show.
+  if (type === 'code' && req.scope === 'login') message.scope = 'login';
+  const challenge = pkceChallenge(req);
+  if (challenge) {
+    message.code_challenge = challenge;
+    message.code_challenge_method = 'S256';
+  }
   return encodeToken(createSignedMessage(message, username, wif, authority));
 }
 
@@ -350,7 +518,8 @@ export type { Account };
  *    for THIS app, so the callback is checked against the app's registered
  *    redirect_uris, which the Nuxt page never did.
  *
- * Anything else (no callback, an off-site path, a non-http scheme) yields null
+ * Anything else (no callback, an off-site path, a scheme that is neither web
+ * nor an app's own) yields null
  * and the page falls back to the account list, as before this existed. The
  * rewrite dropped the callback entirely: a user sent through the detour
  * granted authority and then landed on their account list, and the login
@@ -373,14 +542,26 @@ export function grantReturnTarget(
   if (mode === 'revoke') return null;
   const callback = query.redirect_uri || query.redirect;
   if (!callback) return null;
-  if (isAbsoluteHttpUrl(callback)) {
+  // An app scheme goes through consent the same way: it accepts one only for
+  // a PKCE code request.
+  if (isAbsoluteHttpUrl(callback) || isAppSchemeCallback(callback)) {
     const search: Record<string, string> = {
       client_id: appName,
       redirect_uri: callback,
-      scope: query.scope === 'posting' ? 'posting' : 'login',
+      scope: legacyScope(query),
       response_type: query.response_type === 'code' ? 'code' : 'token',
     };
     if (query.state) search.state = query.state;
+    if (query.code_challenge) search.code_challenge = query.code_challenge;
+    if (query.code_challenge_method)
+      search.code_challenge_method = query.code_challenge_method;
+    // The grant is broadcast before consent: never for an app scheme that
+    // consent would refuse, which is any but a PKCE code request.
+    if (
+      isAppSchemeCallback(callback) &&
+      !pkceChallenge(normalizeAuthRequest(search))
+    )
+      return null;
     return { to: '/login', search };
   }
   if (!resolveInternalPath(callback)) return null;
