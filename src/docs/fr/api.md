@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Chaque appel renvoie un nouveau jeton d’accès et un nouveau jeton de rafraîchissement. Les deux sont signés par @hivesigner. `expires_in` est la durée de vie du jeton d’accès en secondes (7 jours).
+Chaque appel renvoie un nouveau jeton d’accès et un nouveau jeton de rafraîchissement, signés par @hivesigner. Il n’y a pas de jeton de rafraîchissement pour un code de connexion seule (`scope=login`) ni pour un échange PKCE sans secret client. `expires_in` est la durée de vie du jeton d’accès en secondes (7 jours).
 
 Erreurs : `401 invalid_grant`. La description est « The token has invalid role » quand la valeur envoyée n’est ni un code ni un jeton de rafraîchissement valide. Elle est « The code or secret is not valid » quand le code ou le secret ne correspond pas.
 

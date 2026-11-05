@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Mỗi lần gọi trả về một token truy cập mới và một token làm mới mới. Cả hai đều do @hivesigner ký. `expires_in` là thời hạn của token truy cập tính bằng giây (7 ngày).
+Mỗi lần gọi trả về một token truy cập mới và một token làm mới mới, do @hivesigner ký. Không có token làm mới cho mã chỉ để đăng nhập (`scope=login`) hay cho lần đổi PKCE không có client secret. `expires_in` là thời hạn của token truy cập tính bằng giây (7 ngày).
 
 Lỗi: `401 invalid_grant`. Phần mô tả là “The token has invalid role” khi giá trị gửi lên không phải mã hoặc token làm mới hợp lệ. Nó là “The code or secret is not valid” khi mã hoặc khóa bí mật không khớp.
 

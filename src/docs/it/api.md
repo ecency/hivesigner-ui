@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Ogni chiamata restituisce un nuovo token di accesso e un nuovo token di aggiornamento. Entrambi sono firmati da @hivesigner. `expires_in` è la durata del token di accesso in secondi (7 giorni).
+Ogni chiamata restituisce un nuovo token di accesso e un nuovo token di aggiornamento, firmati da @hivesigner. Non c’è alcun token di aggiornamento per un codice solo di accesso (`scope=login`) né per uno scambio PKCE senza segreto client. `expires_in` è la durata del token di accesso in secondi (7 giorni).
 
 Errori: `401 invalid_grant`. La descrizione è «The token has invalid role» quando il valore inviato non è un codice o un token di aggiornamento valido. È «The code or secret is not valid» quando il codice o il segreto non corrispondono.
 

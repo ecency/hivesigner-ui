@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Her çağrı yeni bir erişim token'ı ve yeni bir yenileme token'ı döndürür. İkisini de @hivesigner imzalar. `expires_in`, erişim token'ının saniye cinsinden ömrüdür (7 gün).
+Her çağrı yeni bir erişim token'ı ve yeni bir yenileme token'ı döndürür. İkisini de @hivesigner imzalar. Yalnızca oturum açma için olan bir kod (`scope=login`) ya da istemci sırrı olmayan bir PKCE değişimi için yenileme token'ı yoktur. `expires_in`, erişim token'ının saniye cinsinden ömrüdür (7 gün).
 
 Hatalar: `401 invalid_grant`. Gönderilen değer geçerli bir kod ya da yenileme token'ı değilse açıklama “The token has invalid role” olur. Kod ya da gizli anahtar eşleşmiyorsa “The code or secret is not valid” olur.
 

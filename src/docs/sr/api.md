@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Svaki poziv vraća nov token pristupa i nov token za osvežavanje. Oba potpisuje @hivesigner. `expires_in` je trajanje tokena pristupa u sekundama (7 dana).
+Svaki poziv vraća nov token pristupa i nov token za osvežavanje, potpisane od @hivesigner. Nema tokena za osvežavanje za kôd samo za prijavu (`scope=login`) niti za PKCE razmenu bez tajne klijenta. `expires_in` je trajanje tokena pristupa u sekundama (7 dana).
 
 Greške: `401 invalid_grant`. Opis je «The token has invalid role» kada poslata vrednost nije ispravan kod ni token za osvežavanje. Opis je «The code or secret is not valid» kada se kod ili tajna ne poklapaju.
 

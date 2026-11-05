@@ -144,7 +144,7 @@ const tokens = await client.exchangeCode(code, codeVerifier);
 | The token flow with `myapp://callback` | Refused: a token is never sent to a custom scheme |
 | An https callback with a valid S256 challenge | Accepted: the code carries the challenge |
 | An https callback with `plain` or a malformed challenge | Accepted as before: the challenge is ignored and the code needs the client secret |
-| `scope=login` with `response_type=code` | The code says `scope: "login"` and is exchanged for a login token, never posting access |
+| `scope=login` with `response_type=code` | The code says `scope: "login"` and is exchanged for a login token, never posting access. A code request with no scope or another scope is posting, as it always was. |
 
 | Exchange | Result |
 | --- | --- |
@@ -156,7 +156,7 @@ const tokens = await client.exchangeCode(code, codeVerifier);
 | A code whose challenge was changed | `401 invalid_grant`: the user's signature no longer matches |
 | A PKCE code used as a token, for example at `/api/me` | `401 invalid_grant` |
 | A code without a challenge, with the client secret | Tokens and a refresh token, as before |
-| A `client_secret` that is wrong, or not a string | `401 invalid_grant`, even when PKCE alone would do |
+| A `client_secret` that is sent but wrong (a number or an object counts as sent) | `401 invalid_grant`, even when PKCE alone would do |
 | No secret, for an app with an IP allowlist (`allowed_ips`) | `401 invalid_grant`: such an app always needs its secret |
 
 A wrong verifier does not use up the code: the app that holds the right one can still exchange it.

@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-每次呼叫都會傳回一個新的存取權杖和一個新的更新權杖。兩者都由 @hivesigner 簽署。`expires_in` 是存取權杖的可用時間，以秒計（7 天）。
+每次呼叫都會傳回一個新的存取權杖和一個新的更新權杖，由 @hivesigner 簽署。僅用於登入的代碼（`scope=login`）或沒有用戶端密鑰的 PKCE 交換不會傳回更新權杖。`expires_in` 是存取權杖的可用時間，以秒計（7 天）。
 
 錯誤：`401 invalid_grant`。當送上的值不是有效的授權碼或更新權杖時，說明是「The token has invalid role」。當授權碼或密鑰不相符時，說明是「The code or secret is not valid」。
 

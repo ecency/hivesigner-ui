@@ -54,7 +54,7 @@ Dekodiranje nije provera. Svako može da sastavi niz koji se dekodira u ovaj obl
 
 | Token | `type` | `app` | Potpisao | Odakle ga dobijate |
 | --- | --- | --- | --- | --- |
-| Token pristupa, tok sa tokenom | `posting` | Vaša aplikacija | Ključ za objavljivanje osobe, ili njen aktivni ključ kada Hivesigner nema ključ za objavljivanje za taj nalog | `access_token` na vašoj povratnoj adresi |
+| Token pristupa, tok sa tokenom | `posting`, ili `login` za kôd samo za prijavu (`scope=login`) | Vaša aplikacija | Ključ za objavljivanje osobe, ili njen aktivni ključ kada Hivesigner nema ključ za objavljivanje za taj nalog | `access_token` na vašoj povratnoj adresi |
 | Token za prijavu, `scope=login` | `login` | Vaša aplikacija | Ključ za objavljivanje ili aktivni ključ osobe | `access_token` na vašoj povratnoj adresi |
 | Token za prijavu, sajt bez naloga aplikacije | `login` | Nema | Ključ za objavljivanje ili aktivni ključ osobe | `access_token` na vašoj povratnoj adresi |
 | Kod | `code` | Vaša aplikacija | Ključ za objavljivanje ili aktivni ključ osobe | `code` na vašoj povratnoj adresi |

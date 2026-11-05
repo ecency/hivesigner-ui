@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Har bir chaqiruv yangi kirish tokeni va yangi yangilash tokenini qaytaradi. Ikkalasini ham @hivesigner imzolaydi. `expires_in` bu kirish tokenining sekundlardagi amal qilish muddati (7 kun).
+Har bir chaqiruv yangi kirish tokeni va yangi yangilash tokenini qaytaradi. Ikkalasini ham @hivesigner imzolaydi. Faqat kirish uchun kod (`scope=login`) yoki mijoz siriz PKCE almashinuvi uchun yangilash tokeni bo‘lmaydi. `expires_in` bu kirish tokenining sekundlardagi amal qilish muddati (7 kun).
 
 Xatolar: `401 invalid_grant`. Yuborilgan qiymat yaroqli kod yoki yangilash tokeni boʻlmaganda tavsif «The token has invalid role» boʻladi. Kod yoki maxfiy kalit mos kelmaganda esa «The code or secret is not valid» boʻladi.
 

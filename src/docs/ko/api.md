@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-호출할 때마다 새 액세스 토큰과 새 갱신 토큰이 돌아옵니다. 둘 다 @hivesigner가 서명합니다. `expires_in`은 액세스 토큰의 수명이며 초 단위입니다(7일).
+호출할 때마다 새 액세스 토큰과 새 갱신 토큰이 돌아옵니다. 둘 다 @hivesigner가 서명합니다. 로그인 전용 코드(`scope=login`)나 클라이언트 시크릿 없는 PKCE 교환에는 갱신 토큰이 없습니다. `expires_in`은 액세스 토큰의 수명이며 초 단위입니다(7일).
 
 오류: `401 invalid_grant`. 보낸 값이 유효한 코드도 갱신 토큰도 아니면 설명은 "The token has invalid role"입니다. 코드나 시크릿이 맞지 않으면 "The code or secret is not valid"입니다.
 

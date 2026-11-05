@@ -101,7 +101,7 @@ export function normalizeLoginRequest(
   query: Record<string, string>,
   pathClientId?: string,
 ): AuthRequest {
-  const scope = query.scope === 'posting' ? 'posting' : 'login';
+  const scope = legacyScope(query);
   return {
     clientId: pathClientId || query.clientId || query.client_id,
     // `redirect` is only a CALLBACK when it is an absolute http(s) URL. A
@@ -121,6 +121,21 @@ export function normalizeLoginRequest(
     state: query.state,
     ...pkceFields(query),
   };
+}
+
+/**
+ * The scope of a legacy request (/login, the /authorize/:app detour).
+ *
+ * The token flow falls back to login, as login.vue did. A CODE request is
+ * posting unless it names scope=login: a code has always been exchanged for
+ * posting access, and an app using the code flow without a scope relies on
+ * that. Showing it as posting keeps the consent honest; a code for an explicit
+ * scope=login is marked as such (buildAuthToken) and gets a login token.
+ */
+function legacyScope(query: Record<string, string | undefined>): string {
+  if (query.response_type === 'code')
+    return query.scope === 'login' ? 'login' : 'posting';
+  return query.scope === 'posting' ? 'posting' : 'login';
 }
 
 function absoluteRedirect(
@@ -533,7 +548,7 @@ export function grantReturnTarget(
     const search: Record<string, string> = {
       client_id: appName,
       redirect_uri: callback,
-      scope: query.scope === 'posting' ? 'posting' : 'login',
+      scope: legacyScope(query),
       response_type: query.response_type === 'code' ? 'code' : 'token',
     };
     if (query.state) search.state = query.state;

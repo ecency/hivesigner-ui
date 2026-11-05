@@ -54,7 +54,7 @@ export function decodeToken(token) {
 
 | 令牌 | `type` | `app` | 签署者 | 从哪里获得 |
 | --- | --- | --- | --- | --- |
-| 访问令牌，令牌流程 | `posting` | 您的应用 | 用户的发布密钥；若 Hivesigner 没有该账户的发布密钥，则为其活动密钥 | 回调地址上的 `access_token` |
+| 访问令牌，令牌流程 | `posting`；仅用于登录的代码（`scope=login`）则为 `login` | 您的应用 | 用户的发布密钥；若 Hivesigner 没有该账户的发布密钥，则为其活动密钥 | 回调地址上的 `access_token` |
 | 登录令牌，`scope=login` | `login` | 您的应用 | 用户的发布密钥或活动密钥 | 回调地址上的 `access_token` |
 | 登录令牌，没有应用账户的网站 | `login` | 无 | 用户的发布密钥或活动密钥 | 回调地址上的 `access_token` |
 | 授权码 | `code` | 您的应用 | 用户的发布密钥或活动密钥 | 回调地址上的 `code` |

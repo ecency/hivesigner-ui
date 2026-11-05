@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-每次调用都会返回一个新的访问令牌和一个新的刷新令牌。两者都由 @hivesigner 签署。`expires_in` 是访问令牌的有效期，以秒计（7 天）。
+每次调用都会返回一个新的访问令牌和一个新的刷新令牌，由 @hivesigner 签署。仅用于登录的代码（`scope=login`）或没有客户端密钥的 PKCE 交换不会返回刷新令牌。`expires_in` 是访问令牌的有效期，以秒计（7 天）。
 
 错误：`401 invalid_grant`。当送上的值不是有效的授权码或刷新令牌时，描述为“The token has invalid role”。当授权码或密钥不匹配时，描述为“The code or secret is not valid”。
 

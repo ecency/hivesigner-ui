@@ -54,7 +54,7 @@ Decoderen is geen controleren. Iedereen kan een tekenreeks maken die naar deze v
 
 | Token | `type` | `app` | Ondertekend door | Waar je het krijgt |
 | --- | --- | --- | --- | --- |
-| Toegangstoken, tokenstroom | `posting` | Jouw app | De posting-sleutel van de persoon, of zijn active-sleutel als Hivesigner geen posting-sleutel voor dat account heeft | `access_token` op jouw callback |
+| Toegangstoken, tokenstroom | `posting`, of `login` voor een code alleen voor inloggen (`scope=login`) | Jouw app | De posting-sleutel van de persoon, of zijn active-sleutel als Hivesigner geen posting-sleutel voor dat account heeft | `access_token` op jouw callback |
 | Inlogtoken, `scope=login` | `login` | Jouw app | De posting- of active-sleutel van de persoon | `access_token` op jouw callback |
 | Inlogtoken, site zonder app-account | `login` | Geen | De posting- of active-sleutel van de persoon | `access_token` op jouw callback |
 | Code | `code` | Jouw app | De posting- of active-sleutel van de persoon | `code` op jouw callback |

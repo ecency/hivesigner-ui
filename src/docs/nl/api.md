@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Elke aanroep geeft een nieuw toegangstoken en een nieuw verversingstoken terug. Beide zijn door @hivesigner ondertekend. `expires_in` is de levensduur van het toegangstoken in seconden (7 dagen).
+Elke aanroep geeft een nieuw toegangstoken en een nieuw verversingstoken terug, door @hivesigner ondertekend. Voor een code die alleen voor inloggen dient (`scope=login`) of voor een PKCE-uitwisseling zonder clientgeheim is er geen verversingstoken. `expires_in` is de levensduur van het toegangstoken in seconden (7 dagen).
 
 Fouten: `401 invalid_grant`. De omschrijving is «The token has invalid role» wanneer de verstuurde waarde geen geldige code of geldig verversingstoken is. Ze is «The code or secret is not valid» wanneer de code of het geheim niet klopt.
 

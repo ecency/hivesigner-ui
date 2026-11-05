@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-呼び出しごとに新しいアクセストークンと新しい更新トークンが返ります。どちらも @hivesigner が署名しています。`expires_in` はアクセストークンの有効期間で、秒単位です（7 日）。
+呼び出しごとに新しいアクセストークンと新しい更新トークンが返ります。どちらも @hivesigner が署名しています。ログイン専用のコード（`scope=login`）や、クライアントシークレットなしの PKCE 交換には、更新トークンはありません。`expires_in` はアクセストークンの有効期間で、秒単位です（7 日）。
 
 エラー: `401 invalid_grant`。送った値が有効なコードでも更新トークンでもない場合、説明は「The token has invalid role」になります。コードやシークレットが合わない場合は「The code or secret is not valid」になります。
 

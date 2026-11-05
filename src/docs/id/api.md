@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Tiap panggilan mengembalikan token akses baru dan token penyegaran baru. Keduanya ditandatangani @hivesigner. `expires_in` adalah umur token akses dalam detik (7 hari).
+Tiap panggilan mengembalikan token akses baru dan token penyegaran baru, yang ditandatangani @hivesigner. Tidak ada token penyegaran untuk kode khusus masuk (`scope=login`) atau untuk pertukaran PKCE tanpa rahasia klien. `expires_in` adalah umur token akses dalam detik (7 hari).
 
 Galat: `401 invalid_grant`. Keterangannya "The token has invalid role" ketika nilai yang dikirim bukan kode atau token penyegaran yang sah. Keterangannya "The code or secret is not valid" ketika kode atau rahasianya tidak cocok.
 

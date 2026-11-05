@@ -303,6 +303,45 @@ describe('the PKCE code', () => {
   });
 });
 
+describe('what a code request is for', () => {
+  // A code has always been exchanged for posting access. Only a request that
+  // says scope=login outright is a sign-in-only code (and the code says so).
+  it('is posting on legacy /login unless it asks for login by name', () => {
+    expect(normalizeLoginRequest({ response_type: 'code' }).scope).toBe(
+      'posting',
+    );
+    expect(
+      normalizeLoginRequest({ response_type: 'code', scope: 'offline' }).scope,
+    ).toBe('posting');
+    expect(
+      normalizeLoginRequest({ response_type: 'code', scope: 'login' }).scope,
+    ).toBe('login');
+    // The token flow keeps its login fallback.
+    expect(normalizeLoginRequest({ scope: 'whatever' }).scope).toBe('login');
+  });
+
+  it('is posting through the grant detour unless it asks for login by name', () => {
+    const detour = (q: Record<string, string>) =>
+      grantReturnTarget('myapp', {
+        redirect_uri: 'https://myapp.example/cb',
+        ...q,
+      })?.search.scope;
+    expect(detour({ response_type: 'code' })).toBe('posting');
+    expect(detour({ response_type: 'code', scope: 'offline' })).toBe('posting');
+    expect(detour({ response_type: 'code', scope: 'login' })).toBe('login');
+    expect(detour({ scope: 'offline' })).toBe('login');
+  });
+
+  it('is login on /oauth2/authorize only when it says scope=login', () => {
+    expect(
+      normalizeAuthRequest({ response_type: 'code', scope: 'login' }).scope,
+    ).toBe('login');
+    expect(normalizeAuthRequest({ response_type: 'code' }).scope).toBe(
+      'posting',
+    );
+  });
+});
+
 describe('the grant detour', () => {
   it('keeps the PKCE challenge on the way to consent', () => {
     const target = grantReturnTarget('myapp', {
