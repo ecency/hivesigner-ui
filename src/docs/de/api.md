@@ -152,7 +152,7 @@ Ein Posting-Token lässt die API diese Operationen übertragen und keine anderen
 Tauscht einen Code gegen Tokens oder ein Refresh-Token gegen neue Tokens. Rufen Sie das nur von Ihrem Server aus auf. Siehe [Der Code-Flow](/docs/oauth2#code-flow).
 
 - **Methode:** `POST`, mit den Werten im Body.
-- **Body:** `code` und `client_secret` oder `refresh_token` und `client_secret`.
+- **Body:** `code` und `client_secret` oder `refresh_token` und `client_secret`. Ein Code mit PKCE-Challenge braucht außerdem `code_verifier`, und eine App ohne Secret sendet nur `code` und `code_verifier`. Siehe [PKCE für mobile und Desktop-Apps](/docs/pkce).
 - **Header:** Senden Sie keinen `Authorization`-Header.
 
 ```bash

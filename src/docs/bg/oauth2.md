@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | Да | Къде Hivesigner връща потребителя. Трябва да е точно един от URI адресите за пренасочване на приложението ви. Вижте [Адреси за обратно извикване](/docs/register-app#callbacks). |
 | `scope` | Не | `login`, `posting` или `offline`. Вижте [Обхвати](#scopes). Без него заявката иска posting достъп. |
 | `response_type` | Не | `code` започва [потока с код](#code-flow). Всяка друга стойност или никаква означава [потока с токен](#token-flow). |
+| `code_challenge`, `code_challenge_method` | Не | PKCE за приложение, което не може да пази клиентска тайна. Вижте [PKCE за мобилни и настолни приложения](/docs/pkce). |
 | `state` | Препоръчително | Случайна стойност, която Hivesigner връща непроменена. Вижте [Защитете заявката със state](#state). |
 | `account` | Не | Потребителско име в Hive. Когато този акаунт е на устройството на потребителя, Hivesigner го избира. Иначе се пренебрегва. Чете се и `select_account`. |
 

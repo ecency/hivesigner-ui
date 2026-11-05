@@ -152,7 +152,7 @@ posting токен позволява на API да излъчва тези оп
 Разменя код за токени или токен за обновяване за нови токени. Извиквайте го само от своя сървър. Вижте [Потокът с код](/docs/oauth2#code-flow).
 
 - **Метод:** `POST`, със стойностите в тялото.
-- **Тяло:** `code` и `client_secret` или `refresh_token` и `client_secret`.
+- **Тяло:** `code` и `client_secret` или `refresh_token` и `client_secret`. Код с PKCE предизвикателство изисква и `code_verifier`, а приложение без тайна изпраща само `code` и `code_verifier`. Вижте [PKCE за мобилни и настолни приложения](/docs/pkce).
 - **Заглавки:** не изпращайте заглавка `Authorization`.
 
 ```bash

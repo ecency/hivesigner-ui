@@ -276,14 +276,15 @@
     "website": "Sitio web",
     "location": "Ubicación",
     "redirect_uris": "URI de redirección",
-    "one_uri_line": "Una URI por línea, cada una con su protocolo y sin fragmentos ni rutas relativas.",
+    "one_uri_line": "Una URI por línea, cada una con su protocolo y sin fragmentos ni rutas relativas. Un esquema de app como myapp://callback solo funciona con el flujo de código con PKCE.",
     "creator": "Creador",
     "status": "Estado",
     "production": "Producción",
     "sandbox": "Entorno de pruebas",
     "secret": "Secreto de cliente",
     "blank_field": "Déjalo en blanco para conservar el secreto actual.",
-    "bad_callbacks": "URL de retorno no válida (https, o http en localhost): {uris}"
+    "bad_callbacks": "URL de retorno no válida (https, http en localhost o un esquema de app como myapp://callback): {uris}",
+    "pkce_public": "Permitir que la app nativa de esta app canjee códigos PKCE sin el secreto"
   },
   "signs": {
     "nothing_matches": "No hay coincidencias.",

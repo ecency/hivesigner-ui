@@ -42,10 +42,10 @@ Adres zwrotny (czyli `redirect_uri` w żądaniu logowania) to miejsce, do które
 - **Dokładna zgodność.** `redirect_uri` w żądaniu musi być jednym z Twoich adresów URI przekierowania, znak po znaku: schemat, host, port, ścieżka i zapytanie.
 - **Tylko https.** Adres zwrotny musi używać `https://`. Zwykły `http://` jest przyjmowany tylko na pętli zwrotnej: `localhost`, `127.0.0.1` albo `[::1]`.
 - **Porty pętli zwrotnej mogą się zmieniać.** Adres zwrotny pętli zwrotnej zarejestrowany ze zwykłym http pasuje do każdego hosta i portu pętli zwrotnej o tej samej ścieżce, zapytaniu, fragmencie i informacji o użytkowniku. Adres pętli zwrotnej zarejestrowany z `https://` pozostaje dokładną zgodnością.
-- **Żadnych własnych schematów.** Adres taki jak `myapp://callback` zostaje odrzucony. Zobacz [Aplikacje mobilne i na komputer](#native-apps).
+- **Własne schematy tylko z PKCE.** Adres taki jak `myapp://callback` jest przyjmowany tylko dla żądania kodu chronionego przez PKCE. Zobacz [Aplikacje mobilne i na komputer](#native-apps).
 - **Żadnych fragmentów.** Nie dodawaj `#fragment` do adresu zwrotnego.
 
-Strona profilu odmawia zapisania adresu zwrotnego, który nigdy nie mógłby zadziałać, i pokazuje «Nieprawidłowy adres zwrotny (wymagany https lub http na localhost)».
+Strona profilu odmawia zapisania adresu zwrotnego, który nigdy nie mógłby zadziałać, i pokazuje «Nieprawidłowy adres zwrotny (wymagany https, http na localhost lub schemat aplikacji, taki jak myapp://callback)».
 
 ### Przykłady {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Przyjęty: pętla zwrotna, ta sama ścieżka |
 | `http://127.0.0.1:3000/other` | Odrzucony: inna ścieżka |
 | `https://localhost:3000/auth` | Odrzucony: https nie pasuje do rejestracji ze zwykłym http |
-| `myapp://auth` | Odrzucony: własny schemat |
+| `myapp://auth` | Odrzucony, chyba że jest zarejestrowany, a żądanie to żądanie kodu z PKCE |
 
 Aby przyjmować zapytanie na swoim adresie zwrotnym, zarejestruj ten adres z dokładnie takim zapytaniem. Hivesigner zachowuje własne zapytanie Twojego adresu i dopisuje swoje parametry po nim.
 
 ### Aplikacje mobilne i na komputer {#native-apps}
 
-Hivesigner umieszcza token w adresie zwrotnym. Własny schemat, taki jak `myapp://`, nie jest przypisany do jednej aplikacji: inna aplikacja na tym samym urządzeniu może go przejąć i odebrać token. Dlatego Hivesigner odrzuca własne schematy i wysyła tokeny tylko na adres https albo na pętlę zwrotną urządzenia danej osoby.
+Hivesigner umieszcza token w adresie zwrotnym. Własny schemat, taki jak `myapp://`, nie jest przypisany do jednej aplikacji: inna aplikacja na tym samym urządzeniu może go przejąć i odebrać token. Dlatego Hivesigner nigdy nie wysyła tokenu na własny schemat, tylko na adres https albo na pętlę zwrotną urządzenia danej osoby.
 
-Aplikacja natywna korzysta zamiast tego z jednej z tych dróg:
+Aplikacja natywna korzysta z jednej z tych dróg:
 
 - **Link https, który należy do niej.** Zarejestruj adres zwrotny w swojej domenie, który system operacyjny otwiera w Twojej aplikacji (App Links w Androidzie albo Universal Links w iOS).
 - **Adres zwrotny na pętli zwrotnej.** Aplikacja nasłuchuje przekierowania na `127.0.0.1`. Zarejestruj `http://127.0.0.1/auth` (albo `localhost`) i użyj w czasie działania dowolnego wolnego portu: port nie musi się zgadzać.
+- **Własny schemat z PKCE.** Aplikacja rejestruje `myapp://callback`, używa przepływu z kodem z wyzwaniem PKCE i nie potrzebuje sekretu klienta. Hivesigner wysyła kod, który może wymienić tylko ta aplikacja. Zobacz [PKCE dla aplikacji mobilnych i na komputer](/docs/pkce).
 
 ## Sekret klienta {#client-secret}
 

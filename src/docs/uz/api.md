@@ -152,7 +152,7 @@ Pul oʻtkazmalari va hamyon bilan bogʻliq boshqa amallar foydalanuvchining acti
 Kodni tokenlarga yoki yangilash tokenini yangi tokenlarga almashtiradi. Uni faqat serveringizdan chaqiring. Qarang: [Kod oqimi](/docs/oauth2#code-flow).
 
 - **Usul:** `POST`, qiymatlar tanada.
-- **Tana:** `code` va `client_secret` yoki `refresh_token` va `client_secret`.
+- **Tana:** `code` va `client_secret` yoki `refresh_token` va `client_secret`. PKCE challenge bilan kelgan kod uchun `code_verifier` ham kerak, maxfiy kaliti yoʻq ilova esa faqat `code` va `code_verifier` yuboradi. Qarang: [Mobil va ish stoli ilovalari uchun PKCE](/docs/pkce).
 - **Sarlavhalar:** `Authorization` sarlavhasini yubormang.
 
 ```bash

@@ -152,7 +152,7 @@ curl -X POST https://hivesigner.com/api/broadcast \
 कोड के बदले टोकन, या रिफ़्रेश टोकन के बदले नए टोकन देता है। इसे सिर्फ़ अपने सर्वर से बुलाएँ। देखें [कोड फ़्लो](/docs/oauth2#code-flow)।
 
 - **मेथड:** `POST`, मानों के साथ बॉडी में।
-- **बॉडी:** `code` और `client_secret`, या `refresh_token` और `client_secret`।
+- **बॉडी:** `code` और `client_secret`, या `refresh_token` और `client_secret`। PKCE चैलेंज वाले कोड के लिए `code_verifier` भी चाहिए, और बिना सीक्रेट वाला ऐप सिर्फ़ `code` और `code_verifier` भेजता है। देखें [मोबाइल और डेस्कटॉप ऐप के लिए PKCE](/docs/pkce)।
 - **हेडर:** कोई `Authorization` हेडर न भेजें।
 
 ```bash

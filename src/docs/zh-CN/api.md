@@ -152,7 +152,7 @@ curl -X POST https://hivesigner.com/api/broadcast \
 把授权码兑换成令牌，或把刷新令牌兑换成新的令牌。只能从您的服务器调用。参见[授权码流程](/docs/oauth2#code-flow)。
 
 - **方法：** `POST`，各值放在请求体中。
-- **请求体：** `code` 和 `client_secret`，或 `refresh_token` 和 `client_secret`。
+- **请求体：** `code` 和 `client_secret`，或 `refresh_token` 和 `client_secret`。带 PKCE 质询的授权码还需要 `code_verifier`，没有密钥的应用只发送 `code` 和 `code_verifier`。参见[移动端和桌面端应用的 PKCE](/docs/pkce)。
 - **请求头：** 不要发送 `Authorization` 头。
 
 ```bash

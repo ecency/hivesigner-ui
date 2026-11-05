@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | Ha | Hivesigner foydalanuvchini qayerga qaytarishi. U ilovangizning Yoʻnaltirish URI manzillaridan biriga aynan mos boʻlishi kerak. Qarang: [Callback manzillari](/docs/register-app#callbacks). |
 | `scope` | Yoʻq | `login`, `posting` yoki `offline`. Qarang: [Ruxsat doiralari](#scopes). Usiz soʻrov posting ruxsatini soʻraydi. |
 | `response_type` | Yoʻq | `code` qiymati [kod oqimini](#code-flow) boshlaydi. Boshqa har qanday qiymat yoki uning yoʻqligi [token oqimini](#token-flow) bildiradi. |
+| `code_challenge`, `code_challenge_method` | Yoʻq | Mijoz maxfiy kalitini saqlay olmaydigan ilova uchun PKCE. Qarang: [Mobil va ish stoli ilovalari uchun PKCE](/docs/pkce). |
 | `state` | Tavsiya etiladi | Hivesigner oʻzgartirmasdan qaytaradigan tasodifiy qiymat. Qarang: [Soʻrovni state bilan himoyalang](#state). |
 | `account` | Yoʻq | Hive foydalanuvchi nomi. Bu hisob foydalanuvchining qurilmasida boʻlsa, Hivesigner uni tanlaydi. Boʻlmasa eʼtiborsiz qoldiradi. `select_account` ham oʻqiladi. |
 

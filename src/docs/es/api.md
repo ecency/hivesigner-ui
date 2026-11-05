@@ -152,7 +152,7 @@ Las transferencias y otras operaciones de monedero necesitan la clave activa de 
 Intercambia un código por tokens, o un token de actualización por tokens nuevos. Llámalo solo desde tu servidor. Consulta [El flujo de código](/docs/oauth2#code-flow).
 
 - **Método:** `POST`, con los valores en el cuerpo.
-- **Cuerpo:** `code` y `client_secret`, o `refresh_token` y `client_secret`.
+- **Cuerpo:** `code` y `client_secret`, o `refresh_token` y `client_secret`. Un código con desafío PKCE también necesita `code_verifier`, y una aplicación sin secreto envía solo `code` y `code_verifier`. Consulta [PKCE para aplicaciones móviles y de escritorio](/docs/pkce).
 - **Cabeceras:** no envíes ninguna cabecera `Authorization`.
 
 ```bash

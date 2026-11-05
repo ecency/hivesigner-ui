@@ -152,7 +152,7 @@ Le trasferte e le altre operazioni del portafoglio richiedono la chiave attiva d
 Scambia un codice con dei token, o un token di aggiornamento con token nuovi. Chiamalo solo dal tuo server. Vedi [Il flusso con codice](/docs/oauth2#code-flow).
 
 - **Metodo:** `POST`, con i valori nel corpo.
-- **Corpo:** `code` e `client_secret`, oppure `refresh_token` e `client_secret`.
+- **Corpo:** `code` e `client_secret`, oppure `refresh_token` e `client_secret`. Un codice con sfida PKCE richiede anche `code_verifier`, e un’app senza secret manda solo `code` e `code_verifier`. Vedi [PKCE per app mobili e desktop](/docs/pkce).
 - **Intestazioni:** non mandare nessuna intestazione `Authorization`.
 
 ```bash

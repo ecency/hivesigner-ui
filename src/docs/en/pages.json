@@ -37,6 +37,10 @@
       "title": "Sign in with OAuth2",
       "description": "Send people to Hivesigner to sign in and come back with a token: the token and code flows, scopes and parameters."
     },
+    "pkce": {
+      "title": "PKCE for mobile and desktop apps",
+      "description": "Sign in from a native app without a client secret: the code flow with PKCE, custom scheme callbacks and how the code is checked."
+    },
     "tokens": {
       "title": "Tokens",
       "description": "What a Hivesigner token contains, how long it lasts and how your server checks one."

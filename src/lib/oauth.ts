@@ -20,6 +20,37 @@ export interface AuthRequest {
   scope: string;
   responseType: ResponseType;
   state?: string;
+  /** PKCE (RFC 7636), as the app sent it. Read through pkceChallenge(). */
+  codeChallenge?: string;
+  codeChallengeMethod?: string;
+}
+
+/**
+ * The PKCE challenge to sign into the code, or null.
+ *
+ * Only a code request for a named app with a well formed S256 challenge has
+ * one. Anything else that looks like PKCE (the `plain` method, no method,
+ * a malformed value, a challenge on the token flow) is IGNORED, which is what
+ * Hivesigner always did with these parameters: some OAuth libraries send a
+ * challenge by default, and refusing them now would break apps that work.
+ * Ignoring one only means the code carries no challenge, and such a code still
+ * needs the client secret, exactly as before.
+ */
+export function pkceChallenge(req: AuthRequest): string | null {
+  if (req.responseType !== 'code' || !req.clientId) return null;
+  if (req.codeChallengeMethod !== 'S256') return null;
+  const challenge = req.codeChallenge;
+  return challenge && /^[A-Za-z0-9_-]{43}$/.test(challenge) ? challenge : null;
+}
+
+/** The PKCE fields of a query, only those it actually has. */
+function pkceFields(query: Record<string, string | undefined>) {
+  return {
+    ...(query.code_challenge ? { codeChallenge: query.code_challenge } : {}),
+    ...(query.code_challenge_method
+      ? { codeChallengeMethod: query.code_challenge_method }
+      : {}),
+  };
 }
 
 /**
@@ -50,6 +81,7 @@ export function normalizeAuthRequest(
     scope,
     responseType,
     state: query.state,
+    ...pkceFields(query),
   };
 }
 
@@ -82,6 +114,7 @@ export function normalizeLoginRequest(
     scope,
     responseType: query.response_type === 'code' ? 'code' : 'token',
     state: query.state,
+    ...pkceFields(query),
   };
 }
 
@@ -183,6 +216,74 @@ export function isValidRedirectUri(value: string): boolean {
   }
 }
 
+/**
+ * Schemes that are never an app's callback: they run script, read local data,
+ * open browser internals, start another app by intent, or are ordinary web,
+ * mail and phone links. Everything here would let a consent screen send a
+ * signed code somewhere that is not the app that asked.
+ */
+const NOT_APP_SCHEMES = new Set([
+  'http',
+  'https',
+  'javascript',
+  'data',
+  'vbscript',
+  'file',
+  'blob',
+  'about',
+  'filesystem',
+  'view-source',
+  'intent',
+  'android-app',
+  'chrome',
+  'chrome-extension',
+  'moz-extension',
+  'safari-extension',
+  'ms-browser-extension',
+  'edge',
+  'opera',
+  'brave',
+  'resource',
+  'jar',
+  'content',
+  'mailto',
+  'tel',
+  'sms',
+  'ftp',
+  'ws',
+  'wss',
+  'hive',
+  'hivesigner',
+]);
+
+/**
+ * A native app's own scheme, such as `myapp://cb` or `com.example.app:/cb`
+ * (RFC 8252 section 7.1). Lowercase scheme as registered, no fragment, and
+ * none of NOT_APP_SCHEMES. Accepted as a callback ONLY with PKCE, because any
+ * app on a device can claim a scheme: what keeps the code safe is that it is
+ * useless without the verifier, which only the app that asked holds.
+ */
+export function isAppSchemeCallback(value: string): boolean {
+  const match = /^([a-z][a-z0-9+.-]*):(.*)$/.exec(value);
+  if (!match || !match[2] || value.includes('#')) return false;
+  if (NOT_APP_SCHEMES.has(match[1])) return false;
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Whether an app may save this callback on its profile: an https or loopback
+ * address (usable by any flow), or its own app scheme (usable only by a PKCE
+ * code request, which the consent screen checks per request).
+ */
+export function isRegistrableRedirectUri(value: string): boolean {
+  return isValidRedirectUri(value) || isAppSchemeCallback(value);
+}
+
 export interface AppProfile {
   name: string;
   redirectUris: string[];
@@ -253,8 +354,11 @@ export function isRegisteredRedirect(
   // where the request is refused.
   profile: Pick<AppProfile, 'redirectUris'>,
   callback: string,
+  // A PKCE code request (pkceChallenge), the only kind an app scheme serves.
+  { pkce = false }: { pkce?: boolean } = {},
 ): boolean {
-  if (!isValidRedirectUri(callback)) return false;
+  if (!isValidRedirectUri(callback) && !(pkce && isAppSchemeCallback(callback)))
+    return false;
   return profile.redirectUris.some(
     (registered) =>
       registered === callback || loopbackMatch(registered, callback),
@@ -277,7 +381,18 @@ export function buildAuthToken(
   authority: string,
 ): string {
   const type = req.responseType === 'code' ? 'code' : req.scope;
-  const message = req.clientId ? { type, app: req.clientId } : { type };
+  const message: Record<string, string> = req.clientId
+    ? { type, app: req.clientId }
+    : { type };
+  // Signed INTO the code, so it cannot be swapped or dropped after the user
+  // approved. The field order is part of the format: the signature covers
+  // JSON.stringify of this object, and other signers (the Ecency app) build
+  // the same bytes. See docs/pkce.
+  const challenge = pkceChallenge(req);
+  if (challenge) {
+    message.code_challenge = challenge;
+    message.code_challenge_method = 'S256';
+  }
   return encodeToken(createSignedMessage(message, username, wif, authority));
 }
 
@@ -381,6 +496,9 @@ export function grantReturnTarget(
       response_type: query.response_type === 'code' ? 'code' : 'token',
     };
     if (query.state) search.state = query.state;
+    if (query.code_challenge) search.code_challenge = query.code_challenge;
+    if (query.code_challenge_method)
+      search.code_challenge_method = query.code_challenge_method;
     return { to: '/login', search };
   }
   if (!resolveInternalPath(callback)) return null;

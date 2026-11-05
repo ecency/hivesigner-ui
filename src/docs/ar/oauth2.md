@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | نعم | المكان الذي يعيد Hivesigner المستخدم إليه. ويجب أن يكون أحد عناوين URI لإعادة التوجيه الخاصة بتطبيقك، تمامًا. راجع [عناوين الاستدعاء](/docs/register-app#callbacks). |
 | `scope` | لا | `login` أو `posting` أو `offline`. راجع [النطاقات](#scopes). وبدونه يطلب الطلب وصول النشر. |
 | `response_type` | لا | القيمة `code` تبدأ [التدفق بالكود](#code-flow). وأي قيمة أخرى، أو لا قيمة، تعني [التدفق بالرمز](#token-flow). |
+| `code_challenge`, `code_challenge_method` | لا | PKCE لتطبيق لا يستطيع حفظ مفتاح سري للعميل. راجع [PKCE للتطبيقات على الجوال وسطح المكتب](/docs/pkce). |
 | `state` | مستحسن | قيمة عشوائية يعيدها Hivesigner دون تغيير. راجع [احمِ الطلب بـ state](#state). |
 | `account` | لا | اسم مستخدم على Hive. فإذا كان ذلك الحساب على جهاز المستخدم، حدّده Hivesigner. وإلا جرى تجاهله. ويُقرأ `select_account` أيضًا. |
 

@@ -152,7 +152,7 @@ Transferler ve diğer cüzdan operasyonları kullanıcının aktif anahtarını 
 Bir kodu token'larla ya da bir yenileme token'ını yeni token'larla takas eder. Yalnızca sunucunuzdan çağırın. Bkz. [Kod akışı](/docs/oauth2#code-flow).
 
 - **Yöntem:** `POST`, değerler gövdede.
-- **Gövde:** `code` ve `client_secret` ya da `refresh_token` ve `client_secret`.
+- **Gövde:** `code` ve `client_secret` ya da `refresh_token` ve `client_secret`. PKCE sınamalı bir kod için `code_verifier` da gerekir; gizli anahtarı olmayan bir uygulama yalnızca `code` ve `code_verifier` gönderir. Bkz. [Mobil ve masaüstü uygulamalar için PKCE](/docs/pkce).
 - **Başlıklar:** `Authorization` başlığı göndermeyin.
 
 ```bash

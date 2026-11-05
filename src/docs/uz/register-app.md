@@ -42,10 +42,10 @@ Callback manzili (kirish soʻrovidagi `redirect_uri`) bu Hivesigner foydalanuvch
 - **Toʻliq mos kelish.** Soʻrovdagi `redirect_uri` sizning Yoʻnaltirish URI manzillaringizdan biriga harfma-harf mos boʻlishi kerak: sxema, xost, port, yoʻl va soʻrov qatori.
 - **Faqat https.** Callback manzili `https://` ishlatishi kerak. Oddiy `http://` faqat loopback uchun qabul qilinadi: `localhost`, `127.0.0.1` yoki `[::1]`.
 - **Loopback portlari oʻzgarishi mumkin.** Roʻyxatdan oʻtkazilgan oddiy http loopback manzili bir xil yoʻl, soʻrov qatori, fragment va foydalanuvchi maʼlumoti boʻlgan har qanday loopback xost va portiga mos keladi. Roʻyxatdan oʻtkazilgan `https://` loopback manzili esa toʻliq mos kelishni talab qilib qolaveradi.
-- **Maxsus sxemalar yoʻq.** `myapp://callback` kabi manzil rad etiladi. Qarang: [Mobil va ish stoli ilovalari](#native-apps).
+- **Maxsus sxemalar faqat PKCE bilan.** `myapp://callback` kabi manzil faqat PKCE bilan himoyalangan kod soʻrovi uchun qabul qilinadi. Qarang: [Mobil va ish stoli ilovalari](#native-apps).
 - **Fragmentlar yoʻq.** Callback manziliga `#fragment` qoʻshmang.
 
-Profil sahifasi hech qachon ishlay olmaydigan manzilni saqlashdan bosh tortadi va «Yaroqsiz callback manzillari (https yoki localhost uchun http boʻlishi kerak)» deb yozadi.
+Profil sahifasi hech qachon ishlay olmaydigan manzilni saqlashdan bosh tortadi va «Yaroqsiz callback manzili (https, localhost uchun http yoki myapp://callback kabi ilova sxemasi boʻlishi kerak)» deb yozadi.
 
 ### Misollar {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Qabul qilindi: loopback, bir xil yoʻl |
 | `http://127.0.0.1:3000/other` | Rad etildi: boshqa yoʻl |
 | `https://localhost:3000/auth` | Rad etildi: https oddiy http yozuviga mos kelmaydi |
-| `myapp://auth` | Rad etildi: maxsus sxema |
+| `myapp://auth` | Rad etildi, agar roʻyxatdan oʻtgan va soʻrov PKCE bilan kod soʻrovi boʻlmasa |
 
 Callback manzilingizda soʻrov qatorini qabul qilish uchun manzilni aynan oʻsha soʻrov qatori bilan roʻyxatdan oʻtkazing. Hivesigner sizning soʻrov qatoringizni saqlab qoladi va oʻz parametrlarini undan keyin qoʻshadi.
 
 ### Mobil va ish stoli ilovalari {#native-apps}
 
-Hivesigner tokenni callback manziliga joylaydi. `myapp://` kabi maxsus sxema bitta ilovaga bogʻlanmagan: xuddi shu qurilmadagi boshqa ilova uni oʻziga olib, tokenni qabul qilishi mumkin. Shuning uchun Hivesigner maxsus sxemalarni rad etadi va tokenlarni faqat https manziliga yoki foydalanuvchining oʻz qurilmasidagi loopback'ga yuboradi.
+Hivesigner tokenni callback manziliga joylaydi. `myapp://` kabi maxsus sxema bitta ilovaga bogʻlanmagan: xuddi shu qurilmadagi boshqa ilova uni oʻziga olib, tokenni qabul qilishi mumkin. Shuning uchun Hivesigner tokenni hech qachon maxsus sxemaga yubormaydi, faqat https manziliga yoki foydalanuvchining oʻz qurilmasidagi loopback'ga yuboradi.
 
-Native ilova buning oʻrniga quyidagilardan birini ishlatadi:
+Native ilova quyidagilardan birini ishlatadi:
 
 - **Oʻziga tegishli https havolasi.** Operatsion tizim sizning ilovangizda ochadigan manzilni oʻz domeningizda roʻyxatdan oʻtkazing (Android App Links yoki iOS Universal Links).
 - **Loopback manzili.** Ilova yoʻnaltirishni `127.0.0.1` da tinglaydi. `http://127.0.0.1/auth` (yoki `localhost`) manzilini roʻyxatdan oʻtkazing va ish vaqtida istalgan boʻsh portdan foydalaning: port mos kelishi shart emas.
+- **PKCE bilan oʻz sxemasi.** Ilova `myapp://callback` ni roʻyxatdan oʻtkazadi, PKCE challenge bilan kod oqimidan foydalanadi va mijoz maxfiy kaliti kerak boʻlmaydi. Hivesigner faqat ilovaning oʻzi almashtira oladigan kod yuboradi. Qarang: [Mobil va ish stoli ilovalari uchun PKCE](/docs/pkce).
 
 ## Mijoz maxfiy kaliti {#client-secret}
 

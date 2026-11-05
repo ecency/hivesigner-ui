@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | हाँ | Hivesigner उपयोगकर्ता को कहाँ लौटाएगा। यह आपके ऐप के रीडायरेक्ट URI में से ठीक एक होना चाहिए। देखें [कॉलबैक](/docs/register-app#callbacks)। |
 | `scope` | नहीं | `login`, `posting` या `offline`। देखें [स्कोप](#scopes)। इसके बिना अनुरोध पोस्टिंग पहुँच माँगता है। |
 | `response_type` | नहीं | `code` [कोड फ़्लो](#code-flow) शुरू करता है। कोई और मान, या कोई नहीं, का मतलब है [टोकन फ़्लो](#token-flow)। |
+| `code_challenge`, `code_challenge_method` | नहीं | ऐसे ऐप के लिए PKCE जो क्लाइंट सीक्रेट नहीं रख सकता। देखें [मोबाइल और डेस्कटॉप ऐप के लिए PKCE](/docs/pkce)। |
 | `state` | अनुशंसित | एक यादृच्छिक मान जिसे Hivesigner बिना बदले लौटाता है। देखें [अनुरोध को state से बचाएँ](#state)। |
 | `account` | नहीं | कोई Hive उपयोगकर्ता नाम। जब वह खाता उपयोगकर्ता के डिवाइस पर हो, Hivesigner उसे चुन लेता है। वरना उसे अनदेखा कर देता है। `select_account` भी पढ़ा जाता है। |
 

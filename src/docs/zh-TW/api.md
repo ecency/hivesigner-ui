@@ -152,7 +152,7 @@ curl -X POST https://hivesigner.com/api/broadcast \
 把授權碼兌換成權杖，或把更新權杖兌換成新的權杖。只能從你的伺服器呼叫。參見[授權碼流程](/docs/oauth2#code-flow)。
 
 - **方法：** `POST`，各個值放在內文裡。
-- **內文：** `code` 和 `client_secret`，或 `refresh_token` 和 `client_secret`。
+- **內文：** `code` 和 `client_secret`，或 `refresh_token` 和 `client_secret`。帶 PKCE 質詢的授權碼還需要 `code_verifier`，沒有密鑰的應用程式只送出 `code` 和 `code_verifier`。參見[行動與桌面應用程式的 PKCE](/docs/pkce)。
 - **標頭：** 不要送出 `Authorization` 標頭。
 
 ```bash

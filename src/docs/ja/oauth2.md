@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | 必須 | Hivesigner が利用者を戻す先です。あなたのアプリのリダイレクト URI のいずれかと完全に一致する必要があります。[コールバック](/docs/register-app#callbacks)を参照してください。 |
 | `scope` | 任意 | `login`、`posting`、`offline` のいずれかです。[スコープ](#scopes)を参照してください。指定しない場合、リクエストは投稿アクセスを求めます。 |
 | `response_type` | 任意 | `code` は[コードフロー](#code-flow)を開始します。他の値、または指定なしは[トークンフロー](#token-flow)を意味します。 |
+| `code_challenge`, `code_challenge_method` | 任意 | クライアントシークレットを保管できないアプリ向けの PKCE です。[モバイルとデスクトップのアプリ向け PKCE](/docs/pkce)を参照してください。 |
 | `state` | 推奨 | Hivesigner がそのまま返すランダムな値です。[state でリクエストを守る](#state)を参照してください。 |
 | `account` | 任意 | Hive のユーザー名です。そのアカウントが利用者の端末にある場合、Hivesigner はそれを選びます。ない場合は無視します。`select_account` も読まれます。 |
 

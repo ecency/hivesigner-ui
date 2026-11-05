@@ -152,7 +152,7 @@ API به‌محض آنکه گره‌ای از Hive تراکنش را بپذیر�
 یک کد را با توکن، یا یک توکن تازه‌سازی را با توکن‌های تازه مبادله می‌کند. تنها از سرور خودتان صدا بزنید. ببینید [جریان کد](/docs/oauth2#code-flow).
 
 - **روش:** `POST`، با مقادیر در بدنه.
-- **بدنه:** `code` و `client_secret`، یا `refresh_token` و `client_secret`.
+- **بدنه:** `code` و `client_secret`، یا `refresh_token` و `client_secret`. کدی که چالش PKCE دارد به `code_verifier` هم نیاز دارد، و برنامه بدون کلید محرمانه فقط `code` و `code_verifier` را می‌فرستد. ببینید [PKCE برای برنامه‌های موبایل و رومیزی](/docs/pkce).
 - **سرایندها:** هیچ سرایند `Authorization` نفرستید.
 
 ```bash

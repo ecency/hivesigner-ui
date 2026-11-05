@@ -152,7 +152,7 @@ Les transferts et les autres opérations de portefeuille nécessitent la clé ac
 Échange un code contre des jetons, ou un jeton de rafraîchissement contre de nouveaux jetons. Ne l’appelez que depuis votre serveur. Voir [Le flux par code](/docs/oauth2#code-flow).
 
 - **Méthode :** `POST`, avec les valeurs dans le corps.
-- **Corps :** `code` et `client_secret`, ou `refresh_token` et `client_secret`.
+- **Corps :** `code` et `client_secret`, ou `refresh_token` et `client_secret`. Un code avec défi PKCE exige aussi `code_verifier`, et une application sans secret envoie seulement `code` et `code_verifier`. Voir [PKCE pour les applications mobiles et de bureau](/docs/pkce).
 - **En-têtes :** n’envoyez aucun en-tête `Authorization`.
 
 ```bash

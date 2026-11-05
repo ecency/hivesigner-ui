@@ -276,14 +276,15 @@
     "website": "Site web",
     "location": "Localisation",
     "redirect_uris": "URI de redirection",
-    "one_uri_line": "Une URI par ligne, chacune avec un protocole, sans fragment ni chemin relatif.",
+    "one_uri_line": "Une URI par ligne, chacune avec un protocole, sans fragment ni chemin relatif. Un schéma d'application tel que myapp://callback ne fonctionne qu'avec le flux par code et PKCE.",
     "creator": "Créateur",
     "status": "Statut",
     "production": "Production",
     "sandbox": "Bac à sable",
     "secret": "Secret client",
     "blank_field": "Laissez vide pour conserver le secret actuel.",
-    "bad_callbacks": "URL de rappel inutilisable (https, ou http sur localhost) : {uris}"
+    "bad_callbacks": "URL de rappel inutilisable (https, http sur localhost, ou un schéma d'application tel que myapp://callback) : {uris}",
+    "pkce_public": "Autoriser l'application native de cette application à échanger des codes PKCE sans le secret"
   },
   "signs": {
     "nothing_matches": "Aucun résultat.",

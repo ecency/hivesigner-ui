@@ -89,6 +89,7 @@ function form(changed: Record<string, string> = {}) {
     creator: '',
     is_public: '0',
     secret: '',
+    pkce_public: '0',
     ...changed,
   };
 }
@@ -195,6 +196,28 @@ describe('buildProfileMetadata', () => {
       buildProfileMetadata(app as never, form({ creator: 'bob' })),
     );
     expect(out.profile.secret).toBe('a'.repeat(64));
+  });
+
+  it('writes pkce_public as the boolean true only when it is ticked (#164)', () => {
+    const app = (extra: Record<string, unknown>) => ({
+      name: 'alice',
+      posting_json_metadata: JSON.stringify({
+        profile: { version: 2, type: 'app', ...extra },
+      }),
+    });
+    const on = JSON.parse(
+      buildProfileMetadata(app({}) as never, form({ pkce_public: '1' })),
+    );
+    expect(on.profile.pkce_public).toBe(true);
+    const off = JSON.parse(
+      buildProfileMetadata(
+        app({ pkce_public: true }) as never,
+        form({ pkce_public: '0' }),
+      ),
+    );
+    expect(off.profile).not.toHaveProperty('pkce_public');
+    expect(readProfile(app({ pkce_public: true }) as never).pkce_public).toBe('1');
+    expect(readProfile(app({ pkce_public: 'true' }) as never).pkce_public).toBe('0');
   });
 
   it('drops the creator when it is cleared', () => {
@@ -374,6 +397,48 @@ describe('/profile', () => {
     );
     expect(h.broadcastOperations).not.toHaveBeenCalled();
   });
+
+  it('saves an app scheme callback, for native apps using PKCE (#164)', async () => {
+    await addAccount('alice', { posting: '5Kposting' });
+    h.broadcastOperations.mockResolvedValue({ id: 'tx' });
+    renderPage();
+    const user = userEvent.setup();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/redirect/i)).toHaveValue(
+        'https://a.example/cb',
+      ),
+    );
+    await user.type(screen.getByLabelText(/redirect/i), '\nmyapp://cb');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    await waitFor(() => expect(h.broadcastOperations).toHaveBeenCalledTimes(1));
+    const [ops] = h.broadcastOperations.mock.calls[0];
+    expect(
+      JSON.parse(ops[0][1].posting_json_metadata).profile.redirect_uris,
+    ).toEqual(['https://a.example/cb', 'myapp://cb']);
+  });
+
+  for (const bad of [
+    'javascript:alert(1)',
+    'data:text/html,x',
+    'myapp://cb#frag',
+  ]) {
+    it(`still refuses ${bad} before broadcasting`, async () => {
+      await addAccount('alice', { posting: '5Kposting' });
+      renderPage();
+      const user = userEvent.setup();
+      await waitFor(() =>
+        expect(screen.getByLabelText(/redirect/i)).toHaveValue(
+          'https://a.example/cb',
+        ),
+      );
+      const uris = screen.getByLabelText(/redirect/i);
+      await user.clear(uris);
+      await user.type(uris, bad);
+      await user.click(screen.getByRole('button', { name: /save/i }));
+      expect(await screen.findByRole('alert')).toHaveTextContent(bad);
+      expect(h.broadcastOperations).not.toHaveBeenCalled();
+    });
+  }
 
   it('saves with account_update2 signed by the posting key', async () => {
     await addAccount('alice', { posting: '5Kposting' });

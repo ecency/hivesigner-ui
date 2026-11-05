@@ -152,7 +152,7 @@ Przelewy i inne operacje portfela wymagają klucza aktywnego osoby. Wysyłaj je 
 Wymienia kod na tokeny albo token odświeżania na nowe tokeny. Wywołuj to tylko ze swojego serwera. Zobacz [Przepływ z kodem](/docs/oauth2#code-flow).
 
 - **Metoda:** `POST`, z wartościami w treści.
-- **Treść:** `code` i `client_secret` albo `refresh_token` i `client_secret`.
+- **Treść:** `code` i `client_secret` albo `refresh_token` i `client_secret`. Kod z wyzwaniem PKCE wymaga także `code_verifier`, a aplikacja bez sekretu wysyła tylko `code` i `code_verifier`. Zobacz [PKCE dla aplikacji mobilnych i na komputer](/docs/pkce).
 - **Nagłówki:** nie wysyłaj żadnego nagłówka `Authorization`.
 
 ```bash

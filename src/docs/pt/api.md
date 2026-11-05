@@ -152,7 +152,7 @@ Transferências e outras operações de carteira exigem a chave ativa da pessoa.
 Troca um código por tokens, ou um token de atualização por tokens novos. Chame apenas do seu servidor. Veja [O fluxo por código](/docs/oauth2#code-flow).
 
 - **Método:** `POST`, com os valores no corpo.
-- **Corpo:** `code` e `client_secret`, ou `refresh_token` e `client_secret`.
+- **Corpo:** `code` e `client_secret`, ou `refresh_token` e `client_secret`. Um código com desafio PKCE também precisa de `code_verifier`, e um aplicativo sem segredo envia apenas `code` e `code_verifier`. Veja [PKCE para aplicativos móveis e de desktop](/docs/pkce).
 - **Cabeçalhos:** não envie nenhum cabeçalho `Authorization`.
 
 ```bash

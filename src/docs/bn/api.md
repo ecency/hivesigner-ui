@@ -152,7 +152,7 @@ curl -X POST https://hivesigner.com/api/broadcast \
 একটি কোডকে টোকেনে, বা একটি রিফ্রেশ টোকেনকে নতুন টোকেনে বদলে দেয়। শুধু আপনার সার্ভার থেকেই ডাকুন। দেখুন [কোড ফ্লো](/docs/oauth2#code-flow)।
 
 - **মেথড:** `POST`, মানগুলো বডিতে।
-- **বডি:** `code` আর `client_secret`, অথবা `refresh_token` আর `client_secret`।
+- **বডি:** `code` আর `client_secret`, অথবা `refresh_token` আর `client_secret`। PKCE চ্যালেঞ্জসহ কোডের জন্য `code_verifier`-ও লাগে, আর সিক্রেটবিহীন অ্যাপ শুধু `code` ও `code_verifier` পাঠায়। দেখুন [মোবাইল আর ডেস্কটপ অ্যাপের জন্য PKCE](/docs/pkce)।
 - **হেডার:** কোনো `Authorization` হেডার পাঠাবেন না।
 
 ```bash

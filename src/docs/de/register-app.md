@@ -42,10 +42,10 @@ Ein Callback (die `redirect_uri` in einer Anmeldeanfrage) ist der Ort, an den Hi
 - **Exakte Übereinstimmung.** Die `redirect_uri` der Anfrage muss eine Ihrer Weiterleitungs-URIs sein, Zeichen für Zeichen: Schema, Host, Port, Pfad und Query.
 - **Nur https.** Ein Callback muss `https://` verwenden. Einfaches `http://` wird nur auf Loopback akzeptiert: `localhost`, `127.0.0.1` oder `[::1]`.
 - **Loopback-Ports dürfen wechseln.** Ein registrierter Loopback-Callback mit einfachem http passt zu jedem Loopback-Host und -Port mit demselben Pfad, derselben Query, demselben Fragment und derselben Benutzerinformation. Ein registrierter `https://`-Loopback-Callback bleibt eine exakte Übereinstimmung.
-- **Keine eigenen Schemata.** Ein Callback wie `myapp://callback` wird abgelehnt. Siehe [Mobile und Desktop-Apps](#native-apps).
+- **Eigene Schemata nur mit PKCE.** Ein Callback wie `myapp://callback` wird nur für eine mit PKCE geschützte Code-Anfrage akzeptiert. Siehe [Mobile und Desktop-Apps](#native-apps).
 - **Keine Fragmente.** Hängen Sie kein `#fragment` an einen Callback.
 
-Die Profilseite weigert sich, einen Callback zu speichern, der nie funktionieren könnte, mit "Keine verwendbare Callback-Adresse (https oder http auf localhost)".
+Die Profilseite weigert sich, einen Callback zu speichern, der nie funktionieren könnte, mit "Keine verwendbare Callback-Adresse (https, http auf localhost oder ein App-Schema wie myapp://callback)".
 
 ### Beispiele {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Angenommen: Loopback, gleicher Pfad |
 | `http://127.0.0.1:3000/other` | Abgelehnt: anderer Pfad |
 | `https://localhost:3000/auth` | Abgelehnt: https passt nicht zu einer Registrierung mit einfachem http |
-| `myapp://auth` | Abgelehnt: eigenes Schema |
+| `myapp://auth` | Abgelehnt, außer es ist registriert und die Anfrage ist eine Code-Anfrage mit PKCE |
 
 Um eine Query auf Ihrem Callback anzunehmen, registrieren Sie den Callback mit genau dieser Query. Hivesigner behält die eigene Query Ihres Callbacks und hängt seine Parameter dahinter an.
 
 ### Mobile und Desktop-Apps {#native-apps}
 
-Hivesigner legt das Token in die Callback-URL. Ein eigenes Schema wie `myapp://` gehört nicht zu genau einer App: Eine andere App auf demselben Gerät kann es beanspruchen und das Token erhalten. Deshalb lehnt Hivesigner eigene Schemata ab und sendet Tokens nur an eine https-Adresse oder an Loopback auf dem Gerät der Person.
+Hivesigner legt das Token in die Callback-URL. Ein eigenes Schema wie `myapp://` gehört nicht zu genau einer App: Eine andere App auf demselben Gerät kann es beanspruchen und das Token erhalten. Deshalb sendet Hivesigner ein Token nie an ein eigenes Schema, sondern nur an eine https-Adresse oder an Loopback auf dem Gerät der Person.
 
-Eine native App nutzt stattdessen einen dieser Wege:
+Eine native App nutzt einen dieser Wege:
 
 - **Ein https-Link, der ihr gehört.** Registrieren Sie einen Callback auf Ihrer Domain, den das Betriebssystem in Ihrer App öffnet (App Links unter Android oder Universal Links unter iOS).
 - **Ein Loopback-Callback.** Die App lauscht für die Weiterleitung auf `127.0.0.1`. Registrieren Sie `http://127.0.0.1/auth` (oder `localhost`) und nutzen Sie zur Laufzeit einen beliebigen freien Port: Der Port muss nicht übereinstimmen.
+- **Ein eigenes Schema mit PKCE.** Die App registriert `myapp://callback`, nutzt den Code-Flow mit einer PKCE-Challenge und braucht kein Client-Secret. Hivesigner sendet einen Code, den nur die App einlösen kann. Siehe [PKCE für mobile und Desktop-Apps](/docs/pkce).
 
 ## Client-Secret {#client-secret}
 

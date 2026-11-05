@@ -152,7 +152,7 @@ Chuyển khoản và các thao tác ví khác cần khóa active của người 
 Đổi một mã lấy token, hoặc một token làm mới lấy bộ token mới. Chỉ gọi từ máy chủ của bạn. Xem [Luồng mã](/docs/oauth2#code-flow).
 
 - **Phương thức:** `POST`, với các giá trị nằm trong thân.
-- **Thân:** `code` và `client_secret`, hoặc `refresh_token` và `client_secret`.
+- **Thân:** `code` và `client_secret`, hoặc `refresh_token` và `client_secret`. Code có thử thách PKCE cần thêm `code_verifier`, còn ứng dụng không có khóa bí mật chỉ gửi `code` và `code_verifier`. Xem [PKCE cho ứng dụng di động và máy tính](/docs/pkce).
 - **Header:** đừng gửi header `Authorization`.
 
 ```bash

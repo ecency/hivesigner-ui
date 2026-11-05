@@ -42,10 +42,10 @@ Un callback (il `redirect_uri` di una richiesta di accesso) è il posto in cui H
 - **Corrispondenza esatta.** Il `redirect_uri` della richiesta deve essere uno dei tuoi URI di reindirizzamento, carattere per carattere: schema, host, porta, percorso e query.
 - **Solo https.** Un callback deve usare `https://`. L’`http://` semplice è accettato solo su loopback: `localhost`, `127.0.0.1` o `[::1]`.
 - **Le porte di loopback possono cambiare.** Un callback di loopback registrato con http semplice corrisponde a qualunque host e porta di loopback con lo stesso percorso, query, frammento e informazioni utente. Un callback di loopback registrato con `https://` resta una corrispondenza esatta.
-- **Niente schemi propri.** Un callback come `myapp://callback` viene rifiutato. Vedi [App mobili e desktop](#native-apps).
+- **Schemi propri solo con PKCE.** Un callback come `myapp://callback` viene accettato solo per una richiesta di codice protetta con PKCE. Vedi [App mobili e desktop](#native-apps).
 - **Niente frammenti.** Non aggiungere un `#fragment` a un callback.
 
-La pagina del profilo si rifiuta di salvare un callback che non potrebbe mai funzionare, con «URL di callback non utilizzabile (https, oppure http su localhost)».
+La pagina del profilo si rifiuta di salvare un callback che non potrebbe mai funzionare, con «URL di callback non utilizzabile (https, http su localhost, oppure uno schema di app come myapp://callback)».
 
 ### Esempi {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Accettato: loopback, stesso percorso |
 | `http://127.0.0.1:3000/other` | Rifiutato: un altro percorso |
 | `https://localhost:3000/auth` | Rifiutato: https non corrisponde a una registrazione con http semplice |
-| `myapp://auth` | Rifiutato: schema proprio |
+| `myapp://auth` | Rifiutato, a meno che sia registrato e la richiesta sia una richiesta di codice con PKCE |
 
 Per accettare una query sul tuo callback, registra il callback con quella query esatta. Hivesigner conserva la query del tuo callback e aggiunge i suoi parametri dopo di essa.
 
 ### App mobili e desktop {#native-apps}
 
-Hivesigner mette il token nell’URL di callback. Uno schema proprio come `myapp://` non è legato a una sola app: un’altra app sullo stesso dispositivo può rivendicarlo e ricevere il token. Per questo Hivesigner rifiuta gli schemi propri e manda i token solo a un indirizzo https o al loopback sul dispositivo della persona.
+Hivesigner mette il token nell’URL di callback. Uno schema proprio come `myapp://` non è legato a una sola app: un’altra app sullo stesso dispositivo può rivendicarlo e ricevere il token. Per questo Hivesigner non manda mai un token a uno schema proprio, solo a un indirizzo https o al loopback sul dispositivo della persona.
 
-Un’app nativa usa invece una di queste vie:
+Un’app nativa usa una di queste vie:
 
 - **Un link https che le appartiene.** Registra un callback sul tuo dominio che il sistema operativo apre nella tua app (App Links su Android o Universal Links su iOS).
 - **Un callback di loopback.** L’app ascolta il reindirizzamento su `127.0.0.1`. Registra `http://127.0.0.1/auth` (o `localhost`) e usa una porta libera qualsiasi in esecuzione: la porta non deve corrispondere.
+- **Il suo schema con PKCE.** L’app registra `myapp://callback`, usa il flusso con codice con una sfida PKCE e non ha bisogno di un client secret. Hivesigner manda un codice che solo l’app può scambiare. Vedi [PKCE per app mobili e desktop](/docs/pkce).
 
 ## Client secret {#client-secret}
 

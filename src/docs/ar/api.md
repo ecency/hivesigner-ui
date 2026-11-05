@@ -152,7 +152,7 @@ curl -X POST https://hivesigner.com/api/broadcast \
 تستبدل كودًا برموز، أو رمز تجديد برموز جديدة. استدعِها من خادمك فقط. راجع [التدفق بالكود](/docs/oauth2#code-flow).
 
 - **الطريقة:** `POST`، مع القيم في الجسم.
-- **الجسم:** `code` و`client_secret`، أو `refresh_token` و`client_secret`.
+- **الجسم:** `code` و`client_secret`، أو `refresh_token` و`client_secret`. والكود المقترن بتحدّي PKCE يحتاج أيضًا إلى `code_verifier`، والتطبيق بلا مفتاح سري يرسل `code` و`code_verifier` فقط. راجع [PKCE للتطبيقات على الجوال وسطح المكتب](/docs/pkce).
 - **الترويسات:** لا ترسل أي ترويسة `Authorization`.
 
 ```bash

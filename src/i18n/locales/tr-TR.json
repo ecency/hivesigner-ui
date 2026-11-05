@@ -276,14 +276,15 @@
     "website": "Web sitesi",
     "location": "Konum",
     "redirect_uris": "Yönlendirme URI'leri",
-    "one_uri_line": "Her satıra bir URI yazın; her biri bir protokol içermeli, parça (#) veya göreli yol içermemeli.",
+    "one_uri_line": "Her satıra bir URI yazın; her biri bir protokol içermeli, parça (#) veya göreli yol içermemeli. myapp://callback gibi bir uygulama şeması yalnızca PKCE'li kod akışında çalışır.",
     "creator": "Oluşturan",
     "status": "Durum",
     "production": "Üretim",
     "sandbox": "Kum havuzu",
     "secret": "İstemci gizli anahtarı",
     "blank_field": "Mevcut gizli anahtarı korumak için boş bırakın.",
-    "bad_callbacks": "Kullanılamayan geri çağırma adresleri (https ya da localhost üzerinde http olmalı): {uris}"
+    "bad_callbacks": "Kullanılamayan geri çağırma adresi (https, localhost üzerinde http ya da myapp://callback gibi bir uygulama şeması olmalı): {uris}",
+    "pkce_public": "Bu uygulamanın yerel uygulamasının PKCE kodlarını gizli anahtar olmadan değiştirmesine izin ver"
   },
   "signs": {
     "nothing_matches": "Eşleşen bir şey yok.",

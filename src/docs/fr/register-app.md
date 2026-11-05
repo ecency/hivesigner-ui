@@ -42,10 +42,10 @@ Une URL de rappel (le `redirect_uri` d’une demande de connexion) est l’endro
 - **Correspondance exacte.** Le `redirect_uri` de la demande doit être l’une de vos URI de redirection, caractère pour caractère : schéma, hôte, port, chemin et requête.
 - **https uniquement.** Une URL de rappel doit utiliser `https://`. Le `http://` simple n’est accepté que sur le bouclage local : `localhost`, `127.0.0.1` ou `[::1]`.
 - **Les ports de bouclage peuvent changer.** Une URL de rappel de bouclage enregistrée en http simple correspond à tout hôte et port de bouclage ayant les mêmes chemin, requête, fragment et informations d’utilisateur. Une URL de rappel de bouclage enregistrée en `https://` reste une correspondance exacte.
-- **Pas de schémas propriétaires.** Une URL de rappel comme `myapp://callback` est refusée. Voir [Applications mobiles et de bureau](#native-apps).
+- **Schémas propriétaires seulement avec PKCE.** Une URL de rappel comme `myapp://callback` n’est acceptée que pour une requête de code protégée par PKCE. Voir [Applications mobiles et de bureau](#native-apps).
 - **Pas de fragments.** N’ajoutez pas de `#fragment` à une URL de rappel.
 
-La page de profil refuse d’enregistrer une URL de rappel qui ne pourrait jamais fonctionner, avec « URL de rappel inutilisable (https, ou http sur localhost) ».
+La page de profil refuse d’enregistrer une URL de rappel qui ne pourrait jamais fonctionner, avec « URL de rappel inutilisable (https, http sur localhost, ou un schéma d’application tel que myapp://callback) ».
 
 ### Exemples {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Acceptée : bouclage, même chemin |
 | `http://127.0.0.1:3000/other` | Refusée : autre chemin |
 | `https://localhost:3000/auth` | Refusée : https ne correspond pas à un enregistrement en http simple |
-| `myapp://auth` | Refusée : schéma propriétaire |
+| `myapp://auth` | Refusée, sauf si elle est enregistrée et que la requête est une requête de code avec PKCE |
 
 Pour accepter une requête sur votre URL de rappel, enregistrez l’URL avec cette requête exacte. Hivesigner conserve la requête propre à votre URL de rappel et ajoute ses paramètres après elle.
 
 ### Applications mobiles et de bureau {#native-apps}
 
-Hivesigner met le jeton dans l’URL de rappel. Un schéma propriétaire comme `myapp://` n’est lié à aucune application en particulier : une autre application du même appareil peut le revendiquer et recevoir le jeton. Hivesigner refuse donc les schémas propriétaires et n’envoie les jetons qu’à une adresse https ou au bouclage local de l’appareil de la personne.
+Hivesigner met le jeton dans l’URL de rappel. Un schéma propriétaire comme `myapp://` n’est lié à aucune application en particulier : une autre application du même appareil peut le revendiquer et recevoir le jeton. Hivesigner n’envoie donc jamais de jeton à un schéma propriétaire, seulement à une adresse https ou au bouclage local de l’appareil de la personne.
 
-Une application native utilise plutôt l’une de ces voies :
+Une application native utilise l’une de ces voies :
 
 - **Un lien https qui lui appartient.** Enregistrez une URL de rappel sur votre domaine que le système d’exploitation ouvre dans votre application (App Links sur Android ou Universal Links sur iOS).
 - **Une URL de rappel de bouclage.** L’application écoute la redirection sur `127.0.0.1`. Enregistrez `http://127.0.0.1/auth` (ou `localhost`) et utilisez n’importe quel port libre à l’exécution : le port n’a pas à correspondre.
+- **Son propre schéma avec PKCE.** L’application enregistre `myapp://callback`, utilise le flux par code avec un défi PKCE et n’a pas besoin de secret client. Hivesigner envoie un code que seule l’application peut échanger. Voir [PKCE pour les applications mobiles et de bureau](/docs/pkce).
 
 ## Secret client {#client-secret}
 

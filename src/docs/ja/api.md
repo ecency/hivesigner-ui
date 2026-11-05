@@ -152,7 +152,7 @@ Hive のノードがトランザクションを受け付けた時点で API が�
 コードをトークンと、または更新トークンを新しいトークンと交換します。サーバーからのみ呼んでください。[コードフロー](/docs/oauth2#code-flow)を参照してください。
 
 - **メソッド:** `POST`。値は本体に入れます。
-- **本体:** `code` と `client_secret`、または `refresh_token` と `client_secret`。
+- **本体:** `code` と `client_secret`、または `refresh_token` と `client_secret`。PKCE チャレンジ付きのコードには `code_verifier` も必要で、シークレットを持たないアプリは `code` と `code_verifier` だけを送ります。[モバイルとデスクトップのアプリ向け PKCE](/docs/pkce)を参照してください。
 - **ヘッダー:** `Authorization` ヘッダーは付けないでください。
 
 ```bash

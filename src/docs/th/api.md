@@ -152,7 +152,7 @@ API ตอบทันทีที่โหนด Hive รับธุรกร�
 แลกโค้ดเป็นโทเค็น หรือแลกโทเค็นรีเฟรชเป็นโทเค็นชุดใหม่ ให้เรียกจากเซิร์ฟเวอร์ของคุณเท่านั้น ดู [โฟลว์แบบโค้ด](/docs/oauth2#code-flow)
 
 - **เมธอด:** `POST` โดยใส่ค่าไว้ในเนื้อหา
-- **เนื้อหา:** `code` กับ `client_secret` หรือ `refresh_token` กับ `client_secret`
+- **เนื้อหา:** `code` กับ `client_secret` หรือ `refresh_token` กับ `client_secret` โค้ดที่มี PKCE challenge ต้องใช้ `code_verifier` ด้วย และแอปที่ไม่มีซีเคร็ตส่งเพียง `code` กับ `code_verifier` ดู [PKCE สำหรับแอปมือถือและเดสก์ท็อป](/docs/pkce)
 - **เฮดเดอร์:** อย่าส่งเฮดเดอร์ `Authorization`
 
 ```bash

@@ -152,7 +152,7 @@ Overboekingen en andere portemonnee-operaties hebben de active-sleutel van de pe
 Wisselt een code om voor tokens, of een verversingstoken voor nieuwe tokens. Roep dit alleen vanaf jouw server aan. Zie [De codestroom](/docs/oauth2#code-flow).
 
 - **Methode:** `POST`, met de waarden in de inhoud.
-- **Inhoud:** `code` en `client_secret`, of `refresh_token` en `client_secret`.
+- **Inhoud:** `code` en `client_secret`, of `refresh_token` en `client_secret`. Een code met een PKCE-challenge heeft ook `code_verifier` nodig, en een app zonder geheim stuurt alleen `code` en `code_verifier`. Zie [PKCE voor mobiele en desktop-apps](/docs/pkce).
 - **Headers:** stuur geen `Authorization`-header mee.
 
 ```bash

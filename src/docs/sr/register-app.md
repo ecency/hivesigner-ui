@@ -42,10 +42,10 @@ Povratna adresa (`redirect_uri` u zahtevu za prijavu) jeste mesto na koje Hivesi
 - **Tačno poklapanje.** `redirect_uri` u zahtevu mora da bude jedna od vaših URI adresa za preusmeravanje, znak po znak: šema, domaćin, port, putanja i upitni deo.
 - **Samo https.** Povratna adresa mora da koristi `https://`. Običan `http://` prihvata se samo na povratnoj petlji: `localhost`, `127.0.0.1` ili `[::1]`.
 - **Portovi povratne petlje smeju da se menjaju.** Povratna adresa na povratnoj petlji registrovana sa običnim http poklapa se sa svakim domaćinom i portom povratne petlje koji imaju istu putanju, upitni deo, fragment i podatke o korisniku. Adresa na povratnoj petlji registrovana sa `https://` ostaje tačno poklapanje.
-- **Bez sopstvenih šema.** Povratna adresa poput `myapp://callback` biva odbijena. Pogledajte [Mobilne i računarske aplikacije](#native-apps).
+- **Sopstvene šeme samo uz PKCE.** Povratna adresa poput `myapp://callback` prihvata se samo za zahtev za kod zaštićen PKCE-om. Pogledajte [Mobilne i računarske aplikacije](#native-apps).
 - **Bez fragmenata.** Nemojte dodavati `#fragment` na povratnu adresu.
 
-Stranica profila odbija da sačuva povratnu adresu koja nikada ne bi mogla da radi i kaže «Neupotrebljive povratne adrese (dozvoljeni su https ili http na localhost)».
+Stranica profila odbija da sačuva povratnu adresu koja nikada ne bi mogla da radi i kaže «Neupotrebljiva povratna adresa (dozvoljeni su https, http na localhost ili šema aplikacije kao što je myapp://callback)».
 
 ### Primeri {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Prihvaćena: povratna petlja, ista putanja |
 | `http://127.0.0.1:3000/other` | Odbijena: druga putanja |
 | `https://localhost:3000/auth` | Odbijena: https se ne poklapa sa registracijom preko običnog http |
-| `myapp://auth` | Odbijena: sopstvena šema |
+| `myapp://auth` | Odbijena, osim ako je registrovana i zahtev je zahtev za kod sa PKCE-om |
 
 Da biste na svojoj povratnoj adresi primali upitni deo, registrujte adresu baš sa tim upitnim delom. Hivesigner zadržava sopstveni upitni deo vaše adrese i svoje parametre dodaje posle njega.
 
 ### Mobilne i računarske aplikacije {#native-apps}
 
-Hivesigner stavlja token u povratnu adresu. Sopstvena šema poput `myapp://` nije vezana za jednu aplikaciju: druga aplikacija na istom uređaju može da je prisvoji i primi token. Zato Hivesigner odbija sopstvene šeme i tokene šalje samo na https adresu ili na povratnu petlju na uređaju same osobe.
+Hivesigner stavlja token u povratnu adresu. Sopstvena šema poput `myapp://` nije vezana za jednu aplikaciju: druga aplikacija na istom uređaju može da je prisvoji i primi token. Zato Hivesigner nikada ne šalje token na sopstvenu šemu, samo na https adresu ili na povratnu petlju na uređaju same osobe.
 
-Izvorna aplikacija umesto toga koristi jedan od ovih puteva:
+Izvorna aplikacija koristi jedan od ovih puteva:
 
 - **https vezu koja joj pripada.** Registrujte povratnu adresu na svom domenu koju operativni sistem otvara u vašoj aplikaciji (App Links na Androidu ili Universal Links na iOS-u).
 - **Povratnu adresu na povratnoj petlji.** Aplikacija osluškuje preusmeravanje na `127.0.0.1`. Registrujte `http://127.0.0.1/auth` (ili `localhost`) i pri radu koristite bilo koji slobodan port: port ne mora da se poklapa.
+- **Sopstvena šema uz PKCE.** Aplikacija registruje `myapp://callback`, koristi tok sa kodom uz PKCE izazov i ne treba joj tajna klijenta. Hivesigner šalje kod koji može da zameni samo ta aplikacija. Pogledajte [PKCE za mobilne i računarske aplikacije](/docs/pkce).
 
 ## Tajna klijenta {#client-secret}
 

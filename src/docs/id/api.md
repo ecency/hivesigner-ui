@@ -152,7 +152,7 @@ Transfer dan operasi dompet lainnya memerlukan kunci active orang itu. Kirimkan 
 Menukar kode dengan token, atau token penyegaran dengan token baru. Panggil hanya dari server Anda. Lihat [Alur kode](/docs/oauth2#code-flow).
 
 - **Metode:** `POST`, dengan nilai-nilainya di badan.
-- **Badan:** `code` dan `client_secret`, atau `refresh_token` dan `client_secret`.
+- **Badan:** `code` dan `client_secret`, atau `refresh_token` dan `client_secret`. Kode dengan tantangan PKCE juga memerlukan `code_verifier`, dan aplikasi tanpa rahasia hanya mengirim `code` dan `code_verifier`. Lihat [PKCE untuk aplikasi ponsel dan desktop](/docs/pkce).
 - **Tajuk:** jangan mengirim tajuk `Authorization` apa pun.
 
 ```bash
