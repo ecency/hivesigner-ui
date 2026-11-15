@@ -149,7 +149,7 @@ Transfers and other wallet operations need the user's active key. Send them as [
 
 ## POST /api/oauth2/token {#oauth2-token}
 
-Exchanges a code for tokens, or a refresh token for new tokens. Call it from your server only. See [The code flow](/docs/oauth2#code-flow).
+Exchanges a code for tokens, or a refresh token for new tokens. A web app calls it from its server, with the client secret, which must never reach a browser. A mobile or desktop app with no secret calls it directly, with the PKCE `code_verifier` instead. See [The code flow](/docs/oauth2#code-flow).
 
 - **Method:** `POST`, with the values in the body.
 - **Body:** `code` and `client_secret`, or `refresh_token` and `client_secret`. A code with a PKCE challenge also needs `code_verifier`. An app with no secret, or one that allows it with `pkce_public`, sends only `code` and `code_verifier`. A `client_secret` that is sent is always checked, whatever its value. See [PKCE for mobile and desktop apps](/docs/pkce).
