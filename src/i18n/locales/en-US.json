@@ -276,14 +276,15 @@
     "website": "Website",
     "location": "Location",
     "redirect_uris": "Redirect URIs",
-    "one_uri_line": "One URI per line, each with a protocol, and no fragments or relative paths.",
+    "one_uri_line": "One URI per line, each with a protocol, and no fragments or relative paths. An app scheme such as myapp://callback works only for the code flow with PKCE.",
     "creator": "Creator",
     "status": "Status",
     "production": "Production",
     "sandbox": "Sandbox",
     "secret": "Client secret",
     "blank_field": "Leave this blank to keep the current secret.",
-    "bad_callbacks": "Not a usable callback (https, or http on localhost): {uris}"
+    "bad_callbacks": "Not a usable callback (https, http on localhost, or an app scheme such as myapp://callback): {uris}",
+    "pkce_public": "Let this app's native app exchange PKCE codes without the secret"
   },
   "signs": {
     "nothing_matches": "Nothing matches that.",

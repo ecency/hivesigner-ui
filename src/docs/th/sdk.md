@@ -61,7 +61,7 @@ const url = client.getLoginURL('STATE');
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-SDK ไม่มีเมธอดสำหรับการแลกโค้ดในโฟลว์แบบโค้ด เซิร์ฟเวอร์ของคุณต้องส่งโค้ดกับไคลเอ็นต์ซีเคร็ตไปยัง API เอง ตามที่ [แลกโค้ด](/docs/oauth2#exchange-code) แสดงไว้
+ตั้งแต่ SDK 4.1 เป็นต้นไป `client.exchangeCode(code, codeVerifier, clientSecret)` จะส่งโค้ดไปยัง API: แอปเนทีฟส่ง PKCE verifier ของตน ส่วนเซิร์ฟเวอร์ส่งไคลเอ็นต์ซีเคร็ต หากใช้ SDK รุ่นเก่ากว่า เซิร์ฟเวอร์ของคุณต้องส่งโค้ดกับไคลเอ็นต์ซีเคร็ตไปยัง API เอง ตามที่ [แลกโค้ด](/docs/oauth2#exchange-code) แสดงไว้
 
 ### ดูว่าใครคือผู้ใช้ {#me}
 

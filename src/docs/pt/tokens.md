@@ -54,7 +54,7 @@ Decodificar não é conferir. Qualquer um pode montar um texto que decodifica ne
 
 | Token | `type` | `app` | Assinado por | Onde você o obtém |
 | --- | --- | --- | --- | --- |
-| Token de acesso, fluxo por token | `posting` | Seu aplicativo | A chave de postagem da pessoa, ou a chave ativa dela quando o Hivesigner não tem chave de postagem para a conta | `access_token` na sua URL de retorno |
+| Token de acesso, fluxo por token | `posting`, ou `login` para um código só de login (`scope=login`) | Seu aplicativo | A chave de postagem da pessoa, ou a chave ativa dela quando o Hivesigner não tem chave de postagem para a conta | `access_token` na sua URL de retorno |
 | Token de login, `scope=login` | `login` | Seu aplicativo | A chave de postagem ou ativa da pessoa | `access_token` na sua URL de retorno |
 | Token de login, site sem conta de aplicativo | `login` | Nenhuma | A chave de postagem ou ativa da pessoa | `access_token` na sua URL de retorno |
 | Código | `code` | Seu aplicativo | A chave de postagem ou ativa da pessoa | `code` na sua URL de retorno |

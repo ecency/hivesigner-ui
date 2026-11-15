@@ -152,7 +152,7 @@ Hive のノードがトランザクションを受け付けた時点で API が�
 コードをトークンと、または更新トークンを新しいトークンと交換します。サーバーからのみ呼んでください。[コードフロー](/docs/oauth2#code-flow)を参照してください。
 
 - **メソッド:** `POST`。値は本体に入れます。
-- **本体:** `code` と `client_secret`、または `refresh_token` と `client_secret`。
+- **本体:** `code` と `client_secret`、または `refresh_token` と `client_secret`。PKCE チャレンジ付きのコードには `code_verifier` も必要で、シークレットを持たないアプリは `code` と `code_verifier` だけを送ります。[モバイルとデスクトップのアプリ向け PKCE](/docs/pkce)を参照してください。
 - **ヘッダー:** `Authorization` ヘッダーは付けないでください。
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-呼び出しごとに新しいアクセストークンと新しい更新トークンが返ります。どちらも @hivesigner が署名しています。`expires_in` はアクセストークンの有効期間で、秒単位です（7 日）。
+呼び出しごとに新しいアクセストークンと新しい更新トークンが返ります。どちらも @hivesigner が署名しています。ログイン専用のコード（`scope=login`）や、クライアントシークレットなしの PKCE 交換には、更新トークンはありません。`expires_in` はアクセストークンの有効期間で、秒単位です（7 日）。
 
 エラー: `401 invalid_grant`。送った値が有効なコードでも更新トークンでもない場合、説明は「The token has invalid role」になります。コードやシークレットが合わない場合は「The code or secret is not valid」になります。
 

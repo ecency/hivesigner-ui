@@ -54,7 +54,7 @@ export function decodeToken(token) {
 
 | โทเค็น | `type` | `app` | ลงนามโดย | ได้รับจากที่ใด |
 | --- | --- | --- | --- | --- |
-| โทเค็นการเข้าถึง โฟลว์แบบโทเค็น | `posting` | แอปของคุณ | คีย์ posting ของผู้ใช้ หรือคีย์ active เมื่อ Hivesigner ไม่มีคีย์ posting ของบัญชีนั้น | `access_token` ที่ callback ของคุณ |
+| โทเค็นการเข้าถึง โฟลว์แบบโทเค็น | `posting` หรือ `login` สำหรับโค้ดที่ใช้ลงชื่อเข้าใช้อย่างเดียว (`scope=login`) | แอปของคุณ | คีย์ posting ของผู้ใช้ หรือคีย์ active เมื่อ Hivesigner ไม่มีคีย์ posting ของบัญชีนั้น | `access_token` ที่ callback ของคุณ |
 | โทเค็นเข้าสู่ระบบ `scope=login` | `login` | แอปของคุณ | คีย์ posting หรือ active ของผู้ใช้ | `access_token` ที่ callback ของคุณ |
 | โทเค็นเข้าสู่ระบบ เว็บไซต์ที่ไม่มีบัญชีแอป | `login` | ไม่มี | คีย์ posting หรือ active ของผู้ใช้ | `access_token` ที่ callback ของคุณ |
 | โค้ด | `code` | แอปของคุณ | คีย์ posting หรือ active ของผู้ใช้ | `code` ที่ callback ของคุณ |

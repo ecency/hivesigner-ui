@@ -23,7 +23,7 @@ import { readAccountNow } from '@/lib/account-now';
 import { getKeys, stillSelected } from '@/lib/accounts';
 import { metadataOf, profileForEditing } from '@/lib/app-profile';
 import { type Account, getAccount } from '@/lib/hive';
-import { isValidRedirectUri } from '@/lib/oauth';
+import { isRegistrableRedirectUri } from '@/lib/oauth';
 import { accountKey } from '@/lib/query-keys';
 import { broadcastOperations } from '@/lib/sign-tx';
 import { useAccounts } from '@/lib/use-accounts';
@@ -53,6 +53,9 @@ interface ProfileForm {
   is_public: string;
   /** Typed to set a new secret. Never read back: only its hash is on chain. */
   secret: string;
+  /** '1' lets a PKCE code be exchanged without the secret, for an app that
+      also has a native app on this account (#164). Saved as the boolean true. */
+  pkce_public: string;
 }
 
 /** What the chain stores for a client secret: its sha256, as hex. The API
@@ -81,6 +84,8 @@ export function readProfile(account: Account | null | undefined): ProfileForm {
     // which read the string "0" written by some other tool as production.
     is_public: profile.is_public === true ? '1' : '0',
     secret: '',
+    // Only the boolean true opts in, as hivesigner-api reads it.
+    pkce_public: profile.pkce_public === true ? '1' : '0',
   };
 }
 
@@ -129,6 +134,8 @@ export function buildProfileMetadata(
   if (form.creator) profile.creator = form.creator;
   else delete profile.creator;
   profile.is_public = form.is_public === '1';
+  if (form.pkce_public === '1') profile.pkce_public = true;
+  else delete profile.pkce_public;
   // The secret is stored as its hash and never shown again, so the field
   // starts empty on every visit: blank keeps the hash that is already there,
   // and only a value typed now replaces it.
@@ -243,6 +250,8 @@ function Profile() {
     // Reject a callback that could never be used: isRegisteredRedirect now
     // refuses non-loopback http, so saving one would register something the
     // consent screen silently declines. Fail here, where it can be corrected.
+    // An app's own scheme (myapp://cb) is saved: the consent screen accepts it
+    // for a PKCE code request only.
     // Only while the account is an app: otherwise the field is hidden and its
     // callbacks are left as they are, and refusing the save over one the owner
     // cannot see would leave them no way to correct it.
@@ -253,7 +262,7 @@ function Profile() {
             .split('\n')
             .map((u) => u.trim())
             .filter(Boolean)
-            .filter((u) => !isValidRedirectUri(u));
+            .filter((u) => !isRegistrableRedirectUri(u));
     if (bad.length > 0) {
       setStatus('error');
       setError('');
@@ -404,6 +413,18 @@ function Profile() {
               onChange={(value) => set('secret', value)}
             />
             <span className={`${mutedXs} m-0`}>{t('profile.blank_field')}</span>
+          </label>
+
+          {/* For an account shared by a server (which keeps the secret) and a
+              native app (which cannot). Off by default: see docs/pkce. */}
+          <label className="flex items-start gap-2 text-[13.5px]">
+            <input
+              type="checkbox"
+              className="accent-brand mt-1"
+              checked={current.pkce_public === '1'}
+              onChange={(e) => set('pkce_public', e.target.checked ? '1' : '0')}
+            />
+            <span>{t('profile.pkce_public')}</span>
           </label>
         </>
       )}

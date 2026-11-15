@@ -42,10 +42,10 @@ Callback (tức `redirect_uri` trong một yêu cầu đăng nhập) là nơi Hi
 - **Khớp chính xác.** `redirect_uri` trong yêu cầu phải là một trong các URI chuyển hướng của bạn, từng ký tự một: giao thức, máy chủ, cổng, đường dẫn và chuỗi truy vấn.
 - **Chỉ https.** Callback phải dùng `https://`. `http://` thường chỉ được chấp nhận trên loopback: `localhost`, `127.0.0.1` hoặc `[::1]`.
 - **Cổng loopback có thể thay đổi.** Một callback loopback http thường đã đăng ký sẽ khớp với mọi máy chủ và cổng loopback có cùng đường dẫn, truy vấn, đoạn và thông tin người dùng. Một callback loopback `https://` đã đăng ký thì vẫn phải khớp chính xác.
-- **Không dùng giao thức riêng.** Một callback như `myapp://callback` sẽ bị từ chối. Xem [Ứng dụng di động và máy tính](#native-apps).
+- **Giao thức riêng chỉ với PKCE.** Một callback như `myapp://callback` chỉ được chấp nhận cho yêu cầu code được bảo vệ bằng PKCE. Xem [Ứng dụng di động và máy tính](#native-apps).
 - **Không có đoạn.** Đừng thêm `#fragment` vào callback.
 
-Trang hồ sơ từ chối lưu một callback không bao giờ có thể hoạt động, kèm dòng “Callback không sử dụng được (phải là https, hoặc http trên localhost)”.
+Trang hồ sơ từ chối lưu một callback không bao giờ có thể hoạt động, kèm dòng “Callback không sử dụng được (phải là https, http trên localhost, hoặc scheme ứng dụng như myapp://callback)”.
 
 ### Ví dụ {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Chấp nhận: loopback, cùng đường dẫn |
 | `http://127.0.0.1:3000/other` | Từ chối: đường dẫn khác |
 | `https://localhost:3000/auth` | Từ chối: https không khớp với đăng ký http thường |
-| `myapp://auth` | Từ chối: giao thức riêng |
+| `myapp://auth` | Từ chối, trừ khi đã đăng ký và yêu cầu là yêu cầu code có PKCE |
 
 Để chấp nhận một truy vấn trên callback của bạn, hãy đăng ký callback kèm đúng truy vấn đó. Hivesigner giữ nguyên truy vấn của bạn và thêm các tham số của nó vào sau.
 
 ### Ứng dụng di động và máy tính {#native-apps}
 
-Hivesigner đặt token vào URL callback. Một giao thức riêng như `myapp://` không gắn với một ứng dụng duy nhất: một ứng dụng khác trên cùng thiết bị có thể nhận nó và lấy token. Vì vậy Hivesigner từ chối giao thức riêng và chỉ gửi token tới một địa chỉ https hoặc tới loopback trên chính thiết bị của người dùng.
+Hivesigner đặt token vào URL callback. Một giao thức riêng như `myapp://` không gắn với một ứng dụng duy nhất: một ứng dụng khác trên cùng thiết bị có thể nhận nó và lấy token. Vì vậy Hivesigner không bao giờ gửi token tới giao thức riêng, chỉ gửi tới một địa chỉ https hoặc tới loopback trên chính thiết bị của người dùng.
 
-Một ứng dụng gốc dùng một trong hai cách sau:
+Một ứng dụng gốc dùng một trong các cách sau:
 
 - **Một liên kết https mà nó sở hữu.** Đăng ký một callback trên tên miền của bạn mà hệ điều hành mở trong ứng dụng của bạn (Android App Links hoặc iOS Universal Links).
 - **Một callback loopback.** Ứng dụng lắng nghe trên `127.0.0.1` để nhận chuyển hướng. Hãy đăng ký `http://127.0.0.1/auth` (hoặc `localhost`) và dùng bất kỳ cổng rảnh nào lúc chạy: cổng không cần khớp.
+- **Giao thức riêng với PKCE.** Ứng dụng đăng ký `myapp://callback`, dùng luồng mã với thử thách PKCE và không cần khóa bí mật của client. Hivesigner gửi một code mà chỉ ứng dụng đó đổi được. Xem [PKCE cho ứng dụng di động và máy tính](/docs/pkce).
 
 ## Khóa bí mật của client {#client-secret}
 

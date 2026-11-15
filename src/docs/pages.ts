@@ -14,6 +14,7 @@ export const DOC_SECTIONS = [
       'how-it-works',
       'register-app',
       'oauth2',
+      'pkce',
       'tokens',
       'api',
       'sign-links',

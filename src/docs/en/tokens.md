@@ -58,7 +58,7 @@ Decoding is not checking. Anyone can build a string that decodes to this shape. 
 | Sign-in token, `scope=login` | `login` | Your app | The user's posting or active key | `access_token` on your callback |
 | Sign-in token, site with no app account | `login` | None | The user's posting or active key | `access_token` on your callback |
 | Code | `code` | Your app | The user's posting or active key | `code` on your callback |
-| Access token, code flow | `posting` | Your app | The posting key of @hivesigner | [`/api/oauth2/token`](/docs/api#oauth2-token) |
+| Access token, code flow | `posting`, or `login` for a sign-in only code (`scope=login`) | Your app | The posting key of @hivesigner | [`/api/oauth2/token`](/docs/api#oauth2-token) |
 | Refresh token | `refresh` | Your app | The posting key of @hivesigner | [`/api/oauth2/token`](/docs/api#oauth2-token) |
 
 A code and a refresh token are not access tokens. Never accept either one as a sign-in.

@@ -61,7 +61,7 @@ const url = client.getLoginURL('STATE');
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-SDK 沒有提供授權碼流程中兌換授權碼的方法。你的伺服器要自己把授權碼和用戶端密鑰送到 API，就像[兌換授權碼](/docs/oauth2#exchange-code)所示。
+從 SDK 4.1 起，`client.exchangeCode(code, codeVerifier, clientSecret)` 會把授權碼送到 API：原生應用程式傳入其 PKCE 驗證碼，伺服器傳入其用戶端密鑰。使用較舊的 SDK 時，你的伺服器要自己把授權碼和用戶端密鑰送到 API，就像[兌換授權碼](/docs/oauth2#exchange-code)所示。
 
 ### 取得使用者 {#me}
 

@@ -281,14 +281,15 @@
     "website": "Veb-sajt",
     "location": "Lokacija",
     "redirect_uris": "URI adrese za preusmeravanje",
-    "one_uri_line": "Jedan URI po redu, svaki sa protokolom, bez fragmenata i relativnih putanja.",
+    "one_uri_line": "Jedan URI po redu, svaki sa protokolom, bez fragmenata i relativnih putanja. Šema aplikacije kao što je myapp://callback radi samo uz tok sa kodom i PKCE.",
     "creator": "Autor",
     "status": "Status",
     "production": "Produkcija",
     "sandbox": "Testno okruženje",
     "secret": "Tajna klijenta",
     "blank_field": "Ostavite prazno da biste zadržali trenutnu tajnu.",
-    "bad_callbacks": "Neupotrebljive povratne adrese (dozvoljeni su https ili http na localhost): {uris}"
+    "bad_callbacks": "Neupotrebljiva povratna adresa (dozvoljeni su https, http na localhost ili šema aplikacije kao što je myapp://callback): {uris}",
+    "pkce_public": "Dozvoli nativnoj aplikaciji ove aplikacije da menja PKCE kodove bez tajne"
   },
   "signs": {
     "nothing_matches": "Nema rezultata.",

@@ -61,7 +61,7 @@ const url = client.getLoginURL('STATE');
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-Метода для обмена в потоке с кодом в SDK нет. Ваш сервер сам отправляет код и секрет клиента в API, как показано в [Обменяйте код](/docs/oauth2#exchange-code).
+Начиная с SDK 4.1 метод `client.exchangeCode(code, codeVerifier, clientSecret)` отправляет код в API: нативное приложение передаёт свой верификатор PKCE, а сервер секрет клиента. В более старом SDK ваш сервер сам отправляет код и секрет клиента в API, как показано в [Обменяйте код](/docs/oauth2#exchange-code).
 
 ### Получите человека {#me}
 

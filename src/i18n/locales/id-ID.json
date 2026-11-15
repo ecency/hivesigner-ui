@@ -271,14 +271,15 @@
     "website": "Situs web",
     "location": "Lokasi",
     "redirect_uris": "URI pengalihan",
-    "one_uri_line": "Satu URI per baris, masing-masing dengan protokol, tanpa fragmen atau path relatif.",
+    "one_uri_line": "Satu URI per baris, masing-masing dengan protokol, tanpa fragmen atau path relatif. Skema aplikasi seperti myapp://callback hanya berfungsi untuk alur kode dengan PKCE.",
     "creator": "Pembuat",
     "status": "Status",
     "production": "Produksi",
     "sandbox": "Sandbox",
     "secret": "Rahasia klien",
     "blank_field": "Biarkan kosong untuk mempertahankan rahasia saat ini.",
-    "bad_callbacks": "Bukan callback yang dapat digunakan (https, atau http di localhost): {uris}"
+    "bad_callbacks": "Bukan callback yang dapat digunakan (https, http di localhost, atau skema aplikasi seperti myapp://callback): {uris}",
+    "pkce_public": "Izinkan aplikasi native dari aplikasi ini menukar kode PKCE tanpa secret"
   },
   "signs": {
     "nothing_matches": "Tidak ada yang cocok.",

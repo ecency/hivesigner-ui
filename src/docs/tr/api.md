@@ -152,7 +152,7 @@ Transferler ve diğer cüzdan operasyonları kullanıcının aktif anahtarını 
 Bir kodu token'larla ya da bir yenileme token'ını yeni token'larla takas eder. Yalnızca sunucunuzdan çağırın. Bkz. [Kod akışı](/docs/oauth2#code-flow).
 
 - **Yöntem:** `POST`, değerler gövdede.
-- **Gövde:** `code` ve `client_secret` ya da `refresh_token` ve `client_secret`.
+- **Gövde:** `code` ve `client_secret` ya da `refresh_token` ve `client_secret`. PKCE sınamalı bir kod için `code_verifier` da gerekir; gizli anahtarı olmayan bir uygulama yalnızca `code` ve `code_verifier` gönderir. Bkz. [Mobil ve masaüstü uygulamalar için PKCE](/docs/pkce).
 - **Başlıklar:** `Authorization` başlığı göndermeyin.
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Her çağrı yeni bir erişim token'ı ve yeni bir yenileme token'ı döndürür. İkisini de @hivesigner imzalar. `expires_in`, erişim token'ının saniye cinsinden ömrüdür (7 gün).
+Her çağrı yeni bir erişim token'ı ve yeni bir yenileme token'ı döndürür. İkisini de @hivesigner imzalar. Yalnızca oturum açma için olan bir kod (`scope=login`) ya da istemci sırrı olmayan bir PKCE değişimi için yenileme token'ı yoktur. `expires_in`, erişim token'ının saniye cinsinden ömrüdür (7 gün).
 
 Hatalar: `401 invalid_grant`. Gönderilen değer geçerli bir kod ya da yenileme token'ı değilse açıklama “The token has invalid role” olur. Kod ya da gizli anahtar eşleşmiyorsa “The code or secret is not valid” olur.
 

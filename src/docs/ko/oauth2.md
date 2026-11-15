@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | 필수 | Hivesigner가 사용자를 돌려보낼 곳입니다. 여러분 앱의 리디렉션 URI 가운데 하나와 정확히 같아야 합니다. [콜백](/docs/register-app#callbacks)을 보세요. |
 | `scope` | 선택 | `login`, `posting`, `offline` 가운데 하나입니다. [권한 범위](#scopes)를 보세요. 없으면 요청은 게시 접근을 구합니다. |
 | `response_type` | 선택 | `code`는 [코드 흐름](#code-flow)을 시작합니다. 다른 값이거나 없으면 [토큰 흐름](#token-flow)입니다. |
+| `code_challenge`, `code_challenge_method` | 선택 | 클라이언트 시크릿을 보관할 수 없는 앱을 위한 PKCE입니다. [모바일과 데스크톱 앱을 위한 PKCE](/docs/pkce)을 보세요. |
 | `state` | 권장 | Hivesigner가 그대로 돌려주는 무작위 값입니다. [state로 요청 지키기](#state)를 보세요. |
 | `account` | 선택 | Hive 사용자 이름입니다. 그 계정이 사용자의 기기에 있으면 Hivesigner가 그것을 고릅니다. 없으면 무시합니다. `select_account`도 읽습니다. |
 

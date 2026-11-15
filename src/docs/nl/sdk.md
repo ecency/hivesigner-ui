@@ -61,7 +61,7 @@ In de tokenstroom ontvangt jouw callback `access_token`, `expires_in` en `userna
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-De SDK heeft geen methode voor de uitwisseling in de codestroom. Jouw server stuurt de code en het clientgeheim zelf naar de API, zoals [De code inwisselen](/docs/oauth2#exchange-code) laat zien.
+Vanaf SDK 4.1 stuurt `client.exchangeCode(code, codeVerifier, clientSecret)` een code naar de API: een native app geeft zijn PKCE-verifier mee, een server zijn clientgeheim. Met een oudere SDK stuurt jouw server de code en het clientgeheim zelf naar de API, zoals [De code inwisselen](/docs/oauth2#exchange-code) laat zien.
 
 ### De persoon ophalen {#me}
 

@@ -54,7 +54,7 @@ Dekodieren ist kein Prüfen. Jeder kann eine Zeichenkette bauen, die zu dieser F
 
 | Token | `type` | `app` | Signiert von | Woher Sie es bekommen |
 | --- | --- | --- | --- | --- |
-| Zugriffstoken, Token-Flow | `posting` | Ihre App | Dem Posting-Schlüssel der Person oder ihrem Active-Schlüssel, wenn Hivesigner keinen Posting-Schlüssel für das Konto hat | `access_token` an Ihrem Callback |
+| Zugriffstoken, Token-Flow | `posting`, bei einem reinen Anmeldecode (`scope=login`) `login` | Ihre App | Dem Posting-Schlüssel der Person oder ihrem Active-Schlüssel, wenn Hivesigner keinen Posting-Schlüssel für das Konto hat | `access_token` an Ihrem Callback |
 | Anmeldetoken, `scope=login` | `login` | Ihre App | Dem Posting- oder Active-Schlüssel der Person | `access_token` an Ihrem Callback |
 | Anmeldetoken, Website ohne App-Konto | `login` | Keines | Dem Posting- oder Active-Schlüssel der Person | `access_token` an Ihrem Callback |
 | Code | `code` | Ihre App | Dem Posting- oder Active-Schlüssel der Person | `code` an Ihrem Callback |

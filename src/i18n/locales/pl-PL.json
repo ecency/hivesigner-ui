@@ -286,14 +286,15 @@
     "website": "Strona internetowa",
     "location": "Lokalizacja",
     "redirect_uris": "Adresy URI przekierowania",
-    "one_uri_line": "Jeden URI w wierszu, każdy z protokołem, bez fragmentów i ścieżek względnych.",
+    "one_uri_line": "Jeden URI w wierszu, każdy z protokołem, bez fragmentów i ścieżek względnych. Schemat aplikacji, taki jak myapp://callback, działa tylko w przepływie z kodem i PKCE.",
     "creator": "Twórca",
     "status": "Status",
     "production": "Produkcja",
     "sandbox": "Piaskownica",
     "secret": "Sekret klienta",
     "blank_field": "Pozostaw puste, aby zachować bieżący sekret.",
-    "bad_callbacks": "Nieprawidłowy adres zwrotny (wymagany https lub http na localhost): {uris}"
+    "bad_callbacks": "Nieprawidłowy adres zwrotny (wymagany https, http na localhost lub schemat aplikacji, taki jak myapp://callback): {uris}",
+    "pkce_public": "Pozwól natywnej aplikacji tej aplikacji wymieniać kody PKCE bez sekretu"
   },
   "signs": {
     "nothing_matches": "Brak wyników.",

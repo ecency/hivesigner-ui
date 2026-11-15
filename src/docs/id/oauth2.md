@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | Ya | Ke mana Hivesigner mengembalikan orang itu. Harus persis salah satu URI pengalihan aplikasi Anda. Lihat [Callback](/docs/register-app#callbacks). |
 | `scope` | Tidak | `login`, `posting` atau `offline`. Lihat [Cakupan](#scopes). Tanpa itu, permintaan meminta akses posting. |
 | `response_type` | Tidak | `code` memulai [alur kode](#code-flow). Nilai lain apa pun, atau tanpa nilai, berarti [alur token](#token-flow). |
+| `code_challenge`, `code_challenge_method` | Tidak | PKCE untuk aplikasi yang tidak dapat menyimpan rahasia klien. Lihat [PKCE untuk aplikasi ponsel dan desktop](/docs/pkce). |
 | `state` | Disarankan | Nilai acak yang dikembalikan Hivesigner tanpa perubahan. Lihat [Lindungi permintaan dengan state](#state). |
 | `account` | Tidak | Sebuah nama pengguna Hive. Ketika akun itu ada di perangkat orang tersebut, Hivesigner memilihnya. Kalau tidak, diabaikan. `select_account` juga dibaca. |
 

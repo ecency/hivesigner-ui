@@ -276,14 +276,15 @@
     "website": "Website",
     "location": "Standort",
     "redirect_uris": "Weiterleitungs-URIs",
-    "one_uri_line": "Eine URI pro Zeile, jeweils mit Protokoll, ohne Fragmente oder relative Pfade.",
+    "one_uri_line": "Eine URI pro Zeile, jeweils mit Protokoll, ohne Fragmente oder relative Pfade. Ein App-Schema wie myapp://callback funktioniert nur beim Code-Flow mit PKCE.",
     "creator": "Ersteller",
     "status": "Status",
     "production": "Produktion",
     "sandbox": "Sandbox",
     "secret": "Client-Secret",
     "blank_field": "Leer lassen, um das aktuelle Secret zu behalten.",
-    "bad_callbacks": "Keine verwendbare Callback-Adresse (https oder http auf localhost): {uris}"
+    "bad_callbacks": "Keine verwendbare Callback-Adresse (https, http auf localhost oder ein App-Schema wie myapp://callback): {uris}",
+    "pkce_public": "Der nativen App dieser App erlauben, PKCE-Codes ohne das Secret einzulösen"
   },
   "signs": {
     "nothing_matches": "Keine Treffer.",

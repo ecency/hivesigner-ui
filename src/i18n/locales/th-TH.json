@@ -271,14 +271,15 @@
     "website": "เว็บไซต์",
     "location": "ตำแหน่งที่ตั้ง",
     "redirect_uris": "URI สำหรับเปลี่ยนเส้นทาง",
-    "one_uri_line": "หนึ่ง URI ต่อหนึ่งบรรทัด แต่ละรายการต้องมีโปรโตคอล และต้องไม่มี fragment หรือพาธแบบสัมพัทธ์",
+    "one_uri_line": "หนึ่ง URI ต่อหนึ่งบรรทัด แต่ละรายการต้องมีโปรโตคอล และต้องไม่มี fragment หรือพาธแบบสัมพัทธ์ สคีมาของแอปอย่าง myapp://callback ใช้ได้เฉพาะ code flow ที่มี PKCE เท่านั้น",
     "creator": "ผู้สร้าง",
     "status": "สถานะ",
     "production": "ใช้งานจริง",
     "sandbox": "แซนด์บ็อกซ์",
     "secret": "ไคลเอ็นต์ซีเคร็ต",
     "blank_field": "เว้นว่างไว้เพื่อคงซีเคร็ตปัจจุบัน",
-    "bad_callbacks": "callback ที่ใช้ไม่ได้ (ต้องเป็น https หรือ http บน localhost): {uris}"
+    "bad_callbacks": "callback ที่ใช้ไม่ได้ (ต้องเป็น https, http บน localhost หรือสคีมาของแอปอย่าง myapp://callback): {uris}",
+    "pkce_public": "อนุญาตให้แอปเนทีฟของแอปนี้แลก PKCE code ได้โดยไม่ต้องใช้ secret"
   },
   "signs": {
     "nothing_matches": "ไม่พบรายการที่ตรงกัน",

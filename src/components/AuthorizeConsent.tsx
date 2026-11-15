@@ -29,9 +29,11 @@ import {
   authorityForScope,
   buildAuthToken,
   buildRedirectUrl,
+  isAppSchemeCallback,
   isRegisteredRedirect,
   isValidRedirectUri,
   loadAppProfile,
+  pkceChallenge,
 } from '@/lib/oauth';
 import { safeText } from '@/lib/operation-summary';
 import { accountKey, oauthAppProfileKey } from '@/lib/query-keys';
@@ -153,12 +155,19 @@ export function AuthorizeConsent({ req }: { req: AuthRequest }) {
   const keys = selectedAccount ? getKeys(selectedAccount) : null;
   const signingKey = tokenSigner(authority, keys)?.wif;
   const callback = req.redirectUri ?? '';
+  // An app's own scheme (myapp://cb) is accepted only for a PKCE code
+  // request: the code it carries is useless without the app's verifier.
   const registered = profile
-    ? isRegisteredRedirect(profile, callback)
+    ? isRegisteredRedirect(profile, callback, {
+        pkce: !!pkceChallenge(effective),
+      })
     : loginOnly
       ? isValidRedirectUri(callback)
       : false;
   const callbackHost = (() => {
+    // An app scheme has no web host: name the scheme and path the app
+    // registered (never its query), so "Sends you to" reads myapp://cb.
+    if (isAppSchemeCallback(callback)) return callback.split('?')[0];
     try {
       return new URL(callback).host;
     } catch {

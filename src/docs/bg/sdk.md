@@ -61,7 +61,7 @@ const url = client.getLoginURL('STATE');
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-SDK няма метод за размяната в потока с код. Вашият сървър сам изпраща кода и клиентската тайна към API, както показва [Разменете кода](/docs/oauth2#exchange-code).
+От SDK 4.1 насам `client.exchangeCode(code, codeVerifier, clientSecret)` изпраща код към API: роден (native) екран подава своя PKCE верификатор, а сървър подава клиентската си тайна. При по-стар SDK вашият сървър сам изпраща кода и клиентската тайна към API, както показва [Разменете кода](/docs/oauth2#exchange-code).
 
 ### Вземете потребителя {#me}
 

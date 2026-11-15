@@ -42,10 +42,10 @@ Una URL de retorno (el `redirect_uri` de una solicitud de inicio de sesión) es 
 - **Coincidencia exacta.** El `redirect_uri` de la solicitud debe ser una de tus URI de redirección, carácter por carácter: esquema, host, puerto, ruta y consulta.
 - **Solo https.** Una URL de retorno debe usar `https://`. El `http://` simple solo se acepta en bucle local: `localhost`, `127.0.0.1` o `[::1]`.
 - **Los puertos de bucle local pueden cambiar.** Una URL de retorno de bucle local registrada con http simple coincide con cualquier host y puerto de bucle local que tenga la misma ruta, consulta, fragmento e información de usuario. Una URL de retorno de bucle local registrada con `https://` sigue siendo una coincidencia exacta.
-- **Nada de esquemas propios.** Una URL de retorno como `myapp://callback` se rechaza. Consulta [Aplicaciones móviles y de escritorio](#native-apps).
+- **Esquemas propios solo con PKCE.** Una URL de retorno como `myapp://callback` solo se acepta para una solicitud de código protegida con PKCE. Consulta [Aplicaciones móviles y de escritorio](#native-apps).
 - **Nada de fragmentos.** No añadas un `#fragment` a una URL de retorno.
 
-La página de perfil se niega a guardar una URL de retorno que nunca podría funcionar, con "URL de retorno no válida (https, o http en localhost)".
+La página de perfil se niega a guardar una URL de retorno que nunca podría funcionar, con "URL de retorno no válida (https, http en localhost o un esquema de app como myapp://callback)".
 
 ### Ejemplos {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Aceptada: bucle local, misma ruta |
 | `http://127.0.0.1:3000/other` | Rechazada: otra ruta |
 | `https://localhost:3000/auth` | Rechazada: https no coincide con un registro de http simple |
-| `myapp://auth` | Rechazada: esquema propio |
+| `myapp://auth` | Rechazada, salvo que esté registrada y la solicitud sea de código con PKCE |
 
 Para aceptar una consulta en tu URL de retorno, registra la URL de retorno con esa consulta exacta. Hivesigner conserva la consulta propia de tu URL de retorno y añade sus parámetros después.
 
 ### Aplicaciones móviles y de escritorio {#native-apps}
 
-Hivesigner pone el token en la URL de retorno. Un esquema propio como `myapp://` no está ligado a una sola aplicación: otra aplicación del mismo dispositivo puede reclamarlo y recibir el token. Por eso Hivesigner rechaza los esquemas propios y envía los tokens solo a una dirección https o al bucle local del propio dispositivo de la persona.
+Hivesigner pone el token en la URL de retorno. Un esquema propio como `myapp://` no está ligado a una sola aplicación: otra aplicación del mismo dispositivo puede reclamarlo y recibir el token. Por eso Hivesigner nunca envía un token a un esquema propio, solo a una dirección https o al bucle local del propio dispositivo de la persona.
 
 Una aplicación nativa usa una de estas vías:
 
 - **Un enlace https que le pertenece.** Registra una URL de retorno en tu dominio que el sistema operativo abra en tu aplicación (App Links de Android o Universal Links de iOS).
 - **Una URL de retorno de bucle local.** La aplicación escucha en `127.0.0.1` la redirección. Registra `http://127.0.0.1/auth` (o `localhost`) y usa cualquier puerto libre en tiempo de ejecución: el puerto no tiene que coincidir.
+- **Su propio esquema con PKCE.** La aplicación registra `myapp://callback`, usa el flujo de código con un desafío PKCE y no necesita secreto de cliente. Hivesigner envía un código que solo la aplicación puede canjear. Consulta [PKCE para aplicaciones móviles y de escritorio](/docs/pkce).
 
 ## Secreto de cliente {#client-secret}
 

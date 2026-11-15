@@ -152,7 +152,7 @@ Overboekingen en andere portemonnee-operaties hebben de active-sleutel van de pe
 Wisselt een code om voor tokens, of een verversingstoken voor nieuwe tokens. Roep dit alleen vanaf jouw server aan. Zie [De codestroom](/docs/oauth2#code-flow).
 
 - **Methode:** `POST`, met de waarden in de inhoud.
-- **Inhoud:** `code` en `client_secret`, of `refresh_token` en `client_secret`.
+- **Inhoud:** `code` en `client_secret`, of `refresh_token` en `client_secret`. Een code met een PKCE-challenge heeft ook `code_verifier` nodig, en een app zonder geheim stuurt alleen `code` en `code_verifier`. Zie [PKCE voor mobiele en desktop-apps](/docs/pkce).
 - **Headers:** stuur geen `Authorization`-header mee.
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Elke aanroep geeft een nieuw toegangstoken en een nieuw verversingstoken terug. Beide zijn door @hivesigner ondertekend. `expires_in` is de levensduur van het toegangstoken in seconden (7 dagen).
+Elke aanroep geeft een nieuw toegangstoken en een nieuw verversingstoken terug, door @hivesigner ondertekend. Voor een code die alleen voor inloggen dient (`scope=login`) of voor een PKCE-uitwisseling zonder clientgeheim is er geen verversingstoken. `expires_in` is de levensduur van het toegangstoken in seconden (7 dagen).
 
 Fouten: `401 invalid_grant`. De omschrijving is «The token has invalid role» wanneer de verstuurde waarde geen geldige code of geldig verversingstoken is. Ze is «The code or secret is not valid» wanneer de code of het geheim niet klopt.
 

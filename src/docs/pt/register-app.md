@@ -42,10 +42,10 @@ Uma URL de retorno (o `redirect_uri` de uma solicitação de login) é o lugar p
 - **Correspondência exata.** O `redirect_uri` da solicitação precisa ser uma das suas URIs de redirecionamento, caractere por caractere: esquema, host, porta, caminho e consulta.
 - **Somente https.** Uma URL de retorno precisa usar `https://`. O `http://` simples só é aceito em loopback: `localhost`, `127.0.0.1` ou `[::1]`.
 - **As portas de loopback podem mudar.** Uma URL de retorno de loopback registrada com http simples combina com qualquer host e porta de loopback que tenham o mesmo caminho, consulta, fragmento e informação de usuário. Uma URL de loopback registrada com `https://` continua exigindo correspondência exata.
-- **Nada de esquemas próprios.** Uma URL de retorno como `myapp://callback` é recusada. Veja [Aplicativos móveis e de desktop](#native-apps).
+- **Esquemas próprios só com PKCE.** Uma URL de retorno como `myapp://callback` só é aceita para uma requisição de código protegida com PKCE. Veja [Aplicativos móveis e de desktop](#native-apps).
 - **Nada de fragmentos.** Não acrescente `#fragment` a uma URL de retorno.
 
-A página de perfil se recusa a salvar uma URL de retorno que nunca funcionaria, dizendo «URL de retorno inutilizável (https, ou http em localhost)».
+A página de perfil se recusa a salvar uma URL de retorno que nunca funcionaria, dizendo «URL de retorno inutilizável (https, http em localhost ou um esquema de app como myapp://callback)».
 
 ### Exemplos {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Aceita: loopback, mesmo caminho |
 | `http://127.0.0.1:3000/other` | Recusada: outro caminho |
 | `https://localhost:3000/auth` | Recusada: https não combina com um registro em http simples |
-| `myapp://auth` | Recusada: esquema próprio |
+| `myapp://auth` | Recusada, a menos que esteja registrada e a requisição seja de código com PKCE |
 
 Para aceitar uma consulta na sua URL de retorno, registre a URL com exatamente essa consulta. O Hivesigner mantém a consulta própria da sua URL e acrescenta os parâmetros dele depois dela.
 
 ### Aplicativos móveis e de desktop {#native-apps}
 
-O Hivesigner coloca o token na URL de retorno. Um esquema próprio como `myapp://` não está preso a um único aplicativo: outro aplicativo no mesmo dispositivo pode reivindicá-lo e receber o token. Por isso o Hivesigner recusa esquemas próprios e envia tokens apenas para um endereço https ou para o loopback do próprio dispositivo da pessoa.
+O Hivesigner coloca o token na URL de retorno. Um esquema próprio como `myapp://` não está preso a um único aplicativo: outro aplicativo no mesmo dispositivo pode reivindicá-lo e receber o token. Por isso o Hivesigner nunca envia um token a um esquema próprio, apenas a um endereço https ou ao loopback do próprio dispositivo da pessoa.
 
-Um aplicativo nativo usa, em vez disso, um destes caminhos:
+Um aplicativo nativo usa um destes caminhos:
 
 - **Um link https que pertence a ele.** Registre uma URL de retorno no seu domínio que o sistema operacional abra dentro do seu aplicativo (App Links no Android ou Universal Links no iOS).
 - **Uma URL de retorno em loopback.** O aplicativo escuta em `127.0.0.1` pelo redirecionamento. Registre `http://127.0.0.1/auth` (ou `localhost`) e use qualquer porta livre em tempo de execução: a porta não precisa coincidir.
+- **Seu próprio esquema com PKCE.** O aplicativo registra `myapp://callback`, usa o fluxo por código com um desafio PKCE e não precisa de segredo do cliente. O Hivesigner envia um código que só o aplicativo consegue trocar. Veja [PKCE para aplicativos móveis e de desktop](/docs/pkce).
 
 ## Segredo do cliente {#client-secret}
 

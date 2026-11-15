@@ -61,7 +61,7 @@ Nel flusso con token il tuo callback riceve `access_token`, `expires_in` e `user
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-L’SDK non ha un metodo per lo scambio del flusso con codice. È il tuo server a mandare il codice e il client secret all’API, come mostra [Scambiare il codice](/docs/oauth2#exchange-code).
+Dal SDK 4.1, `client.exchangeCode(code, codeVerifier, clientSecret)` manda un codice all’API: un’app nativa passa il proprio verificatore PKCE, un server il proprio client secret. Con un SDK più vecchio, è il tuo server a mandare il codice e il client secret all’API, come mostra [Scambiare il codice](/docs/oauth2#exchange-code).
 
 ### Ottenere la persona {#me}
 

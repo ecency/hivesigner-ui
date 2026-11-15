@@ -61,7 +61,7 @@ U toku sa tokenom vaša povratna adresa dobija `access_token`, `expires_in` i `u
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-SDK nema metod za razmenu u toku sa kodom. Vaš server sam šalje kod i tajnu klijenta API-ju, kao što pokazuje [Razmenite kod](/docs/oauth2#exchange-code).
+Od SDK 4.1 metod `client.exchangeCode(code, codeVerifier, clientSecret)` šalje kod API-ju: nativna aplikacija prosleđuje svoj PKCE verifikator, a server tajnu klijenta. Sa starijim SDK-om vaš server sam šalje kod i tajnu klijenta API-ju, kao što pokazuje [Razmenite kod](/docs/oauth2#exchange-code).
 
 ### Dobavite osobu {#me}
 

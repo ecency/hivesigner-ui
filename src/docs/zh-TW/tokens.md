@@ -54,7 +54,7 @@ export function decodeToken(token) {
 
 | 權杖 | `type` | `app` | 簽署者 | 從哪裡取得 |
 | --- | --- | --- | --- | --- |
-| 存取權杖，權杖流程 | `posting` | 你的應用程式 | 使用者的發文金鑰；若 Hivesigner 沒有該帳號的發文金鑰，則是活躍金鑰 | 回呼網址上的 `access_token` |
+| 存取權杖，權杖流程 | `posting`；僅用於登入的代碼（`scope=login`）則為 `login` | 你的應用程式 | 使用者的發文金鑰；若 Hivesigner 沒有該帳號的發文金鑰，則是活躍金鑰 | 回呼網址上的 `access_token` |
 | 登入權杖，`scope=login` | `login` | 你的應用程式 | 使用者的發文金鑰或活躍金鑰 | 回呼網址上的 `access_token` |
 | 登入權杖，沒有應用程式帳號的網站 | `login` | 沒有 | 使用者的發文金鑰或活躍金鑰 | 回呼網址上的 `access_token` |
 | 授權碼 | `code` | 你的應用程式 | 使用者的發文金鑰或活躍金鑰 | 回呼網址上的 `code` |

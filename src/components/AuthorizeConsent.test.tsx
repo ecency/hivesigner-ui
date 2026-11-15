@@ -448,3 +448,87 @@ describe('AuthorizeConsent', () => {
     };
   });
 });
+
+describe('AuthorizeConsent with PKCE (#164)', () => {
+  const CHALLENGE = 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM';
+  const nativeApp = {
+    name: 'myapp',
+    posting_json_metadata: JSON.stringify({
+      profile: {
+        name: 'My App',
+        type: 'app',
+        redirect_uris: ['myapp://cb', 'https://myapp.example/cb'],
+      },
+    }),
+  };
+  const pkce = {
+    clientId: 'myapp',
+    redirectUri: 'myapp://cb',
+    responseType: 'code' as const,
+    codeChallenge: CHALLENGE,
+    codeChallengeMethod: 'S256',
+  };
+  beforeEach(() => {
+    sig.report.mockReset();
+    h.getAccount.mockImplementation(async (name: string) =>
+      name === 'myapp' ? nativeApp : userAccount(['myapp']),
+    );
+  });
+
+  async function approve() {
+    const button = await screen.findByRole('button', { name: /sign in/i });
+    await waitFor(() => expect(button).toBeEnabled());
+    await userEvent.setup().click(button);
+    await waitFor(() => expect(h.assign).toHaveBeenCalledTimes(1));
+    return h.assign.mock.calls[0][0] as string;
+  }
+
+  it('sends a code carrying the challenge to a registered app scheme', async () => {
+    renderConsent({ ...pkce, state: 's1' });
+    expect(await screen.findByText(/myapp:\/\/cb/)).toBeInTheDocument();
+    const target = await approve();
+    expect(target.startsWith('myapp://cb?code=')).toBe(true);
+    const params = new URLSearchParams(target.slice('myapp://cb?'.length));
+    expect(params.get('state')).toBe('s1');
+    expect(params.get('username')).toBe('alice');
+    expect(
+      decodeToken(params.get('code') ?? '')?.payload.signed_message,
+    ).toEqual({
+      type: 'code',
+      app: 'myapp',
+      code_challenge: CHALLENGE,
+      code_challenge_method: 'S256',
+    });
+  });
+
+  for (const [name, over] of [
+    ['without a challenge', { codeChallenge: undefined }],
+    ['with the plain method', { codeChallengeMethod: 'plain' }],
+    ['on the token flow', { responseType: 'token' as const }],
+  ] as const) {
+    it(`refuses an app scheme ${name}, with the unregistered callback message`, async () => {
+      renderConsent({ ...pkce, ...over });
+      expect(
+        await screen.findByText(i18n.t('authorize.redirect_not_registered')),
+      ).toBeInTheDocument();
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: /sign in/i })).toBeDisabled(),
+      );
+      expect(h.assign).not.toHaveBeenCalled();
+    });
+  }
+
+  it('ignores an unusable challenge on an https callback, as before: the code works with the secret', async () => {
+    renderConsent({
+      ...pkce,
+      redirectUri: 'https://myapp.example/cb',
+      codeChallengeMethod: 'plain',
+    });
+    const target = await approve();
+    const code = new URL(target).searchParams.get('code') ?? '';
+    expect(decodeToken(code)?.payload.signed_message).toEqual({
+      type: 'code',
+      app: 'myapp',
+    });
+  });
+});

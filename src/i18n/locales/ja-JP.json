@@ -271,14 +271,15 @@
     "website": "ウェブサイト",
     "location": "所在地",
     "redirect_uris": "リダイレクト URI",
-    "one_uri_line": "1 行に 1 つの URI を入力してください。それぞれにプロトコルを含め、フラグメントや相対パスは使用できません。",
+    "one_uri_line": "1 行に 1 つの URI を入力してください。それぞれにプロトコルを含め、フラグメントや相対パスは使用できません。myapp://callback のようなアプリスキームは、PKCE を使うコードフローでのみ使用できます。",
     "creator": "作成者",
     "status": "ステータス",
     "production": "本番",
     "sandbox": "サンドボックス",
     "secret": "クライアントシークレット",
     "blank_field": "現在のシークレットを変更しない場合は空欄のままにしてください。",
-    "bad_callbacks": "使用できないコールバックです（https、または localhost での http のみ可）：{uris}"
+    "bad_callbacks": "使用できないコールバックです（https、localhost での http、または myapp://callback のようなアプリスキームのみ可）：{uris}",
+    "pkce_public": "このアプリのネイティブアプリが、シークレットなしで PKCE コードを交換できるようにする"
   },
   "signs": {
     "nothing_matches": "一致するものはありません。",

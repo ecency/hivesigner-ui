@@ -54,7 +54,7 @@ Decodificare non è controllare. Chiunque può costruire una stringa che si deco
 
 | Token | `type` | `app` | Firmato da | Dove lo ottieni |
 | --- | --- | --- | --- | --- |
-| Token di accesso, flusso con token | `posting` | La tua app | La chiave di pubblicazione della persona, o la sua chiave attiva quando Hivesigner non ha una chiave di pubblicazione per quell’account | `access_token` sul tuo callback |
+| Token di accesso, flusso con token | `posting`, oppure `login` per un codice solo di accesso (`scope=login`) | La tua app | La chiave di pubblicazione della persona, o la sua chiave attiva quando Hivesigner non ha una chiave di pubblicazione per quell’account | `access_token` sul tuo callback |
 | Token di accesso, `scope=login` | `login` | La tua app | La chiave di pubblicazione o attiva della persona | `access_token` sul tuo callback |
 | Token di accesso, sito senza account app | `login` | Nessuna | La chiave di pubblicazione o attiva della persona | `access_token` sul tuo callback |
 | Codice | `code` | La tua app | La chiave di pubblicazione o attiva della persona | `code` sul tuo callback |

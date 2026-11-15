@@ -152,7 +152,7 @@ curl -X POST https://hivesigner.com/api/broadcast \
 把授權碼兌換成權杖，或把更新權杖兌換成新的權杖。只能從你的伺服器呼叫。參見[授權碼流程](/docs/oauth2#code-flow)。
 
 - **方法：** `POST`，各個值放在內文裡。
-- **內文：** `code` 和 `client_secret`，或 `refresh_token` 和 `client_secret`。
+- **內文：** `code` 和 `client_secret`，或 `refresh_token` 和 `client_secret`。帶 PKCE 質詢的授權碼還需要 `code_verifier`，沒有密鑰的應用程式只送出 `code` 和 `code_verifier`。參見[行動與桌面應用程式的 PKCE](/docs/pkce)。
 - **標頭：** 不要送出 `Authorization` 標頭。
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-每次呼叫都會傳回一個新的存取權杖和一個新的更新權杖。兩者都由 @hivesigner 簽署。`expires_in` 是存取權杖的可用時間，以秒計（7 天）。
+每次呼叫都會傳回一個新的存取權杖和一個新的更新權杖，由 @hivesigner 簽署。僅用於登入的代碼（`scope=login`）或沒有用戶端密鑰的 PKCE 交換不會傳回更新權杖。`expires_in` 是存取權杖的可用時間，以秒計（7 天）。
 
 錯誤：`401 invalid_grant`。當送上的值不是有效的授權碼或更新權杖時，說明是「The token has invalid role」。當授權碼或密鑰不相符時，說明是「The code or secret is not valid」。
 

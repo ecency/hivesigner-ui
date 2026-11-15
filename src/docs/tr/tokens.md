@@ -54,7 +54,7 @@ export function decodeToken(token) {
 
 | Token | `type` | `app` | İmzalayan | Nereden alırsınız |
 | --- | --- | --- | --- | --- |
-| Erişim token'ı, token akışı | `posting` | Sizin uygulamanız | Kullanıcının gönderi anahtarı ya da Hivesigner o hesap için gönderi anahtarı tutmuyorsa aktif anahtarı | Geri çağırma adresinizdeki `access_token` |
+| Erişim token'ı, token akışı | `posting`, yalnızca oturum açma için olan kodda (`scope=login`) `login` | Sizin uygulamanız | Kullanıcının gönderi anahtarı ya da Hivesigner o hesap için gönderi anahtarı tutmuyorsa aktif anahtarı | Geri çağırma adresinizdeki `access_token` |
 | Giriş token'ı, `scope=login` | `login` | Sizin uygulamanız | Kullanıcının gönderi ya da aktif anahtarı | Geri çağırma adresinizdeki `access_token` |
 | Giriş token'ı, uygulama hesabı olmayan site | `login` | Yok | Kullanıcının gönderi ya da aktif anahtarı | Geri çağırma adresinizdeki `access_token` |
 | Kod | `code` | Sizin uygulamanız | Kullanıcının gönderi ya da aktif anahtarı | Geri çağırma adresinizdeki `code` |

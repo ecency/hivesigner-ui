@@ -54,7 +54,7 @@ Decodificar no es comprobar. Cualquiera puede construir una cadena que se decodi
 
 | Token | `type` | `app` | Firmado por | Dónde lo obtienes |
 | --- | --- | --- | --- | --- |
-| Token de acceso, flujo de token | `posting` | Tu aplicación | La clave de publicación de la persona, o su clave activa cuando Hivesigner no tiene ninguna clave de publicación para la cuenta | `access_token` en tu URL de retorno |
+| Token de acceso, flujo de token | `posting`, o `login` para un código solo de inicio de sesión (`scope=login`) | Tu aplicación | La clave de publicación de la persona, o su clave activa cuando Hivesigner no tiene ninguna clave de publicación para la cuenta | `access_token` en tu URL de retorno |
 | Token de inicio de sesión, `scope=login` | `login` | Tu aplicación | La clave de publicación o activa de la persona | `access_token` en tu URL de retorno |
 | Token de inicio de sesión, sitio sin cuenta de aplicación | `login` | Ninguna | La clave de publicación o activa de la persona | `access_token` en tu URL de retorno |
 | Código | `code` | Tu aplicación | La clave de publicación o activa de la persona | `code` en tu URL de retorno |

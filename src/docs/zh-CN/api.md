@@ -152,7 +152,7 @@ curl -X POST https://hivesigner.com/api/broadcast \
 把授权码兑换成令牌，或把刷新令牌兑换成新的令牌。只能从您的服务器调用。参见[授权码流程](/docs/oauth2#code-flow)。
 
 - **方法：** `POST`，各值放在请求体中。
-- **请求体：** `code` 和 `client_secret`，或 `refresh_token` 和 `client_secret`。
+- **请求体：** `code` 和 `client_secret`，或 `refresh_token` 和 `client_secret`。带 PKCE 质询的授权码还需要 `code_verifier`，没有密钥的应用只发送 `code` 和 `code_verifier`。参见[移动端和桌面端应用的 PKCE](/docs/pkce)。
 - **请求头：** 不要发送 `Authorization` 头。
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-每次调用都会返回一个新的访问令牌和一个新的刷新令牌。两者都由 @hivesigner 签署。`expires_in` 是访问令牌的有效期，以秒计（7 天）。
+每次调用都会返回一个新的访问令牌和一个新的刷新令牌，由 @hivesigner 签署。仅用于登录的代码（`scope=login`）或没有客户端密钥的 PKCE 交换不会返回刷新令牌。`expires_in` 是访问令牌的有效期，以秒计（7 天）。
 
 错误：`401 invalid_grant`。当送上的值不是有效的授权码或刷新令牌时，描述为“The token has invalid role”。当授权码或密钥不匹配时，描述为“The code or secret is not valid”。
 

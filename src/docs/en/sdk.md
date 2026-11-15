@@ -61,7 +61,7 @@ In the token flow, your callback receives `access_token`, `expires_in` and `user
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-The SDK has no method for the code flow's exchange. Your server posts the code and the client secret to the API itself, as [Exchange the code](/docs/oauth2#exchange-code) shows.
+From SDK 4.1, `client.exchangeCode(code, codeVerifier, clientSecret)` posts a code to the API: a native app passes its PKCE verifier, a server its client secret. With an older SDK, your server posts the code and the client secret to the API itself, as [Exchange the code](/docs/oauth2#exchange-code) shows.
 
 ### Get the user {#me}
 

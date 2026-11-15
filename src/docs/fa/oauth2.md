@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | بله | جایی که Hivesigner کاربر را به آن بازمی‌گرداند. باید دقیقاً یکی از نشانی‌های URI بازگشت برنامه شما باشد. ببینید [نشانی‌های بازگشت](/docs/register-app#callbacks). |
 | `scope` | خیر | `login`، `posting` یا `offline`. ببینید [دامنه‌ها](#scopes). بدون آن، درخواست دسترسی انتشار می‌خواهد. |
 | `response_type` | خیر | مقدار `code` [جریان کد](#code-flow) را آغاز می‌کند. هر مقدار دیگر، یا نبود آن، یعنی [جریان توکن](#token-flow). |
+| `code_challenge`, `code_challenge_method` | خیر | PKCE برای برنامه‌ای که نمی‌تواند کلید محرمانه کلاینت را نگه دارد. ببینید [PKCE برای برنامه‌های موبایل و رومیزی](/docs/pkce). |
 | `state` | توصیه‌شده | یک مقدار تصادفی که Hivesigner بدون تغییر بازمی‌گرداند. ببینید [درخواست را با state محافظت کنید](#state). |
 | `account` | خیر | یک نام کاربری Hive. وقتی آن حساب روی دستگاه کاربر باشد، Hivesigner آن را انتخاب می‌کند. در غیر این صورت نادیده گرفته می‌شود. `select_account` هم خوانده می‌شود. |
 

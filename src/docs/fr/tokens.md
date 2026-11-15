@@ -54,7 +54,7 @@ Décoder n’est pas vérifier. N’importe qui peut fabriquer une chaîne qui s
 
 | Jeton | `type` | `app` | Signé par | Où vous l’obtenez |
 | --- | --- | --- | --- | --- |
-| Jeton d’accès, flux par jeton | `posting` | Votre application | La clé de publication de la personne, ou sa clé active quand Hivesigner n’a aucune clé de publication pour le compte | `access_token` sur votre URL de rappel |
+| Jeton d’accès, flux par jeton | `posting`, ou `login` pour un code de connexion seule (`scope=login`) | Votre application | La clé de publication de la personne, ou sa clé active quand Hivesigner n’a aucune clé de publication pour le compte | `access_token` sur votre URL de rappel |
 | Jeton de connexion, `scope=login` | `login` | Votre application | La clé de publication ou active de la personne | `access_token` sur votre URL de rappel |
 | Jeton de connexion, site sans compte d’application | `login` | Aucune | La clé de publication ou active de la personne | `access_token` sur votre URL de rappel |
 | Code | `code` | Votre application | La clé de publication ou active de la personne | `code` sur votre URL de rappel |

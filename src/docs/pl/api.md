@@ -152,7 +152,7 @@ Przelewy i inne operacje portfela wymagają klucza aktywnego osoby. Wysyłaj je 
 Wymienia kod na tokeny albo token odświeżania na nowe tokeny. Wywołuj to tylko ze swojego serwera. Zobacz [Przepływ z kodem](/docs/oauth2#code-flow).
 
 - **Metoda:** `POST`, z wartościami w treści.
-- **Treść:** `code` i `client_secret` albo `refresh_token` i `client_secret`.
+- **Treść:** `code` i `client_secret` albo `refresh_token` i `client_secret`. Kod z wyzwaniem PKCE wymaga także `code_verifier`, a aplikacja bez sekretu wysyła tylko `code` i `code_verifier`. Zobacz [PKCE dla aplikacji mobilnych i na komputer](/docs/pkce).
 - **Nagłówki:** nie wysyłaj żadnego nagłówka `Authorization`.
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Każde wywołanie zwraca nowy token dostępu i nowy token odświeżania. Oba podpisuje @hivesigner. `expires_in` to czas życia tokenu dostępu w sekundach (7 dni).
+Każde wywołanie zwraca nowy token dostępu i nowy token odświeżania, podpisane przez @hivesigner. Nie ma tokenu odświeżania dla kodu tylko do logowania (`scope=login`) ani dla wymiany PKCE bez sekretu klienta. `expires_in` to czas życia tokenu dostępu w sekundach (7 dni).
 
 Błędy: `401 invalid_grant`. Opis brzmi «The token has invalid role», gdy wysłana wartość nie jest prawidłowym kodem ani tokenem odświeżania. Brzmi «The code or secret is not valid», gdy kod albo sekret się nie zgadza.
 

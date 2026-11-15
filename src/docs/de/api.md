@@ -152,7 +152,7 @@ Ein Posting-Token lässt die API diese Operationen übertragen und keine anderen
 Tauscht einen Code gegen Tokens oder ein Refresh-Token gegen neue Tokens. Rufen Sie das nur von Ihrem Server aus auf. Siehe [Der Code-Flow](/docs/oauth2#code-flow).
 
 - **Methode:** `POST`, mit den Werten im Body.
-- **Body:** `code` und `client_secret` oder `refresh_token` und `client_secret`.
+- **Body:** `code` und `client_secret` oder `refresh_token` und `client_secret`. Ein Code mit PKCE-Challenge braucht außerdem `code_verifier`, und eine App ohne Secret sendet nur `code` und `code_verifier`. Siehe [PKCE für mobile und Desktop-Apps](/docs/pkce).
 - **Header:** Senden Sie keinen `Authorization`-Header.
 
 ```bash
@@ -170,7 +170,7 @@ curl -X POST https://hivesigner.com/api/oauth2/token \
 }
 ```
 
-Jeder Aufruf liefert ein neues Zugriffstoken und ein neues Refresh-Token. Beide sind von @hivesigner signiert. `expires_in` ist die Lebensdauer des Zugriffstokens in Sekunden (7 Tage).
+Jeder Aufruf liefert ein neues Zugriffstoken und ein neues Refresh-Token, von @hivesigner signiert. Für einen reinen Anmeldecode (`scope=login`) oder für einen PKCE-Austausch ohne Client-Secret gibt es kein Refresh-Token. `expires_in` ist die Lebensdauer des Zugriffstokens in Sekunden (7 Tage).
 
 Fehler: `401 invalid_grant`. Die Beschreibung lautet "The token has invalid role", wenn der gesendete Wert kein gültiger Code und kein gültiges Refresh-Token ist. Sie lautet "The code or secret is not valid", wenn Code oder Secret nicht passen.
 

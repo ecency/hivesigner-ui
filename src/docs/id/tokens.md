@@ -54,7 +54,7 @@ Mendekode bukan memeriksa. Siapa pun dapat menyusun untai yang terdekode menjadi
 
 | Token | `type` | `app` | Ditandatangani oleh | Dari mana Anda mendapatkannya |
 | --- | --- | --- | --- | --- |
-| Token akses, alur token | `posting` | Aplikasi Anda | Kunci posting orang itu, atau kunci active-nya ketika Hivesigner tidak punya kunci posting untuk akun itu | `access_token` di callback Anda |
+| Token akses, alur token | `posting`, atau `login` untuk kode khusus masuk (`scope=login`) | Aplikasi Anda | Kunci posting orang itu, atau kunci active-nya ketika Hivesigner tidak punya kunci posting untuk akun itu | `access_token` di callback Anda |
 | Token masuk, `scope=login` | `login` | Aplikasi Anda | Kunci posting atau active orang itu | `access_token` di callback Anda |
 | Token masuk, situs tanpa akun aplikasi | `login` | Tidak ada | Kunci posting atau active orang itu | `access_token` di callback Anda |
 | Kode | `code` | Aplikasi Anda | Kunci posting atau active orang itu | `code` di callback Anda |

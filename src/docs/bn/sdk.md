@@ -61,7 +61,7 @@ const url = client.getLoginURL('STATE');
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-কোড ফ্লোর বিনিময়ের জন্য SDK-তে কোনো মেথড নেই। আপনার সার্ভার নিজেই কোড আর ক্লায়েন্ট সিক্রেট API-তে পাঠায়, যেমনটি [কোড বিনিময় করুন](/docs/oauth2#exchange-code) দেখায়।
+SDK 4.1 থেকে `client.exchangeCode(code, codeVerifier, clientSecret)` একটি কোড API-তে পাঠায়: নেটিভ অ্যাপ তার PKCE ভেরিফায়ার দেয়, আর সার্ভার দেয় তার ক্লায়েন্ট সিক্রেট। পুরোনো SDK-তে আপনার সার্ভার নিজেই কোড আর ক্লায়েন্ট সিক্রেট API-তে পাঠায়, যেমনটি [কোড বিনিময় করুন](/docs/oauth2#exchange-code) দেখায়।
 
 ### ব্যবহারকারীকে নিন {#me}
 

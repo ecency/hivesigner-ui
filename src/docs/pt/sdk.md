@@ -61,7 +61,7 @@ No fluxo por token, sua URL de retorno recebe `access_token`, `expires_in` e `us
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-O SDK não tem método para a troca do fluxo por código. Seu servidor envia por conta própria o código e o segredo do cliente à API, como mostra [Trocar o código](/docs/oauth2#exchange-code).
+A partir do SDK 4.1, `client.exchangeCode(code, codeVerifier, clientSecret)` envia um código à API: um app nativo passa seu verificador PKCE e um servidor, seu segredo do cliente. Com um SDK mais antigo, seu servidor envia por conta própria o código e o segredo do cliente à API, como mostra [Trocar o código](/docs/oauth2#exchange-code).
 
 ### Obter a pessoa {#me}
 

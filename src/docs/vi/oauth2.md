@@ -39,6 +39,7 @@ const authorizeUrl = `https://hivesigner.com/oauth2/authorize?${params}`;
 | `redirect_uri` | Có | Nơi Hivesigner đưa người dùng trở lại. Nó phải trùng khớp chính xác với một trong các URI chuyển hướng của ứng dụng bạn. Xem [Callback](/docs/register-app#callbacks). |
 | `scope` | Không | `login`, `posting` hoặc `offline`. Xem [Phạm vi](#scopes). Nếu không có nó, yêu cầu xin quyền posting. |
 | `response_type` | Không | Giá trị `code` bắt đầu [luồng mã](#code-flow). Giá trị khác, hoặc không có, nghĩa là [luồng token](#token-flow). |
+| `code_challenge`, `code_challenge_method` | Không | PKCE cho ứng dụng không thể giữ khóa bí mật của client. Xem [PKCE cho ứng dụng di động và máy tính](/docs/pkce). |
 | `state` | Nên có | Một giá trị ngẫu nhiên mà Hivesigner trả lại nguyên vẹn. Xem [Bảo vệ yêu cầu bằng state](#state). |
 | `account` | Không | Một tên người dùng Hive. Khi tài khoản đó có trên thiết bị của người dùng, Hivesigner chọn nó. Nếu không thì bỏ qua. `select_account` cũng được đọc. |
 

@@ -42,10 +42,10 @@ Een callback (de `redirect_uri` in een inlogverzoek) is de plek waar Hivesigner 
 - **Precies gelijk.** De `redirect_uri` in het verzoek moet een van jouw doorstuur-URI's zijn, teken voor teken: schema, host, poort, pad en query.
 - **Alleen https.** Een callback moet `https://` gebruiken. Gewoon `http://` wordt alleen op loopback aangenomen: `localhost`, `127.0.0.1` of `[::1]`.
 - **Loopback-poorten mogen wisselen.** Een met gewoon http geregistreerde loopback-callback past bij elke loopback-host en -poort met hetzelfde pad, dezelfde query, hetzelfde fragment en dezelfde gebruikersinformatie. Een met `https://` geregistreerde loopback-callback blijft precies gelijk.
-- **Geen eigen schema's.** Een callback als `myapp://callback` wordt geweigerd. Zie [Mobiele en desktop-apps](#native-apps).
+- **Eigen schema's alleen met PKCE.** Een callback als `myapp://callback` wordt alleen geaccepteerd voor een codeverzoek dat met PKCE is beschermd. Zie [Mobiele en desktop-apps](#native-apps).
 - **Geen fragmenten.** Zet geen `#fragment` achter een callback.
 
-De profielpagina weigert een callback op te slaan die nooit kan werken, met «Geen bruikbaar callback-adres (https, of http op localhost)».
+De profielpagina weigert een callback op te slaan die nooit kan werken, met «Geen bruikbaar callback-adres (https, http op localhost of een app-schema zoals myapp://callback)».
 
 ### Voorbeelden {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Aangenomen: loopback, zelfde pad |
 | `http://127.0.0.1:3000/other` | Geweigerd: een ander pad |
 | `https://localhost:3000/auth` | Geweigerd: https past niet bij een registratie met gewoon http |
-| `myapp://auth` | Geweigerd: eigen schema |
+| `myapp://auth` | Geweigerd, tenzij geregistreerd en het verzoek een codeverzoek met PKCE is |
 
 Wil je een query op jouw callback aannemen, registreer de callback dan met precies die query. Hivesigner houdt de eigen query van jouw callback en zet zijn parameters erachter.
 
 ### Mobiele en desktop-apps {#native-apps}
 
-Hivesigner zet het token in de callback-URL. Een eigen schema als `myapp://` hoort niet bij één app: een andere app op hetzelfde apparaat kan het opeisen en het token ontvangen. Daarom weigert Hivesigner eigen schema's en stuurt het tokens alleen naar een https-adres of naar loopback op het apparaat van de persoon zelf.
+Hivesigner zet het token in de callback-URL. Een eigen schema als `myapp://` hoort niet bij één app: een andere app op hetzelfde apparaat kan het opeisen en het token ontvangen. Daarom stuurt Hivesigner een token nooit naar een eigen schema, alleen naar een https-adres of naar loopback op het apparaat van de persoon zelf.
 
-Een native app gebruikt in plaats daarvan een van deze wegen:
+Een native app gebruikt een van deze wegen:
 
 - **Een https-link die van hem is.** Registreer een callback op jouw domein die het besturingssysteem in jouw app opent (App Links op Android of Universal Links op iOS).
 - **Een loopback-callback.** De app luistert op `127.0.0.1` naar de doorverwijzing. Registreer `http://127.0.0.1/auth` (of `localhost`) en gebruik tijdens het draaien een vrije poort: de poort hoeft niet gelijk te zijn.
+- **Een eigen schema met PKCE.** De app registreert `myapp://callback`, gebruikt de codestroom met een PKCE-challenge en heeft geen clientgeheim nodig. Hivesigner stuurt een code die alleen de app kan inwisselen. Zie [PKCE voor mobiele en desktop-apps](/docs/pkce).
 
 ## Clientgeheim {#client-secret}
 

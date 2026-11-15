@@ -54,7 +54,7 @@ Giải mã không phải là kiểm tra. Ai cũng có thể dựng một chuỗi
 
 | Token | `type` | `app` | Được ký bởi | Bạn nhận nó ở đâu |
 | --- | --- | --- | --- | --- |
-| Token truy cập, luồng token | `posting` | Ứng dụng của bạn | Khóa posting của người dùng, hoặc khóa active của họ khi Hivesigner không giữ khóa posting cho tài khoản đó | `access_token` trên callback của bạn |
+| Token truy cập, luồng token | `posting`, hoặc `login` cho mã chỉ để đăng nhập (`scope=login`) | Ứng dụng của bạn | Khóa posting của người dùng, hoặc khóa active của họ khi Hivesigner không giữ khóa posting cho tài khoản đó | `access_token` trên callback của bạn |
 | Token đăng nhập, `scope=login` | `login` | Ứng dụng của bạn | Khóa posting hoặc active của người dùng | `access_token` trên callback của bạn |
 | Token đăng nhập, trang web không có tài khoản ứng dụng | `login` | Không có | Khóa posting hoặc active của người dùng | `access_token` trên callback của bạn |
 | Mã | `code` | Ứng dụng của bạn | Khóa posting hoặc active của người dùng | `code` trên callback của bạn |

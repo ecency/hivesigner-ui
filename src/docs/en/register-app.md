@@ -42,10 +42,10 @@ A callback (the `redirect_uri` in a sign-in request) is where Hivesigner sends t
 - **Exact match.** The `redirect_uri` in the request must be one of your Redirect URIs, character for character: scheme, host, port, path and query.
 - **https only.** A callback must use `https://`. Plain `http://` is accepted only on loopback: `localhost`, `127.0.0.1` or `[::1]`.
 - **Loopback ports may change.** A registered plain-http loopback callback matches any loopback host and port with the same path, query, fragment and user info. A registered `https://` loopback callback stays an exact match.
-- **No custom schemes.** A callback such as `myapp://callback` is refused. See [Mobile and desktop apps](#native-apps).
+- **Custom schemes only with PKCE.** A callback such as `myapp://callback` is accepted only for a code request protected with PKCE. See [Mobile and desktop apps](#native-apps).
 - **No fragments.** Do not add a `#fragment` to a callback.
 
-The profile page refuses to save a callback that could never work, with "Not a usable callback (https, or http on localhost)".
+The profile page refuses to save a callback that could never work, with "Not a usable callback (https, http on localhost, or an app scheme such as myapp://callback)".
 
 ### Examples {#callback-examples}
 
@@ -68,18 +68,19 @@ http://localhost:3000/auth
 | `http://[::1]:3000/auth` | Accepted: loopback, same path |
 | `http://127.0.0.1:3000/other` | Refused: another path |
 | `https://localhost:3000/auth` | Refused: https does not match a plain-http registration |
-| `myapp://auth` | Refused: custom scheme |
+| `myapp://auth` | Refused, unless registered and the request is a code request with PKCE |
 
 To accept a query on your callback, register the callback with that exact query. Hivesigner keeps your callback's own query and adds its parameters after it.
 
 ### Mobile and desktop apps {#native-apps}
 
-Hivesigner puts the token in the callback URL. A custom scheme such as `myapp://` is not tied to one app: another app on the same device can claim it and receive the token. So Hivesigner refuses custom schemes and sends tokens only to an https address or to loopback on the user's own device.
+Hivesigner puts the token in the callback URL. A custom scheme such as `myapp://` is not tied to one app: another app on the same device can claim it and receive the token. So Hivesigner never sends a token to a custom scheme, only to an https address or to loopback on the user's own device.
 
-A native app uses one of these instead:
+A native app uses one of these:
 
 - **An https link it owns.** Register a callback on your domain that the operating system opens in your app (Android App Links or iOS Universal Links).
 - **A loopback callback.** The app listens on `127.0.0.1` for the redirect. Register `http://127.0.0.1/auth` (or `localhost`) and use any free port at run time: the port does not have to match.
+- **Its own scheme with PKCE.** The app registers `myapp://callback`, uses the code flow with a PKCE challenge and needs no client secret. Hivesigner sends a code that only the app can exchange. See [PKCE for mobile and desktop apps](/docs/pkce).
 
 ## Client secret {#client-secret}
 

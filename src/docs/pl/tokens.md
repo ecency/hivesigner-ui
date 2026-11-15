@@ -54,7 +54,7 @@ Dekodowanie to nie sprawdzanie. Każdy może zbudować ciąg, który zdekoduje s
 
 | Token | `type` | `app` | Podpisany przez | Skąd go bierzesz |
 | --- | --- | --- | --- | --- |
-| Token dostępu, przepływ z tokenem | `posting` | Twoją aplikację | Klucz publikowania osoby albo jej klucz aktywny, gdy Hivesigner nie ma klucza publikowania do tego konta | `access_token` na Twoim adresie zwrotnym |
+| Token dostępu, przepływ z tokenem | `posting` albo `login` dla kodu tylko do logowania (`scope=login`) | Twoją aplikację | Klucz publikowania osoby albo jej klucz aktywny, gdy Hivesigner nie ma klucza publikowania do tego konta | `access_token` na Twoim adresie zwrotnym |
 | Token logowania, `scope=login` | `login` | Twoją aplikację | Klucz publikowania albo aktywny osoby | `access_token` na Twoim adresie zwrotnym |
 | Token logowania, witryna bez konta aplikacji | `login` | Żadną | Klucz publikowania albo aktywny osoby | `access_token` na Twoim adresie zwrotnym |
 | Kod | `code` | Twoją aplikację | Klucz publikowania albo aktywny osoby | `code` na Twoim adresie zwrotnym |
