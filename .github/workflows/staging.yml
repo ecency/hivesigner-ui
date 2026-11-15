@@ -154,7 +154,10 @@ jobs:
   # regression is visible on the run rather than found by an app author.
   contract:
     needs: deploy-staging
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04, where Playwright 1.60 cannot
+    # install its browsers ("does not support chromium on ubuntu26.04-x64").
+    # Move to ubuntu-latest again with a Playwright release that supports it.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

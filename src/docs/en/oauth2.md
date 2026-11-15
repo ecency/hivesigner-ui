@@ -87,7 +87,7 @@ The user's browser receives the access token directly. Your app needs no secret.
 
 ## The code flow {#code-flow}
 
-Your server receives a code and exchanges it for an access token and a refresh token. It can renew them later without the user. Use it when your server acts for users over a long time.
+Your server receives a code and exchanges it for an access token and a refresh token. It can renew them later without the user. Use it when your server acts for users over a long time. A mobile or desktop app that cannot keep a secret uses this flow with PKCE instead: it exchanges the code itself with a verifier and gets no refresh token (see the PKCE page).
 
 1. Send the user to the authorize URL with `scope=offline`:
 
