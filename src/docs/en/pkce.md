@@ -156,7 +156,7 @@ const tokens = await client.exchangeCode(code, codeVerifier);
 | A code whose challenge was changed | `401 invalid_grant`: the user's signature no longer matches |
 | A PKCE code used as a token, for example at `/api/me` | `401 invalid_grant` |
 | A code without a challenge, with the client secret | Tokens and a refresh token, as before |
-| A `client_secret` that is sent but wrong (a number or an object counts as sent) | `401 invalid_grant`, even when PKCE alone would do |
+| A `client_secret` that is sent but wrong. Any value counts as sent: a number, an object, `false`, `0`, `null` or an empty string, in the body or the query | `401 invalid_grant`, even when PKCE alone would do |
 | No secret, for an app with an IP allowlist (`allowed_ips`) | `401 invalid_grant`: such an app always needs its secret |
 
 A wrong verifier does not use up the code: the app that holds the right one can still exchange it.
@@ -216,3 +216,5 @@ The signature covers SHA-256 of these exact bytes, with no spaces:
 ```
 
 Its SHA-256 is `8de0c7bf487c57a3f4b3a616d139c4c6a4a1a61411c7cd222cd796d924c22836`. The `timestamp` is Unix time in whole seconds: a value in milliseconds is refused as dated in the future. Another signer that issues Hivesigner codes, such as a wallet app signing in to a sister app, has to produce the same bytes, signed by one of the user's posting, active or owner keys. The API then exchanges that code like any other.
+
+A code is not a sign-in (see [Kinds of token](/docs/tokens#kinds)). A service of your own that does accept your app's codes directly, without the exchange, must refuse every code whose `signed_message` has a `code_challenge` field, whatever its value. Only the exchange checks the verifier: a service that accepts the code without it lets whoever intercepted the code skip that check.

@@ -61,7 +61,7 @@ In the token flow, your callback receives `access_token`, `expires_in` and `user
 client.setAccessToken('ACCESS_TOKEN');
 ```
 
-From SDK 4.1, `client.exchangeCode(code, codeVerifier, clientSecret)` posts a code to the API: a native app passes its PKCE verifier, a server its client secret. With an older SDK, your server posts the code and the client secret to the API itself, as [Exchange the code](/docs/oauth2#exchange-code) shows.
+From SDK 4.1, `createPkcePair()` makes a PKCE verifier and its challenge for a native app. `client.getLoginURL(state, account, { codeChallenge })` adds the challenge to the sign-in URL. `createPkcePair` needs Web Crypto: Node.js 20 or later, or a modern browser. `client.exchangeCode(code, codeVerifier, clientSecret)` posts a code to the API: a native app passes its PKCE verifier, a server its client secret. With an older SDK, your server posts the code and the client secret to the API itself, as [Exchange the code](/docs/oauth2#exchange-code) shows.
 
 ### Get the user {#me}
 
